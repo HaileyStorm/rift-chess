@@ -1,0 +1,17 @@
+{
+  "version": "8fbcc1d7056bd881ae88",
+  "assets": [
+    "./api.js",
+    "./assets/game-B3MUkCOu.js",
+    "./assets/index-CgIr-5lD.js",
+    "./assets/index-D4p982jK.css",
+    "./assets/worker-u3mupga4.js",
+    "./guide.html",
+    "./icon.svg",
+    "./index.html",
+    "./licenses.txt",
+    "./rules.html",
+    "./support.html",
+    "./support.js"
+  ]
+}
