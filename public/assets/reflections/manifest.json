@@ -1,0 +1,136 @@
+{
+  "schema": "rift-reflections/1",
+  "encoding": "rgba16le-rgb8-triplets/1",
+  "texture": {
+    "type": 1016,
+    "format": 1023,
+    "mapping": 306,
+    "minFilter": 1006,
+    "magFilter": 1006,
+    "wrapS": 1001,
+    "wrapT": 1001,
+    "anisotropy": 1,
+    "colorSpace": "srgb-linear",
+    "generateMipmaps": false,
+    "flipY": false,
+    "premultiplyAlpha": false,
+    "unpackAlignment": 4
+  },
+  "entries": [
+    {
+      "theme": "gallery",
+      "quality": "low",
+      "width": 384,
+      "height": 512,
+      "file": "gallery-low.png",
+      "texelSha256": "1d085dac99f668582f10b2db6cd84d9eb4e32788a97c9206fb0be7004034c77a",
+      "pngSha256": "f3dd8dad64bc4fff74a365891f6d47c76172a122705e1176286db5e29b72c730"
+    },
+    {
+      "theme": "gallery",
+      "quality": "balanced",
+      "width": 384,
+      "height": 512,
+      "file": "gallery-balanced.png",
+      "texelSha256": "82fccab6241761abc374fcf3d4c3fd070fbf5c3dad744a70111f1da382eb7001",
+      "pngSha256": "c993229d756625f068e4f789d7718bf08699e5e27c16dfd7582a1ab7c668fc2a"
+    },
+    {
+      "theme": "gallery",
+      "quality": "high",
+      "width": 768,
+      "height": 1024,
+      "file": "gallery-high.png",
+      "texelSha256": "21c26c7ac1b9d9caa05c69190f343c7c29c82b54bc5a91dc73793fad33814556",
+      "pngSha256": "299c762a6cd117f80a3b0326273943a5f6ff1345d43b2f146135b414b1ad5d1c"
+    },
+    {
+      "theme": "nocturne",
+      "quality": "low",
+      "width": 384,
+      "height": 512,
+      "file": "nocturne-low.png",
+      "texelSha256": "2fa6e42236c2dc02290b7cd553e4785e7003d585137eedcc6f7da3b5c63868a6",
+      "pngSha256": "b6dff38618f42c274963317370acc46b07f4991601d9ff22bd60d76cdaed64f1"
+    },
+    {
+      "theme": "nocturne",
+      "quality": "balanced",
+      "width": 384,
+      "height": 512,
+      "file": "nocturne-balanced.png",
+      "texelSha256": "e21f49859d01432ae6ff090e8b4322da2fe968c72b92e9ec089b6490b56ac11e",
+      "pngSha256": "7530df7544cad1b9f5875ea3c9be02f6e8406c49d6143a5b88fd96c7c336e47e"
+    },
+    {
+      "theme": "nocturne",
+      "quality": "high",
+      "width": 768,
+      "height": 1024,
+      "file": "nocturne-high.png",
+      "texelSha256": "dcda620f40ea21d146b7611fb577d1dda1e858d6d493fb153d2dd6cf02927a77",
+      "pngSha256": "5276e57874d5b3e621dbbc2f11d8c9bcf91d9636306977cc242796afd6fc8365"
+    },
+    {
+      "theme": "daylight",
+      "quality": "low",
+      "width": 384,
+      "height": 512,
+      "file": "daylight-low.png",
+      "texelSha256": "2070a031c18fefc51c8548706aaf7e73d2ce6cf223434a45fff807fe4cb97e76",
+      "pngSha256": "1ffae1a1e2583396fdddba75ae0a7771e6a85c5fae0bf7be5a4a91e737ef2f6d"
+    },
+    {
+      "theme": "daylight",
+      "quality": "balanced",
+      "width": 384,
+      "height": 512,
+      "file": "daylight-balanced.png",
+      "texelSha256": "761f116258da00b238bbe1dddcc16b71ae682abdcb480096dc55bfa3ebf12e8d",
+      "pngSha256": "e16230f1a333661800a8c321100f138709b4e404abb5a8881886644dd02a8f8c"
+    },
+    {
+      "theme": "daylight",
+      "quality": "high",
+      "width": 768,
+      "height": 1024,
+      "file": "daylight-high.png",
+      "texelSha256": "6a0b77154c6914b536bd09e6b01ac6f782c18ed546f406a7cccd5301ad843120",
+      "pngSha256": "4371a456a792b4ff3e00957f91550d56bca65fe6b8c2069a78aa0f69bbb45dfe"
+    }
+  ],
+  "inputHashes": {
+    "src/render/world.ts": "b9b695b9cecda54f60113295c92dd37dd911eb5f9802b116e07981fa762ea825",
+    "src/render/surfaces.ts": "059ca3a037539d46047e2a06881769d05491a76543cc892ce5440277e4df7ff0",
+    "scripts/reflection-bake/producer.ts": "71effdd93a14a3e00d61b37c81178aa58f0f9c9ffbc91a08b8e7cd1b2a30e504",
+    "scripts/reflection-bake/capture.ts": "f4ad4f95115ee2d991c1b1b57871e88cb0890477fa7f451f81ce03a4816ada86",
+    "scripts/reflection-bake/index.html": "f6137ccc8ff1bab2577eb7fd5786f0b78bb7b00231f77fcf75f3dabc242ea9cb",
+    "public/assets/marble-albedo.png": "c00c5a61e6693e2ec5a0b4754225561c43d23275d48f2cae00ce51230244b9aa",
+    "scripts/pack-reflection.py": "7d7b31adb5ba34cad1216e932e5f25243b38a359855849b84d202c2accd2143a",
+    "scripts/bake-reflections.mjs": "1a195e7a133f2e3e241bf2f9198c9e895d5c8b32cd71c57214173cef60ed9185",
+    "node_modules/three/package.json": "1d5c438acdc1fe5a52fb8ede2e417afd91fec91d22275c40f7b739591b24e4df"
+  },
+  "threeVersion": "0.185.1",
+  "producerParameters": {
+    "baseRoomSigma": 0.04,
+    "sigma": 0.035,
+    "near": 0.15,
+    "far": 100,
+    "position": [
+      0,
+      1.2,
+      0
+    ],
+    "worldTime": 0,
+    "worldPulse": 0
+  },
+  "platform": {
+    "browser": "152.0.7977.77",
+    "platform": "Win32",
+    "devicePixelRatio": 1,
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "sourceBuild": {
+    "buildId": "945a21cfef859d0fa1f96c9b9016d6cc93d73d20d1fbdbc8fe228ab8cc6cd737"
+  }
+}

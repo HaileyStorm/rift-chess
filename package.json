@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build && node scripts/prepare-static.mjs",
+    "build": "node scripts/verify-reflections.mjs && tsc --noEmit && vite build && node scripts/prepare-static.mjs",
     "test": "vitest run",
     "desktop": "npm run build && electron .",
     "package": "npm run build && node scripts/package-electron.mjs",

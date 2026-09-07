@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
@@ -12,6 +11,8 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { createPiece, disposePieceAssets, type PieceFamily, type MaterialStyle } from './pieces';
 import { buildWorld, type BuiltWorld } from './world';
 import { loadStoneTexture, applyStoneDetail } from './surfaces';
+import { ReflectionMapLoader } from './reflections';
+import reflectionManifest from '../../public/assets/reflections/manifest.json';
 import type { Position, Action } from '../engine/types';
 import { squareIndex, macroIndex, macroOfSquare, macroSquares, inCheck } from '../engine/position';
 
@@ -51,7 +52,7 @@ export class BoardScene {
   private stoneTexture: THREE.Texture;
   private surfaceReady: Promise<void>;
   private surfaceLoaded = false;
-  private reflectionCache = new Map<string, THREE.WebGLRenderTarget>();
+  private reflections: ReflectionMapLoader;
   private assetError: string | null = null;
   private effects = new THREE.Group();
   private geometryCache = new Map<string, THREE.BufferGeometry>();
@@ -79,7 +80,6 @@ export class BoardScene {
   private dragged = false;
   private cameraInteracting = false;
   private animation: { start: number | null; duration: number; update: (t: number) => void; finish: () => void } | null = null;
-  private environment: THREE.WebGLRenderTarget;
   private preset: CameraPreset = 'white';
   private lastFrame = 0;
   private frameTimes: number[] = [];
@@ -96,7 +96,8 @@ export class BoardScene {
 
   constructor(private container: HTMLElement, private onPick: (square: number, tile: number, kind?: 'piece' | 'tile' | 'shift') => void) {
     const stone = loadStoneTexture(); this.stoneTexture = stone.texture;
-    this.surfaceReady = stone.ready.then(() => { this.surfaceLoaded = true; if (!this.disposed) { this.applyWorldReflection(); return this.prepareScene(); } });
+    this.reflections = new ReflectionMapLoader(reflectionManifest);
+    this.surfaceReady = Promise.all([stone.ready, this.reflections.ready]).then(() => { this.surfaceLoaded = true; if (!this.disposed) { this.applyReflection(); return this.prepareScene(); } });
     void this.surfaceReady.catch(error => { this.assetError = error.message; });
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     const gl = this.renderer.getContext(), rendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
@@ -114,13 +115,6 @@ export class BoardScene {
     this.renderer.domElement.className = 'board-canvas';
     container.append(this.renderer.domElement);
     this.scene.add(this.board, this.furniture, this.highlights, this.effects);
-    const pmrem = new THREE.PMREMGenerator(this.renderer);
-    const room = new RoomEnvironment();
-    this.environment = pmrem.fromScene(room, 0.04);
-    this.scene.environment = this.environment.texture;
-    this.scene.environmentIntensity = 0.4;
-    room.dispose();
-    pmrem.dispose();
     const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
     this.composer = new EffectComposer(this.renderer, target);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
@@ -363,23 +357,13 @@ export class BoardScene {
     this.renderer.toneMappingExposure = this.world.exposure; this.scene.environmentIntensity = this.world.environmentIntensity;
     const labelColor = this.appearance.theme === 'daylight' ? '#59432b' : '#dfc897';
     this.furniture.add(this.label(labelColor));
-    if (this.surfaceLoaded) this.applyWorldReflection();
+    if (this.surfaceLoaded) this.applyReflection();
   }
 
-  private applyWorldReflection() {
-    const key = `${this.appearance.theme}:${this.appearance.quality}`;
-    let reflection = this.reflectionCache.get(key);
-    if (!reflection) {
-      const excluded = [this.board, this.furniture, this.highlights, this.effects]; const visibility = excluded.map(group => group.visible);
-      excluded.forEach(group => { group.visible = false; }); this.scene.environment = this.environment.texture;
-      this.world?.tick(0, true); this.world?.react(0);
-      const generator = new THREE.PMREMGenerator(this.renderer);
-      try {
-        reflection = generator.fromScene(this.scene, .035, .15, 100, { size: this.appearance.quality === 'high' ? 256 : 128, position: new THREE.Vector3(0, 1.2, 0) });
-        this.reflectionCache.set(key, reflection);
-      } finally { excluded.forEach((group, index) => { group.visible = visibility[index]!; }); this.renderer.shadowMap.needsUpdate = true; generator.dispose(); }
-    }
-    this.scene.environment = reflection.texture;
+  private applyReflection() {
+    const reflection = this.reflections.get(this.appearance.theme, this.appearance.quality);
+    if (!reflection) throw new Error('The bundled table lighting is unavailable.');
+    this.scene.environment = reflection;
   }
 
   private buildBoard(position: Position) {
@@ -890,7 +874,7 @@ export class BoardScene {
     this.geometryCache.forEach(geometry => geometry.dispose()); this.materialCache.forEach(material => material.dispose()); this.geometryCache.clear(); this.materialCache.clear();
     this.fadeMaterials.forEach(pool => pool.forEach(lease => lease.material.dispose())); this.fadeMaterials.clear();
     if (this.composer) { for (const pass of this.composer.passes) pass.dispose(); this.composer.dispose(); }
-    this.reflectionCache.forEach(reflection => reflection.dispose()); this.reflectionCache.clear();
-    disposePieceAssets(); this.environment.dispose(); this.stoneTexture.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
+    this.reflections.dispose();
+    disposePieceAssets(); this.stoneTexture.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }

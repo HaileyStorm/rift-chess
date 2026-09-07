@@ -1,0 +1,45 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const directory = path.join(root, 'public/assets/reflections');
+const manifest = JSON.parse(await fs.readFile(path.join(directory, 'manifest.json'), 'utf8'));
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const digest = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+const inputs = ['src/render/world.ts', 'src/render/surfaces.ts', 'scripts/reflection-bake/producer.ts', 'scripts/reflection-bake/capture.ts', 'scripts/reflection-bake/index.html', 'public/assets/marble-albedo.png', 'scripts/pack-reflection.py', 'scripts/bake-reflections.mjs', 'node_modules/three/package.json'];
+assert.equal(manifest.schema, 'rift-reflections/1');
+assert.equal(manifest.encoding, 'rgba16le-rgb8-triplets/1');
+assert.deepEqual(Object.keys(manifest.inputHashes ?? {}).sort(), inputs.sort(), 'Reflection source binding is incomplete');
+for (const input of inputs) assert.equal(hash(await fs.readFile(path.join(root, input))), manifest.inputHashes[input], `Reflection source changed: ${input}. Re-bake to a fresh directory before adopting new assets.`);
+const installed = JSON.parse(await fs.readFile(path.join(root, 'node_modules/three/package.json'), 'utf8'));
+assert.equal(manifest.threeVersion, installed.version);
+assert.equal(JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8')).dependencies.three, installed.version, 'Reflection renderer must use the exact declared Three version');
+assert.ok(digest(manifest.sourceBuild?.buildId), 'Reflection source build is not identified');
+assert.deepEqual(manifest.texture, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, mapping: THREE.CubeUVReflectionMapping, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, wrapS: THREE.ClampToEdgeWrapping, wrapT: THREE.ClampToEdgeWrapping, anisotropy: 1, colorSpace: THREE.LinearSRGBColorSpace, generateMipmaps: false, flipY: false, premultiplyAlpha: false, unpackAlignment: 4 });
+assert.deepEqual(manifest.producerParameters, { baseRoomSigma: .04, sigma: .035, near: .15, far: 100, position: [0, 1.2, 0], worldTime: 0, worldPulse: 0 });
+const expected = new Set(['gallery', 'nocturne', 'daylight'].flatMap(theme => ['low', 'balanced', 'high'].map(quality => `${theme}-${quality}`)));
+assert.equal(manifest.entries?.length, expected.size);
+let totalBytes = 0;
+for (const entry of manifest.entries) {
+  const key = `${entry.theme}-${entry.quality}`;
+  assert.ok(expected.delete(key), `Unexpected or duplicate reflection ${key}`);
+  assert.equal(entry.file, `${key}.png`);
+  assert.equal(entry.width, entry.quality === 'high' ? 768 : 384);
+  assert.equal(entry.height, entry.quality === 'high' ? 1024 : 512);
+  assert.ok(digest(entry.texelSha256) && digest(entry.pngSha256));
+  const bytes = await fs.readFile(path.join(directory, entry.file));
+  assert.equal(hash(bytes), entry.pngSha256, `Packed reflection changed: ${entry.file}`);
+  assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(bytes.toString('ascii', 12, 16), 'IHDR');
+  assert.equal(bytes.readUInt32BE(16), entry.width * 3);
+  assert.equal(bytes.readUInt32BE(20), entry.height);
+  assert.equal(bytes[24], 8); assert.equal(bytes[25], 2); assert.equal(bytes[28], 0);
+  totalBytes += bytes.length;
+}
+assert.equal(expected.size, 0);
+assert.deepEqual((await fs.readdir(directory)).sort(), ['manifest.json', ...manifest.entries.map(entry => entry.file)].sort(), 'Unexpected reflection files would enter the public bundle');
+console.log(`Verified 9 source-bound reflection PNGs (${totalBytes} encoded bytes). Raw texel hashes are checked by the browser loader.`);
