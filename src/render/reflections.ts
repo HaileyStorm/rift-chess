@@ -239,6 +239,7 @@ export class ReflectionMapLoader {
       cancel = () => {
         image.onload = null;
         image.onerror = null;
+        image.removeAttribute('src');
         settle(() => reject(this.terminal ?? new Error('Reflection map loader was cancelled.')));
       };
       this.pending.add(cancel);

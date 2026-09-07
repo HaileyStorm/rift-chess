@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import { decodeReflectionPng } from './reflection-png.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const directory = path.join(root, 'public/assets/reflections');
@@ -33,13 +34,9 @@ for (const entry of manifest.entries) {
   assert.ok(digest(entry.texelSha256) && digest(entry.pngSha256));
   const bytes = await fs.readFile(path.join(directory, entry.file));
   assert.equal(hash(bytes), entry.pngSha256, `Packed reflection changed: ${entry.file}`);
-  assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
-  assert.equal(bytes.toString('ascii', 12, 16), 'IHDR');
-  assert.equal(bytes.readUInt32BE(16), entry.width * 3);
-  assert.equal(bytes.readUInt32BE(20), entry.height);
-  assert.equal(bytes[24], 8); assert.equal(bytes[25], 2); assert.equal(bytes[28], 0);
+  assert.equal(hash(decodeReflectionPng(bytes, entry.width, entry.height)), entry.texelSha256, `Decoded reflection changed: ${entry.file}`);
   totalBytes += bytes.length;
 }
 assert.equal(expected.size, 0);
 assert.deepEqual((await fs.readdir(directory)).sort(), ['manifest.json', ...manifest.entries.map(entry => entry.file)].sort(), 'Unexpected reflection files would enter the public bundle');
-console.log(`Verified 9 source-bound reflection PNGs (${totalBytes} encoded bytes). Raw texel hashes are checked by the browser loader.`);
+console.log(`Verified 9 source-bound reflection PNGs and decoded texel hashes (${totalBytes} encoded bytes).`);

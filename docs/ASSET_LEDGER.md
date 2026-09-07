@@ -40,8 +40,14 @@ The PNGs are lossless data containers: three opaque RGB pixels carry each RGBA
 half-float texel's eight bytes and one zero padding byte. They are not pictures to
 display directly. The nine files total 7,737,561 encoded bytes and reconstruct
 27 MiB of texels. The loader verifies each raw checksum before creating its
-HalfFloat CubeUV texture; all nine maps load before the first useful frame.
+HalfFloat CubeUV texture; all nine maps decode on the CPU before the first useful
+frame. GPU upload occurs on first binding. First selection of each world/quality
+still includes shader preparation and upload; synchronous lookup does not mean
+instantaneous configuration.
 
+The standalone manifest is retained for independently retrievable asset and
+source verification in browser and Windows distributions. Runtime embeds the
+same manifest because the native content policy forbids renderer fetches.
 The manifest records source hashes, Three version, producer parameters, renderer,
 encoded/raw hashes and the frozen tool build. The initial producer ran on Windows
 build 26200, Iris Xe driver 32.0.101.7026. All nine maintained-producer outputs
@@ -58,7 +64,7 @@ The build tool requires the project's Node dependencies, installed Chrome, and
 Python with Pillow. It builds and owns a temporary local preview server, checks
 the served module and stone bytes, and produces a fresh receipt. Inspect and
 verify the output before replacing the public PNGs and manifest. Normal
-`npm run build` verifies source and encoded asset hashes without running a GPU
+`npm run build` verifies source, encoded asset and decoded texel hashes without running a GPU
 bake. Never edit hashes to waive a stale or corrupt asset.
 
 Runtime Room PMREM generation and its render-target cache are removed. The
