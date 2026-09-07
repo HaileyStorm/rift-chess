@@ -2,6 +2,8 @@
 
 Status: planned; implementation and acceptance are pending. This plan is the completion contract for the requested persistent Goal.
 
+Owner correction: repairing pieces and improving the UI is insufficient. A substantial, explicit WOW factor is mandatory. The experiential requirements below are part of the Goal and cannot be traded away once the defect checks turn green.
+
 ## Why the previous release failed
 
 The owner rejected v1.0.0: insufficient visual ambition, apparent missing/transparent/clipping patches on pieces, poor UI/UX, and a loaded tile that could not be Shifted through the attempted interaction, with no visible movability indication. These are release-quality failures. The earlier visual sign-off is superseded by this feedback. Historical receipts remain unchanged as evidence of what was actually tested; they do not establish satisfactory usability or visual quality.
@@ -32,6 +34,17 @@ Exit: a prioritized reproducible defect list with evidence, owners and regressio
 
 Direction: a precision-built kinetic chess instrument with sculptural pieces, a substantial mechanical frame, layered floating platforms and a visibly deep rift. The board must look striking at first launch and clear at playing distance.
 
+### Mandatory flagship experiences: beyond a repaired chess board
+
+1. **A memorable entrance into a real 3D world.** Compose a title/launch scene around the actual live board and its setting. An establishing camera move should reveal its structure and the rift, then settle into a usable playing view. Resume/New match remain immediate; Explore table is optional; Skip and reduced motion bypass travel. This is original in-game scene work, not a static illustration standing in for the renderer.
+2. **Three distinct architectural worlds.** Gallery is a suspended stone-and-bronze instrument in a sculptural chamber with broad window light; Nocturne is an observatory with large spatial forms, a celestial backdrop and luminous depth; Daylight is an open architectural stone setting with sunlit surfaces, atmospheric distance and a different sense of space. Build composition, geometry, lighting and atmosphere for each. Three background colors, a shared floor with recoloring, or a few particles do not satisfy this requirement.
+3. **The rift as the centerpiece.** Give the void perceptible depth and layered structure, visible mechanical/energy workings beneath the board, and restrained reactive illumination. Platforms must appear suspended over it, with convincing undersides, couplings and rail/inlay construction. The rift must be legible at normal play distance, impressive in the establishing view and coherent in close-up; it cannot read as a flat black rectangle.
+4. **A signature loaded-Shift sequence.** Selection visibly engages the platform; destination preview connects source and hole; the platform lifts/releases, travels with a stable passenger, and seats with a short reactive light/mechanical response. Camera-independent readability and atomic rules remain controlling. This sequence is a flagship visual moment, not merely a box translated by 2 units. Reduced motion conveys the same operation without the travel.
+5. **A consistent visual language for consequential moments.** Authored capture, promotion and check feedback should feel part of the world's material/energy system, with brief contact/reveal/settling choreography and clear state. A promotion should visibly transform the piece; capture should not merely shrink a mesh into the floor. Effects may not obscure tactical information or create long unskippable cutscenes.
+6. **Craft visible at every scale.** Original sculptural families, dimensional material detail, bevel highlights, layered tile construction, readable inlays, grounding/contact and subtle ambient movement must hold together from full scene to individual-piece inspection. Readable gameplay should benefit from the art direction rather than require turning the scene's character off.
+
+These are actual implementation requirements. Investigate economical rendering techniques, procedural original assets and available modeling tools, but do not shrink the deliverable to whatever the current geometry helpers already make easy. Optional sound is not a substitute for the visual work.
+
 - Rebuild the board's proportions, framing, macro-tile construction, bevels, inlays, undersides and cavity. Tile movement should reveal convincing depth and guided mechanical motion. Use restrained light within the rift to make its form legible, while maintaining clear square/piece contrast.
 - Replace the flat backdrop/color-swap treatment with three composed environments: a warm sculptural gallery, a dark observatory, and a bright architectural stone setting. Keep their geometry, lighting and atmosphere cohesive and the active board unobscured.
 - Rebuild both piece families as deliberate sculpture: flowing turned forms and dimensional sculpted knights for Classic; distinct planar, architectural forms for Faceted. Require unmistakable pawn/rook/knight/bishop/queen/king silhouettes from both sides and above. A low-sided copy of the same silhouette alone is insufficient differentiation.
@@ -41,6 +54,8 @@ Direction: a precision-built kinetic chess instrument with sculptural pieces, a 
 Build one vertical slice first: a complete board, all six piece types in both colors, one environment, normal play and one loaded Shift. Inspect it at multiple scales before multiplying themes. Use installed modeling tools only after checking their availability; use original closed geometry/assets with explicit provenance. Never accept a concept render or generated illustration as proof of the actual game.
 
 Exit: a materially redesigned playable scene with coherent composition, strong silhouettes and a readable moving-board identity. Main-thread and independent visual review must inspect actual captures and record concrete defects. No self-assigned aesthetic score can substitute for that review; user dissatisfaction is not overruled by technical checks.
+
+**Separate WOW-factor gate:** capture and inspect actual in-game footage of entrance/exploration, each world, a loaded Shift, capture and promotion, plus matched v1/new gameplay views. Require substantive change in composition, environmental depth, kinetic identity, sculptural craftsmanship and event choreography. Review must explicitly address all six flagship experiences. Fixed triangles, prettier CSS, more polygons, a contact sheet, or technical correctness alone cannot pass this gate. Present the real footage/captures to the owner for assessment without treating silence as approval or claiming subjective quality is mechanically proven.
 
 ## 3. Rebuild interaction and information hierarchy
 
@@ -114,4 +129,4 @@ Progress milestones are evidence-based: baseline/reproduction 10%; accepted vert
 
 Before completion, audit and remove replaced geometry builders, redundant mode/state representations, stale instructions, obsolete visual tests, temporary diagnostic paths and old app screenshots used as current marketing. Preserve immutable original research and previous-release evidence with clear historical labels. Keep only named compatibility obligations for saves/API, not duplicate UI implementations.
 
-Do not mark the Goal complete because time, tokens or a screenshot batch ran out, because a reviewer liked one image, or because unit tests passed. Completion requires the visual redesign, geometry fixes, visible reliable Shift interaction, complete screenshot/retest hierarchy, full real-UI playthrough matrix, and verified new public/Windows releases. Surface blockers precisely and continue independent work; do not lower the requested standard silently.
+Do not mark the Goal complete because time, tokens or a screenshot batch ran out, because a reviewer liked one image, or because unit tests passed. Completion requires all six flagship WOW experiences and their separate experiential review, the visual redesign, geometry fixes, visible reliable Shift interaction, complete screenshot/retest hierarchy, full real-UI playthrough matrix, and verified new public/Windows releases. Surface blockers precisely and continue independent work; do not lower the requested standard silently.
