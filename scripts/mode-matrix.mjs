@@ -7,6 +7,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import assert from 'node:assert/strict';
 import { createUiDriver } from './ui-driver.mjs';
+import { HeadlessApi } from '../dist/api.js';
 
 const base = process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/';
 const execFileAsync = promisify(execFile);
@@ -88,6 +89,18 @@ function classify(position, actions) {
   });
   return { empty, loaded, ordinary };
 }
+function holePreparation(position, actions) {
+  const probe = new HeadlessApi();
+  return uniqueShiftActions(actions).find(action => {
+    const source = macroIndex(action.from);
+    if (!macroSquares(source).every(square => position.board[square] === 0)) return false;
+    // This isolated heuristic anticipates our next turn; the real bot reply and
+    // every real commitment are still observed and revalidated through the UI.
+    const initial = { ...structuredClone(position), holes: position.holes ^ (1 << source) ^ (1 << macroIndex(action.to)), ep_target: -1, ep_pawn: -1 };
+    probe.load({ ...probe.exportRecord(), initial, actions: [], draw_offer: null, override: null, final_position_hash: fixturePositionHash(initial) });
+    return Boolean(classify(initial, probe.legalActions().actions).ordinary);
+  });
+}
 async function cancelAndReselect(row, action) {
   if (row.steps.cancelReselect !== 'pending') return;
   const intent = action.type === 'move' ? '#move-mode' : '#shift-mode';
@@ -106,7 +119,10 @@ async function commitNatural(row, action, kind) {
     if (passenger === undefined) return false;
     await driver.performPassengerShift({ passenger: squareName(passenger), to: current.to, promotion: current.promotion });
   } else await driver.perform(current);
-  await snapshot(row, `natural-${kind}`); row.steps[kind === 'empty' ? 'emptyShift' : kind === 'loaded' ? 'loadedShift' : 'ordinary'] = 'complete';
+  await snapshot(row, `natural-${kind}`);
+  if (kind === 'empty') row.steps.emptyShift = 'complete';
+  else if (kind === 'loaded') row.steps.loadedShift = 'complete';
+  else if (kind === 'ordinary') row.steps.ordinary = 'complete';
   return true;
 }
 async function advanceHotseat(row) {
@@ -121,10 +137,13 @@ async function naturalCoverage(row) {
     await controlled(row); const { observation } = await snapshot(row, row.value === 'hotseat' ? 'hotseat-turn' : 'bot-reply-or-human-turn');
     if (row.steps.ordinary === 'complete' && row.steps.emptyShift === 'complete' && row.steps.loadedShift === 'complete' && row.steps.cancelReselect === 'complete') return true;
     if (observation.outcome) break;
-    const candidates = classify(observation.position, await legal());
+    const actions = await legal(), candidates = classify(observation.position, actions);
+    const reposition = row.steps.loadedShift === 'pending' && row.steps.ordinary === 'complete' && !candidates.ordinary ? holePreparation(observation.position, actions) : null;
     const missing = row.steps.loadedShift === 'pending' && candidates.loaded ? ['loaded', candidates.loaded]
       : row.steps.emptyShift === 'pending' && candidates.empty ? ['empty', candidates.empty]
-        : candidates.ordinary && (row.steps.ordinary === 'pending' || row.steps.loadedShift === 'pending') ? ['ordinary', candidates.ordinary] : null;
+        : row.steps.ordinary === 'pending' && candidates.ordinary ? ['ordinary', candidates.ordinary]
+          : reposition ? ['hole-preparation', reposition]
+            : row.steps.loadedShift === 'pending' && candidates.ordinary ? ['ordinary', candidates.ordinary] : null;
     if (!missing) {
       if (row.value === 'hotseat' && await advanceHotseat(row)) continue;
       break;
