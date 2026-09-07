@@ -96,6 +96,34 @@ try {
     receipt.probes.push({ label: 'rapid-A-B-C', evidence: 'renderer API stress probe; no game action dispatched', ...stress }); assert.deepEqual(stress.results, ['fulfilled', 'fulfilled', 'fulfilled']); assert.equal(stress.metrics.pendingSceneReadiness, 0); assert.equal(stress.metrics.quality, 'high');
     await newMatch(); await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null }); assert.equal((await driver.observation()).revision, 1); await page.locator('#settings').click(); const settings = page.locator('#settings-dialog'); assert.equal(await settings.locator('[name="theme"]').inputValue(), 'daylight'); assert.equal(await settings.locator('[name="family"]').inputValue(), 'classic'); assert.equal(await settings.locator('[name="material"]').inputValue(), 'wood'); assert.equal(await settings.locator('[name="quality"]').inputValue(), 'high'); await page.keyboard.press('Escape');
   });
+  await test('check pulse stops on reduced motion and future checks retain only the static cue', async () => {
+    const board = Array(64).fill(0); board[0] = 6; board[63] = -6; board[27] = 4;
+    const fixture = { board, holes: 144, side: 1, castling: 0, ep_target: -1, ep_pawn: -1, halfmove: 0, fullmove: 1 };
+    await probe('check-event-motion-enabled', { reducedMotion: false }); await driver.loadScenario(fixture);
+    await page.evaluate(() => {
+      window.__checkPulseSnap = new Promise((resolve, reject) => {
+        const deadline = performance.now() + 10000;
+        function observe() {
+          const before = window.rift.metrics();
+          if (before.checkPulseActive) {
+            const record = window.rift.exportRecord();
+            window.rift.configureAppearance({ reducedMotion: true });
+            const immediate = window.rift.metrics();
+            window.rift.assetsReady().then(() => resolve({ before, immediate, record, afterRecord: window.rift.exportRecord() }), reject);
+          } else if (performance.now() > deadline) reject(new Error('No active check pulse observed after the real checking move'));
+          else requestAnimationFrame(observe);
+        }
+        requestAnimationFrame(observe);
+      });
+    });
+    await driver.perform({ type: 'move', from: 'd4', to: 'd8', promotion: null });
+    const snap = await page.evaluate(() => window.__checkPulseSnap);
+    assert.equal(snap.before.checkPulseActive, true); assert.equal(snap.immediate.checkPulseActive, false); assert.deepEqual(snap.afterRecord, snap.record);
+    await driver.loadScenario(fixture); await driver.perform({ type: 'move', from: 'd4', to: 'd8', promotion: null });
+    assert.equal((await driver.metrics()).checkPulseActive, false); assert.match(await page.locator('#check').innerText(), /Black is in check/);
+    await page.screenshot({ path: path.join(root, 'reduced-motion-check.png') });
+    receipt.probes.push({ label: 'check-pulse-reduced-motion', evidence: 'Labelled sparse fixture setup; both checking moves use actual rendered clicks. Renderer API stress disables reduced-motion travel during an observed active pulse.', snap });
+  });
   receipt.finalBuild = await servedPrecache(); assert.deepEqual(receipt.finalBuild, receipt.build); assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
 } catch (error) { receipt.status = 'fail'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message); await page.screenshot({ path: path.join(root, 'failure.png') }).catch(() => {}); }
 finally { receipt.finished = new Date().toISOString(); await persist(); await context.close(); await browser.close(); console.log(JSON.stringify({ status: receipt.status, checks: receipt.checks })); }

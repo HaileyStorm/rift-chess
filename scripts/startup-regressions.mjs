@@ -58,6 +58,12 @@ async function assertStablePresentation(page, expected, label) {
   return state;
 }
 
+function assertPlayCamera(state, destination) {
+  assert.equal(state.metrics.cameraTravelling, false);
+  assert.equal(state.metrics.cameraTravelDestination, null);
+  assert.ok(Math.hypot(...state.metrics.cameraPosition.map((value, index) => value - destination[index])) < .0001, 'Play must settle at its chosen camera endpoint, not a late entrance endpoint');
+}
+
 function deferred() {
   let release;
   const promise = new Promise(resolve => { release = resolve; });
@@ -126,12 +132,19 @@ try {
       assert.ok(held, 'The texture must be held to prove this is a pre-readiness choice');
       assert.ok(await page.locator('#startup').isVisible());
       await action(page);
-      assert.equal((await presentation(page)).mode, expected);
+      const choice = await presentation(page);
+      assert.equal(choice.mode, expected);
+      const chosenEndpoint = choice.metrics.cameraTravelDestination ?? choice.metrics.cameraPosition;
       texture.release();
       const state = await assertStablePresentation(page, expected, `early ${name}`);
-      if (name === 'explore') { await page.locator('#launch-return').click(); await assertStablePresentation(page, 'play', 'return after early explore'); }
+      if (expected === 'play') assertPlayCamera(state, chosenEndpoint);
+      if (name === 'explore') {
+        await page.locator('#launch-return').click();
+        const returned = await presentation(page), endpoint = returned.metrics.cameraTravelDestination ?? returned.metrics.cameraPosition;
+        assertPlayCamera(await assertStablePresentation(page, 'play', 'return after early explore'), endpoint);
+      }
       assert.deepEqual(await servedPrecache(page), receipt.build.start);
-      receipt.checks.push({ name: `early-${name}`, bootstrapMs, textureHeldBeforeChoice: held, presentation: state.mode, cameraTravelling: state.metrics.cameraTravelling });
+      receipt.checks.push({ name: `early-${name}`, bootstrapMs, textureHeldBeforeChoice: held, presentation: state.mode, cameraTravelling: state.metrics.cameraTravelling, chosenEndpoint, settledCamera: state.metrics.cameraPosition });
       await persist();
     } finally {
       texture.release();
@@ -237,12 +250,11 @@ try {
     allowingSeedWorkerCancellation = true;
     seedGate.release();
     await waitForRelease(seedRouteDone.promise, 'Held seed worker did not settle after bounded release.');
-    allowingSeedWorkerCancellation = false;
-
     workerMode = 'reload';
     await persistent.route('**/assets/marble-albedo.png*', stoneRoute);
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 });
     await waitForRift(page);
+    allowingSeedWorkerCancellation = false;
     await waitFor(() => stoneRequests === 1, 'The reload must hold the stone texture before assets become ready.');
     assert.deepEqual(await driver.record(), savedBotTurn, 'Reload must restore the saved bot-to-move record before assets are ready.');
     await page.waitForTimeout(250);
