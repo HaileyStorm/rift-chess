@@ -18,8 +18,10 @@ try {
     for (const diagnostic of ['neutral', 'normal', 'depth', 'wireframe']) configurations.push({ family, view, material: 'ceramic', diagnostic, shadows: false, zoom: 1 });
     configurations.push({ family, view, material: 'ceramic', diagnostic: 'neutral', shadows: true, zoom: 1 });
   }
+  if (process.env.RIFT_INSPECTION_ORBIT === '1') for (const family of ['classic', 'faceted']) for (let azimuth = 0; azimuth < 360; azimuth += 22.5) configurations.push({ family, view: 'three-quarter', material: 'ceramic', diagnostic: 'material', shadows: true, zoom: 1, azimuth });
+  if (process.env.RIFT_INSPECTION_SHADOW_VARIANTS === '1') for (const family of ['classic', 'faceted']) for (const [shadowBias, normalBias] of [[.00015, .03], [.00025, .003], [.00035, 0], [.0001, .005]]) configurations.push({ family, view: 'three-quarter', material: 'ceramic', diagnostic: 'neutral', shadows: true, zoom: 1, azimuth: 135, shadowBias, normalBias });
   for (const config of configurations) {
-    const name = [config.family, config.view, config.material, config.diagnostic, config.shadows ? 'shadow' : 'no-shadow'].join('-');
+    const name = [config.family, config.azimuth === undefined ? config.view : `orbit-${config.azimuth}`, config.material, config.diagnostic, config.shadows ? 'shadow' : 'no-shadow', ...(config.shadowBias === undefined ? [] : [`bias-${config.shadowBias}-${config.normalBias}`])].join('-');
     if (process.env.RIFT_INSPECTION_FILTER && !new RegExp(process.env.RIFT_INSPECTION_FILTER).test(name)) continue;
     const actual = await page.evaluate(config => window.inspectPieces.render(config), config); await page.screenshot({ path: path.join(root, name + '.png') });
     receipt.sheets.push({ name, config, actual, pieces: 12 });

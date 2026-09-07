@@ -20,6 +20,7 @@ async function lesson() {
 }
 try {
   await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/'); await page.waitForFunction(() => Boolean(window.rift));
+  await page.evaluate(() => window.rift.assetsReady());
   receipt.build = await page.evaluate(async () => { const response = await fetch('./precache.json', { cache: 'no-store' }); if (!response.ok) throw new Error('Build identity unavailable'); return response.json(); });
   await page.waitForTimeout(800); await capture('entrance'); await page.locator('#launch-skip').click();
   assert.equal(await page.locator('#replay-controls').isVisible(), false);

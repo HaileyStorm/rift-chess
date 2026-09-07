@@ -8,7 +8,7 @@ type PieceKind = 'pawn' | 'knight' | 'bishop' | 'rook' | 'queen' | 'king';
 type AssetPart = {
   geometry: THREE.BufferGeometry;
   name: string;
-  intentionalOpenings?: readonly string[];
+  tint?: number;
 };
 
 type CachedPieceAsset = {
@@ -142,21 +142,55 @@ function solidExtrusion(points: ReadonlyArray<readonly [number, number]>, depth:
   });
 }
 
-function bishopMitre(family: PieceFamily): THREE.ExtrudeGeometry {
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.18, 0.70); shape.quadraticCurveTo(-0.17, 0.99, 0, 1.17);
-  shape.quadraticCurveTo(0.17, 0.99, 0.18, 0.70); shape.quadraticCurveTo(0, 0.65, -0.18, 0.70);
-  const slot = new THREE.Path();
-  slot.moveTo(-0.12, 0.78); slot.lineTo(0.115, 1.02); slot.lineTo(0.115, 0.94); slot.lineTo(-0.08, 0.74); slot.closePath();
-  shape.holes.push(slot);
-  return new THREE.ExtrudeGeometry(shape, {
-    depth: family === 'classic' ? 0.24 : 0.30,
-    bevelEnabled: family === 'classic',
-    bevelThickness: family === 'classic' ? 0.012 : 0,
-    bevelSize: family === 'classic' ? 0.008 : 0,
-    bevelSegments: family === 'classic' ? 2 : 0,
-    curveSegments: family === 'classic' ? 8 : 1,
-  });
+function clipSolid(geometry: THREE.BufferGeometry, plane: THREE.Plane): THREE.BufferGeometry {
+  const position = geometry.getAttribute('position'), normals = geometry.getAttribute('normal'), index = geometry.getIndex();
+  type Vertex = { p: THREE.Vector3; n: THREE.Vector3 };
+  const points: number[] = [], directions: number[] = [], rim = new Map<string, THREE.Vector3>();
+  const vertex = (offset: number): Vertex => { const i = index ? index.getX(offset) : offset; return { p: new THREE.Vector3().fromBufferAttribute(position, i), n: new THREE.Vector3().fromBufferAttribute(normals, i) }; };
+  const emit = (a: Vertex, b: Vertex, c: Vertex) => {
+    if (b.p.clone().sub(a.p).cross(c.p.clone().sub(a.p)).lengthSq() < 1e-26) return;
+    for (const value of [a, b, c]) { points.push(...value.p.toArray()); directions.push(...value.n.toArray()); }
+  };
+  for (let offset = 0; offset < (index?.count ?? position.count); offset += 3) {
+    const triangle = [vertex(offset), vertex(offset + 1), vertex(offset + 2)], clipped: Vertex[] = [];
+    for (let edge = 0; edge < 3; edge++) {
+      const a = triangle[edge], b = triangle[(edge + 1) % 3];
+      const da = plane.distanceToPoint(a.p), db = plane.distanceToPoint(b.p);
+      if (da <= 0) clipped.push(a);
+      if ((da < 0 && db > 0) || (da > 0 && db < 0)) {
+        const t = da / (da - db), p = a.p.clone().lerp(b.p, t), n = a.n.clone().lerp(b.n, t).normalize();
+        clipped.push({ p, n }); rim.set(p.toArray().map(v => v.toFixed(7)).join(','), p);
+      }
+    }
+    for (let i = 1; i + 1 < clipped.length; i++) emit(clipped[0], clipped[i], clipped[i + 1]);
+  }
+  // The source and all subsequent half-space intersections are convex, so an ordered cap fan is exact.
+  if (rim.size >= 3) {
+    const boundary = [...rim.values()], center = boundary.reduce((sum, p) => sum.add(p), new THREE.Vector3()).multiplyScalar(1 / boundary.length);
+    const normal = plane.normal.clone().normalize(), u = new THREE.Vector3(Math.abs(normal.x) < .8 ? 1 : 0, Math.abs(normal.x) < .8 ? 0 : 1, 0).cross(normal).normalize(), v = normal.clone().cross(u);
+    boundary.sort((a, b) => Math.atan2(a.clone().sub(center).dot(v), a.clone().sub(center).dot(u)) - Math.atan2(b.clone().sub(center).dot(v), b.clone().sub(center).dot(u)));
+    for (let i = 0; i < boundary.length; i++) emit({ p: center, n: normal }, { p: boundary[i], n: normal }, { p: boundary[(i + 1) % boundary.length], n: normal });
+  }
+  return new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(points, 3)).setAttribute('normal', new THREE.Float32BufferAttribute(directions, 3));
+}
+
+function sculptedBishopHead(family: PieceFamily): AssetPart[] {
+  const faceted = family === 'faceted';
+  const head = closedRevolution([[.10, .64], [.15, .73], [.185, .83], [.20, .93], [.17, 1.03], [.10, 1.12], [.015, 1.18]], faceted ? 12 : 48);
+  head.scale(1, 1, .90);
+  const length = Math.hypot(.65, 1), normal = new THREE.Vector3(-.65, 1, 0).normalize();
+  const lowerPlane = new THREE.Plane(normal, -.987 / length);
+  const upperPlane = new THREE.Plane(normal.clone().negate(), 1.033 / length);
+  const lower = clipSolid(head, lowerPlane), upper = clipSolid(head, upperPlane);
+  const middleA = clipSolid(head, lowerPlane.clone().negate());
+  const middleB = clipSolid(middleA, upperPlane.clone().negate());
+  const bridge = clipSolid(middleB, new THREE.Plane(new THREE.Vector3(0, 0, 1), .071));
+  head.dispose(); middleA.dispose(); middleB.dispose();
+  return [
+    { geometry: lower, name: `${family}-bishop-closed-carved-mitre-lower` },
+    { geometry: upper, name: `${family}-bishop-closed-carved-mitre-upper` },
+    { geometry: bridge, name: `${family}-bishop-closed-carved-mitre-bridge` },
+  ];
 }
 
 function classicBody(kind: Exclude<PieceKind, 'knight'>): THREE.BufferGeometry {
@@ -187,6 +221,35 @@ function addClassicCollars(parts: AssetPart[], y: number, radius: number): void 
   parts.push({ geometry: collar, name: 'classic-segmented-collar' });
 }
 
+function bevelledBlock(width: number, height: number, depth: number, bevel: number): THREE.ExtrudeGeometry {
+  const geometry = solidExtrusion([[-width / 2, -height / 2], [width / 2, -height / 2], [width / 2, height / 2], [-width / 2, height / 2]], depth, bevel);
+  geometry.translate(0, 0, -depth / 2);
+  return geometry;
+}
+
+function maneRidge(family: PieceFamily): THREE.BufferGeometry {
+  const faceted = family === 'faceted';
+  return closedYLoft(faceted
+    ? [[-0.12, 0.42, 0.09, 0.065], [-0.19, 0.55, 0.085, 0.06], [-0.18, 0.69, 0.075, 0.058], [-0.11, 0.84, 0.06, 0.05], [-0.04, 0.96, 0.04, 0.035]]
+    : [[-0.11, 0.41, 0.085, 0.06], [-0.17, 0.50, 0.08, 0.058], [-0.19, 0.62, 0.075, 0.055], [-0.16, 0.75, 0.07, 0.052], [-0.10, 0.87, 0.058, 0.045], [-0.035, 0.98, 0.038, 0.032]], faceted ? 8 : 24);
+}
+
+function crossParts(family: PieceFamily): AssetPart[] {
+  const faceted = family === 'faceted';
+  const bevel = faceted ? 0 : 0.016;
+  const upright = bevelledBlock(0.10, 0.41, 0.13, bevel);
+  upright.translate(0, 1.10, 0);
+  const xArm = bevelledBlock(0.29, 0.09, 0.13, bevel);
+  xArm.translate(0, 1.17, 0);
+  const zArm = bevelledBlock(0.29, 0.09, 0.13, bevel);
+  zArm.rotateY(Math.PI / 2); zArm.translate(0, 1.17, 0);
+  return [
+    { geometry: upright, name: `${family}-king-cross-upright` },
+    { geometry: xArm, name: `${family}-king-cross-x-arm` },
+    { geometry: zArm, name: `${family}-king-cross-z-arm` },
+  ];
+}
+
 function makeKnight(family: PieceFamily): AssetPart[] {
   const faceted = family === 'faceted';
   const sides = faceted ? 6 : 20;
@@ -199,23 +262,26 @@ function makeKnight(family: PieceFamily): AssetPart[] {
   if (!faceted) addClassicCollars(parts, 0.355, 0.18);
   parts.push({
     geometry: closedYLoft(faceted
-      ? [[0, 0.34, 0.16, 0.15], [-0.02, 0.54, 0.14, 0.14], [0.015, 0.70, 0.12, 0.13], [0.10, 0.84, 0.105, 0.12]]
-      : [[0, 0.35, 0.15, 0.14], [-0.035, 0.51, 0.145, 0.135], [-0.005, 0.68, 0.125, 0.13], [0.10, 0.83, 0.10, 0.115]], sides),
+      ? [[0, .34, .19, .17], [-.07, .53, .17, .15], [-.10, .75, .13, .13], [-.055, .96, .12, .135], [.02, 1.05, .125, .145]]
+      : [[0, .35, .18, .16], [-.07, .50, .17, .14], [-.10, .68, .135, .12], [-.085, .83, .115, .12], [-.04, .98, .11, .135], [.035, 1.06, .12, .14]], sides),
     name: `${family}-knight-curved-volumetric-neck`,
   });
   parts.push({
     geometry: closedXLoft(faceted
-      ? [[0.055, 0.86, 0.12, 0.12], [0.16, 0.90, 0.15, 0.135], [0.28, 0.89, 0.115, 0.105], [0.34, 0.86, 0.065, 0.07]]
-      : [[0.055, 0.86, 0.115, 0.11], [0.16, 0.91, 0.14, 0.13], [0.27, 0.90, 0.105, 0.10], [0.34, 0.875, 0.055, 0.06]], sides),
+      ? [[-.06, 1.055, .10, .12], [.02, 1.10, .12, .145], [.12, 1.06, .11, .15], [.22, .985, .075, .105], [.315, .95, .065, .085]]
+      : [[-.06, 1.055, .10, .12], [0, 1.095, .12, .145], [.095, 1.08, .12, .15], [.18, 1.01, .09, .115], [.27, .965, .075, .09], [.315, .95, .065, .085]], sides),
     name: `${family}-knight-dimensional-head-and-muzzle`,
   });
-  const ear = new THREE.ConeGeometry(faceted ? 0.052 : 0.045, faceted ? 0.18 : 0.15, faceted ? 4 : 8);
-  ear.rotateZ(-0.13); ear.translate(0.12, 1.07, -0.075);
-  const secondEar = ear.clone(); secondEar.translate(0, 0, 0.15);
+  const ear = new THREE.ConeGeometry(faceted ? .042 : .035, .15, faceted ? 4 : 12);
+  ear.rotateZ(.12); ear.translate(-.025, 1.235, -.09);
+  const secondEar = ear.clone(); secondEar.translate(0, 0, .18);
   parts.push({ geometry: ear, name: `${family}-knight-left-ear` }, { geometry: secondEar, name: `${family}-knight-right-ear` });
-  const mane = solidExtrusion([[-0.13, 0.42], [-0.23, 0.51], [-0.19, 0.60], [-0.24, 0.70], [-0.17, 0.80], [-0.12, 0.95], [-0.06, 0.91], [-0.09, 0.69], [-0.07, 0.51]], faceted ? 0.15 : 0.12, faceted ? 0 : 0.006);
-  mane.translate(0, 0, faceted ? -0.075 : -0.06);
-  parts.push({ geometry: mane, name: `${family}-knight-carved-mane` });
+  parts.push({ geometry: maneRidge(family), name: `${family}-knight-continuous-dimensional-mane` });
+  for (const sign of [-1, 1]) {
+    const eye = new THREE.SphereGeometry(.022, faceted ? 8 : 16, 10); eye.scale(1, 1, .45); eye.translate(.035, 1.125, sign * .137);
+    const nostril = new THREE.SphereGeometry(.014, 10, 8); nostril.scale(.45, .75, 1); nostril.translate(.315, .965, sign * .043);
+    parts.push({ geometry: eye, name: `${family}-knight-eye-${sign}`, tint: 0x303030 }, { geometry: nostril, name: `${family}-knight-nostril-${sign}`, tint: 0x303030 });
+  }
   return parts;
 }
 
@@ -230,17 +296,16 @@ function makeAssets(kind: PieceKind, family: PieceFamily): readonly AssetPart[] 
   if (kind === 'pawn') {
     parts.push({ geometry: closedRevolution(faceted
       ? [[0.105, 0.52], [0.16, 0.57], [0.16, 0.68], [0.105, 0.73]]
-      : [[0.07, 0.50], [0.125, 0.54], [0.15, 0.62], [0.14, 0.70], [0.09, 0.77]], faceted ? 8 : 32), name: `${family}-pawn-crowned-head` });
+      : [[0.035, 0.455], [0.085, 0.505], [0.125, 0.54], [0.15, 0.59], [0.158, 0.645], [0.145, 0.70], [0.11, 0.745], [0.065, 0.77], [0.028, 0.78]], faceted ? 8 : 48), name: `${family}-pawn-crowned-head` });
   } else if (kind === 'bishop') {
-    const mitre = bishopMitre(family); mitre.translate(0, 0, faceted ? -0.15 : -0.12);
-    parts.push({ geometry: mitre, name: `${family}-bishop-sculpted-mitre-slot`, intentionalOpenings: ['diagonal mitre slot is a deliberate open cut'] });
+    parts.push(...sculptedBishopHead(family));
   } else if (kind === 'rook') {
     const crown = closedRevolution(faceted ? [[0.22, 0.74], [0.25, 0.78], [0.25, 0.86], [0.21, 0.89]] : [[0.20, 0.69], [0.23, 0.73], [0.23, 0.80], [0.20, 0.84]], faceted ? 8 : 32);
     parts.push({ geometry: crown, name: `${family}-rook-solid-crown-drum` });
     const count = faceted ? 4 : 6;
     for (let index = 0; index < count; index++) {
       const angle = index * Math.PI * 2 / count;
-      const merlon = new THREE.BoxGeometry(faceted ? 0.16 : 0.115, faceted ? 0.16 : 0.13, faceted ? 0.16 : 0.115);
+      const merlon = faceted ? new THREE.BoxGeometry(0.16, 0.16, 0.16) : bevelledBlock(0.115, 0.13, 0.115, 0.014);
       merlon.rotateY(-angle); merlon.translate(Math.cos(angle) * (faceted ? 0.18 : 0.17), faceted ? 0.92 : 0.90, Math.sin(angle) * (faceted ? 0.18 : 0.17));
       parts.push({ geometry: merlon, name: `${family}-rook-closed-merlon-${index + 1}` });
     }
@@ -248,6 +313,7 @@ function makeAssets(kind: PieceKind, family: PieceFamily): readonly AssetPart[] 
     const crown = closedRevolution(faceted ? [[0.22, 0.80], [0.24, 0.84], [0.17, 0.91], [0.13, 0.93]] : [[0.18, 0.80], [0.21, 0.85], [0.18, 0.90], [0.15, 0.92]], faceted ? 8 : 32);
     parts.push({ geometry: crown, name: `${family}-queen-coronet-base` });
     const count = faceted ? 5 : 7;
+    parts.push({ geometry: closedRevolution([[0.035, 0.89], [0.055, 0.95], [0.05, 1.04], [0.032, 1.12]], faceted ? 8 : 32), name: `${family}-queen-continuous-orb-stem` });
     for (let index = 0; index < count; index++) {
       const angle = index * Math.PI * 2 / count;
       const point = new THREE.ConeGeometry(faceted ? 0.065 : 0.045, faceted ? 0.25 : 0.20, faceted ? 4 : 8);
@@ -259,16 +325,17 @@ function makeAssets(kind: PieceKind, family: PieceFamily): readonly AssetPart[] 
     const collar = new THREE.TorusGeometry(faceted ? 0.18 : 0.155, faceted ? 0.026 : 0.022, faceted ? 4 : 8, segments);
     collar.rotateX(Math.PI / 2); collar.translate(0, faceted ? 0.96 : 0.94, 0);
     parts.push({ geometry: collar, name: `${family}-king-finial-collar` });
-    const cross = solidExtrusion([[-0.05, 0.98], [0.05, 0.98], [0.05, 1.10], [0.13, 1.10], [0.13, 1.20], [0.05, 1.20], [0.05, 1.34], [-0.05, 1.34], [-0.05, 1.20], [-0.13, 1.20], [-0.13, 1.10], [-0.05, 1.10]], faceted ? 0.18 : 0.13, faceted ? 0 : 0.008);
-    cross.translate(0, 0, faceted ? -0.09 : -0.065);
-    parts.push({ geometry: cross, name: `${family}-king-solid-cross-finial` });
+    parts.push(...crossParts(family));
   }
   return parts;
 }
 
 function mergedGeometry(components: readonly AssetPart[]): THREE.BufferGeometry {
-  const copies = components.map(({ geometry }) => {
+  const copies = components.map(({ geometry, tint }) => {
     const copy = geometry.clone();
+    const color = new THREE.Color(tint ?? 0xffffff), colors = new Float32Array(copy.getAttribute('position').count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = color.r; colors[i + 1] = color.g; colors[i + 2] = color.b; }
+    copy.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     copy.deleteAttribute('uv');
     if (!copy.getAttribute('normal')) copy.computeVertexNormals();
     if (!copy.getIndex()) copy.setIndex([...Array(copy.getAttribute('position').count).keys()]);
@@ -286,6 +353,8 @@ function assetsFor(kind: PieceKind, family: PieceFamily): CachedPieceAsset {
   const cached = geometryCache.get(key);
   if (cached) return cached;
   const components = makeAssets(kind, family);
+  const ground = Math.min(...components.map(({ geometry }) => { geometry.computeBoundingBox(); return geometry.boundingBox!.min.y; }));
+  for (const { geometry } of components) geometry.translate(0, -ground, 0);
   const asset = { geometry: mergedGeometry(components), components };
   geometryCache.set(key, asset);
   return asset;
@@ -297,11 +366,11 @@ function material(style: MaterialStyle, side: 1 | -1, family: PieceFamily): THRE
   if (cached) return cached;
   const white = side > 0;
   const palette = {
-    ceramic: { color: white ? 0xe7dcc4 : 0x10263e, metalness: 0.05, roughness: 0.38 },
-    metal: { color: white ? 0xdce3e6 : 0x2d4057, metalness: 0.78, roughness: 0.31 },
-    wood: { color: white ? 0xc2824e : 0x3b241d, metalness: 0.02, roughness: 0.43 },
+    ceramic: { color: white ? 0xe7dcc4 : 0x345477, metalness: 0.05, roughness: 0.38 },
+    metal: { color: white ? 0xdce3e6 : 0x7189a2, metalness: 0.62, roughness: 0.48 },
+    wood: { color: white ? 0xe0af78 : 0x986746, metalness: 0.02, roughness: 0.43 },
   }[style];
-  const finish = new THREE.MeshStandardMaterial({ ...palette, flatShading: family === 'faceted' });
+  const finish = new THREE.MeshStandardMaterial({ ...palette, flatShading: family === 'faceted', vertexColors: true });
   if (style === 'wood') {
     finish.onBeforeCompile = shader => {
       shader.vertexShader = `varying vec3 vRiftWoodPosition;\n${shader.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRiftWoodPosition = position;');
@@ -322,7 +391,7 @@ export function createPiece(code: number, family: PieceFamily, style: MaterialSt
   group.userData.piece = code;
   group.userData.pieceKind = kind;
   group.userData.sharedPieceAsset = true;
-  group.userData.geometryAudit = { family, kind, componentPolicy: 'each child mesh is a closed solid except the declared bishop slot' };
+  group.userData.geometryAudit = { family, kind, componentPolicy: 'each merged source component is a closed solid' };
   const finish = material(style, side, family);
   const asset = assetsFor(kind, family);
   const mesh = new THREE.Mesh(asset.geometry, finish);
@@ -335,8 +404,7 @@ export function createPiece(code: number, family: PieceFamily, style: MaterialSt
   group.userData.geometryAudit.components = asset.components.map(component => ({
     name: component.name,
     geometry: component.geometry,
-    closed: !component.intentionalOpenings,
-    intentionalOpenings: component.intentionalOpenings ?? [],
+    closed: true,
   }));
   group.add(mesh);
   return group;

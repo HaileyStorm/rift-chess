@@ -2,8 +2,7 @@ import * as THREE from 'three';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createPiece, disposePiece, disposePieceAssets, type PieceFamily } from '../src/render/pieces';
 
-type MeshAudit = { closed: boolean; intentionalOpenings: string[] };
-type ComponentAudit = MeshAudit & { name: string; geometry: THREE.BufferGeometry };
+type ComponentAudit = { closed: boolean; name: string; geometry: THREE.BufferGeometry };
 type GroupAudit = { components: ComponentAudit[] };
 
 function meshes(piece: THREE.Group): THREE.Mesh[] {
@@ -67,6 +66,7 @@ describe('piece sculptures', () => {
       for (const piece of armies) {
         const bounds = new THREE.Box3().setFromObject(piece);
         expect(bounds.min.y).toBeGreaterThanOrEqual(-0.001);
+        expect(Math.abs(bounds.min.y)).toBeLessThan(0.00001);
         expect(bounds.max.y).toBeLessThanOrEqual(1.35);
         expect(Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x), Math.abs(bounds.min.z), Math.abs(bounds.max.z))).toBeLessThanOrEqual(0.345);
         expect(meshes(piece).length).toBe(1);
@@ -78,22 +78,21 @@ describe('piece sculptures', () => {
       const mesh = meshes(armies[0])[0];
       assertFiniteAndOutward(mesh.geometry);
       for (const audit of componentAudits(armies[0])) {
-        expect(audit.closed || audit.intentionalOpenings.length > 0).toBe(true);
+        expect(audit.closed).toBe(true);
         assertFiniteAndOutward(audit.geometry);
         const boundaries = weldedBoundaryEdges(audit.geometry);
-        if (audit.intentionalOpenings.length) expect(boundaries.length, audit.name).toBeGreaterThan(0);
-        else expect(boundaries, audit.name).toEqual([]);
+        expect(boundaries, audit.name).toEqual([]);
       }
       armies.forEach(disposePiece);
     }
   });
 
-  it('declares the intentional bishop slot and makes the families structurally distinct', () => {
+  it('keeps the carved bishop mitre closed and makes the families structurally distinct', () => {
     for (const family of ['classic', 'faceted'] as PieceFamily[]) {
       const bishop = createPiece(3, family, 'metal');
-      const mitre = componentAudits(bishop).find(component => component.name.includes('mitre'))!;
-      expect(mitre.intentionalOpenings).toEqual(['diagonal mitre slot is a deliberate open cut']);
-      expect(weldedBoundaryEdges(mitre.geometry).length).toBeGreaterThan(0);
+      const mitre = componentAudits(bishop).find(component => component.name.includes('closed-carved-mitre'))!;
+      expect(mitre.closed).toBe(true);
+      expect(weldedBoundaryEdges(mitre.geometry)).toEqual([]);
       disposePiece(bishop);
     }
     const classic = createPiece(4, 'classic', 'wood');
@@ -110,6 +109,18 @@ describe('piece sculptures', () => {
       const dark = meshes(createPiece(-1, 'classic', style))[0].material as THREE.MeshStandardMaterial;
       const luminance = (color: THREE.Color) => color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
       expect(luminance(ivory.color)).toBeGreaterThan(luminance(dark.color) + 0.15);
+    }
+  });
+
+  it('joins the pawn head and royal finials to their supporting components', () => {
+    for (const family of ['classic', 'faceted'] as PieceFamily[]) for (const [code, upperName, supportName] of [
+      [1, 'pawn-crowned-head', 'body'], [6, 'king-cross-upright', 'body'],
+      [5, 'queen-continuous-orb-stem', 'queen-coronet-base'], [5, 'queen-crown-orb', 'queen-continuous-orb-stem'],
+    ] as const) {
+      const piece = createPiece(code, family, 'ceramic'), parts = componentAudits(piece);
+      const bounds = (name: string) => { const geometry = parts.find(part => part.name.includes(name))!.geometry; geometry.computeBoundingBox(); return geometry.boundingBox!; };
+      expect(bounds(upperName).intersectsBox(bounds(supportName)), `${family}: unsupported ${upperName}`).toBe(true);
+      disposePiece(piece);
     }
   });
 });

@@ -1,75 +1,135 @@
-/** Agent-driven browser games. Decisions are heuristic; every action uses canvas input. */
+/** Six natural terminal attempts through the rendered UI; never substitutes resignation or agreement. */
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import assert from 'node:assert/strict';
-const root = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'complete-game'); await fs.mkdir(root, { recursive: true });
-const receipt = { started: new Date().toISOString(), kind: 'automated real-UI play, not a human usability study', games: [], checks: [], errors: [] };
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { createHash } from 'node:crypto';
+import { createUiDriver } from './ui-driver.mjs';
+
+const execFileAsync = promisify(execFile);
+const base = process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/';
+const root = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'complete-game');
+const receiptPath = path.join(root, 'receipt.json');
+const maxActions = Number(process.env.RIFT_COMPLETE_MAX_ACTIONS || 500);
+const requested = new Set((process.env.RIFT_COMPLETE_GAMES || '').split(',').map(value => value.trim()).filter(Boolean));
+const resumePath = process.env.RIFT_COMPLETE_RESUME;
+if (!Number.isInteger(maxActions) || maxActions < 1) throw new Error('RIFT_COMPLETE_MAX_ACTIONS must be a positive integer');
+async function prepareOutput() {
+  try { await fs.access(receiptPath); throw new Error(`Refusing to overwrite an earlier completion receipt: ${root}`); }
+  catch (error) { if (error?.code !== 'ENOENT') throw error; }
+  try { if ((await fs.readdir(root)).length) throw new Error(`Refusing non-empty completion output directory: ${root}`); }
+  catch (error) { if (error?.code !== 'ENOENT') throw error; }
+  await fs.mkdir(path.join(root, 'records'), { recursive: true });
+}
+await prepareOutput();
+
+let resume = null;
+if (resumePath) {
+  resume = JSON.parse(await fs.readFile(path.resolve(resumePath), 'utf8'));
+  if (!process.env.RIFT_TEST_RUN || !resume.uiSave || !resume.fullRecord || !resume.mode || !resume.layout || !resume.policy || !Array.isArray(resume.priorTrace) || !resume.priorTraceBinding?.sha256) throw new Error('RIFT_COMPLETE_RESUME requires a prior resume input and a new RIFT_TEST_RUN output directory');
+  const traceHash = createHash('sha256').update(JSON.stringify(resume.priorTrace)).digest('hex');
+  if (traceHash !== resume.priorTraceBinding.sha256 || resume.fullRecord.actions.length !== resume.priorTraceBinding.actionCount) throw new Error('Resume trace binding does not match its full record');
+}
+
+const defaults = [
+  { id: 'human-white-B-prompt', mode: 'bot-black', human: 1, layout: 'B', policy: 'prompt' },
+  { id: 'human-black-B-auto100', mode: 'bot-white', human: -1, layout: 'B', policy: 'auto100' },
+  { id: 'human-white-C-off', mode: 'bot-black', human: 1, layout: 'C', policy: 'off' },
+  { id: 'human-black-C-prompt', mode: 'bot-white', human: -1, layout: 'C', policy: 'prompt' },
+  { id: 'hotseat-B-auto100', mode: 'hotseat', human: null, layout: 'B', policy: 'auto100' },
+  { id: 'hotseat-C-off', mode: 'hotseat', human: null, layout: 'C', policy: 'off' },
+];
+const games = (resume ? [{ id: `continuation-${resume.id}`, mode: resume.mode, human: resume.mode === 'bot-black' ? 1 : resume.mode === 'bot-white' ? -1 : null, layout: resume.layout, policy: resume.policy, resume }] : defaults).filter(game => !requested.size || requested.has(game.id));
+if (!games.length) throw new Error('No configured game matches RIFT_COMPLETE_GAMES');
+
+async function sourceIdentity() {
+  const packageInfo = JSON.parse(await fs.readFile('package.json', 'utf8'));
+  try { const [{ stdout: revision }, { stdout: status }] = await Promise.all([execFileAsync('git', ['rev-parse', 'HEAD']), execFileAsync('git', ['status', '--porcelain'])]); return { packageVersion: packageInfo.version, gitRevision: revision.trim(), worktreeDirty: Boolean(status.trim()) }; }
+  catch { return { packageVersion: packageInfo.version, gitRevision: null, worktreeDirty: null }; }
+}
+
+const receipt = { started: new Date().toISOString(), purpose: 'automated real-UI games, not human usability or Elo evidence', url: base, maxActions, strategy: 'deterministic material, capture, promotion, pawn-progress, center, then action-id order; shifts receive a penalty and are selected only when their legal value warrants it, never repeated to force a draw', games: [], errors: [] };
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-gpu', '--use-angle=d3d11'] });
-const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
-const page = await context.newPage(); page.on('pageerror', e => receipt.errors.push(e.message));
-page.on('dialog', dialog => dialog.accept());
-const observe = () => page.evaluate(() => window.rift.getObservation());
-const record = () => page.evaluate(() => window.rift.exportRecord());
-const index = name => (Number(name[1]) - 1) * 8 + name.charCodeAt(0) - 97;
-const macroSquare = name => (Number(name[1]) - 1) * 16 + (name.charCodeAt(0) - 65) * 2;
-async function square(n) { const p = await page.evaluate(n => window.rift.squareScreenPosition(n), n); await page.mouse.click(p.x, p.y); }
-async function action(a) {
-  await page.waitForFunction(() => window.rift.metrics().animating === false, null, { timeout: 30000 });
-  const before = await observe();
-  console.log(`Attempt ${before.revision + 1}: ${a.type} ${a.from}-${a.to}`);
-  if (a.type === 'shift') { if (await page.locator('#shift-mode').getAttribute('aria-pressed') !== 'true') await page.locator('#shift-mode').click(); await square(macroSquare(a.from)); await square(macroSquare(a.to)); }
-  else { await square(index(a.from)); await square(index(a.to)); }
-  if (a.promotion) await page.locator(`#promotion-dialog button[value="${a.promotion}"]`).click();
-  await page.waitForFunction(revision => window.rift.getObservation().revision > revision, before.revision, { timeout: 20000 });
-}
-function choose(actions, position, ply) {
+const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, serviceWorkers: 'allow', acceptDownloads: true });
+const page = await context.newPage(); const driver = createUiDriver(page);
+page.on('pageerror', error => receipt.errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
+async function persist() { await fs.writeFile(receiptPath, JSON.stringify(receipt, null, 2)); }
+const squareIndex = square => (Number(square[1]) - 1) * 8 + square.charCodeAt(0) - 97;
+
+function choose(actions, position) {
   const values = [0, 100, 320, 330, 500, 900, 2000, 100];
-  const score = a => {
-    const noise = ((Math.imul(a.id + 19, 1103515245) ^ Math.imul(ply + 7, 12345)) >>> 0) % 71;
-    if (a.type === 'shift') return -25 + noise + (a.promotion ? 900 : 0);
-    const src = index(a.from), dst = index(a.to), piece = Math.abs(position.board[src]);
-    const capture = Math.abs(position.board[dst]);
-    return (a.en_passant ? 1200 : values[capture] * 12) - (capture ? values[piece] * 0.2 : 0)
-      + (a.promotion ? 900 : 0) + (piece === 1 || piece === 7 ? 30 + Math.abs(Math.floor(dst / 8) - Math.floor(src / 8)) * 10 : 0)
-      + (piece === 2 || piece === 3 ? 12 : 0) + noise;
+  const score = action => {
+    if (action.type === 'shift') return (action.promotion ? 9800 : -180) + (action.id % 17) / 100;
+    const source = squareIndex(action.from), target = squareIndex(action.to), moving = Math.abs(position.board[source]), victim = Math.abs(position.board[target]), progress = Math.abs(Math.floor(target / 8) - Math.floor(source / 8));
+    return (action.promotion ? 10000 : 0) + (action.en_passant ? 1200 : values[victim] * 16) - (victim ? values[moving] : 0) + ((moving === 1 || moving === 7) ? 35 + progress * 12 : 0) + ((moving === 2 || moving === 3) ? 15 : 0) - Math.abs((target % 8) - 3.5);
   };
-  return [...actions].sort((a, b) => score(b) - score(a) || a.id - b.id)[0];
+  return [...actions].sort((left, right) => score(right) - score(left) || left.id - right.id)[0];
 }
-async function newGame(layout, human) {
-  await page.locator('#new-game').click();
-  await page.locator(`input[name="mode"][value="${human === 1 ? 'bot-black' : 'bot-white'}"]`).check();
-  await page.locator(`input[name="layout"][value="${layout}"]`).check(); await page.locator('input[name="draw"][value="prompt"]').check();
-  await page.locator('#start-game').click(); await page.locator('[data-camera="top"]').click();
-}
-async function play(layout, human, maxActions, plannedResignation = false) {
-  await newGame(layout, human); const game = { layout, humanSide: human, policy: 'capture/pawn-advance heuristic with deterministic noise; opponent uses shipped worker', humanActions: [] }; receipt.games.push(game);
-  let observed;
-  for (;;) {
-    await page.waitForFunction(side => { const o = window.rift.getObservation(); return o.outcome || o.position.side === side; }, human, { timeout: 120000 });
-    await page.waitForTimeout(550); observed = await observe();
-    const current = await record(); if (observed.outcome || current.actions.length >= maxActions) break;
-    const actions = await page.evaluate(() => window.rift.getLegalActions()); const selected = choose(actions, observed.position, current.actions.length); assert.ok(selected);
-    await action(selected); game.humanActions.push(selected.id);
-    game.record = await record();
-    if (game.humanActions.length % 10 === 0) { console.log(`${layout}, human ${human}: ${game.record.actions.length} actions`); await page.screenshot({ path: path.join(root, `${layout}-${human}-${game.record.actions.length}.png`) }); }
-    await fs.writeFile(path.join(root, 'receipt.json'), JSON.stringify(receipt, null, 2));
+
+async function newMatch(game) {
+  if (game.resume) {
+    await driver.openDrawer('Match & view');
+    await page.locator('#import').setInputFiles({ name: 'resume-ui-save.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(game.resume.uiSave)) }); await driver.ready();
+    if (JSON.stringify(await driver.record()) !== JSON.stringify(game.resume.fullRecord)) throw new Error('Visible UI import did not restore the requested continuation record');
+    return;
   }
-  if (!observed.outcome && plannedResignation) { await page.locator('#resign').click(); observed = await observe(); game.plannedResignation = true; }
-  game.record = await record(); game.outcome = observed.outcome; game.truncated = !observed.outcome;
-  game.metrics = await page.evaluate(() => window.rift.metrics());
-  await page.screenshot({ path: path.join(root, `${layout}-${human}-ending.png`) });
-  console.log(`${layout} ended: ${JSON.stringify(game.outcome)} after ${game.record.actions.length} actions`);
-  assert.ok(game.outcome, 'Game remains unfinished at the action budget; it is not a draw');
+  await page.locator('#new-game').click(); const dialog = page.locator('#new-dialog'); await dialog.waitFor({ state: 'visible' });
+  await dialog.locator(`input[name="mode"][value="${game.mode}"]`).check(); await dialog.locator(`input[name="layout"][value="${game.layout}"]`).check(); await dialog.locator(`input[name="draw"][value="${game.policy}"]`).check(); await dialog.locator('#practice').setChecked(false);
+  await dialog.locator('#start-game').click(); await driver.ready(); await driver.camera('top');
 }
+
+async function waitForControlledTurn(game) {
+  if (game.mode === 'hotseat') return driver.ready();
+  await page.waitForFunction(side => { const state = window.rift.getObservation(); return Boolean(state.outcome) || (state.position.side === side && !window.rift.metrics().animating); }, game.human, { timeout: 120000 });
+}
+
+async function snapshotNewActions(game, record) {
+  if (record.actions.length <= game.savedActions) return;
+  const file = path.join('records', `${game.id}-prefix-${String(record.actions.length).padStart(4, '0')}.json`);
+  await fs.writeFile(path.join(root, file), JSON.stringify(record, null, 2));
+  const exactNext = record.actions.length === game.savedActions + 1;
+  game.trace.push(exactNext ? { kind: 'action-prefix', actionNumber: record.actions.length, action: record.actions.at(-1), recordFile: file, observedPrefixLength: record.actions.length } : { kind: 'observed-prefix', fromAction: game.savedActions + 1, throughAction: record.actions.length, recordFile: file, observedPrefixLength: record.actions.length }); game.latestRecord = file;
+  game.savedActions = record.actions.length; await persist();
+}
+
+async function play(game) {
+  await newMatch(game); const state = { ...game, trace: [], savedActions: game.resume?.fullRecord.actions.length ?? 0, continuationOf: game.resume?.priorTraceBinding ?? null, status: 'RUNNING', started: new Date().toISOString() }; receipt.games.push(state); await persist();
+  while (true) {
+    await waitForControlledTurn(game); const observation = await driver.observation(), record = await driver.record(); await snapshotNewActions(state, record);
+    if (observation.outcome) { state.outcome = observation.outcome; state.status = 'NATURAL_TERMINAL'; break; }
+    if (record.actions.length >= maxActions) { state.status = 'INCOMPLETE_RESUMABLE'; state.reason = `action budget ${maxActions} reached before a natural terminal result`; break; }
+    const action = choose(await page.evaluate(() => window.rift.getLegalActions()), observation.position);
+    if (!action) { state.status = 'INCOMPLETE_RESUMABLE'; state.reason = 'No legal action was exposed while the game remained ongoing'; break; }
+    await driver.perform(action); await snapshotNewActions(state, await driver.record());
+  }
+  state.finalRecord = await driver.record(); state.finalMetrics = await driver.metrics(); state.finished = new Date().toISOString(); await fs.writeFile(path.join(root, `records/${state.id}-final.json`), JSON.stringify(state.finalRecord, null, 2));
+  if (state.status === 'INCOMPLETE_RESUMABLE') {
+    const uiSave = await page.evaluate(() => JSON.parse(localStorage.getItem('rift-chess.save.v1')));
+    const priorTrace = state.trace, priorTraceBinding = { actionCount: state.finalRecord.actions.length, sha256: createHash('sha256').update(JSON.stringify(priorTrace)).digest('hex') };
+    state.resumeInput = path.join('records', `${state.id}-resume-input.json`); await fs.writeFile(path.join(root, state.resumeInput), JSON.stringify({ id: state.id, uiSave, fullRecord: state.finalRecord, mode: state.mode, layout: state.layout, policy: state.policy, priorTrace, priorTraceBinding }, null, 2));
+  }
+  await page.screenshot({ path: path.join(root, `${state.id}-ending.png`) }); await persist();
+  return state.status === 'NATURAL_TERMINAL';
+}
+
+async function reloadChecks(game) {
+  const before = await driver.record(); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay();
+  receipt.build.normalReloadPrecache = await servedPrecache(); if (JSON.stringify(receipt.build.initialPrecache) !== JSON.stringify(receipt.build.normalReloadPrecache)) throw new Error('Served precache identity changed before normal reload verification');
+  if (JSON.stringify(await driver.record()) !== JSON.stringify(before)) throw new Error('Completed game did not survive normal reload'); receipt.reload = { normal: 'preserved' };
+  await page.evaluate(() => navigator.serviceWorker.ready); await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay(); receipt.build.offlineReloadPrecache = await servedPrecache();
+  if (JSON.stringify(receipt.build.initialPrecache) !== JSON.stringify(receipt.build.offlineReloadPrecache)) throw new Error('Offline reload did not serve the original precache identity');
+  if (JSON.stringify(await driver.record()) !== JSON.stringify(before)) throw new Error('Completed game did not survive offline reload'); await page.screenshot({ path: path.join(root, 'completed-offline-reload.png') }); receipt.reload.offline = 'preserved'; receipt.reload.completedGame = game.id;
+}
+
+async function servedPrecache() { return page.evaluate(async () => { const response = await fetch('./precache.json', { cache: 'no-store' }); if (!response.ok) throw new Error(`precache identity unavailable (${response.status})`); return response.json(); }); }
+
 try {
-  await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift));
-  await play('B', 1, 400);
-  await play('C', -1, 24, true);
-  const beforeReload = await record(); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift)); assert.deepEqual(await record(), beforeReload); receipt.checks.push('save/reload after complete game');
-  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
-  await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift)); assert.deepEqual(await record(), beforeReload); receipt.checks.push('browser offline reload with preserved completed record');
-  await page.screenshot({ path: path.join(root, 'offline-reload.png') });
-  assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
-} catch (error) { receipt.status = 'fail'; receipt.failure = error.stack; receipt.finalObserved = await observe().catch(() => null); receipt.interaction = await page.evaluate(() => window.rift.metrics()).catch(() => null); if (receipt.games.length) receipt.games.at(-1).lastCapturedRecord = await record().catch(() => null); process.exitCode = 1; console.error(error.message); await page.screenshot({ path: path.join(root, 'failure.png') }).catch(() => {}); }
-finally { receipt.finished = new Date().toISOString(); await fs.writeFile(path.join(root, 'receipt.json'), JSON.stringify(receipt, null, 2)); await browser.close(); }
+  receipt.build = { source: await sourceIdentity(), browser: await browser.version() };
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay();
+  receipt.build.initialPrecache = await servedPrecache();
+  for (const game of games) await play(game);
+  if (receipt.games.every(game => game.status === 'NATURAL_TERMINAL')) { await reloadChecks(receipt.games.at(-1)); receipt.status = 'COMPLETE_NATURAL_TERMINALS'; } else receipt.status = 'INCOMPLETE_RESUMABLE';
+  if (receipt.errors.length) throw new Error(`Browser errors: ${receipt.errors.join('; ')}`);
+} catch (error) { receipt.status = 'FAILED'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message); }
+finally { if (receipt.status === 'INCOMPLETE_RESUMABLE') process.exitCode = 1; receipt.finished = new Date().toISOString(); await persist(); await context.close(); await browser.close(); console.log(JSON.stringify({ status: receipt.status, games: receipt.games.map(game => ({ id: game.id, status: game.status, actions: game.finalRecord?.actions.length ?? 0 })) })); }

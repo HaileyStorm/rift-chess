@@ -1,0 +1,8 @@
+Built-in image-generation asset, 2026-09-07. No reference image was supplied.
+
+Prompt:
+Use case: photorealistic-natural. Asset type: seamless square albedo texture for an original offline 3D chess game's stone instrument surfaces. Create a high-resolution square tileable surface scan of very dark midnight-teal green marble, fine natural mineral grain, subtle cloudy depths, sparse hairline pale jade mineral veins and a few restrained warm bronze-gold flecks. Sophisticated physical stone, not an abstract poster. Orthographic flat overhead scan, uniform diffuse illumination, no directional shadows, no bevel, no edges, no perspective, no room, no chess pieces, no text or watermark. Keep most of the surface dark and quiet so ivory and dark blue chess pieces remain readable; no big central motif and no bright broad white streaks. Seamless repeating pattern on all four sides. This is a material texture that will wrap actual 3D geometry, not a scene image.
+
+Saved asset: public/assets/marble-albedo.png
+Original generation filename: exec-67601913-cc2a-4f88-bb96-4726e7e82b5c.png
+The rendered game, not this texture, is the visual acceptance surface.

@@ -37,6 +37,7 @@ const MIME_TYPES = new Map([
   ['.json', 'application/json; charset=utf-8'],
   ['.mjs', 'text/javascript; charset=utf-8'],
   ['.svg', 'image/svg+xml'],
+  ['.png', 'image/png'],
   ['.wasm', 'application/wasm'],
   ['.woff', 'font/woff'],
   ['.woff2', 'font/woff2'],
