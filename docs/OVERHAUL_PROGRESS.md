@@ -316,3 +316,31 @@ promotion choices and semantic recovery. No game-source change was needed for
 that mismatch. Tutorial, interruption, full-mode and complete-game gates remain
 in progress. Both performance targets remain unresolved; the single instrumented
 Shift trace is diagnostic evidence, not performance acceptance.
+
+Tutorials (all four through mouse and keyboard), responsiveness (nine checks),
+UI state (seven) and renderer state (five) now pass on the same build. All six
+uninterrupted full games reached natural terminal positions: four bot games
+with 10/17/210/33 actions and B/C hotseat games with 76/83 actions. Their records
+and traces remain intact. The combined run is still FAILED because its later
+offline reload could not load the application; normal reload preserved the game.
+
+The fresh-process offline test reproduced that failure. A controlled page and
+complete byte-verified cache were present, but three module/style requests
+carried Origin headers while their cached keys did not. The Vite server returns
+Vary: Origin. A paired same-build test reproduces the three misses and succeeds
+with ignoreVary enabled only for the existing scoped static precache lookup.
+That narrow correction retains the invariant-public-asset contract; fresh
+offline gameplay and completed-record reload verification remain pending.
+
+The first mode matrix has ten COMPLETE_FLOW rows, six unmet fixed-opening plans
+after genuine bot replies, and two missed immediate fixture-commit witnesses.
+Its failed receipt is preserved. The replacement harness chooses required moves
+and Shifts from the current legal state and bounds a held real worker-script
+delivery only for the separately labeled check fixture. Eight affected rows
+will be re-run; no fixture is substituted for natural game play.
+
+The current GPU cause probe pairs 180 actual render callbacks with valid,
+non-disjoint timer queries: GPU median/p95/max 7.38/14.26/16.60 ms; callback CPU
+4.30/8.50/13.30 ms. Raw callback max remains 66.5 ms (renderer interval max
+53.6 ms). These measurements add overhead and do not establish whole-page cost
+or explain every delivery gap. Both frame-rate targets remain unresolved.

@@ -34,6 +34,9 @@ async function sourceIdentity() {
 function watchPage(page) {
   page.on('pageerror', error => receipt.errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
+  page.on('requestfailed', request => {
+    (receipt.failedRequests ??= []).push({ url: request.url(), type: request.resourceType(), failure: request.failure() });
+  });
 }
 async function precache(page) {
   return page.evaluate(async () => {

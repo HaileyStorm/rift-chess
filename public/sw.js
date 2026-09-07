@@ -39,7 +39,9 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(ACTIVE_CACHE);
-    const cached = await cache.match(event.request, { ignoreSearch: true });
+    // Manifest assets have invariant public bytes. Header-varying content must stay
+    // outside this cache; Vary: Origin must not turn fixed offline assets into misses.
+    const cached = await cache.match(event.request, { ignoreSearch: true, ignoreVary: true });
     if (cached) return cached;
 
     if (event.request.mode === 'navigate') {
