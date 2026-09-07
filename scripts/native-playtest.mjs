@@ -82,17 +82,17 @@ async function humanBotTurn(page, driver, mode) {
   const action = await page.evaluate(() => window.rift.getLegalActions()).then(actions => actions.find(item => item.type === 'move' && item.from === (side === 1 ? 'e2' : 'e7') && item.to === (side === 1 ? 'e4' : 'e5')) || actions.find(item => item.type === 'move'));
   assert.ok(action, 'Expected a visible ordinary move for the human side'); await driver.perform(action); await waitHuman(page, side); return driver.record();
 }
-async function captureNativeSizes(page) {
-  for (const size of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }]) {
-    await app.evaluate(({ BrowserWindow }, bounds) => BrowserWindow.getAllWindows()[0].setBounds(bounds), size); await page.waitForTimeout(250); await capture(page, `native-${size.width}x${size.height}`);
-  }
-}
-async function captureDevelopmentVisualMatrix(page) {
+async function captureScalingMatrix(page, classification) {
+  try {
   for (const size of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }]) {
     await app.evaluate(({ BrowserWindow }, bounds) => BrowserWindow.getAllWindows()[0].setBounds(bounds), size); await page.waitForTimeout(250);
     for (const zoom of [.8, 1, 1.25, 1.5]) {
-      await app.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom); await page.waitForTimeout(150); await capture(page, `development-visual-${size.width}x${size.height}-zoom-${zoom}`);
+      await app.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom); await page.waitForTimeout(150); await capture(page, `${classification}-scaling-${size.width}x${size.height}-zoom-${zoom}`);
     }
+  }
+  } finally {
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   }
 }
 async function loadedTutorial(page, driver) {
@@ -100,16 +100,57 @@ async function loadedTutorial(page, driver) {
   await page.locator('[data-tutorial="loadedShift"]').click(); await driver.ready(); await driver.camera('top');
   const actual = await driver.performPassengerShift({ passenger: 'c6', to: 'B4', promotion: 'N' }); assert.equal(actual.position.board[58], 2); receipt.checks.push('visible loaded-Shift tutorial uses passenger route, preview confirmation, and promotion choice');
 }
+async function staleNativeWorkerResponse(page, driver) {
+  await page.evaluate(() => {
+    const original = window.Worker, state = { original, queued: 0, callbacks: [], messages: [] };
+    class HeldWorker extends original {
+      set onmessage(listener) {
+        super.onmessage = listener ? event => { state.queued++; state.messages.push({ type: event.data?.type, game_id: event.data?.game_id, revision: event.data?.revision, actionId: event.data?.action?.id }); state.callbacks.push(() => listener.call(this, event)); } : null;
+      }
+      get onmessage() { return super.onmessage; }
+    }
+    window.Worker = HeldWorker;
+    window.__riftNativeWorkerHold = {
+      queued: () => state.queued,
+      messages: () => state.messages,
+      release: () => { const callbacks = state.callbacks.splice(0); callbacks.forEach(callback => callback()); return callbacks.length; },
+      restore: () => { window.Worker = state.original; delete window.__riftNativeWorkerHold; },
+    };
+  });
+  try {
+    await newBotMatch(page, driver, 'bot-black', 'B');
+    await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null });
+    await page.waitForFunction(() => window.__riftNativeWorkerHold.queued() === 1, null, { timeout: 120_000 });
+    const old = await driver.observation();
+    const [held] = await page.evaluate(() => window.__riftNativeWorkerHold.messages());
+    assert.equal(held.type, 'suggestion'); assert.equal(held.game_id, old.game_id); assert.equal(held.revision, old.revision);
+    assert.ok(await page.evaluate(id => window.rift.getLegalActions().some(action => action.id === id), held.actionId), 'Held native response must contain an actual legal proposed action');
+    await newBotMatch(page, driver, 'hotseat', 'C');
+    const replacement = { record: await driver.record(), observation: await driver.observation() };
+    assert.notEqual(replacement.observation.game_id, old.game_id, 'Real New Match must create a new game before stale delivery.');
+    assert.equal(replacement.observation.revision, 0, 'Fresh Hotseat C must begin at revision zero.');
+    assert.equal(await page.evaluate(() => window.__riftNativeWorkerHold.release()), 1);
+    await page.waitForTimeout(2000);
+    assert.deepEqual(await driver.record(), replacement.record, 'Released stale native worker response changed the new record.');
+    const after = await driver.observation();
+    assert.equal(after.game_id, replacement.observation.game_id, 'Released stale native worker response changed game identity.');
+    assert.equal(after.revision, replacement.observation.revision, 'Released stale native worker response changed revision.');
+    receipt.staleWorkerProbe = { classification: 'Actual native worker suggestion held in an instrumented callback, not a fabricated payload', held, replacementGameId: after.game_id, replacementRevision: after.revision, releasedCallbacks: 1 };
+    receipt.checks.push('instrumented native Worker held one actual callback; stale release after real New Hotseat C left the replacement match unchanged');
+  } finally {
+    await page.evaluate(() => window.__riftNativeWorkerHold?.restore()).catch(() => {});
+  }
+}
 try {
   let { page, driver } = await launch();
   if (visualOnly) {
     receipt.build = await servedAssets(); assert.equal(receipt.build.png.ok, true); assert.match(receipt.build.png.mime || '', /^image\/png\b/i);
-    await captureDevelopmentVisualMatrix(page); receipt.finalBuild = await servedAssets(); assert.deepEqual(receipt.finalBuild, receipt.build); assert.deepEqual(receipt.errors, []); receipt.checks.push('actual development app window captured at two bounds and four Electron zoom factors; OS display scale is recorded separately'); receipt.status = 'development_visual_evidence_only';
+    await captureScalingMatrix(page, 'development-visual'); receipt.finalBuild = await servedAssets(); assert.deepEqual(receipt.finalBuild, receipt.build); assert.deepEqual(receipt.errors, []); receipt.checks.push('actual development app window captured at two bounds and four Electron zoom factors; OS display scale is recorded separately'); receipt.status = 'development_visual_evidence_only';
   } else {
   receipt.build = await servedAssets(); assert.equal(receipt.build.png.ok, true); assert.match(receipt.build.png.mime || '', /^image\/png\b/i);
   receipt.navigatorOnline = await page.evaluate(() => navigator.onLine); assert.equal(await page.evaluate(async () => { try { await fetch('http://127.0.0.1:4173/'); return true; } catch { return false; } }), false); assert.deepEqual(await page.evaluate(() => [typeof window.require, typeof window.process]), ['undefined', 'undefined']);
-  await capture(page, 'first-launch'); await captureNativeSizes(page); receipt.checks.push('isolated packaged sandbox stays offline; native display scale and Electron zoom are recorded separately');
-  const whiteRecord = await humanBotTurn(page, driver, 'bot-black', 'B'); assert.equal(whiteRecord.actions.length >= 2, true); await capture(page, 'offline-human-white-bot');
+  await capture(page, 'packaged-first-launch'); await captureScalingMatrix(page, 'packaged'); receipt.checks.push('isolated packaged sandbox stays offline; native display scale and Electron zoom are recorded separately');
+  await newBotMatch(page, driver, 'bot-black', 'B'); const whiteRecord = await humanBotTurn(page, driver, 'bot-black'); assert.equal(whiteRecord.actions.length >= 2, true); await capture(page, 'packaged-offline-human-white-bot');
   await page.locator('#replay').click(); await page.locator('#replay-back').click(); await page.locator('#replay-exit').click(); await driver.ready(); receipt.checks.push('visible replay returns to the live packaged match');
   await app.close(); app = null;
   ({ page, driver } = await launch()); assert.deepEqual(await driver.record(), whiteRecord); assert.deepEqual(await servedAssets(), receipt.build); receipt.checks.push('normal packaged restart restores record and exact served assets');
@@ -118,8 +159,9 @@ try {
   for (let i = 0; i < 100; i++) { exportState = await app.evaluate(() => globalThis.__riftExport); if (exportState) break; await page.waitForTimeout(100); }
   assert.equal(exportState, 'completed', 'Packaged export did not complete');
   const exported = JSON.parse(await fs.readFile(path.join(root, 'export.json'), 'utf8')); assert.deepEqual(exported.record, whiteRecord); await page.locator('#import').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"invalid":true}') }); assert.deepEqual(await driver.record(), whiteRecord); receipt.checks.push('packaged export/rejected corrupt import preserve the restored match');
-  await newBotMatch(page, driver, 'bot-white', 'C'); const blackRecord = await humanBotTurn(page, driver, 'bot-white'); assert.equal(blackRecord.actions.length >= 2, true); await capture(page, 'offline-human-black-bot'); receipt.checks.push('both human colors complete a visible move against the shipped offline worker');
-  await loadedTutorial(page, driver); await capture(page, 'loaded-shift-promotion');
+  await newBotMatch(page, driver, 'bot-white', 'C'); const blackRecord = await humanBotTurn(page, driver, 'bot-white'); assert.equal(blackRecord.actions.length >= 2, true); await capture(page, 'packaged-offline-human-black-bot'); receipt.checks.push('both human colors complete a visible move against the shipped offline worker');
+  await loadedTutorial(page, driver); await capture(page, 'packaged-loaded-shift-promotion');
+  await staleNativeWorkerResponse(page, driver);
   receipt.finalBuild = await servedAssets(); assert.deepEqual(receipt.finalBuild, receipt.build); assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
   }
 } catch (error) { receipt.status = 'fail'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message); if (app) { const pages = app.context().pages(); if (pages[0]) await pages[0].screenshot({ path: path.join(root, 'failure.png') }).catch(() => {}); } }

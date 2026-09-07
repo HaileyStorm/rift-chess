@@ -1,6 +1,6 @@
 # Overhaul progress — 2026-09-07
 
-**Overall: approximately 60%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
+**Overall: approximately 65%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
 
 ## Evidence from this iteration
 
@@ -100,3 +100,7 @@ Tile shell geometry/materials are preserved but submitted through five instanced
 `performance-candidate-2` completes all 22 samples on clean source `fd892d5`, build `1da2c22231750ccee21e`. Gallery Balanced idle/orbit CPU medians are now both about 6.6 ms, with 219/212 draws and zero orbit shadow refreshes; bot and capture p95 callback intervals are about 17 ms. One 383-ms Daylight orbit stall remains. A targeted CPU profile attributes it to a material first encountered outside the initial camera view. The next repair submits off-camera materials during one normal readiness draw, restoring all original culling flags synchronously afterward. Its targeted profile removes the program-query stall; final uninstrumented measurements remain pending.
 
 The same-browser, same-viewport `refresh-cadence-control` records 300 empty-page callback intervals: mean 59.995 Hz, median 16.7 ms, p95 16.9 ms, p99/max 17 ms. Even this unloaded control fails the strict `1000/60` comparison on 167 intervals. It explains those small cadence/quantization differences; it does not excuse large stalls or replace game measurements. Original raw deadline flags remain unchanged.
+
+`performance-candidate-3` completes all 22 samples on clean `b78e6f0`, build `8960c217b7be87577b35`, without errors or recorded Long Tasks. Every p95 is at or below 16.9 ms; all eleven Low samples satisfy their raw 30-fps floor. Independent review accepts bounded near-60-Hz Balanced throughput but identifies isolated 33.5-ms idle, 33.3-ms bot and 49.8-ms loaded-Shift intervals. A dedicated nine-sample raw-interval follow-up is prepared; no every-frame 60-fps claim is made.
+
+The final primary matrix `final-candidate-3` captures all 216 views on that same clean source/build with identical final assets. Three independent reviewers inspect all 72 cells per environment and 59 full-resolution originals in total. All three environments PASS with recorded minor far-detail/contrast limits; all 216 indexed original hashes verify. Gallery's far foreground arch stays below playable squares and pieces, and Nocturne's prior flare is absent. Root also inspects every Gallery cell and seven originals. Scoped verdicts are in the artifact's `independent-visual-verdicts.json` and `gallery-root-review.json`. All sixteen final motion cases have been captured on the same build and await video inspection. Full games remain gated on completing the remaining visual rows.
