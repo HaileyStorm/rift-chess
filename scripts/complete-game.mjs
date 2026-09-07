@@ -6,6 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { createUiDriver } from './ui-driver.mjs';
+import { cachedBuild } from './offline-assets.mjs';
 
 const execFileAsync = promisify(execFile);
 const base = process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/';
@@ -117,8 +118,11 @@ async function reloadChecks(game) {
   const before = await driver.record(); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay();
   receipt.build.normalReloadPrecache = await servedPrecache(); if (JSON.stringify(receipt.build.initialPrecache) !== JSON.stringify(receipt.build.normalReloadPrecache)) throw new Error('Served precache identity changed before normal reload verification');
   if (JSON.stringify(await driver.record()) !== JSON.stringify(before)) throw new Error('Completed game did not survive normal reload'); receipt.reload = { normal: 'preserved' };
-  await page.evaluate(() => navigator.serviceWorker.ready); await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay(); receipt.build.offlineReloadPrecache = await servedPrecache();
-  if (JSON.stringify(receipt.build.initialPrecache) !== JSON.stringify(receipt.build.offlineReloadPrecache)) throw new Error('Offline reload did not serve the original precache identity');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  receipt.build.onlineCache = await cachedBuild(page, receipt.build.initialPrecache);
+  await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay();
+  receipt.build.offlineCache = await cachedBuild(page, receipt.build.initialPrecache, true);
+  if (JSON.stringify(receipt.build.onlineCache) !== JSON.stringify(receipt.build.offlineCache)) throw new Error('Offline reload changed cached asset bytes');
   if (JSON.stringify(await driver.record()) !== JSON.stringify(before)) throw new Error('Completed game did not survive offline reload'); await page.screenshot({ path: path.join(root, 'completed-offline-reload.png') }); receipt.reload.offline = 'preserved'; receipt.reload.completedGame = game.id;
 }
 

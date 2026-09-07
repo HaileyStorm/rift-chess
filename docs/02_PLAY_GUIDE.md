@@ -8,6 +8,12 @@ Read [the full rules](01_RULES.md) for edge cases. This guide describes the ship
 
 Use the Gallery environment, Classic pieces, the White camera, and **Prompted agreement** for draws. Start a hotseat match or play against the local bot. Turn on **Show moves** for your first game, then try a game without ordinary-move hints. Legal Shift handles stay visible.
 
+On first launch and New Match, the shuffled tiles slide into their starting
+positions with their pieces aboard. This opening animation happens before the
+first turn and adds no moves to the record. Choose **Skip animation** to settle
+the table immediately, or enable **Reduced motion** in Atelier. Returning to a
+saved match preserves its position without reshuffling.
+
 The missing central tiles are intentional. In B-rift, your c- and d-pawns initially face missing squares; in C-rift, your e- and f-pawns do. You can develop on the open part of the board or spend a turn changing that obstruction. Both sides face the same rank-reflected starting geometry.
 
 At the initial position there are fifteen ordinary moves and four empty-tile Shifts. An opening Shift is available, not compulsory.

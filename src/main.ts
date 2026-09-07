@@ -61,7 +61,7 @@ function policyLabel(policy: DrawPolicy): string { return policy === 'prompt' ? 
 function actions(): Action[] { if (replayIndex !== null) return []; if (!actionCache || actionCache.gameId !== game.game_id || actionCache.revision !== game.revision) actionCache = { gameId: game.game_id, revision: game.revision, actions: game.legalActions() }; return actionCache.actions; }
 function invalidateActions(): void { actionCache = null; }
 function setPresentation(next: Presentation): void { presentation = next; app.dataset.presentation = next; $('launch-surface').dataset.presentation = next; $('launch-surface').hidden = next === 'play'; }
-function enterPlay(skip = false): void { scene.enterPlay(skip || preferences.reducedMotion ? 0 : undefined); setPresentation('play'); try { sessionStorage.setItem('rift-launch-seen', '1'); } catch {} }
+function enterPlay(skip = false): void { if (skip && scene.assembling) scene.skipAnimation(); scene.enterPlay(skip || preferences.reducedMotion ? 0 : undefined); setPresentation('play'); try { sessionStorage.setItem('rift-launch-seen', '1'); } catch {} }
 function exploreTable(): void { setPresentation('explore'); scene.showcase(); }
 function clearSelection(message = 'Select a piece to move, or a tile handle to Shift.'): void { selectedSquare = null; selectedTile = null; previewTile = null; passengerTile = null; intent = 'move'; selection.textContent = message; selectionDetail.textContent = 'Shift handles remain visible while ordinary move hints are hidden.'; }
 function reasonText(reason: string | null, tile: number): string {
@@ -80,9 +80,14 @@ function save(): void {
 }
 function chooseActor(title: string, detail: string, action: (side: 1 | -1) => void): void { actorDialogAction = action; $('actor-dialog-title').textContent = title; $('actor-dialog-detail').textContent = detail; ($('actor-dialog') as HTMLDialogElement).showModal(); }
 function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, focusSquare: document.activeElement === sceneHost ? keyboardSquare : null }); }
-function renderScene(): void {
-  const epoch = ++sceneEpoch; updateHighlights(); animating = false;
-  void scene.setPosition(visiblePosition()).finally(() => { if (sceneEpoch === epoch) refresh(); });
+async function renderScene(assemble = false): Promise<void> {
+  const epoch = ++sceneEpoch; updateHighlights(); animating = assemble && !preferences.reducedMotion;
+  try {
+    await (assemble ? scene.assemblePosition(visiblePosition(), crypto.getRandomValues(new Uint32Array(1))[0]!) : scene.setPosition(visiblePosition()));
+    if (sceneEpoch !== epoch) return;
+    animating = false; refresh();
+    if (assemble && isBotTurn()) askBot();
+  } catch (error) { if (sceneEpoch === epoch) { animating = false; say(error instanceof Error ? error.message : 'The table could not be prepared.'); refresh(); } }
 }
 function refreshHistory(): void {
   const key = game.game_id + ':' + game.revision + ':' + (replayIndex ?? 'live');
@@ -116,7 +121,7 @@ function refresh(): void {
   sceneHost.setAttribute('aria-busy', String(animating || (replayIndex === null && isBotTurn() && !observation.outcome)));
   const side = position.side === 1 ? 'White' : 'Black', opening = game.initial.holes === 544 ? 'B-RIFT' : game.initial.holes === 1088 ? 'C-RIFT' : 'PRACTICE';
   $('match-kind').textContent = (mode === 'hotseat' ? 'HOTSEAT' : 'LOCAL BOT') + ' · ' + opening;
-  turn.textContent = replayIndex !== null ? 'Replay · ' + replayIndex + ' / ' + game.actions.length : finished ? (finished.result === 'draw' ? 'Draw' : finished.winner === 1 ? 'White wins' : 'Black wins') : side + ' to move' + (isBotTurn() ? botFailed ? ' · bot paused' : ' · bot thinking' : '');
+  turn.textContent = scene.assembling ? 'Setting the table…' : replayIndex !== null ? 'Replay · ' + replayIndex + ' / ' + game.actions.length : finished ? (finished.result === 'draw' ? 'Draw' : finished.winner === 1 ? 'White wins' : 'Black wins') : side + ' to move' + (isBotTurn() ? botFailed ? ' · bot paused' : ' · bot thinking' : '');
   const checked = inCheck(position, position.side); check.textContent = finished ? finished.reason.replaceAll('_', ' ') : checked ? side + ' is in check' : intent === 'shift' ? 'Shift intent: select a moving tile' : 'Position steady'; check.classList.toggle('danger', checked || Boolean(finished));
   quiet.textContent = position.halfmove + ' / 100'; document.querySelector('.quiet-readout')!.toggleAttribute('hidden', game.draw_policy === 'off'); $('policy').textContent = policyLabel(game.draw_policy);
   $('move-mode').setAttribute('aria-pressed', String(intent === 'move')); $('move-mode').classList.toggle('active', intent === 'move'); $('shift-mode').setAttribute('aria-pressed', String(intent === 'shift')); $('shift-mode').classList.toggle('active', intent === 'shift'); $('show-moves').setAttribute('aria-pressed', String(preferences.showMoves));
@@ -207,7 +212,7 @@ function pick(square: number, tile: number, hitKind?: HitKind): void {
 }
 function resetBot(): void { bot?.terminate(); bot = null; botFailed = false; }
 function askBot(): void {
-  if (!boardReady || replayIndex !== null || !isBotTurn() || game.observe().outcome) return;
+  if (!boardReady || animating || scene.assembling || replayIndex !== null || !isBotTurn() || game.observe().outcome) return;
   resetBot();
   try { bot = new Worker(new URL('./bot/worker.ts', import.meta.url), { type: 'module' }); } catch { botFailed = true; refresh(); say('The opponent could not start. Use Retry opponent.'); return; }
   const identity = { game_id: game.game_id, revision: game.revision };
@@ -223,7 +228,7 @@ function askBot(): void {
   refresh();
 }
 function startNew(layout: 'B' | 'C', draw: DrawPolicy, nextMode: Mode, nextPractice: boolean): void {
-  resetBot(); game = new Game(layout, draw); invalidateActions(); mode = nextMode; practice = nextPractice; tutorial = null; lessonReturn = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot();
+  resetBot(); game = new Game(layout, draw); invalidateActions(); mode = nextMode; practice = nextPractice; tutorial = null; lessonReturn = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(true); enterPlay(); refresh();
 }
 function openTutorial(which: Tutorial): void {
   const fixtureNames: Record<Tutorial, string> = { ordinary: 'opening_B', emptyShift: 'opening_B', loadedShift: 'shift_promotion', cutCheck: 'cut_check_ray' };
@@ -250,7 +255,7 @@ function applyPreferences(): void {
 }
 function restore(): void {
   const saved = loadSave(), recoveryNotice = consumeLoadNotice();
-  if (!saved) { if (!recoveryNotice) save(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); return; }
+  if (!saved) { if (!recoveryNotice) save(); renderScene(true); refresh(); if (recoveryNotice) say(recoveryNotice); return; }
   try { game = Game.fromRecord(saved.record); restoredExistingGame = true; invalidateActions(); preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; applyPreferences(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); if (isBotTurn()) askBot(); }
   catch { say('A saved game was rejected; the corrupt record was left untouched.'); renderScene(); refresh(); }
 }
@@ -259,7 +264,7 @@ setPresentation('launch');
 // Let the loading state paint before WebGL setup and initial shader compilation.
 await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 scene = new BoardScene(sceneHost, pick); applyPreferences(); restore();
-void scene.whenReady().then(() => { boardReady = true; $('startup').hidden = true; if (isBotTurn()) askBot(); }).catch(error => { $('startup').querySelector('span')!.textContent = error.message; say(error.message); });
+void scene.whenReady().then(() => { boardReady = true; $('startup').hidden = true; refresh(); if (isBotTurn()) askBot(); }).catch(error => { $('startup').querySelector('span')!.textContent = error.message; say(error.message); });
 $('launch-resume').textContent = restoredExistingGame ? 'Resume match' : 'Take your seat';
 try { if (restoredExistingGame || sessionStorage.getItem('rift-launch-seen') === '1') setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } } catch { if (restoredExistingGame) setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } }
 $('explore-table').onclick = exploreTable;
@@ -369,7 +374,7 @@ sceneHost.addEventListener('focus', updateHighlights);
 sceneHost.addEventListener('blur', () => { releaseReveal(); updateHighlights(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) releaseReveal(); });
 window.addEventListener('beforeunload', save);
-window.addEventListener('pagehide', event => { resetBot(); if (!event.persisted) scene.dispose(); });
+window.addEventListener('pagehide', event => { resetBot(); if (!event.persisted) { boardReady = false; ++sceneEpoch; scene.dispose(); } });
 window.addEventListener('pageshow', event => { if (event.persisted && isBotTurn()) askBot(); });
 window.addEventListener('blur', releaseReveal);
 

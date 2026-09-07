@@ -12,6 +12,7 @@ import { createPiece, disposePieceAssets, type PieceFamily, type MaterialStyle }
 import { buildWorld, type BuiltWorld } from './world';
 import { loadStoneTexture, applyStoneDetail } from './surfaces';
 import { ReflectionMapLoader } from './reflections';
+import { planAssembly } from './assembly';
 import reflectionManifest from '../../public/assets/reflections/manifest.json';
 import type { Position, Action } from '../engine/types';
 import { squareIndex, macroIndex, macroOfSquare, macroSquares, inCheck } from '../engine/position';
@@ -80,6 +81,7 @@ export class BoardScene {
   private dragged = false;
   private cameraInteracting = false;
   private animation: { start: number | null; duration: number; update: (t: number) => void; finish: () => void } | null = null;
+  private assemblyState: { seed: number; step: number; total: number } | null = null;
   private preset: CameraPreset = 'white';
   private lastFrame = 0;
   private frameTimes: number[] = [];
@@ -435,6 +437,46 @@ export class BoardScene {
       });
       if (changed) { mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); }
     }
+  }
+
+  get assembling(): boolean { return this.assemblyState !== null; }
+
+  assemblePosition(position: Position, seed: number): Promise<void> {
+    this.skipAnimation(); this.clearCheckPulse();
+    this.position = { ...position, board: [...position.board] };
+    this.buildBoard(position);
+    if (this.appearance.reducedMotion) return Promise.resolve();
+    const plan = planAssembly(position.holes, seed);
+    this.clear(this.highlights);
+    for (const placement of plan.placements) this.tiles.get(placement.tile)!.position.copy(tilePoint(placement.slot));
+    this.updateTileShells();
+    this.assemblyState = { seed, step: 0, total: plan.solveSteps.length };
+    let completed = 0;
+    const from = new THREE.Vector3(), to = new THREE.Vector3();
+    return new Promise<void>(resolve => {
+      this.animation = {
+        start: null, duration: 3400,
+        update: t => {
+          const progress = THREE.MathUtils.clamp((t - .08) / .84, 0, 1) * plan.solveSteps.length;
+          const whole = Math.floor(progress);
+          while (completed < whole) {
+            const step = plan.solveSteps[completed++]!;
+            this.tiles.get(step.tile)!.position.copy(tilePoint(step.to));
+          }
+          const step = plan.solveSteps[completed];
+          if (step) this.tiles.get(step.tile)!.position.lerpVectors(from.copy(tilePoint(step.from)), to.copy(tilePoint(step.to)), ease(progress - whole));
+          if (this.assemblyState) this.assemblyState.step = completed;
+          this.riftPulse = Math.sin(Math.PI * t) * .2;
+        },
+        finish: () => {
+          // Piece transforms remain local to their original tile throughout the assembly.
+          for (const [tile, group] of this.tiles) group.position.copy(tilePoint(tile));
+          this.assemblyState = null; this.riftPulse = 0;
+          this.renderer.shadowMap.needsUpdate = true;
+          this.updateTileShells(); this.drawHighlights(); resolve();
+        },
+      };
+    });
   }
 
   async setPosition(position: Position, transition?: { previous: Position; action: Action }): Promise<void> {
@@ -846,6 +888,7 @@ export class BoardScene {
     return { samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
       cameraTravelling: this.cameraTravel !== null, cameraPosition: this.camera.position.toArray(), cameraTravelDestination: this.cameraTravel?.to.toArray() ?? null,
       checkPulseActive: this.checkPulse !== null,
+      assembling: this.assembling, assembly: this.assemblyState ? { ...this.assemblyState, tiles: [...this.tiles].map(([tile, group]) => ({ tile, position: group.position.toArray(), pieces: group.children.filter(child => child.userData.hitKind === 'piece').map(piece => ({ square: piece.userData.square as number, position: piece.position.toArray() })) })) } : null,
       maxTileLift: Math.max(0, ...Array.from(this.tiles.values(), tile => tile.position.y)), reducedMotion: this.appearance.reducedMotion, pendingSceneReadiness: this.readyAfterFrame.length,
       medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,
       p99Ms: frames[Math.floor(frames.length * .99)] ?? null, maxMs: frames.at(-1) ?? null, cpuMedianMs: cpu[Math.floor(cpu.length * .5)] ?? null, cpuP95Ms: cpu[Math.floor(cpu.length * .95)] ?? null, cpuMaxMs: cpu.at(-1) ?? null, skippedAnimations: this.skippedAnimations,

@@ -123,6 +123,18 @@ Exit: the actual public build and actual downloadable Windows artifact both pass
 
 ## Ownership, progress and completion
 
+### Added opening assembly requirement — September 7
+
+At first launch and when starting a New Match, present the opening as a shuffled
+table whose tiles repeatedly slide into their proper arrangement. Pieces begin
+at their correct tile-local positions and travel only with those tiles. This is
+presentation choreography: it neither plays actions nor applies normal passenger
+or king-anchoring restrictions. Keep the actual starting record unchanged, gate
+play and bot dispatch until settlement, support skipping and reduced motion,
+and preserve existing saved-match, import, replay and lesson flows without
+reshuffling. Inspect actual first-frame, intermediate and settled footage before
+acceptance, including interruption and bot timing.
+
 Use bounded parallel lanes for geometry/assets, renderer/environment, UI/interaction and independent review when independent work is available. Reserve files before writes; root owns cross-cutting interaction contracts, integration, acceptance and publishing. Existing rules/match/API behavior stays under deterministic regression checks. Avoid duplicating the same test or expensive screenshot sweep across agents.
 
 Progress milestones are evidence-based: baseline/reproduction 10%; accepted vertical slice 25%; integrated art and interaction redesign 50%; completed hierarchical visual loop 70%; mode matrix/full games 85%; final native/public release proof 100%. Writing this plan or generating a mockup does not advance implementation to those milestones.

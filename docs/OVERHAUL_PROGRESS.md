@@ -132,3 +132,60 @@ Runtime RoomEnvironment/PMREM generation and the render-target reflection cache 
 `native-baked-reflections-1` completes the native development matrix with ten originals, identical start/end build `7acf0998f63b460429fa`, zero errors and verified reflection assets under the unchanged content policy. Independent review inspects all ten and passes eight size/zoom views plus worst-size Atelier and internally scrolling New Match dialogs. No visible reflection seam, patch, clipping or contrast regression is found. This remains development-only static evidence; final packaged interaction and distribution acceptance are pending.
 
 Loader review adds ordinary-build PNG reconstruction and raw texel digest verification, complete nine-map successful production-loader tests, exactly-once texture disposal, and cancellation of image source requests. All 49 tests and production build pass (`eb0f1977cc0accd16324`). The metadata-free opaque PNG codec is bounded to the supported dimensions and rejects corrupt chunks, unsupported format/filter data and nonzero padding. The standalone manifest remains independently retrievable distribution provenance; runtime embeds it for native CSP compatibility. No producer or adopted asset bytes changed. Final visual recapture, resource/performance measurements and full-product acceptance remain open.
+
+`final-candidate-5` completes all 216 board views and twelve application views on
+clean source `a09d53b`, build `eb0f1977cc0accd16324`, without errors. Independent
+reviews inspect all 72 cells for each of Gallery, Nocturne and Daylight; Gallery
+and Daylight additionally inspect selected original images. All pass. Root opens
+all twelve original application images and passes the desktop/phone/tablet
+layout check. The sixteen `motion-baked-final-1` videos completed on that build;
+their actual-video review is separate. A later detail attempt did not reach the
+app because the preview server had stopped; that failed receipt is retained.
+
+The owner then requested a shuffled-tile opening that solves itself while pieces
+remain attached to their correct tiles. The implementation uses a seeded,
+24-slide reversible tile plan and a 3.4-second presentation animation at first
+launch and New Match. It changes no game actions, snaps on skip/reduced motion,
+and keeps bot dispatch and board interaction gated while assembling. All 55
+tests and the production build pass (`501bc1f3e7fd5cf43926`); actual first-frame,
+piece attachment, interruption and bot timing remain runtime acceptance work.
+The earlier image/video results retain their exact pre-assembly build scope.
+
+Prepared product harnesses now distinguish natural check feedback from separately
+labeled fixture-derived coverage, observe the immediate check-clearing action
+before a bot reply, and require a new game identity when importing an identical
+record. The fallback fixture's B/C and side transformations pass all twelve
+engine checks in `mode-check-fixture-verification-2.json`. Offline tests compare
+actual cached asset bytes; they no longer fetch intentionally uncached install
+metadata while offline. The old record remains provenance. These are preparation
+and deterministic checks, not completed real-UI matrix or release evidence.
+
+`startup-assembly-1` passes all seven existing actual-UI startup checks on
+`501bc1f3e7fd5cf43926`. Independent renderer review verifies synchronous shuffled
+placement before first submission, tile-local piece ownership, instanced-shell
+updates and exact skip settlement. Its error/teardown findings are repaired.
+`assembly-candidate-1`, build `1e77948dc9eaa2380a92`, passes five real-UI checks:
+first-frame shuffle and locked input, New Match skip, deferred real bot startup,
+preserved non-assembly flows and reduced motion. The first observed renderer
+submission is frame 1 with the shuffled state; all 54 collected samples preserve
+piece-local transforms. Actual video critique and a second-New-Match interruption
+probe remain pending. All eight core move videos from the prior baked-reflection
+build pass independent sampled review; those videos are not relabeled as this
+later source build.
+
+The second assembly run passes all six UI checks, including replacing an active
+assembly with a second New Match. Independent footage review passes the repeated
+slides and attached pieces but finds stale shadows after Skip. Assembly
+settlement now explicitly invalidates the shadow map. `assembly-candidate-3`
+passes all six checks on `c05c79d7d458af5b75f0`; root inspects the corrected Skip
+original and finds the empty tiles clean. Independent visual closure is pending.
+The 3.72-second actual opening clip from candidate 1 has been presented to the
+owner, with its separate Skip defect disclosed rather than hidden.
+
+The prior baked-build promotion review is inconclusive for the transient
+crossfade: all eight settled promoted classes pass, but the bounded frame samples
+miss the transformation. This remains an open motion-evidence row. The new
+two-phase public-upgrade harness passes independent source review, including
+exact v1/current network and cache bytes, full browser shutdown for worker
+activation, source bindings and preserved failure prefixes. Neither phase has
+run against the public site yet, and no release has been published.
