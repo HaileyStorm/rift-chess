@@ -1,0 +1,13 @@
+{
+  "started": "2026-09-07T04:39:06.766Z",
+  "checks": [
+    "undo cancels a delayed real worker before any stale commit",
+    "new game rejects delayed previous-game worker",
+    "draw decline during bot thought restarts valid search",
+    "board remains fully visible at 1266x680 CSS pixels"
+  ],
+  "errors": [],
+  "status": "pass",
+  "finished": "2026-09-07T04:40:18.887Z",
+  "measurement_note": "Concurrent performance samples excluded; use performance.json."
+}

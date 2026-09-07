@@ -1,0 +1,15 @@
+{
+  "rules_version": "rift-chess/1.0",
+  "replayed_games": 120,
+  "replayed_actions": 14290,
+  "fixtures": 14,
+  "fixture_successors": 223,
+  "orthodox_opening_perft": {
+    "1": 20,
+    "2": 400,
+    "3": 8902,
+    "4": 197281
+  },
+  "elapsed_seconds": 8.225,
+  "scope": "Same-engine replay + orthodox regression, not independent variant proof or human playtesting"
+}

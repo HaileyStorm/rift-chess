@@ -1,0 +1,16 @@
+{
+  "rules_version": "rift-chess/1.0",
+  "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "command": "python reference/run_final_audit.py --workers 4",
+  "workers": 4,
+  "elapsed_seconds": 17.192,
+  "games": 120,
+  "draw_policy": "prompt",
+  "time_limits_are_truncations_not_draws": true,
+  "source_sha256": {
+    "run_final_audit.py": "8b0fdcad148177372b89c4424d9dcce6e54bb3cf0af5c699466d18dc3da4b5d2",
+    "rift_core.py": "14840702f0c8b4d93d5ba3ca2283a0696df189aff106474d4e1af5e7d6f75758",
+    "sliding_chess_sim.py": "b14ded5f2f4ef0f9cc8a66a41db8d915ae64e6d2687b7ec16fea1faba9904c49"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "typescript": {
+    "command": "npm test",
+    "files": 4,
+    "tests": 35,
+    "duration_seconds": 19.17
+  },
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0
+  },
+  "dependency_audit": {
+    "command": "npm audit --json",
+    "vulnerabilities": 0
+  },
+  "api_documentation_example": {
+    "action_id": 20825,
+    "result": "legal opening Shift A2 to B2"
+  },
+  "original_python": {
+    "tests": 67,
+    "duration_seconds": 69.52
+  },
+  "limitations": "Local Windows gates. No hosted test CI, Linux/macOS execution, human usability study or Elo evidence."
+}

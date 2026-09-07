@@ -1,0 +1,32 @@
+{
+  "name": "rift-chess",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline 3D chess on a moving board",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && node scripts/prepare-static.mjs",
+    "test": "vitest run",
+    "desktop": "npm run build && electron .",
+    "package": "npm run build && node scripts/package-electron.mjs",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@electron/asar": "3.4.1",
+    "@types/node": "26.4.1",
+    "@types/three": "0.185.4",
+    "electron": "44.2.0",
+    "marked": "18.0.11",
+    "playwright": "1.63.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
+  }
+}

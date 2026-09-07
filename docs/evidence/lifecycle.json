@@ -1,0 +1,52 @@
+{
+  "started": "2026-09-07T04:39:19.707Z",
+  "checks": [
+    {
+      "name": "all ordinary and Shift promotion choices before atomic commit",
+      "status": "pass"
+    },
+    {
+      "name": "loaded rook Shift consumes castling right",
+      "status": "pass"
+    },
+    {
+      "name": "transport consumes fresh pawn eligibility",
+      "status": "pass"
+    },
+    {
+      "name": "empty Shift expires en passant",
+      "status": "pass"
+    },
+    {
+      "name": "all progress policies at 100 and prompt dismissal",
+      "status": "pass"
+    },
+    {
+      "name": "threefold survives actual browser reload",
+      "status": "pass"
+    },
+    {
+      "name": "stalemate and bare-kings endings",
+      "status": "pass"
+    },
+    {
+      "name": "nonmoving hotseat player can resign; earlier replay stays ongoing",
+      "status": "pass"
+    },
+    {
+      "name": "new-game Escape preserves current match",
+      "status": "pass"
+    },
+    {
+      "name": "corrupt file rejected; raw replay adapter accepted",
+      "status": "pass"
+    },
+    {
+      "name": "semantic corruption restores known-good recovery copy",
+      "status": "pass"
+    }
+  ],
+  "errors": [],
+  "status": "pass",
+  "finished": "2026-09-07T04:41:06.362Z"
+}

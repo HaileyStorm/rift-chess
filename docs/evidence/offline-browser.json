@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "service worker installed and activated",
+    "browser process closed",
+    "cold browser restart offline restored exact record",
+    "ordinary canvas move and local bot reply after cold offline restart"
+  ],
+  "errors": [],
+  "started": "2026-09-07T04:33:59.835Z",
+  "status": "pass",
+  "finished": "2026-09-07T04:34:22.808Z"
+}

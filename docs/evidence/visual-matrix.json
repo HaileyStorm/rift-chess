@@ -1,0 +1,870 @@
+{
+  "started": "2026-09-07T03:33:34.681Z",
+  "captures": [
+    {
+      "name": "gallery-classic-ceramic-white",
+      "metrics": {
+        "samples": 122,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 66.39999999999964,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 156,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-classic-ceramic-black",
+      "metrics": {
+        "samples": 174,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 49.89999999999782,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 156,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-classic-ceramic-overview",
+      "metrics": {
+        "samples": 222,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.600000000000364,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 156,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-classic-ceramic-top",
+      "metrics": {
+        "samples": 272,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 156,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-faceted-metal-white",
+      "metrics": {
+        "samples": 352,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-faceted-metal-black",
+      "metrics": {
+        "samples": 399,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-faceted-metal-overview",
+      "metrics": {
+        "samples": 444,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "gallery-faceted-metal-top",
+      "metrics": {
+        "samples": 492,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-classic-metal-white",
+      "metrics": {
+        "samples": 572,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-classic-metal-black",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-classic-metal-overview",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-classic-metal-top",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-faceted-wood-white",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-faceted-wood-black",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-faceted-wood-overview",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "nocturne-faceted-wood-top",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 163,
+          "textures": 36
+        },
+        "calls": 344,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-classic-wood-white",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-classic-wood-black",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-classic-wood-overview",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-classic-wood-top",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-faceted-ceramic-white",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "white",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-faceted-ceramic-black",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.5,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "black",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-faceted-ceramic-overview",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "daylight-faceted-ceramic-top",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "width": 968,
+        "height": 835,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "top",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "1280-low-reduced-motion",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "low",
+        "width": 664,
+        "height": 635,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    },
+    {
+      "name": "390-mobile",
+      "metrics": {
+        "samples": 600,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 33.400000000001455,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "low",
+        "width": 369,
+        "height": 343,
+        "memory": {
+          "geometries": 162,
+          "textures": 36
+        },
+        "calls": 343,
+        "preset": "overview",
+        "revision": 0,
+        "actions": 0
+      }
+    }
+  ],
+  "errors": [],
+  "cycles": [
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 33.200000000004366,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 33.400000000001455,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 49.80000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 50,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 50,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 66.70000000000437,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 66.80000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 66.70000000000437,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 66.80000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 66.80000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.69999999999709,
+      "p95Ms": 133.29999999999563,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.700000000004366,
+      "p95Ms": 149.89999999999418,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.70000000001164,
+      "p95Ms": 149.89999999999418,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.80000000000291,
+      "p95Ms": 133.29999999999563,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.80000000000291,
+      "p95Ms": 66.60000000000582,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 16.90000000000873,
+      "p95Ms": 66.5,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 32.69999999999709,
+      "p95Ms": 66.5,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 33.09999999999127,
+      "p95Ms": 50.60000000000582,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 32.90000000000873,
+      "p95Ms": 50.30000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    },
+    {
+      "samples": 600,
+      "medianMs": 32.90000000000873,
+      "p95Ms": 50.30000000000291,
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "quality": "low",
+      "width": 968,
+      "height": 835,
+      "memory": {
+        "geometries": 162,
+        "textures": 36
+      },
+      "calls": 343,
+      "preset": "overview",
+      "revision": 0,
+      "actions": 0
+    }
+  ],
+  "status": "pass",
+  "finished": "2026-09-07T03:35:23.941Z"
+}

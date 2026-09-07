@@ -1,0 +1,111 @@
+{
+  "started": "2026-09-07T02:56:21.969Z",
+  "url": "http://127.0.0.1:4173/",
+  "browser": "Chrome",
+  "tests": [
+    {
+      "name": "ordinary move from actual 3D piece with hidden/revealed hints",
+      "status": "pass",
+      "elapsed_ms": 6040
+    },
+    {
+      "name": "cut_check_ray",
+      "status": "pass",
+      "elapsed_ms": 6130
+    },
+    {
+      "name": "restore_check_ray",
+      "status": "pass",
+      "elapsed_ms": 6538
+    },
+    {
+      "name": "shift_promotion",
+      "status": "pass",
+      "elapsed_ms": 8249
+    },
+    {
+      "name": "backward_pawn_ride",
+      "status": "pass",
+      "elapsed_ms": 6845
+    },
+    {
+      "name": "orthodox_castling",
+      "status": "pass",
+      "elapsed_ms": 5327
+    },
+    {
+      "name": "en_passant",
+      "status": "pass",
+      "elapsed_ms": 4733
+    },
+    {
+      "name": "auto_at_99",
+      "status": "pass",
+      "elapsed_ms": 7199
+    },
+    {
+      "name": "prompt_at_99",
+      "status": "pass",
+      "elapsed_ms": 5648
+    },
+    {
+      "name": "mate_over_auto100",
+      "status": "pass",
+      "elapsed_ms": 5072
+    },
+    {
+      "name": "third_repetition_on_next_reverse",
+      "status": "pass",
+      "elapsed_ms": 8788
+    },
+    {
+      "name": "king-exposing Shift rejected without mutation",
+      "status": "pass",
+      "elapsed_ms": 4464
+    },
+    {
+      "name": "draw offer decline and acceptance use other player",
+      "status": "pass",
+      "elapsed_ms": 7699
+    },
+    {
+      "name": "camera gesture and presets cannot commit",
+      "status": "pass",
+      "elapsed_ms": 7276
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "piece-selected-hints-hidden.png",
+    "piece-selected-hints-revealed.png",
+    "cut_check_ray.png",
+    "restore_check_ray.png",
+    "shift_promotion.png",
+    "backward_pawn_ride.png",
+    "orthodox_castling.png",
+    "en_passant.png",
+    "auto_at_99.png",
+    "prompt_at_99.png",
+    "mate_over_auto100.png",
+    "third_repetition_on_next_reverse.png"
+  ],
+  "metrics": {
+    "samples": 600,
+    "medianMs": 50.10000000000582,
+    "p95Ms": 266.79999999998836,
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "quality": "balanced",
+    "width": 968,
+    "height": 835,
+    "memory": {
+      "geometries": 176,
+      "textures": 36
+    },
+    "calls": 493,
+    "preset": "top",
+    "revision": 0,
+    "actions": 0
+  },
+  "status": "pass",
+  "finished": "2026-09-07T02:58:58.062Z"
+}

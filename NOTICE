@@ -1,0 +1,16 @@
+Rift Chess
+Copyright 2026 HaileyStorm
+
+Original implementation and procedural artwork are provided under the MIT license.
+Third-party components retain their own licenses; see THIRD_PARTY_NOTICES.md and
+the licenses bundled with the Electron distribution.
+
+Inspired by xkcd #3139, Chess Variant, by Randall Munroe:
+https://xkcd.com/3139/
+The comic is not bundled or relicensed. This is an independent project with no
+official xkcd or OpenAI endorsement. GPT-6 Astra assisted implementation and review.
+No model-strength, human-usability or benchmark claim follows from that assistance.
+
+The original handoff, research summaries and Python reference retain their
+historical provenance. The ZIP in provenance/ preserves the supplied package;
+its manifest does not describe subsequently authored application files.

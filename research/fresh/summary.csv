@@ -1,0 +1,6 @@
+group,games,plies,shifts,shift_action_percent,loaded_share_percent,mean_first_shift_action_1based,mean_hole_masks,mean_branching,wins_challenger,losses_challenger,white_wins,black_wins,true_draws,truncated,shift_check_answers,shift_checks,restriction_fallbacks,end_reasons
+baseline,16,2010,425,21.144278606965173,14.117647058823529,16.4375,17.4375,16.493778778335365,,,1,1,11,3,15,28,0,"{""bare_kings"": 7, ""checkmate"": 2, ""threefold"": 4, ""truncated"": 3}"
+piece_first,32,5144,544,10.57542768273717,17.279411764705884,26.35483870967742,13.125,14.78025107688097,1,1,2,0,13,17,8,23,0,"{""bare_kings"": 10, ""checkmate"": 2, ""threefold"": 3, ""truncated"": 17}"
+shift_first,32,2940,1360,46.25850340136054,15.735294117647058,1.4375,17.53125,21.42746541019087,0,11,6,5,20,1,68,71,0,"{""checkmate"": 11, ""threefold"": 20, ""truncated"": 1}"
+shift_seeking,32,3828,1359,35.50156739811912,21.192052980132452,4.46875,24.03125,17.27861286737593,2,1,2,1,22,7,34,64,0,"{""bare_kings"": 1, ""checkmate"": 3, ""threefold"": 21, ""truncated"": 7}"
+two_ply,8,368,32,8.695652173913043,50.0,13,4.125,23.607269877368218,8,0,4,4,0,0,1,1,0,"{""checkmate"": 8}"
