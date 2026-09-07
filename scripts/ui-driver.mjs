@@ -77,20 +77,21 @@ export function createUiDriver(page) {
     return observation();
   }
 
-  async function perform(action, { onPreview, onCommit } = {}) {
+  async function perform(action, { onPreview, beforeCommit } = {}) {
     const before = action.type === 'shift' ? await stageShift(action, onPreview) : await observation();
     if (action.type === 'move') {
       await ensureIntent('move');
       await square(action.from);
+      if (!action.promotion) await beforeCommit?.();
       await square(action.to);
     }
-    if (action.type === 'shift') await page.locator('#confirm-shift').click();
+    if (action.type === 'shift') { if (!action.promotion) await beforeCommit?.(); await page.locator('#confirm-shift').click(); }
     if (action.promotion) {
       await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
       assert.equal((await observation()).revision, before.revision, 'Promotion must not commit before choice');
-      await onCommit?.({ phase: 'promotion', revision: before.revision, timestamp: Date.now() });
+      await beforeCommit?.();
       await page.locator(`#promotion-dialog button[value="${action.promotion}"]`).click();
-    } else await onCommit?.({ phase: 'commit', revision: before.revision, timestamp: Date.now() });
+    }
     return waitForCommit(before.revision);
   }
 
@@ -105,13 +106,14 @@ export function createUiDriver(page) {
     await page.locator('#confirm-shift').waitFor({ state: 'visible' });
     assert.equal((await observation()).revision, before.revision, 'Passenger Shift must remain a rendered preview until confirmation');
     await hooks.onPreview?.({ phase: 'preview', revision: before.revision, timestamp: Date.now() });
+    if (!action.promotion) await hooks.beforeCommit?.();
     await page.locator('#confirm-shift').click();
     if (action.promotion) {
       await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
       assert.equal((await observation()).revision, before.revision, 'Passenger promotion must not commit before choice');
-      await hooks.onCommit?.({ phase: 'promotion', revision: before.revision, timestamp: Date.now() });
+      await hooks.beforeCommit?.();
       await page.locator(`#promotion-dialog button[value="${action.promotion}"]`).click();
-    } else await hooks.onCommit?.({ phase: 'commit', revision: before.revision, timestamp: Date.now() });
+    }
     return waitForCommit(before.revision);
   }
 

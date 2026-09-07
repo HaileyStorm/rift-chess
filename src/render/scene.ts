@@ -18,7 +18,7 @@ type CameraPreset = 'white' | 'black' | 'overview' | 'top';
 type Theme = 'gallery' | 'nocturne' | 'daylight';
 type Quality = 'low' | 'balanced' | 'high';
 interface Appearance { theme: Theme; family: PieceFamily; material: MaterialStyle; quality: Quality; reducedMotion: boolean }
-interface Highlights { selectedSquare: number | null; selectedTile: number | null; legalActions: Action[]; showMoves: boolean; showShifts: boolean; focusSquare: number | null }
+interface Highlights { selectedSquare: number | null; selectedTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
 const TILE_FINISHES = {
   gallery: { light: 0xbacdc6, dark: 0x344957, edge: 0x303c45, trim: 0xbd9e60, fill: 0x84bcd4 },
   nocturne: { light: 0xa6bbd1, dark: 0x263650, edge: 0x202838, trim: 0x8c99c1, fill: 0x8093ff },
@@ -62,7 +62,7 @@ export class BoardScene {
   private fxaa: ShaderPass;
   private cameraTravel: { start: number; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
   private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: false };
-  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, showShifts: true, focusSquare: null };
+  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, focusSquare: null };
   private frame = 0;
   private resizeObserver: ResizeObserver;
   private disposed = false;
@@ -74,12 +74,16 @@ export class BoardScene {
   private lastFrame = 0;
   private frameTimes: number[] = [];
   private shadowFrames = 0;
+  private skippedAnimations = 0;
+  private renderedFrames = 0;
+  private lastRenderedAt = 0;
   private cpuFrameTimes: number[] = [];
   private sceneReady: Promise<void> = Promise.resolve();
+  private readyAfterFrame: Array<() => void> = [];
 
   constructor(private container: HTMLElement, private onPick: (square: number, tile: number, kind?: 'piece' | 'tile' | 'shift') => void) {
     const stone = loadStoneTexture(); this.stoneTexture = stone.texture;
-    this.surfaceReady = stone.ready.then(async () => { this.surfaceLoaded = true; if (!this.disposed) { this.applyWorldReflection(); await this.renderer.compileAsync(this.scene, this.camera); } });
+    this.surfaceReady = stone.ready.then(() => { this.surfaceLoaded = true; if (!this.disposed) { this.applyWorldReflection(); return this.prepareScene(); } });
     void this.surfaceReady.catch(error => { this.assetError = error.message; });
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -160,7 +164,16 @@ export class BoardScene {
   private hit(x: number, y: number): { square: number; tile: number; kind: 'piece' | 'tile' | 'shift' } | null {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.ray.setFromCamera(new THREE.Vector2((x - rect.left) / rect.width * 2 - 1, 1 - (y - rect.top) / rect.height * 2), this.camera);
+    const intersection = this.ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3());
+    const square = intersection && Math.abs(intersection.x) < 4 && Math.abs(intersection.z) < 4
+      ? Math.floor(3.999 - intersection.z) * 8 + Math.floor(intersection.x + 4) : null;
+    const hole = square !== null && this.position && (this.position.holes & (1 << macroOfSquare(square)))
+      ? { square, tile: macroOfSquare(square), kind: 'tile' as const } : null;
+    const holeDistance = hole ? this.ray.ray.origin.distanceTo(intersection!) : Infinity;
     for (const hit of this.ray.intersectObjects([this.highlights, this.board], true)) {
+      // Visible pieces/handles above the board still win; geometry seen through a hole must not
+      // steal its input merely because the adjacent platform has a deeper side or undercarriage.
+      if (hole && hit.distance > holeDistance + .001) return hole;
       let object: THREE.Object3D | null = hit.object;
       while (object) {
         if (object.userData.hitKind === 'shift') { const tile = object.userData.tile as number; return { square: macroSquares(tile)[0]!, tile, kind: 'shift' }; }
@@ -169,11 +182,7 @@ export class BoardScene {
         object = object.parent;
       }
     }
-    const intersection = this.ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3());
-    if (intersection && Math.abs(intersection.x) < 4 && Math.abs(intersection.z) < 4) {
-      const square = Math.floor(3.999 - intersection.z) * 8 + Math.floor(intersection.x + 4);
-      return { square, tile: macroOfSquare(square), kind: 'tile' };
-    }
+    if (square !== null) return { square, tile: macroOfSquare(square), kind: 'tile' };
     return null;
   }
 
@@ -214,7 +223,7 @@ export class BoardScene {
       for (const [tile, group] of this.tiles) {
         const lift = this.appearance.reducedMotion ? 0 : tile === this.highlightState.selectedTile ? .11 : tile === this.hoveredTile ? .025 : 0;
         const delta = lift - group.position.y;
-        if (delta !== 0) { group.position.y = Math.abs(delta) < .0002 ? lift : group.position.y + delta * .20; this.renderer.shadowMap.needsUpdate = true; }
+        if (delta !== 0) { group.position.y = this.appearance.reducedMotion || Math.abs(delta) < .0002 ? lift : group.position.y + delta * .20; this.renderer.shadowMap.needsUpdate = true; }
       }
     }
     if (this.cameraTravel) { const travel = this.cameraTravel; const t = ease(Math.min(1, (now - travel.start) / travel.duration)); this.camera.position.lerpVectors(travel.from, travel.to, t); this.controls.target.lerpVectors(travel.fromTarget, travel.target, t); this.camera.fov = THREE.MathUtils.lerp(travel.fromFov, travel.toFov, t); this.camera.updateProjectionMatrix(); if (t === 1) this.cameraTravel = null; }
@@ -226,7 +235,9 @@ export class BoardScene {
     this.renderer.info.reset();
     if (this.renderer.shadowMap.needsUpdate) this.shadowFrames++;
     if (this.composer && this.appearance.quality !== 'low') this.composer.render(); else this.renderer.render(this.scene, this.camera);
-    this.cpuFrameTimes.push(performance.now() - cpuStart); if (this.cpuFrameTimes.length > 1800) this.cpuFrameTimes.shift();
+    this.lastRenderedAt = performance.now(); this.renderedFrames++;
+    this.readyAfterFrame.splice(0).forEach(resolve => resolve());
+    this.cpuFrameTimes.push(this.lastRenderedAt - cpuStart); if (this.cpuFrameTimes.length > 1800) this.cpuFrameTimes.shift();
     this.frame = requestAnimationFrame(this.renderFrame);
   };
 
@@ -409,6 +420,7 @@ export class BoardScene {
       const originals = Array.isArray(material) ? material : [material];
       const clones = originals.map(original => {
         const clone = original.clone() as THREE.Material & { opacity: number; transparent: boolean; depthWrite: boolean };
+        clone.onBeforeCompile = original.onBeforeCompile; clone.customProgramCacheKey = original.customProgramCacheKey;
         clone.transparent = true; clone.depthWrite = false; clone.opacity = 1;
         return clone;
       });
@@ -509,11 +521,11 @@ export class BoardScene {
   }
 
   skipAnimation() {
-    if (this.animation) { const transaction = this.animation; this.animation = null; transaction.finish(); }
+    if (this.animation) { const transaction = this.animation; this.animation = null; this.skippedAnimations++; transaction.finish(); }
   }
 
   setHighlights(highlights: Highlights) {
-    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.showMoves}:${highlights.showShifts}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
+    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
     this.highlightState = highlights; this.availableTiles = new Set(highlights.legalActions.filter(a => a.type === 'shift').map(a => macroIndex(a.from)));
     if (key !== this.highlightKey) { this.highlightKey = key; if (!this.animation) this.drawHighlights(); }
   }
@@ -557,8 +569,8 @@ export class BoardScene {
   private drawHighlights() {
     this.clear(this.highlights);
     if (!this.position) return;
-    const { selectedSquare, selectedTile, legalActions, showMoves, showShifts, focusSquare } = this.highlightState;
-    if (showShifts) {
+    const { selectedSquare, selectedTile, legalActions, showMoves, focusSquare } = this.highlightState;
+    {
       const done = new Set<number>(); const arrows = new Set<string>();
       for (const action of legalActions) if (action.type === 'shift') {
         const tile = macroIndex(action.from); const dest = macroIndex(action.to);
@@ -622,15 +634,43 @@ export class BoardScene {
   }
 
   configure(options: Partial<Appearance>) {
-    this.skipAnimation();
     const next = { ...this.appearance, ...options };
-    const changed = JSON.stringify(next) !== JSON.stringify(this.appearance);
+    const worldChanged = next.theme !== this.appearance.theme || next.quality !== this.appearance.quality;
+    const boardChanged = next.theme !== this.appearance.theme || next.family !== this.appearance.family || next.material !== this.appearance.material;
+    const motionChanged = next.reducedMotion !== this.appearance.reducedMotion;
     this.appearance = next;
-    if (changed) {
-      this.buildEnvironment(); if (this.position) this.buildBoard(this.position); this.resize();
-      this.sceneReady = this.surfaceReady.then(() => { if (!this.disposed) return this.renderer.compileAsync(this.scene, this.camera).then(() => undefined); });
-      void this.sceneReady.catch(error => { this.assetError = error.message; });
+    if (worldChanged || boardChanged || motionChanged) {
+      this.skipAnimation();
+      this.controls.enableDamping = !next.reducedMotion;
+      if (motionChanged && next.reducedMotion) {
+        if (this.cameraTravel) {
+          this.camera.position.copy(this.cameraTravel.to); this.controls.target.copy(this.cameraTravel.target);
+          this.camera.fov = this.cameraTravel.toFov; this.camera.updateProjectionMatrix(); this.cameraTravel = null;
+        }
+        for (const tile of this.tiles.values()) tile.position.y = 0;
+        this.renderer.shadowMap.needsUpdate = true;
+      }
+      if (worldChanged) { this.buildEnvironment(); this.resize(); }
+      if (boardChanged && this.position) this.buildBoard(this.position);
+      if (worldChanged || boardChanged) {
+        this.sceneReady = this.surfaceLoaded ? this.prepareScene() : this.surfaceReady;
+      } else if (motionChanged) this.sceneReady = this.surfaceLoaded ? this.afterNextFrame() : this.surfaceReady;
+      void this.sceneReady.catch(error => { if (!this.disposed) this.assetError = error.message; });
     }
+  }
+
+  private async prepareScene(): Promise<void> {
+    if (this.disposed) throw new DOMException('Renderer disposed before frame readiness.', 'AbortError');
+    // compileAsync polls material properties after disposal during rapid UI changes. A completed
+    // render submission warms the current scene without retaining a stale set of materials.
+    this.renderer.compile(this.scene, this.camera);
+    await this.afterNextFrame();
+  }
+
+  private async afterNextFrame(): Promise<void> {
+    if (this.disposed) throw new DOMException('Renderer disposed before frame readiness.', 'AbortError');
+    await new Promise<void>(resolve => this.readyAfterFrame.push(resolve));
+    if (this.disposed) throw new DOMException('Renderer disposed before frame readiness.', 'AbortError');
   }
 
   /** Read-only instrumentation: test clicks still pass through the real canvas. */
@@ -644,17 +684,24 @@ export class BoardScene {
     const frames = [...this.frameTimes].sort((a, b) => a - b);
     const cpu = [...this.cpuFrameTimes].sort((a, b) => a - b);
     const gl = this.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    return { samples: frames.length, medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,
-      p99Ms: frames[Math.floor(frames.length * .99)] ?? null, maxMs: frames.at(-1) ?? null, cpuMedianMs: cpu[Math.floor(cpu.length * .5)] ?? null, cpuP95Ms: cpu[Math.floor(cpu.length * .95)] ?? null, cpuMaxMs: cpu.at(-1) ?? null,
+    return { samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
+      cameraTravelling: this.cameraTravel !== null, cameraPosition: this.camera.position.toArray(), cameraTravelDestination: this.cameraTravel?.to.toArray() ?? null,
+      maxTileLift: Math.max(0, ...Array.from(this.tiles.values(), tile => tile.position.y)), reducedMotion: this.appearance.reducedMotion, pendingSceneReadiness: this.readyAfterFrame.length,
+      medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,
+      p99Ms: frames[Math.floor(frames.length * .99)] ?? null, maxMs: frames.at(-1) ?? null, cpuMedianMs: cpu[Math.floor(cpu.length * .5)] ?? null, cpuP95Ms: cpu[Math.floor(cpu.length * .95)] ?? null, cpuMaxMs: cpu.at(-1) ?? null, skippedAnimations: this.skippedAnimations,
       renderer: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), quality: this.appearance.quality,
-      width: this.renderer.domElement.width, height: this.renderer.domElement.height, memory: { ...this.renderer.info.memory }, calls: this.renderer.info.render.calls, callsScope: 'complete scene, shadows and postprocessing', shadowFrames: this.shadowFrames, preset: this.preset, shiftTiles: [...this.availableTiles], cameraDistance: this.camera.position.distanceTo(this.controls.target), assetError: this.assetError };
+      width: this.renderer.domElement.width, height: this.renderer.domElement.height, memory: { ...this.renderer.info.memory }, calls: this.renderer.info.render.calls, callsScope: 'complete scene, shadows and postprocessing', shadowFrames: this.shadowFrames, preset: this.preset, focusSquare: this.highlightState.focusSquare, moveHints: this.highlightState.showMoves, shiftTiles: [...this.availableTiles], cameraDistance: this.camera.position.distanceTo(this.controls.target), assetError: this.assetError };
   }
 
   resetMetrics() { this.frameTimes.length = 0; this.cpuFrameTimes.length = 0; this.lastFrame = 0; this.shadowFrames = 0; }
-  async whenReady(): Promise<void> { await this.surfaceReady; await this.sceneReady; }
+  async whenReady(): Promise<void> {
+    await this.surfaceReady; await this.sceneReady;
+    if (this.disposed) throw new DOMException('Renderer disposed before frame readiness.', 'AbortError');
+  }
 
   dispose() {
     this.skipAnimation(); this.disposed = true; cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
+    this.readyAfterFrame.splice(0).forEach(resolve => resolve());
     document.removeEventListener('visibilitychange', this.visibilityChange);
     this.renderer.domElement.removeEventListener('pointerdown', this.pointerDown); this.renderer.domElement.removeEventListener('pointermove', this.pointerMove);
     this.renderer.domElement.removeEventListener('pointerup', this.pointerUp); this.renderer.domElement.removeEventListener('pointercancel', this.pointerCancel);

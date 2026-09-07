@@ -20,10 +20,10 @@ app.innerHTML = [
   '<div id="quiet-prompt" class="quiet-prompt response-bar" hidden><p id="quiet-message"></p><button id="quiet-offer-draw">Offer draw</button><button id="quiet-dismiss">Dismiss reminder</button></div><div id="draw-response" class="response-bar" hidden><p id="draw-offer" class="muted" hidden></p><button id="accept-draw" hidden>Accept draw</button><button id="decline-draw" hidden>Decline draw</button></div>',
   '<section class="action-dock"><div class="intent-control" role="group" aria-label="Action type"><button id="move-mode" class="active" aria-pressed="true">Move</button><button id="shift-mode" aria-pressed="false">Shift <kbd>S</kbd></button></div><div class="selection-copy"><strong id="selection" aria-live="polite">Select a piece to move, or a tile handle to Shift.</strong><span id="selection-detail">Shift handles remain visible while ordinary move hints are hidden.</span></div><div class="commit-actions"><button id="shift-passenger" hidden>Shift this tile</button><button id="confirm-shift" class="brass" hidden>Confirm Shift</button><button id="cancel-selection" class="subtle" hidden>Cancel <kbd>Esc</kbd></button></div><button id="show-moves" class="subtle" aria-pressed="false">Show moves <kbd>H</kbd></button><button id="skip" class="subtle">Skip animation</button></section></section>',
   '<aside class="utility-deck" aria-label="Match tools"><details class="drawer" open><summary><span>Record</span><small id="record-count">0 actions</small></summary><div class="drawer-body"><div class="history-head"><span>Move history</span><button id="replay" aria-pressed="false">Replay</button></div><ol id="history" class="history"></ol><div id="replay-controls" class="replay-controls" hidden><button id="replay-back">‹ Previous</button><span id="replay-position"></span><button id="replay-next">Next ›</button><button id="replay-exit">Return to live match</button></div></div></details>',
-  '<details class="drawer"><summary><span>Learn the rift</span><small>4 guided tables</small></summary><div class="drawer-body tutorials"><button data-tutorial="ordinary"><b>01</b> Find an ordinary move</button><button data-tutorial="emptyShift"><b>02</b> Shift an empty tile</button><button data-tutorial="loadedShift"><b>03</b> Carry one passenger</button><button data-tutorial="cutCheck"><b>04</b> Cut a checking ray</button></div></details>',
+  '<details class="drawer"><summary><span>Learn the rift</span><small>4 guided tables</small></summary><div class="drawer-body tutorials"><button data-tutorial="ordinary"><b>01</b> Find an ordinary move</button><button data-tutorial="emptyShift"><b>02</b> Shift an empty tile</button><button data-tutorial="loadedShift"><b>03</b> Carry one passenger</button><button data-tutorial="cutCheck"><b>04</b> Cut a checking ray</button><div class="learn-links"><a href="./guide.html">How to play</a><a href="./rules.html">Full rules</a><button id="about" class="subtle">About & credits</button></div></div></details>',
   '<details class="drawer"><summary><span>Match & view</span><small>camera, draws, saves</small></summary><div class="drawer-body tool-grid"><div class="camera-grid"><button data-camera="white">1 White</button><button data-camera="black">2 Black</button><button data-camera="overview">3 Overview</button><button data-camera="top">4 Top</button><button id="orbit-left">Orbit left</button><button id="orbit-right">Orbit right</button><button id="explore-table">Explore table</button></div><div id="draw-area" class="draw-area"><button id="offer-draw">Offer draw</button></div><button id="resign" class="subtle">Resign match</button><div class="save-row"><button id="export">Export</button><label class="import" tabindex="0" role="button">Import<input id="import" type="file" accept="application/json,.json" /></label><a href="./support.html">Support</a></div></div></details>',
   '<details id="legal-panel" class="drawer"><summary><span>Action ledger</span><small>legal actions</small></summary><div id="legal-list" class="drawer-body legal-list"></div></details></aside></main>',
-  '<footer><span>Rift Chess · offline, local, and fully playable without an account</span><button id="about">About & credits</button></footer>',
+  '<footer><span>Rift Chess · offline, local, and fully playable without an account</span></footer>',
   '<dialog id="new-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">NEW MATCH</p><button value="cancel">×</button></div><h2>Set the table</h2><p class="muted">Choose who moves, the rift layout, and when a quiet game may end.</p><fieldset><legend>Players</legend><label><input type="radio" name="mode" value="hotseat" checked> Hotseat</label><label><input type="radio" name="mode" value="bot-black"> Play White vs local bot</label><label><input type="radio" name="mode" value="bot-white"> Play Black vs local bot</label></fieldset><fieldset><legend>Opening layout</legend><label><input type="radio" name="layout" value="B"> B-rift</label><label><input type="radio" name="layout" value="C"> C-rift</label><label><input type="radio" name="layout" value="random" checked> Random B / C</label></fieldset><fieldset><legend>Quiet-action policy</legend><label><input type="radio" name="draw" value="prompt" checked> Ask both players at 100</label><label><input type="radio" name="draw" value="auto100"> Draw automatically at 100</label><label><input type="radio" name="draw" value="off"> Continue without a reminder</label></fieldset><label class="checkline"><input id="practice" type="checkbox" checked> Practice match — allow undo</label><p class="muted">A local bot declines draw offers; hotseat opponents can accept or decline here.</p><button id="start-game" class="brass" value="start">Start match</button></form></dialog>',
   '<dialog id="promotion-dialog" class="dialog promotion"><form method="dialog"><p class="eyebrow">PROMOTION</p><h2>Choose the new piece</h2><p class="muted">This choice is made before the move or Shift is committed.</p><div><button value="Q">Queen</button><button value="R">Rook</button><button value="B">Bishop</button><button value="N">Knight</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>',
   '<dialog id="settings-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">ATELIER</p><button value="close">×</button></div><h2>Appearance & access</h2><label>Environment<select name="theme"><option value="gallery">Gallery</option><option value="nocturne">Observatory</option><option value="daylight">Stone court</option></select></label><label>Pieces<select name="family"><option value="classic">Classic sculpture</option><option value="faceted">Faceted architecture</option></select></label><label>Material<select name="material"><option value="ceramic">Ceramic</option><option value="metal">Metal</option><option value="wood">Wood</option></select></label><label>Quality<select name="quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><label class="checkline"><input name="motion" type="checkbox"> Reduced motion</label><label class="checkline"><input name="contrast" type="checkbox"> High contrast</label><button class="brass" value="apply">Apply</button></form></dialog>',
@@ -70,11 +70,10 @@ function reasonText(reason: string | null, tile: number): string {
 }
 function save(): void { const issue = persistSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes }); if (issue) say(issue); }
 function chooseActor(title: string, detail: string, action: (side: 1 | -1) => void): void { actorDialogAction = action; $('actor-dialog-title').textContent = title; $('actor-dialog-detail').textContent = detail; ($('actor-dialog') as HTMLDialogElement).showModal(); }
-function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, showShifts: true, focusSquare: selectedSquare ?? (document.activeElement === sceneHost ? keyboardSquare : null) }); }
-function renderScene(previous?: Position, action?: Action): void {
-  const epoch = ++sceneEpoch; updateHighlights(); animating = Boolean(previous && action && replayIndex === null);
-  const transition = animating ? { previous: previous!, action: action! } : undefined;
-  void scene.setPosition(visiblePosition(), transition).finally(() => { if (sceneEpoch === epoch) { animating = false; refresh(); } });
+function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, focusSquare: document.activeElement === sceneHost ? keyboardSquare : null }); }
+function renderScene(): void {
+  const epoch = ++sceneEpoch; updateHighlights(); animating = false;
+  void scene.setPosition(visiblePosition()).finally(() => { if (sceneEpoch === epoch) refresh(); });
 }
 function refreshHistory(): void {
   const key = game.game_id + ':' + game.revision + ':' + (replayIndex ?? 'live');
@@ -94,13 +93,14 @@ function refreshDraw(offer: number | null, finished: boolean): void {
   const active = !finished && replayIndex === null, message = $('draw-offer'), offerButton = $('offer-draw'), accept = $('accept-draw'), decline = $('decline-draw');
   message.hidden = offer === null; message.textContent = offer === null ? '' : (offer === 1 ? 'White' : 'Black') + ' offers a draw.';
   $('draw-response').hidden = offer === null || !active;
+  $('quiet-offer-draw').hidden = offer !== null; $('quiet-offer-draw').toggleAttribute('disabled', !active || offer !== null);
   offerButton.hidden = offer !== null; offerButton.toggleAttribute('disabled', !active);
   accept.hidden = offer === null || mode !== 'hotseat'; decline.hidden = offer === null || mode !== 'hotseat'; accept.toggleAttribute('disabled', !active); decline.toggleAttribute('disabled', !active);
 }
 function maybeQuietPrompt(side: number): void {
   const key = side === 1 ? 'white' : 'black';
   if (promptEpisodes[key]) return;
-  promptEpisodes[key] = true; $('quiet-message').textContent = (side === 1 ? 'White' : 'Black') + ' has reached 100 quiet actions. A draw still needs agreement.'; $('quiet-prompt').hidden = false; save();
+  promptEpisodes[key] = true; $('quiet-message').textContent = 'This match has reached 100 quiet actions. A draw still needs agreement.'; $('quiet-prompt').hidden = false; save();
 }
 function refresh(): void {
   const observation = game.observe(), position = visiblePosition(), finished = replayIndex === null || replayIndex === game.actions.length ? observation.outcome : null;
@@ -182,6 +182,7 @@ function chooseShiftTarget(tile: number): void {
 }
 function pick(square: number, tile: number, hitKind?: HitKind): void {
   if (boardLocked()) return;
+  keyboardSquare = square;
   if (selectedSquare !== null && hitKind !== 'shift') chooseMove(square);
   else if (hitKind === 'piece') {
     if (intent === 'shift') chooseShiftSource(tile);
@@ -219,7 +220,11 @@ function openTutorial(which: Tutorial): void {
     selection.textContent = which === 'ordinary' ? 'Lesson: make any legal ordinary move.' : which === 'emptyShift' ? 'Lesson: Shift any legal empty tile.' : which === 'loadedShift' ? 'Lesson: make a legal Shift with a passenger.' : 'Lesson: answer the checking ray with any legal move.';
   } catch { say('The lesson fixture could not be loaded.'); }
 }
-function applyPreferences(): void { document.documentElement.dataset.contrast = String(preferences.highContrast); scene.configure(preferences); }
+function applyPreferences(): void {
+  document.documentElement.dataset.contrast = String(preferences.highContrast);
+  const { theme, family, material, quality, reducedMotion } = preferences;
+  scene.configure({ theme, family, material, quality, reducedMotion });
+}
 function restore(): void {
   const saved = loadSave(), recoveryNotice = consumeLoadNotice();
   if (!saved) { if (!recoveryNotice) save(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); return; }
@@ -263,7 +268,8 @@ $('orbit-left').onclick = () => scene.orbit(-.15, 0); $('orbit-right').onclick =
 $('quiet-dismiss').onclick = () => { $('quiet-prompt').hidden = true; };
 $('quiet-offer-draw').onclick = () => { $('offer-draw').click(); };
 $('offer-draw').onclick = () => {
-  const offer = (side: 1 | -1) => { game.offerDraw(side); if (mode !== 'hotseat') { game.declineDraw(game.draw_offer === 1 ? -1 : 1); say('The local bot declines draw offers.'); } save(); refresh(); if (isBotTurn()) askBot(); };
+  if (game.draw_offer !== null || game.observe().outcome || replayIndex !== null) return;
+  const offer = (side: 1 | -1) => { if (game.draw_offer !== null || game.observe().outcome || replayIndex !== null) return; game.offerDraw(side); if (mode !== 'hotseat') { game.declineDraw(game.draw_offer === 1 ? -1 : 1); say('The local bot declines draw offers.'); } save(); refresh(); if (isBotTurn()) askBot(); };
   if (mode === 'hotseat') chooseActor('Who offers the draw?', 'The other player will be able to accept or decline it.', offer); else offer(humanSide());
 };
 $('accept-draw').onclick = () => { if (game.draw_offer !== null) { game.acceptDraw(game.draw_offer === 1 ? -1 : 1); save(); refresh(); } };
@@ -296,8 +302,8 @@ $('settings-dialog').addEventListener('close', () => {
   preferences = { ...preferences, theme: data.get('theme') as Preferences['theme'], family: data.get('family') as Preferences['family'], material: data.get('material') as Preferences['material'], quality: data.get('quality') as Preferences['quality'], reducedMotion: data.has('motion'), highContrast: data.has('contrast') };
   applyPreferences(); save(); refresh();
 });
-$('actor-white').onclick = () => { actorDialogAction?.(1); actorDialogAction = null; };
-$('actor-black').onclick = () => { actorDialogAction?.(-1); actorDialogAction = null; };
+$('actor-white').onclick = () => { const action = actorDialogAction; actorDialogAction = null; action?.(1); };
+$('actor-black').onclick = () => { const action = actorDialogAction; actorDialogAction = null; action?.(-1); };
 $('legal-panel').addEventListener('toggle', refreshLegalPanel);
 sceneHost.addEventListener('keydown', event => {
   const key = event.key.toLowerCase();
@@ -312,23 +318,27 @@ sceneHost.addEventListener('keydown', event => {
     const next = keyboardSquare + delta[key];
     if (next >= 0 && next < 64 && (key !== 'arrowleft' || keyboardSquare % 8 !== 0) && (key !== 'arrowright' || keyboardSquare % 8 !== 7)) {
       keyboardSquare = next;
-      const piece = game.state.board[keyboardSquare];
-      selection.textContent = squareName(keyboardSquare) + ': ' + (!present(game.state, keyboardSquare) ? 'hole' : !piece ? 'empty' : (piece > 0 ? 'White ' : 'Black ') + ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'][pieceType(piece)]) + '. Press Enter to select.';
+      const position = visiblePosition(), piece = position.board[keyboardSquare];
+      selection.textContent = squareName(keyboardSquare) + ': ' + (!present(position, keyboardSquare) ? 'hole' : !piece ? 'empty' : (piece > 0 ? 'White ' : 'Black ') + ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'][pieceType(piece)]) + (replayIndex === null ? '. Press Enter to select.' : '. Replay position.');
       refresh();
     }
     event.preventDefault();
   }
 });
-sceneHost.addEventListener('keyup', event => { if (event.key.toLowerCase() === 'h') { revealHeld = false; refresh(); } });
+function releaseReveal(): void { if (revealHeld) { revealHeld = false; refresh(); } }
+window.addEventListener('keyup', event => { if (event.key.toLowerCase() === 'h') releaseReveal(); });
+sceneHost.addEventListener('focus', updateHighlights);
+sceneHost.addEventListener('blur', () => { releaseReveal(); updateHighlights(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) releaseReveal(); });
 window.addEventListener('beforeunload', save);
 window.addEventListener('pagehide', event => { resetBot(); if (!event.persisted) scene.dispose(); });
 window.addEventListener('pageshow', event => { if (event.persisted && isBotTurn()) askBot(); });
-window.addEventListener('blur', () => { revealHeld = false; refresh(); });
+window.addEventListener('blur', releaseReveal);
 
 function loadScenario(input: GameRecord | Position): void { resetBot(); game = 'schema' in input ? Game.fromRecord(input) : new Game('B', 'prompt', input); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = null; replayIndex = null; clearSelection(); renderScene(); enterPlay(true); refresh(); }
 (window as Window & { rift?: unknown }).rift = {
   getObservation: () => game.observe(), getLegalActions: () => actions(), exportRecord: () => game.exportRecord(), loadScenario, loadTutorial: openTutorial,
-  metrics: () => ({ ...scene.metrics(), revision: game.revision, actions: game.actions.length, animating, selectedSquare, selectedTile, shiftMode: intent === 'shift' }),
+  metrics: () => ({ ...scene.metrics(), revision: game.revision, actions: game.actions.length, animating, selectedSquare, selectedTile, keyboardSquare, revealHeld, shiftMode: intent === 'shift' }),
   squareScreenPosition: (square: number) => scene.squareScreenPosition(square), resetMetrics: () => scene.resetMetrics(),
   assetsReady: () => scene.whenReady(),
   orbit: (dx: number, dy: number, zoom?: number) => scene.orbit(dx, dy, zoom),

@@ -364,23 +364,24 @@ class WorldCraft {
   private water(width: number, depth: number, x: number, y: number, z: number, night = false) {
     const material = this.resources.material(new THREE.ShaderMaterial({
       uniforms: { uTime: this.volumeTime, uNight: { value: night ? 1 : 0 } },
-      vertexShader: `uniform float uTime; varying vec3 vWater; varying vec3 vNormal;
+      vertexShader: `uniform float uTime; varying vec3 vWater; varying vec2 vWavePosition;
         void main() {
           vec3 p = position;
           float a = p.x * 1.15 + p.y * .48 + uTime * .42;
           float b = p.x * -.35 + p.y * 1.62 - uTime * .31;
           p.z += sin(a) * .025 + sin(b) * .016;
-          vec3 n = normalize(vec3(-cos(a)*.02875 + cos(b)*.0056, -cos(a)*.012 - cos(b)*.02592, 1.0));
-          vNormal = normalize(mat3(modelMatrix) * n);
+          vWavePosition = position.xy;
           vWater = (modelMatrix * vec4(p, 1.0)).xyz;
           gl_Position = projectionMatrix * viewMatrix * vec4(vWater, 1.0);
         }`,
-      fragmentShader: `uniform float uTime; uniform float uNight; varying vec3 vWater; varying vec3 vNormal;
+      fragmentShader: `uniform float uTime; uniform float uNight; varying vec3 vWater; varying vec2 vWavePosition;
         float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
         void main() {
           if (max(abs(vWater.x), abs(vWater.z)) < 4.2) discard;
           vec3 view = normalize(cameraPosition - vWater);
-          vec3 n = normalize(vNormal);
+          float a = vWavePosition.x * 1.15 + vWavePosition.y * .48 + uTime * .42;
+          float b = vWavePosition.x * -.35 + vWavePosition.y * 1.62 - uTime * .31;
+          vec3 n = normalize(vec3(-cos(a)*.02875 + cos(b)*.0056, 1.0, cos(a)*.012 + cos(b)*.02592));
           float fresnel = pow(1.0 - max(dot(n, view), 0.0), 3.0);
           float glint = pow(max(dot(reflect(normalize(vec3(.6,-1.0,-.3)), n), view), 0.0), 130.0);
           vec2 p = vWater.xz;
@@ -390,7 +391,7 @@ class WorldCraft {
           vec2 cell = floor(p * .7); vec2 f = fract(p * .7) - .5;
           float star = exp(-dot(f,f)*180.0) * step(.982, hash(cell));
           night += vec3(.19,.31,.54) * star * (.65 + .35 * sin(uTime * .35 + hash(cell) * 6.28));
-          gl_FragColor = vec4(mix(day, night, uNight) + glint * mix(vec3(1.4,1.05,.6),vec3(.12,.22,.35),uNight), 1.0);
+          gl_FragColor = vec4(mix(day, night, uNight) + glint * mix(vec3(1.4,1.05,.6),vec3(.012,.022,.035),uNight), 1.0);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>
         }`,

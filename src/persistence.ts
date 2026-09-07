@@ -8,7 +8,9 @@ export type Quality = 'low' | 'balanced' | 'high';
 
 export interface Preferences {
   theme: Theme; family: Family; material: Material; quality: Quality;
-  reducedMotion: boolean; highContrast: boolean; showMoves: boolean; showShifts: boolean;
+  reducedMotion: boolean; highContrast: boolean; showMoves: boolean;
+  // Retained in rift-ui-save/1 so v1 exports still round-trip; legal Shift cues are now always visible.
+  showShifts: boolean;
 }
 
 export interface SaveEnvelope {

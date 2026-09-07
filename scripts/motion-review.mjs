@@ -35,27 +35,37 @@ try {
     page.on('pageerror', error => receipt.errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
     const result = { name: item.name, setup: item.record, samples: [] }; receipt.cases.push(result);
     try {
-      await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/'); await driver.ready(); await driver.enterPlay();
+      await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.ready(); await driver.enterPlay();
       const build = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
       if (!receipt.build) receipt.build = build; else assert.deepEqual(build, receipt.build, 'Build changed during motion capture');
       await driver.loadScenario(item.record); await driver.camera('overview');
+      if (process.env.RIFT_MOTION_MATERIAL) {
+        await page.locator('#settings').click();
+        await page.locator('#settings-dialog [name="material"]').selectOption(process.env.RIFT_MOTION_MATERIAL);
+        await page.locator('#settings-dialog button[value="apply"]').click(); await driver.ready();
+      }
+      result.material = process.env.RIFT_MOTION_MATERIAL || 'ceramic';
       result.action = (await page.evaluate(() => window.rift.getLegalActions())).find(item.match); assert.ok(result.action, 'Required motion action is legal');
       await page.screenshot({ path: path.join(directory, 'before.png') });
-      const watch = page.waitForFunction(() => window.rift.metrics().animating, null, { polling: 'raf', timeout: 10000 });
-      const operation = driver.perform(result.action, { onPreview: () => page.screenshot({ path: path.join(directory, 'preview.png') }) });
-      // Capture actual intermediate renderer frames without changing the animation clock.
+      let operation;
+      const watch = new Promise((resolve, reject) => {
+        operation = driver.perform(result.action, {
+          onPreview: () => page.screenshot({ path: path.join(directory, 'preview.png') }),
+          beforeCommit: () => { void page.waitForFunction(() => window.rift.metrics().animating, null, { polling: 'raf', timeout: 10000 }).then(resolve, reject); },
+        });
+        void operation.catch(reject);
+      });
+      // The WebM records intermediate frames; synchronous PNG readback can stall the motion being judged.
       await watch; result.animationObserved = true; const start = Date.now();
       do {
-        const before = await driver.metrics();
-        const file = `motion-${String(result.samples.length).padStart(2, '0')}.png`;
-        await page.screenshot({ path: path.join(directory, file) });
-        result.samples.push({ file, elapsedMs: Date.now() - start, before, after: await driver.metrics() });
-      } while ((await driver.metrics()).animating && result.samples.length < 12);
+        result.samples.push({ elapsedMs: Date.now() - start, metrics: await driver.metrics() });
+        await page.waitForTimeout(40);
+      } while ((await driver.metrics()).animating && result.samples.length < 100);
       await operation; result.observation = await driver.observation();
       await page.screenshot({ path: path.join(directory, 'after.png') });
-      result.screenshotDuringAnimation = result.samples.some(sample => sample.before.animating && sample.after.animating);
+      assert.deepEqual(await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()), receipt.build, 'Build changed during motion case');
       result.videoReviewRequired = true;
-      result.status = 'captured'; console.log(`CAPTURED ${item.name}: ${result.samples.length} intermediate frames`);
+      result.status = 'captured'; console.log(`CAPTURED ${item.name}: ${result.samples.length} motion observations; review actual video frames`);
     } finally { await context.close(); result.video = path.relative(root, await page.video().path()); }
     await fs.writeFile(receiptPath, JSON.stringify(receipt, null, 2));
   }

@@ -11,3 +11,5 @@ footer{height:38px;display:flex;align-items:center;justify-content:space-between
 @media(max-width:760px){#app[data-presentation="launch"] .topbar,#app[data-presentation="explore"] .topbar{height:44px}.launch-surface h1{font-size:clamp(3rem,13vw,4rem)}}@media(max-width:950px){.launch-surface{width:min(88vw,340px);padding:0 1.3rem 8vh;background:linear-gradient(90deg,#071113ed 0%,#071113ba 66%,transparent)}.action-dock{min-height:49px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .response-bar{flex:0 0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;padding:.55rem .7rem;border:1px solid var(--brass);border-radius:10px;background:#16272a}.response-bar p{flex:1 1 230px;margin:0;font-size:.76rem}.response-bar button{font-size:.74rem;padding:.4rem .65rem}#app:not([data-presentation="play"]) .response-bar{display:none}
+
+.learn-links{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;margin-top:.35rem}.learn-links a{color:var(--brass);font-size:.75rem}.learn-links button{padding:.35rem .5rem;font-size:.72rem}
