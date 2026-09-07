@@ -146,8 +146,14 @@ try {
     for (const viewport of applicationViewports.slice(0, applicationLimit)) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await applyAppearance({ theme: 'gallery', family: 'classic', material: 'ceramic' });
-      const metrics = await setCameraDistance('overview', 16);
-      await capture(`application-${viewport.name}`, { tier: viewport.tier, appearance: { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: true }, preset: 'overview', zoom: { name: 'normal', targetDistance: 16, actualDistance: metrics.cameraDistance } });
+      for (const preset of viewport.width < 600 ? all.presets : ['overview']) {
+        if (viewport.width < 600) {
+          await driver.camera(preset); const defaultMetrics = await driver.metrics();
+          await capture(`application-${viewport.name}-${preset}-default`, { tier: viewport.tier, preset, zoom: { name: 'authored-default', actualDistance: defaultMetrics.cameraDistance } });
+        }
+        const metrics = await setCameraDistance(preset, 16);
+        await capture(`application-${viewport.name}${preset === 'overview' ? '' : '-' + preset}`, { tier: viewport.tier, appearance: { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: true }, preset, zoom: { name: 'normal', targetDistance: 16, actualDistance: metrics.cameraDistance } });
+      }
     }
   }
 
@@ -166,7 +172,8 @@ try {
     assert.equal(receipt.coverage.actualDistances.length, 3, 'Full review did not retain three distinct camera distances');
   }
   assert.deepEqual(receipt.errors, [], 'Browser errors occurred during capture');
-  assert.deepEqual(await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()), receipt.build.assets, 'Built assets changed during capture');
+  receipt.finalAssets = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
+  assert.deepEqual(receipt.finalAssets, receipt.build.assets, 'Built assets changed during capture');
   receipt.status = 'capture_complete';
 } catch (error) {
   receipt.status = 'capture_failed'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message);

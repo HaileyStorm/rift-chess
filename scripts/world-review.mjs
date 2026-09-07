@@ -8,14 +8,16 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true, args:
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, serviceWorkers: 'block', recordVideo: { dir: root, size: { width: 1600, height: 1000 } } });
 const page = await context.newPage(); page.on('pageerror', error => receipt.errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
 async function shot(name) {
+  await page.waitForFunction(() => !window.rift.metrics().cameraTravelling);
   await page.waitForTimeout(500);
   const layout = await page.evaluate(() => ({ mode: document.querySelector('#app').dataset.presentation, viewport: [innerWidth, innerHeight], scrollY, boxes: Object.fromEntries(['.topbar', '#scene', '.action-dock'].map(selector => { const r = document.querySelector(selector).getBoundingClientRect(); return [selector, { x: r.x, y: r.y, width: r.width, height: r.height }]; })) }));
   if (layout.mode === 'play' && layout.viewport[0] >= 951) for (const [name, box] of Object.entries(layout.boxes)) assert.ok(box.y >= -1 && box.y + box.height <= layout.viewport[1] + 1, name + ' is outside the playing viewport');
   await page.screenshot({ path: path.join(root, name + '.png') }); receipt.captures.push({ name, layout, metrics: await page.evaluate(() => window.rift.metrics()) });
 }
-async function returnToPlay() { await page.locator('#launch-return').click(); await page.waitForTimeout(1100); }
+async function returnToPlay() { await page.locator('#launch-return').click(); await page.waitForFunction(() => !window.rift.metrics().cameraTravelling); }
 try {
-  await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/'); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
+  await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 }); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
+  receipt.readyAt = await page.evaluate(() => ({ at: performance.now(), metrics: window.rift.metrics() }));
   receipt.build = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
   await shot('gallery-entrance'); assert.equal(await page.locator('#shift-mode').isVisible(), false);
   await page.locator('#launch-explore').click(); await page.locator('#launch-return').waitFor({ state: 'visible' });
@@ -35,6 +37,7 @@ try {
   }
   await page.reload(); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
   assert.equal(await page.locator('#launch-surface').isVisible(), false); receipt.checks.push('existing saved game reload bypasses the entrance');
+  receipt.finalBuild = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()); assert.deepEqual(receipt.finalBuild, receipt.build);
   assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
 } catch (error) { receipt.status = 'fail'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message); await page.screenshot({ path: path.join(root, 'failure.png') }).catch(() => {}); }
 finally { await context.close(); await browser.close(); receipt.finished = new Date().toISOString(); await fs.writeFile(path.join(root, 'receipt.json'), JSON.stringify(receipt, null, 2)); console.log(JSON.stringify({ status: receipt.status, captures: receipt.captures.length, errors: receipt.errors, checks: receipt.checks })); }

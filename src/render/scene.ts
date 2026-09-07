@@ -57,10 +57,11 @@ export class BoardScene {
   private cameraMode: 'play' | 'showcase' = 'play';
   private showcaseStarted = 0;
   private riftPulse = 0;
+  private checkPulse: { start: number | null; ring: THREE.Mesh<THREE.TorusGeometry, THREE.MeshBasicMaterial> } | null = null;
   private composer: EffectComposer | null = null;
   private bloom: UnrealBloomPass | null = null;
   private fxaa: ShaderPass;
-  private cameraTravel: { start: number; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
+  private cameraTravel: { start: number | null; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
   private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: false };
   private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, focusSquare: null };
   private frame = 0;
@@ -80,6 +81,8 @@ export class BoardScene {
   private cpuFrameTimes: number[] = [];
   private sceneReady: Promise<void> = Promise.resolve();
   private readyAfterFrame: Array<() => void> = [];
+  private resizePending = true;
+  private drawingSize = '';
 
   constructor(private container: HTMLElement, private onPick: (square: number, tile: number, kind?: 'piece' | 'tile' | 'shift') => void) {
     const stone = loadStoneTexture(); this.stoneTexture = stone.texture;
@@ -130,7 +133,7 @@ export class BoardScene {
     this.renderer.domElement.addEventListener('pointercancel', this.pointerCancel);
     this.renderer.domElement.addEventListener('contextmenu', this.contextMenu);
     this.controls.addEventListener('start', this.cameraGesture);
-    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver = new ResizeObserver(() => { this.resizePending = true; });
     this.resizeObserver.observe(container);
     document.addEventListener('visibilitychange', this.visibilityChange);
     this.buildEnvironment();
@@ -190,24 +193,34 @@ export class BoardScene {
     const { width, height } = this.container.getBoundingClientRect();
     if (!width || !height) return;
     const maxRatio = this.appearance.quality === 'low' ? 1 : this.appearance.quality === 'high' ? 2 : 1.5;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRatio));
+    const nextRatio = Math.min(window.devicePixelRatio || 1, maxRatio);
+    const size = `${width}:${height}:${nextRatio}:${this.appearance.quality}`;
+    this.resizePending = false;
+    if (size === this.drawingSize) return;
+    this.drawingSize = size;
+    if (this.renderer.getPixelRatio() !== nextRatio) this.renderer.setPixelRatio(nextRatio);
     this.renderer.setSize(width, height);
-    this.composer?.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRatio)); this.composer?.setSize(width, height);
+    this.composer?.setPixelRatio(nextRatio); this.composer?.setSize(width, height);
     const bloomScale = this.appearance.quality === 'high' ? 1 : .5;
     const ratio = this.renderer.getPixelRatio(); this.bloom?.setSize(width * ratio * bloomScale, height * ratio * bloomScale);
     if (this.fxaa) { this.fxaa.enabled = this.appearance.quality !== 'high'; this.fxaa.uniforms.resolution!.value.set(1 / (width * ratio), 1 / (height * ratio)); }
     const samples = this.appearance.quality === 'high' ? 4 : 0;
     for (const target of this.composer ? [this.composer.renderTarget1, this.composer.renderTarget2] : []) if (target.samples !== samples) { target.samples = samples; target.dispose(); }
     this.camera.aspect = width / height;
-    const lens = this.cameraMode === 'showcase' ? (width / height < .9 ? 58 : 52) : (width / height < .9 ? 49 : 37);
+    const lens = this.lensForAspect();
     this.camera.fov = lens;
-    if (this.cameraTravel) { this.cameraTravel.toFov = lens; const t = ease(Math.min(1, (performance.now() - this.cameraTravel.start) / this.cameraTravel.duration)); this.camera.fov = THREE.MathUtils.lerp(this.cameraTravel.fromFov, lens, t); }
+    if (this.cameraTravel) { this.cameraTravel.toFov = lens; const t = this.cameraTravel.start === null ? 0 : ease(THREE.MathUtils.clamp((performance.now() - this.cameraTravel.start) / this.cameraTravel.duration, 0, 1)); this.camera.fov = THREE.MathUtils.lerp(this.cameraTravel.fromFov, lens, t); }
     this.camera.updateProjectionMatrix();
   }
 
   private renderFrame = (now: number) => {
     if (this.disposed) return;
+    // Warm only the finished lighting/material setup. Drawing before the texture/reflection
+    // arrives compiles an entire interim scene and delays the first useful frame.
+    if (!this.surfaceLoaded) { this.frame = requestAnimationFrame(this.renderFrame); return; }
     const cpuStart = performance.now();
+    // Canvas resizing clears its buffer; do it immediately before the replacement draw.
+    if (this.resizePending) this.resize();
     if (this.lastFrame) {
       const dt = now - this.lastFrame;
       if (dt > 0 && !document.hidden) { this.frameTimes.push(dt); if (this.frameTimes.length > 1800) this.frameTimes.shift(); }
@@ -226,8 +239,15 @@ export class BoardScene {
         if (delta !== 0) { group.position.y = this.appearance.reducedMotion || Math.abs(delta) < .0002 ? lift : group.position.y + delta * .20; this.renderer.shadowMap.needsUpdate = true; }
       }
     }
-    if (this.cameraTravel) { const travel = this.cameraTravel; const t = ease(Math.min(1, (now - travel.start) / travel.duration)); this.camera.position.lerpVectors(travel.from, travel.to, t); this.controls.target.lerpVectors(travel.fromTarget, travel.target, t); this.camera.fov = THREE.MathUtils.lerp(travel.fromFov, travel.toFov, t); this.camera.updateProjectionMatrix(); if (t === 1) this.cameraTravel = null; }
+    if (this.cameraTravel) { const travel = this.cameraTravel; const t = travel.start === null ? 0 : ease(THREE.MathUtils.clamp((now - travel.start) / travel.duration, 0, 1)); this.camera.position.lerpVectors(travel.from, travel.to, t); this.controls.target.lerpVectors(travel.fromTarget, travel.target, t); this.camera.fov = THREE.MathUtils.lerp(travel.fromFov, travel.toFov, t); this.camera.updateProjectionMatrix(); if (t === 1) { this.cameraTravel = null; this.showcaseStarted = now; } }
     else if (this.exhibiting && !this.appearance.reducedMotion) { const a = .13 + Math.sin((now - this.showcaseStarted) * .00006) * .11; this.camera.position.set(Math.sin(a) * 20.5, 6.8, Math.cos(a) * 20.5); this.controls.target.set(-Math.cos(a) * 2.5, -.50, Math.sin(a) * 2.5); }
+    if (this.checkPulse) {
+      const t = this.checkPulse.start === null ? 0 : THREE.MathUtils.clamp((now - this.checkPulse.start) / 800, 0, 1);
+      this.checkPulse.ring.scale.setScalar(.9 + ease(t) * .7);
+      this.checkPulse.ring.material.opacity = Math.sin(Math.PI * t) * .9;
+      this.riftPulse = Math.sin(Math.PI * t) * .22;
+      if (t === 1) this.clearCheckPulse();
+    }
     this.world?.tick(now / 1000, this.appearance.reducedMotion);
     this.world?.react(this.riftPulse);
     const riftLight = this.world?.lights.children.find(light => light.userData.riftLight) as THREE.PointLight | undefined; if (riftLight) riftLight.intensity += this.riftPulse * 24;
@@ -236,6 +256,8 @@ export class BoardScene {
     if (this.renderer.shadowMap.needsUpdate) this.shadowFrames++;
     if (this.composer && this.appearance.quality !== 'low') this.composer.render(); else this.renderer.render(this.scene, this.camera);
     this.lastRenderedAt = performance.now(); this.renderedFrames++;
+    if (this.cameraTravel?.start === null) this.cameraTravel.start = this.lastRenderedAt;
+    if (this.checkPulse?.start === null) this.checkPulse.start = this.lastRenderedAt;
     this.readyAfterFrame.splice(0).forEach(resolve => resolve());
     this.cpuFrameTimes.push(this.lastRenderedAt - cpuStart); if (this.cpuFrameTimes.length > 1800) this.cpuFrameTimes.shift();
     this.frame = requestAnimationFrame(this.renderFrame);
@@ -340,6 +362,7 @@ export class BoardScene {
 
   async setPosition(position: Position, transition?: { previous: Position; action: Action }): Promise<void> {
     this.skipAnimation();
+    this.clearCheckPulse();
     this.position = { ...position, board: [...position.board] };
     if (!transition || this.appearance.reducedMotion) { this.buildBoard(position); return; }
     this.buildBoard(transition.previous);
@@ -406,7 +429,9 @@ export class BoardScene {
           if (finished) return;
           finished = true;
           victimFade?.restore(); promotion?.restore(); this.riftPulse = 0;
-          this.clear(this.effects); this.buildBoard(position); resolve();
+          this.clear(this.effects); this.buildBoard(position);
+          if (!this.appearance.reducedMotion && inCheck(position, position.side)) this.showCheckPulse(position.board.indexOf(position.side * 6));
+          resolve();
         },
       };
     });
@@ -520,6 +545,18 @@ export class BoardScene {
     this.riftPulse = Math.max(this.riftPulse, amount);
   }
 
+  private showCheckPulse(square: number) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.46, .022, 6, 48), new THREE.MeshBasicMaterial({ color: 0xff6e63, transparent: true, opacity: 0, depthWrite: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.copy(point(square, .025)); this.effects.add(ring);
+    this.checkPulse = { start: null, ring };
+  }
+
+  private clearCheckPulse() {
+    if (!this.checkPulse) return;
+    const { ring } = this.checkPulse; ring.removeFromParent(); ring.geometry.dispose(); ring.material.dispose();
+    this.checkPulse = null; this.riftPulse = 0;
+  }
+
   skipAnimation() {
     if (this.animation) { const transaction = this.animation; this.animation = null; this.skippedAnimations++; transaction.finish(); }
   }
@@ -604,9 +641,15 @@ export class BoardScene {
     }
   }
 
+  private lensForAspect(): number {
+    const vertical = this.cameraMode === 'showcase' ? 52 : 37;
+    const horizontal = this.cameraMode === 'showcase' ? 52 : this.preset === 'overview' ? 46 : this.preset === 'top' ? 34 : 42;
+    return Math.max(vertical, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(horizontal) / 2) / this.camera.aspect)));
+  }
+
   setCamera(preset: CameraPreset) {
-    this.exhibiting = false; this.cameraTravel = null; this.cameraMode = 'play'; this.camera.fov = this.camera.aspect < .9 ? 49 : 37; this.camera.updateProjectionMatrix();
     this.preset = preset;
+    this.exhibiting = false; this.cameraTravel = null; this.cameraMode = 'play'; this.camera.fov = this.lensForAspect(); this.camera.updateProjectionMatrix();
     const vectors: Record<CameraPreset, [number, number, number]> = { white: [0, 10.8, 9.3], black: [0, 10.8, -9.3], overview: [8.6, 11.8, 8.6], top: [0, 16.2, 2.7] };
     this.camera.position.set(...vectors[preset]); this.controls.target.set(0, 0.15, 0); this.controls.update();
   }
@@ -620,9 +663,15 @@ export class BoardScene {
     this.camera.position.copy(this.controls.target).add(new THREE.Vector3().setFromSpherical(spherical)); this.controls.update();
   }
 
-  showcase(): void {
-    this.cameraTravel = null; this.exhibiting = true; this.cameraMode = 'showcase'; this.camera.fov = this.camera.aspect < .9 ? 58 : 52; this.camera.updateProjectionMatrix(); this.showcaseStarted = performance.now();
+  showcase(entrance = false): void {
+    this.cameraTravel = null; this.exhibiting = true; this.cameraMode = 'showcase'; this.camera.fov = this.lensForAspect(); this.camera.updateProjectionMatrix(); this.showcaseStarted = performance.now();
     this.camera.position.set(2.66, 6.8, 20.33); this.controls.target.set(-2.48, -.50, .324); this.controls.update();
+    if (entrance && !this.appearance.reducedMotion) {
+      const to = this.camera.position.clone(), target = this.controls.target.clone();
+      const from = new THREE.Vector3(-7.5, 5.2, 23.5), fromTarget = new THREE.Vector3(-.8, -.8, 0);
+      this.camera.position.copy(from); this.controls.target.copy(fromTarget); this.controls.update();
+      this.cameraTravel = { start: null, duration: 2600, from, to, fromTarget, target, fromFov: this.camera.fov, toFov: this.camera.fov };
+    }
   }
 
   enterPlay(duration = 900): void {
@@ -630,7 +679,7 @@ export class BoardScene {
     this.setCamera(this.preset); const to = this.camera.position.clone(); const target = this.controls.target.clone();
     if (duration <= 0 || this.appearance.reducedMotion) return;
     const toFov = this.camera.fov; this.camera.position.copy(from); this.controls.target.copy(fromTarget); this.camera.fov = fromFov; this.camera.updateProjectionMatrix();
-    this.cameraTravel = { start: performance.now(), duration, from, to, fromTarget, target, fromFov, toFov };
+    this.cameraTravel = { start: null, duration, from, to, fromTarget, target, fromFov, toFov };
   }
 
   configure(options: Partial<Appearance>) {
@@ -641,6 +690,7 @@ export class BoardScene {
     this.appearance = next;
     if (worldChanged || boardChanged || motionChanged) {
       this.skipAnimation();
+      this.clearCheckPulse();
       this.controls.enableDamping = !next.reducedMotion;
       if (motionChanged && next.reducedMotion) {
         if (this.cameraTravel) {
@@ -650,7 +700,7 @@ export class BoardScene {
         for (const tile of this.tiles.values()) tile.position.y = 0;
         this.renderer.shadowMap.needsUpdate = true;
       }
-      if (worldChanged) { this.buildEnvironment(); this.resize(); }
+      if (worldChanged) { this.buildEnvironment(); this.resizePending = true; }
       if (boardChanged && this.position) this.buildBoard(this.position);
       if (worldChanged || boardChanged) {
         this.sceneReady = this.surfaceLoaded ? this.prepareScene() : this.surfaceReady;
@@ -686,6 +736,7 @@ export class BoardScene {
     const gl = this.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info');
     return { samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
       cameraTravelling: this.cameraTravel !== null, cameraPosition: this.camera.position.toArray(), cameraTravelDestination: this.cameraTravel?.to.toArray() ?? null,
+      checkPulseActive: this.checkPulse !== null,
       maxTileLift: Math.max(0, ...Array.from(this.tiles.values(), tile => tile.position.y)), reducedMotion: this.appearance.reducedMotion, pendingSceneReadiness: this.readyAfterFrame.length,
       medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,
       p99Ms: frames[Math.floor(frames.length * .99)] ?? null, maxMs: frames.at(-1) ?? null, cpuMedianMs: cpu[Math.floor(cpu.length * .5)] ?? null, cpuP95Ms: cpu[Math.floor(cpu.length * .95)] ?? null, cpuMaxMs: cpu.at(-1) ?? null, skippedAnimations: this.skippedAnimations,
@@ -700,7 +751,7 @@ export class BoardScene {
   }
 
   dispose() {
-    this.skipAnimation(); this.disposed = true; cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
+    this.skipAnimation(); this.clearCheckPulse(); this.disposed = true; cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
     this.readyAfterFrame.splice(0).forEach(resolve => resolve());
     document.removeEventListener('visibilitychange', this.visibilityChange);
     this.renderer.domElement.removeEventListener('pointerdown', this.pointerDown); this.renderer.domElement.removeEventListener('pointermove', this.pointerMove);

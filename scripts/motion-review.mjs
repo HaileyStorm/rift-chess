@@ -16,6 +16,7 @@ const cases = [
   { name: 'ordinary', record: fixture('opening_B').record, match: a => a.from === 'e2' && a.to === 'e4' },
   { name: 'knight', record: fixture('opening_B').record, match: a => a.from === 'g1' && a.to === 'f3' },
   { name: 'capture', record: position([[27, 4], [43, -3]]), match: a => a.from === 'd4' && a.to === 'd6' },
+  { name: 'checking-move', record: position([[27, 4]]), match: a => a.from === 'd4' && a.to === 'd8' },
   { name: 'castling', record: fixture('orthodox_castling').record, match: a => a.castle === 1 },
   { name: 'en-passant', record: fixture('en_passant').record, match: a => a.en_passant },
   { name: 'empty-shift', record: fixture('cut_check_ray').record, match: a => a.type === 'shift' && a.from === 'C2' && a.to === 'B2' },
@@ -62,6 +63,7 @@ try {
         await page.waitForTimeout(40);
       } while ((await driver.metrics()).animating && result.samples.length < 100);
       await operation; result.observation = await driver.observation();
+      if (item.name === 'checking-move') { assert.match(await page.locator('#check').innerText(), /check/i); await page.waitForTimeout(1100); }
       await page.screenshot({ path: path.join(directory, 'after.png') });
       assert.deepEqual(await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()), receipt.build, 'Build changed during motion case');
       result.videoReviewRequired = true;

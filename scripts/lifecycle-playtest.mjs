@@ -9,7 +9,7 @@ const fixtures = JSON.parse(await fs.readFile('fixtures/conformance.json', 'utf8
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-gpu', '--use-angle=d3d11'] });
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } }); const page = await context.newPage();
 const driver = createUiDriver(page);
-page.on('pageerror', e => receipt.errors.push(e.message)); page.on('dialog', dialog => dialog.accept());
+page.on('pageerror', e => receipt.errors.push(e.message));
 const observe = () => driver.observation();
 const record = () => driver.record();
 const index = n => (Number(n[1]) - 1) * 8 + n.charCodeAt(0) - 97;
@@ -38,7 +38,7 @@ try {
     for (const policy of ['prompt', 'auto100', 'off']) {
       await load({ ...baseline, draw_policy: policy }); await act('shift', 'A2', 'B2'); const o = await observe(); assert.equal(o.position.halfmove, 100);
       assert.equal(o.outcome?.reason ?? null, policy === 'auto100' ? 'progress100' : null);
-      if (policy === 'prompt') { assert.equal(await page.locator('#quiet-prompt').isVisible(), true); await page.locator('#quiet-dismiss').click(); await page.locator('#show-moves').click(); assert.equal(await page.locator('#quiet-prompt').isVisible(), false); await page.locator('#undo').click(); await act('shift', 'A2', 'B2'); assert.equal(await page.locator('#quiet-prompt').isVisible(), true); }
+      if (policy === 'prompt') { assert.equal(await page.locator('#quiet-prompt').isVisible(), true); await page.locator('#quiet-dismiss').click(); await page.locator('#show-moves').click(); assert.equal(await page.locator('#quiet-prompt').isVisible(), false); await page.locator('#undo').click(); await page.locator('#undo-dialog').waitFor({ state: 'visible' }); await page.locator('#undo-confirm[value="approve"]').click(); await driver.ready(); await act('shift', 'A2', 'B2'); assert.equal(await page.locator('#quiet-prompt').isVisible(), true); }
       if (policy === 'off') assert.equal(await page.locator('.quiet-readout').isVisible(), false);
     }
   });

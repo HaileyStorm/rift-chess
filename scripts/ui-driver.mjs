@@ -13,12 +13,13 @@ export function createUiDriver(page) {
   const metrics = () => page.evaluate(() => window.rift.metrics());
 
   async function ready() {
-    await page.waitForFunction(() => Boolean(window.rift));
+    await page.waitForFunction(() => Boolean(window.rift), null, { timeout: 60000 });
     await page.evaluate(() => window.rift.assetsReady());
     await page.waitForFunction(() => !window.rift.metrics().animating);
   }
 
   async function enterPlay() {
+    await ready();
     const returnButton = page.locator('#launch-return');
     const skipButton = page.locator('#launch-skip');
     if (await returnButton.isVisible()) await returnButton.click();

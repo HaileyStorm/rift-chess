@@ -237,4 +237,6 @@ module.exports = {
   resolveStaticPath,
 };
 
-if (require.main === module) start();
+// Electron can load the CommonJS entry through its ESM loader, leaving require.main
+// on its bootstrap module. Node-based boundary tests must still import without launching.
+if (process.versions.electron && process.type === 'browser') start();

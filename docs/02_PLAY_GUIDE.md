@@ -2,11 +2,11 @@
 
 **The whole idea:** on your turn, move a chess piece **or** slide an eligible 2×2 tile into a neighboring hole. Your king must be safe afterward.
 
-Read [the full rules](01_RULES.md) for edge cases. This guide describes the intended finished application's controls; the supplied package currently contains the rules and a headless reference, not the 3D client.
+Read [the full rules](01_RULES.md) for edge cases. This guide describes the shipped 3D client.
 
 ## Start a first game
 
-Use the Gallery environment, Classic pieces, the White camera, and **Prompted agreement** for draws. Start with a local opponent or the beginner bot. Turn on move destinations for your first game, then try a game without them. Legal Shift indicators stay on.
+Use the Gallery environment, Classic pieces, the White camera, and **Prompted agreement** for draws. Start a hotseat match or play against the local bot. Turn on **Show moves** for your first game, then try a game without ordinary-move hints. Legal Shift handles stay visible.
 
 The missing central tiles are intentional. In B-rift, your c- and d-pawns initially face missing squares; in C-rift, your e- and f-pawns do. You can develop on the open part of the board or spend a turn changing that obstruction. Both sides face the same rank-reflected starting geometry.
 
@@ -63,35 +63,32 @@ First check immediate king safety and captures. Then ask whether a Shift changes
 
 These are strategic hypotheses and lessons suggested by the mechanics, not solved opening theory. Automated tests found that always Shifting was exploitable by the supplied baseline, but did not establish that avoiding Shifts is losing.
 
-## Intended controls
+## Controls
 
 | Task | Mouse / touch | Keyboard alternative |
 |---|---|---|
-| Ordinary move | Select a piece, then a destination | Board arrows and Enter |
-| Shift a tile | Shift tool; select tile, then destination arrow | S enters Shift mode; arrows and Enter |
-| Cancel selection | Empty UI area or Cancel | Escape |
-| See legal piece moves | Eye button toggles; touch-accessible Reveal button | Hold H for a temporary reveal |
-| Camera presets | White, Black, Overview, Top buttons | 1–4 |
-| Free camera | Right-drag orbit; wheel zoom; two-finger touch orbit | Camera panel controls |
-| Reset camera | Home-view button | Home, when focus is on the board |
-| Draw / undo / settings | Clearly labeled toolbar or match menu | Focusable buttons |
+| Ordinary move | **Move** is selected by default. Select a piece, then a legal destination. | Focus the board, use arrows to move focus, then press Enter to select the source and destination. |
+| Shift an empty tile | Select **Shift**, choose a tile with a visible legal handle, choose a highlighted neighboring hole, then choose **Confirm Shift**. | Press **S** for Shift, then use arrows and Enter for the tile and hole. |
+| Shift a passenger | Select your piece on a Shiftable tile, choose **Shift this tile**, choose the neighboring hole preview, then choose **Confirm Shift**. If the passenger reaches the back rank, choose queen, rook, bishop, or knight in the promotion dialog. | Use **S**, arrows, and Enter for the same selection sequence. |
+| Cancel a selection | Choose **Cancel**. | Press Escape. |
+| See ordinary legal moves | Choose **Show moves**. | Hold **H** while the board has focus. |
+| Camera presets | Use the visible White, Black, Overview, or Top buttons in **Match & view**. | Press **1** through **4**. |
+| Free camera | Right-drag to orbit; use the wheel, middle-drag, or two-finger touch gestures to adjust the view. | Use the visible camera buttons in **Match & view**. |
 
-The implementing agent may adjust exact bindings after testing conflicts. It must retain a non-drag path, a keyboard path, and visible camera controls. Camera movement must not accidentally commit a move.
+Legal Shift handles remain visible even when ordinary move hints are off. A handle means the tile has at least one fully legal Shift now. Selecting it shows valid neighboring holes; choosing a hole opens the preview. The action does not commit until **Confirm Shift** (and, when needed, a promotion choice). Board shortcuts require board focus, and arrow navigation follows files and ranks regardless of the camera angle.
 
-Bright tile edges indicate **a legal Shift for the current player**. Direction marks identify legal destinations. Inspecting an unavailable tile explains why: king anchor, enemy occupant, too many pieces, no adjacent hole, or king exposure. Shape and text accompany color.
+## Visual comfort, match controls, and draws
 
-## Visual comfort and fairness
+Use the Top camera when you need the clearest board geometry. Free camera movement changes only the view and cannot commit a chess action.
 
-Use the fixed Top camera when you need maximal geometry clarity. Free orbit is for choosing a comfortable view, not a required skill. Auto-flip is optional and off by default. Backgrounds must never hide holes or make armies hard to distinguish.
+Open **Atelier** to choose world, piece, material, and quality settings, and to turn on high contrast or reduced motion. High contrast strengthens the interface contrast. Reduced motion preserves the same legal position and outcome while shortening or skipping camera and board-transition movement.
 
-Animations can be shortened or disabled. Reduced-motion mode keeps the same game, with instant or short-fade transitions instead of travel, collapse and camera interpolation.
+The quiet counter is not an automatic draw in a **Prompted agreement** match. At 100 quiet actions, choose whether to offer a draw; in hotseat play, the interface asks which player is acting, and the other player can accept or decline. A local bot declines an offer. **Automatic at 100** applies the automatic quiet-action draw; **Continue without a reminder** disables that prompt and automatic limit. Other ending rules still apply.
 
-The counter says what will happen. **“100 quiet actions — offer a draw?”** is not a forced ending. An opponent can decline. An Auto100 match instead shows an explicit automatic-draw countdown.
+Practice matches enable **Undo**. In hotseat, both players confirm the Undo dialog before the prior action is restored. Against the local bot, practice Undo returns to your previous turn. For a fair rematch, exchange colors and keep the same opening layout. Use four games to compare both B-rift and C-rift without coupling layout to color.
 
-For a fair rematch, exchange colors and keep the same opening layout. Use four games to compare both B-rift and C-rift without coupling layout to color.
+## Four-lesson tutorial
 
-## Optional four-lesson tutorial
+The lessons cover an ordinary move around a hole, an empty-tile Shift, carrying one passenger, and removing a checking ray segment. Entering a lesson preserves the match you were playing and its autosave. The lessons share one backup, so moving between lessons does not replace that preserved match.
 
-The launch tutorial should take only a few minutes and be skippable: make an ordinary move around a hole; Shift an empty tile; carry one passenger; answer check by removing a ray segment. Finish with a free game, not a long mandatory rules slideshow.
-
-Each lesson highlights one task, offers an explanation after a mistake, and accepts every legal equivalent solution. The [tutorial research](RESEARCH_SOURCES.md#s4-teaching-and-observation) motivates testing this approach; it does not establish an ideal lesson length for this game.
+Use **Return to match** to restore the preserved game. Reloading during a lesson opens the preserved match directly when local storage is available. Choosing **New match** or importing a save intentionally replaces it. **Export** downloads the currently open table, so return first when you want to export your match rather than a lesson. If the app reports that saving is unavailable, export your match before closing it. The [tutorial research](RESEARCH_SOURCES.md#s4-teaching-and-observation) motivates guided examples; it does not establish an ideal lesson length for this game.

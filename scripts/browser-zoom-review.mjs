@@ -23,7 +23,7 @@ page.on('pageerror', error => receipt.errors.push(error.message)); page.on('cons
 const layout = () => page.evaluate(() => ({ innerWidth, innerHeight, devicePixelRatio, scrollY, horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1, boxes: Object.fromEntries(['.topbar', '#scene', '.action-dock'].map(selector => { const r = document.querySelector(selector).getBoundingClientRect(); return [selector, { x: r.x, y: r.y, width: r.width, height: r.height }]; })) }));
 try {
   const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
-  await page.goto(base); await driver.ready(); await driver.enterPlay();
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.ready(); await driver.enterPlay();
   receipt.build = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
   receipt.browser = context.browser()?.version() || null;
   for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }, { width: 1920, height: 1080 }]) {
@@ -43,6 +43,8 @@ try {
       console.log(`CAPTURED ${name}`);
     }
   }
+  receipt.finalBuild = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
+  assert.deepEqual(receipt.finalBuild, receipt.build, 'Built assets changed during browser zoom capture');
   assert.deepEqual(receipt.errors, []); receipt.status = 'captured-requires-review';
 } catch (error) { receipt.status = 'fail'; receipt.failure = error.stack; process.exitCode = 1; console.error(error.message); }
 finally { await context.close(); receipt.finished = new Date().toISOString(); await fs.writeFile(path.join(root, 'receipt.json'), JSON.stringify(receipt, null, 2)); }

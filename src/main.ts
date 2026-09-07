@@ -1,9 +1,9 @@
 import './style.css';
 import { BoardScene } from './render/scene';
 import { Game } from './match/game';
-import { inCheck, macroName, macroOfSquare, macroSquares, present, pieceType, shiftReason, squareName } from './engine/position';
+import { inCheck, macroIndex, macroName, macroOfSquare, macroSquares, present, pieceType, shiftReason, squareName } from './engine/position';
 import type { Action, DrawPolicy, GameRecord, Position } from './engine/types';
-import { consumeLoadNotice, defaultPreferences, exportSave, importSave, loadSave, persistSave, type Preferences } from './persistence';
+import { consumeLoadNotice, defaultPreferences, exportSave, importSave, loadSave, persistSave, type Preferences, type SaveEnvelope } from './persistence';
 import conformance from '../fixtures/conformance.json';
 
 type Mode = 'hotseat' | 'bot-white' | 'bot-black';
@@ -30,7 +30,9 @@ app.innerHTML = [
   '<dialog id="about-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">RIFT CHESS</p><button value="close">×</button></div><h2>Chess on moving ground.</h2><p>Designed and built as an offline, local game. The rules are Rift Chess 1.0.</p><p>The xkcd reference is credited as a link, not bundled artwork: <a href="https://xkcd.com/3139/" target="_blank" rel="noreferrer">xkcd #3139</a>. Built with original procedural geometry.</p><p><a href="./guide.html">How to play</a> · <a href="./support.html">Support</a> · <a href="./licenses.txt">Licenses</a></p><button class="brass" value="close">Close</button></form></dialog><div id="notice" role="status" aria-live="polite"></div>'
 ].join('');
 app.insertAdjacentHTML('beforeend', '<dialog id="actor-dialog" class="dialog actor-dialog"><form method="dialog"><p class="eyebrow">MATCH ACTION</p><h2 id="actor-dialog-title">Choose a side</h2><p id="actor-dialog-detail" class="muted"></p><div><button id="actor-white" value="white">White</button><button id="actor-black" value="black">Black</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>');
+app.insertAdjacentHTML('beforeend', '<dialog id="undo-dialog" class="dialog" aria-labelledby="undo-title" aria-describedby="undo-detail"><form method="dialog"><p class="eyebrow">PRACTICE MATCH</p><h2 id="undo-title">Undo the last action?</h2><p id="undo-detail">Both players need to agree. The last move or Shift will be removed and the previous position restored.</p><button id="undo-confirm" class="brass" value="approve">Both agree — undo</button><button class="subtle" value="cancel" autofocus>Keep playing</button></form></dialog>');
 app.querySelector('#launch-surface')!.insertAdjacentHTML('beforeend', '<div class="explore-return"><p class="eyebrow">TABLE STUDY</p><strong>Explore the moving board</strong><button id="launch-return" class="brass">Return to play</button></div>');
+app.querySelector('.action-dock')!.insertAdjacentHTML('beforebegin', '<div id="lesson-status" class="response-bar" hidden><p id="lesson-message"></p><button id="lesson-return">Return to match</button></div>');
 
 const $ = <T extends HTMLElement>(id: string) => document.querySelector<T>('#' + id)!;
 const sceneHost = $('scene'), turn = $('turn'), check = $('check'), quiet = $('quiet'), history = $('history');
@@ -42,16 +44,19 @@ let intent: Intent = 'move', animating = false, replayIndex: number | null = nul
 let revealHeld = false, keyboardSquare = 0, tutorial: Tutorial | null = null, noticeTimer = 0, botFailed = false;
 let actionCache: { gameId: string; revision: number; actions: Action[] } | null = null, historyKey = '', legalKey = '';
 let actorDialogAction: ((side: 1 | -1) => void) | null = null;
+let pendingUndo: { gameId: string; revision: number } | null = null;
+let lessonReturn: SaveEnvelope | null = null;
 let sceneEpoch = 0;
 let presentation: Presentation = 'launch';
 let restoredExistingGame = false;
+let boardReady = false;
 
 function say(message: string): void { notice.textContent = message; clearTimeout(noticeTimer); noticeTimer = window.setTimeout(() => { notice.textContent = ''; }, 5000); }
 function label(action: Action): string { return (action.type === 'shift' ? 'Shift ' : '') + action.from + ' → ' + action.to + (action.promotion ? '=' + action.promotion : ''); }
 function visiblePosition(): Position { return replayIndex === null ? game.state : game.states[replayIndex] ?? game.state; }
 function isBotTurn(): boolean { return (mode === 'bot-white' && game.state.side === 1) || (mode === 'bot-black' && game.state.side === -1); }
 function humanSide(): 1 | -1 { return mode === 'bot-white' ? -1 : 1; }
-function boardLocked(): boolean { return presentation !== 'play' || animating || replayIndex !== null || game.observe().outcome !== null || isBotTurn(); }
+function boardLocked(): boolean { return !boardReady || presentation !== 'play' || animating || replayIndex !== null || game.observe().outcome !== null || isBotTurn(); }
 function policyLabel(policy: DrawPolicy): string { return policy === 'prompt' ? 'Prompted agreement' : policy === 'auto100' ? 'Automatic at 100' : 'No quiet-action reminder'; }
 function actions(): Action[] { if (replayIndex !== null) return []; if (!actionCache || actionCache.gameId !== game.game_id || actionCache.revision !== game.revision) actionCache = { gameId: game.game_id, revision: game.revision, actions: game.legalActions() }; return actionCache.actions; }
 function invalidateActions(): void { actionCache = null; }
@@ -68,7 +73,11 @@ function reasonText(reason: string | null, tile: number): string {
   }
   return reason === 'hole' ? 'That is a hole, so there is no tile to Shift.' : reason === 'not_adjacent' ? 'This tile has no adjacent hole to move into.' : reason === 'king_safety' ? 'Moving this tile would leave your king unsafe.' : 'This tile cannot Shift in the current position.';
 }
-function save(): void { const issue = persistSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes }); if (issue) say(issue); }
+function currentTableSave(): SaveEnvelope { return { schema: 'rift-ui-save/1', record: game.exportRecord(), preferences: { ...preferences }, mode, practice, promptEpisodes: { ...promptEpisodes } }; }
+function save(): void {
+  const issue = persistSave(lessonReturn ? { ...lessonReturn, preferences: { ...preferences } } : currentTableSave());
+  if (issue) say(issue);
+}
 function chooseActor(title: string, detail: string, action: (side: 1 | -1) => void): void { actorDialogAction = action; $('actor-dialog-title').textContent = title; $('actor-dialog-detail').textContent = detail; ($('actor-dialog') as HTMLDialogElement).showModal(); }
 function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, focusSquare: document.activeElement === sceneHost ? keyboardSquare : null }); }
 function renderScene(): void {
@@ -113,6 +122,9 @@ function refresh(): void {
   $('move-mode').setAttribute('aria-pressed', String(intent === 'move')); $('move-mode').classList.toggle('active', intent === 'move'); $('shift-mode').setAttribute('aria-pressed', String(intent === 'shift')); $('shift-mode').classList.toggle('active', intent === 'shift'); $('show-moves').setAttribute('aria-pressed', String(preferences.showMoves));
   $('undo').toggleAttribute('disabled', !(practice && !animating && replayIndex === null && game.actions.length)); $('bot-retry').hidden = !botFailed || !isBotTurn() || Boolean(finished);
   $('skip').hidden = !animating; $('show-moves').hidden = animating;
+  $('lesson-status').hidden = lessonReturn === null;
+  const lessonNames = { ordinary: 'Ordinary move', emptyShift: 'Empty tile Shift', loadedShift: 'Carry one passenger', cutCheck: 'Cut a checking ray' };
+  $('lesson-message').textContent = (tutorial ? lessonNames[tutorial] : 'Practice table') + ' · Your match is on hold.';
   $('cancel-selection').hidden = selectedSquare === null && selectedTile === null && passengerTile === null; $('shift-passenger').hidden = passengerTile === null; $('confirm-shift').hidden = previewTile === null;
   refreshHistory(); refreshDraw(observation.draw_offer, observation.outcome !== null); replayControls.hidden = replayIndex === null; $('replay').setAttribute('aria-pressed', String(replayIndex !== null)); $('replay-position').textContent = replayIndex === null ? '' : replayIndex + ' / ' + game.actions.length;
   if (finished || position.halfmove < 100 || game.draw_policy !== 'prompt' || replayIndex !== null) $('quiet-prompt').hidden = true;
@@ -120,10 +132,12 @@ function refresh(): void {
   updateHighlights(); refreshLegalPanel();
 }
 function tutorialSolved(action: Action, previous: Position): boolean {
+  if (!tutorial) return false;
   if (tutorial === 'ordinary') return action.type === 'move';
-  const occupied = previous.board.filter((piece, square) => macroOfSquare(square) === Number((action.from.charCodeAt(0) - 65) + (Number(action.from[1]) - 1) * 4) && piece !== 0).length;
-  if (tutorial === 'emptyShift') return action.type === 'shift' && occupied === 0;
-  if (tutorial === 'loadedShift') return action.type === 'shift' && occupied === 1;
+  if (action.type !== 'shift') return false;
+  const occupied = macroSquares(macroIndex(action.from)).filter(square => previous.board[square] !== 0).length;
+  if (tutorial === 'emptyShift') return occupied === 0;
+  if (tutorial === 'loadedShift') return occupied === 1;
   return tutorial === 'cutCheck' && inCheck(previous, previous.side);
 }
 async function commit(action: Action, botAction = false): Promise<void> {
@@ -134,7 +148,7 @@ async function commit(action: Action, botAction = false): Promise<void> {
   const epoch = ++sceneEpoch;
   try { await scene.setPosition(game.state, { previous, action }); } finally { if (sceneEpoch === epoch) animating = false; }
   if (game.game_id !== gameId || sceneEpoch !== epoch) return;
-  refresh(); if (completed) { say('Lesson complete — that legal solution works.'); tutorial = null; } if (isBotTurn()) askBot();
+  if (completed) { say('Lesson complete — that legal solution works.'); tutorial = null; } refresh(); if (isBotTurn()) askBot();
 }
 async function chooseAction(candidates: Action[]): Promise<void> {
   if (!candidates.length) { say('That destination is not legal from the selected source.'); return; }
@@ -193,7 +207,7 @@ function pick(square: number, tile: number, hitKind?: HitKind): void {
 }
 function resetBot(): void { bot?.terminate(); bot = null; botFailed = false; }
 function askBot(): void {
-  if (replayIndex !== null || !isBotTurn() || game.observe().outcome) return;
+  if (!boardReady || replayIndex !== null || !isBotTurn() || game.observe().outcome) return;
   resetBot();
   try { bot = new Worker(new URL('./bot/worker.ts', import.meta.url), { type: 'module' }); } catch { botFailed = true; refresh(); say('The opponent could not start. Use Retry opponent.'); return; }
   const identity = { game_id: game.game_id, revision: game.revision };
@@ -209,16 +223,25 @@ function askBot(): void {
   refresh();
 }
 function startNew(layout: 'B' | 'C', draw: DrawPolicy, nextMode: Mode, nextPractice: boolean): void {
-  resetBot(); game = new Game(layout, draw); invalidateActions(); mode = nextMode; practice = nextPractice; tutorial = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot();
+  resetBot(); game = new Game(layout, draw); invalidateActions(); mode = nextMode; practice = nextPractice; tutorial = null; lessonReturn = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot();
 }
 function openTutorial(which: Tutorial): void {
   const fixtureNames: Record<Tutorial, string> = { ordinary: 'opening_B', emptyShift: 'opening_B', loadedShift: 'shift_promotion', cutCheck: 'cut_check_ray' };
   try {
     const fixture = conformance.fixtures.find(entry => entry.name === fixtureNames[which]);
     if (!fixture) throw new Error('Lesson fixture is missing.');
-    resetBot(); game = Game.fromRecord(fixture.record as GameRecord); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = which; replayIndex = null; clearSelection(); renderScene(); enterPlay(); refresh();
-    selection.textContent = which === 'ordinary' ? 'Lesson: make any legal ordinary move.' : which === 'emptyShift' ? 'Lesson: Shift any legal empty tile.' : which === 'loadedShift' ? 'Lesson: make a legal Shift with a passenger.' : 'Lesson: answer the checking ray with any legal move.';
+    const lesson = Game.fromRecord(fixture.record as GameRecord);
+    if (!lessonReturn) lessonReturn = currentTableSave();
+    resetBot(); game = lesson; invalidateActions(); mode = 'hotseat'; practice = true; tutorial = which; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh();
+    selection.textContent = which === 'ordinary' ? 'Lesson: make any legal ordinary move.' : which === 'emptyShift' ? 'Lesson: Shift any legal empty tile.' : which === 'loadedShift' ? 'Lesson: make a legal Shift with a passenger.' : 'Lesson: Shift an empty tile to cut the checking ray.';
   } catch { say('The lesson fixture could not be loaded.'); }
+}
+function returnFromLesson(): void {
+  if (!lessonReturn) return;
+  const saved = lessonReturn, restored = Game.fromRecord(saved.record);
+  resetBot(); game = restored; lessonReturn = null; tutorial = null; invalidateActions(); mode = saved.mode; practice = saved.practice;
+  promptEpisodes = { ...saved.promptEpisodes }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh();
+  if (isBotTurn()) askBot();
 }
 function applyPreferences(): void {
   document.documentElement.dataset.contrast = String(preferences.highContrast);
@@ -232,12 +255,16 @@ function restore(): void {
   catch { say('A saved game was rejected; the corrupt record was left untouched.'); renderScene(); refresh(); }
 }
 
+setPresentation('launch');
+// Let the loading state paint before WebGL setup and initial shader compilation.
+await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 scene = new BoardScene(sceneHost, pick); applyPreferences(); restore();
-void scene.whenReady().catch(error => say(error.message));
+void scene.whenReady().then(() => { boardReady = true; $('startup').hidden = true; if (isBotTurn()) askBot(); }).catch(error => { $('startup').querySelector('span')!.textContent = error.message; say(error.message); });
 $('launch-resume').textContent = restoredExistingGame ? 'Resume match' : 'Take your seat';
-try { if (restoredExistingGame || sessionStorage.getItem('rift-launch-seen') === '1') setPresentation('play'); else { setPresentation('launch'); scene.showcase(); } } catch { if (restoredExistingGame) setPresentation('play'); else { setPresentation('launch'); scene.showcase(); } }
+try { if (restoredExistingGame || sessionStorage.getItem('rift-launch-seen') === '1') setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } } catch { if (restoredExistingGame) setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } }
 $('explore-table').onclick = exploreTable;
 $('launch-resume').onclick = () => enterPlay(); $('launch-skip').onclick = () => enterPlay(true); $('launch-return').onclick = () => enterPlay(); $('launch-new').onclick = () => { ($('new-dialog') as HTMLDialogElement).showModal(); }; $('launch-explore').onclick = exploreTable;
+$('lesson-return').onclick = returnFromLesson;
 $('new-game').onclick = () => { const dialog = $('new-dialog') as HTMLDialogElement; dialog.returnValue = ''; dialog.showModal(); };
 $('new-dialog').addEventListener('close', () => {
   const dialog = $('new-dialog') as HTMLDialogElement;
@@ -245,13 +272,24 @@ $('new-dialog').addEventListener('close', () => {
   const data = new FormData(dialog.querySelector('form')!), rawLayout = data.get('layout') as 'B' | 'C' | 'random', layout = rawLayout === 'random' ? (Math.random() < .5 ? 'B' : 'C') : rawLayout;
   startNew(layout, data.get('draw') as DrawPolicy, data.get('mode') as Mode, ($('practice') as HTMLInputElement).checked);
 });
-$('undo').onclick = () => {
-  if (!practice || animating || replayIndex !== null) return;
-  if (mode === 'hotseat' && !window.confirm('Do both players agree to undo the last action?')) return;
+function undoLastAction(): void {
+  if (!practice || animating || replayIndex !== null || !game.actions.length) return;
   resetBot();
   try { game.undo(); while (mode !== 'hotseat' && game.actions.length && isBotTurn()) game.undo(); invalidateActions(); if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false }; clearSelection(); save(); renderScene(); refresh(); if (isBotTurn()) askBot(); }
   catch (error) { say(error instanceof Error ? error.message : 'Nothing to undo.'); }
+}
+$('undo').onclick = () => {
+  if (!practice || animating || replayIndex !== null || !game.actions.length) return;
+  if (mode !== 'hotseat') { undoLastAction(); return; }
+  pendingUndo = { gameId: game.game_id, revision: game.revision };
+  const dialog = $('undo-dialog') as HTMLDialogElement; dialog.returnValue = ''; dialog.showModal();
 };
+$('undo-dialog').addEventListener('close', () => {
+  const request = pendingUndo; pendingUndo = null;
+  if (($('undo-dialog') as HTMLDialogElement).returnValue !== 'approve' || !request) return;
+  if (request.gameId !== game.game_id || request.revision !== game.revision) { say('The match changed. Request Undo again if needed.'); return; }
+  undoLastAction();
+});
 $('resign').onclick = () => {
   if (replayIndex !== null || game.observe().outcome) return;
   const resign = (side: 1 | -1) => { game.resign(side); resetBot(); scene.skipAnimation(); save(); refresh(); say('Match resigned.'); };
@@ -279,13 +317,13 @@ $('replay-back').onclick = () => { replayIndex = Math.max(0, (replayIndex ?? 0) 
 $('replay-next').onclick = () => { replayIndex = Math.min(game.actions.length, (replayIndex ?? 0) + 1); renderScene(); refresh(); };
 $('replay-exit').onclick = () => { replayIndex = null; renderScene(); refresh(); if (isBotTurn()) askBot(); };
 $('export').onclick = () => {
-  try { const url = URL.createObjectURL(new Blob([exportSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes })], { type: 'application/json' })), link = document.createElement('a'); link.href = url; link.download = 'rift-chess-save.json'; link.click(); URL.revokeObjectURL(url); }
+  try { const url = URL.createObjectURL(new Blob([exportSave(currentTableSave())], { type: 'application/json' })), link = document.createElement('a'); link.href = url; link.download = 'rift-chess-save.json'; link.click(); URL.revokeObjectURL(url); }
   catch (error) { say(error instanceof Error ? error.message : 'Could not export save.'); }
 };
 ($('import') as HTMLInputElement).onchange = async event => {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (!file || file.size > 1_000_000) return say('Choose a Rift save under 1 MB.');
-  try { const saved = importSave(await file.text()); game = Game.fromRecord(saved.record); invalidateActions(); resetBot(); clearSelection(); revealHeld = false; tutorial = null; preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; replayIndex = null; applyPreferences(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot(); }
+  try { const saved = importSave(await file.text()); game = Game.fromRecord(saved.record); invalidateActions(); resetBot(); clearSelection(); revealHeld = false; tutorial = null; lessonReturn = null; preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; replayIndex = null; applyPreferences(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot(); }
   catch { say('That file is not a valid Rift Chess save. Your current game was kept.'); }
 };
 $('about').onclick = () => ($('about-dialog') as HTMLDialogElement).showModal();
@@ -335,7 +373,7 @@ window.addEventListener('pagehide', event => { resetBot(); if (!event.persisted)
 window.addEventListener('pageshow', event => { if (event.persisted && isBotTurn()) askBot(); });
 window.addEventListener('blur', releaseReveal);
 
-function loadScenario(input: GameRecord | Position): void { resetBot(); game = 'schema' in input ? Game.fromRecord(input) : new Game('B', 'prompt', input); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = null; replayIndex = null; clearSelection(); renderScene(); enterPlay(true); refresh(); }
+function loadScenario(input: GameRecord | Position): void { resetBot(); game = 'schema' in input ? Game.fromRecord(input) : new Game('B', 'prompt', input); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = null; lessonReturn = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); renderScene(); enterPlay(true); refresh(); }
 (window as Window & { rift?: unknown }).rift = {
   getObservation: () => game.observe(), getLegalActions: () => actions(), exportRecord: () => game.exportRecord(), loadScenario, loadTutorial: openTutorial,
   metrics: () => ({ ...scene.metrics(), revision: game.revision, actions: game.actions.length, animating, selectedSquare, selectedTile, keyboardSquare, revealHeld, shiftMode: intent === 'shift' }),
@@ -352,3 +390,4 @@ document.querySelectorAll<HTMLAnchorElement>('a[href^="https:"]').forEach(link =
   if (bridge) { event.preventDefault(); void bridge.openExternal(link.href).catch(() => say('This external link could not be opened.')); }
 }));
 document.querySelector('.import')!.addEventListener('keydown', event => { const key = (event as KeyboardEvent).key; if (key === 'Enter' || key === ' ') { event.preventDefault(); ($('import') as HTMLInputElement).click(); } });
+app.inert = false;

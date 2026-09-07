@@ -47,6 +47,14 @@ try {
     await page.locator('#quiet-offer-draw').click(); await page.locator('#actor-dialog').waitFor({ state: 'visible' }); await page.locator('#actor-white').click();
     await page.locator('#draw-response').waitFor({ state: 'visible' }); assert.equal(await page.locator('#quiet-offer-draw').isVisible(), false); assert.equal(await page.locator('#quiet-offer-draw').isDisabled(), true); assert.equal(await page.locator('#draw-response').locator('#draw-offer').count(), 1); assert.equal(await page.locator('#notice').innerText(), '');
   });
+  await test('separate prompt-at-99 fixture loads do not inherit dismissed reminder episodes', async () => {
+    const fixture = fixtures.find(item => item.name === 'prompt_at_99'), action = fixture.children.find(child => child.action.type === 'shift').action;
+    for (let iteration = 0; iteration < 2; iteration++) {
+      await driver.loadScenario(fixture.record); await driver.perform(action);
+      await page.locator('#quiet-prompt').waitFor({ state: 'visible' }); await page.locator('#quiet-dismiss').click();
+      assert.equal(await page.locator('#quiet-prompt').isVisible(), false);
+    }
+  });
   await test('keyboard-only source, destination focus, and Enter commit keep hints hidden', async () => {
     await newGame(); await page.locator('#scene').focus(); await focusKeyboardSquare(12); await page.keyboard.press('Enter'); await focusKeyboardSquare(28);
     const initialPawn = (await driver.observation()).position.board[12]; assert.ok(initialPawn > 0, 'e2 must contain White\'s initial pawn before the keyboard commit');
@@ -99,8 +107,9 @@ try {
     await newGame('bot-black'); await ordinary('e2', 'e4'); await waitWorker(1); await page.waitForFunction(() => window.rift.getObservation().position.side === -1 && window.rift.metrics().animating === false); assert.match(await page.locator('#turn').innerText(), /Black to move.*bot thinking/i); await driver.openDrawer('Match & view'); cancelled.add(1); await page.locator('#resign').click(); assert.equal((await driver.observation()).outcome.winner, -1);
     await newGame('bot-black'); await ordinary('e2', 'e4'); await waitWorker(2); await page.waitForFunction(() => window.rift.getObservation().position.side === -1 && window.rift.metrics().animating === false); await driver.openDrawer('Match & view'); cancelled.add(2); await page.locator('#offer-draw').click(); assert.equal((await driver.observation()).draw_offer, null); assert.match(await page.locator('#notice').innerText(), /local bot declines/i); await page.waitForTimeout(6000); await context.unroute('**/worker-*.js'); assert.deepEqual(routeFailures, []);
   });
-  await test('390x844 exposes Atelier, Learn links, active side, and board keyboard focus', async () => {
+  await test('390x844 exposes compact Undo consent, Atelier, Learn links, active side, and board keyboard focus', async () => {
     await page.setViewportSize({ width: 390, height: 844 }); await newGame(); assert.equal(await page.locator('#settings').isVisible(), true); assert.match(await page.locator('#turn').innerText(), /White to move/);
+    const initial = await driver.observation(); await ordinary('e2', 'e4'); const moved = await driver.record(), undo = page.locator('#undo'); assert.equal(await undo.isVisible(), true); assert.equal(await undo.isEnabled(), true); const undoBox = await undo.boundingBox(); assert.ok(undoBox && undoBox.y >= 0 && undoBox.y + undoBox.height <= 844, 'Compact Undo must remain inside the mobile viewport'); await undo.click(); await page.locator('#undo-dialog').waitFor({ state: 'visible' }); assert.equal((await driver.observation()).revision, 1); await capture('390-mobile-undo-dialog'); await page.keyboard.press('Escape'); assert.deepEqual(await driver.record(), moved); assert.equal(await page.evaluate(() => document.activeElement?.id), 'undo'); await undo.click(); await page.locator('#undo-dialog').waitFor({ state: 'visible' }); await page.locator('#undo-confirm[value="approve"]').click(); await driver.ready(); assert.equal((await driver.record()).actions.length, 0); assert.deepEqual((await driver.observation()).position, initial.position); await capture('390-mobile-undo-approved');
     const learn = page.locator('details.drawer').filter({ has: page.locator('[data-tutorial="ordinary"]') }); if (!await learn.evaluate(element => element.open)) await learn.locator('summary').click(); await page.getByRole('link', { name: 'How to play', exact: true }).waitFor({ state: 'visible' }); await page.getByRole('link', { name: 'Full rules', exact: true }).waitFor({ state: 'visible' }); await page.locator('#about').click(); await page.locator('#about-dialog').waitFor({ state: 'visible' }); await page.keyboard.press('Escape'); await page.locator('#scene').focus(); await focusKeyboardSquare(1); assert.equal((await driver.metrics()).focusSquare, 1); await capture('390-narrow-learn-and-focus');
   });
   receipt.finalBuild = await servedPrecache(); assert.deepEqual(receipt.finalBuild, receipt.build); assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
