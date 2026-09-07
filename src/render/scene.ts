@@ -486,8 +486,6 @@ export class BoardScene {
     const shift = action.type === 'shift' ? this.shiftEffect(start, end) : null;
     if (shift) this.bumpRift(passenger ? .72 : .48);
     if (capture) this.bumpRift(.88);
-    // Queue the effect programs now; start the visual clock only after the first actual draw.
-    this.renderer.compile(this.scene, this.camera);
     return new Promise<void>(resolve => {
       let finished = false;
       this.animation = {
@@ -591,16 +589,16 @@ export class BoardScene {
     const side = new THREE.Vector3(-direction.z, 0, direction.x).multiplyScalar(.63);
     const center = start.clone().lerp(end, .5); center.y = -.52;
     for (const sign of [-1, 1]) {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(.035, .035, length), energy(.08));
+      const rail = new THREE.Mesh(this.geometry(`effect-shift-rail:${length}`, () => new THREE.BoxGeometry(.035, .035, length)), energy(.08));
       rail.position.copy(center).addScaledVector(side, sign); rail.rotation.y = Math.atan2(direction.x, direction.z); group.add(rail);
     }
     const guideRings: THREE.Mesh[] = [];
     for (const point of [start, end]) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(.54, .027, 8, 36), energy(.38));
+      const ring = new THREE.Mesh(this.geometry('effect-shift-guide', () => new THREE.TorusGeometry(.54, .027, 8, 36)), energy(.38));
       ring.rotation.x = Math.PI / 2; ring.position.copy(point); ring.position.y = -.37; group.add(ring); guideRings.push(ring);
     }
     const seatMaterial = energy(0);
-    const seat = new THREE.Mesh(new THREE.TorusGeometry(.84, .04, 8, 48), seatMaterial);
+    const seat = new THREE.Mesh(this.geometry('effect-shift-seat', () => new THREE.TorusGeometry(.84, .04, 8, 48)), seatMaterial);
     seat.rotation.x = Math.PI / 2; seat.position.copy(end); seat.position.y = .025; group.add(seat);
     this.effects.add(group);
     return { update: (t: number) => {
@@ -618,11 +616,11 @@ export class BoardScene {
     const material = (color: number, opacity: number) => {
       const value = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }); materials.push(value); return value;
     };
-    const pulse = new THREE.Mesh(new THREE.TorusGeometry(.26, .035, 8, 32), material(colors.trim, .92));
+    const pulse = new THREE.Mesh(this.geometry('effect-capture-pulse', () => new THREE.TorusGeometry(.26, .035, 8, 32)), material(colors.trim, .92));
     pulse.rotation.x = Math.PI / 2; pulse.position.copy(origin); pulse.position.y += .045; group.add(pulse);
     const wisps: THREE.Mesh[] = [];
     for (let index = 0; index < 6; index++) {
-      const wisp = new THREE.Mesh(new THREE.CylinderGeometry(.012, .035, .3, 6), material(index % 2 ? colors.trim : colors.fill, .78));
+      const wisp = new THREE.Mesh(this.geometry('effect-capture-wisp', () => new THREE.CylinderGeometry(.012, .035, .3, 6)), material(index % 2 ? colors.trim : colors.fill, .78));
       const angle = index / 6 * Math.PI * 2; wisp.position.copy(origin).add(new THREE.Vector3(Math.cos(angle) * .14, .12, Math.sin(angle) * .14)); wisp.rotation.z = Math.sin(angle) * .24;
       wisps.push(wisp); group.add(wisp);
     }
@@ -652,7 +650,7 @@ export class BoardScene {
     const revealed = createPiece(position.board[destination], this.appearance.family, this.appearance.material);
     revealed.position.copy(point(destination)); if (position.board[destination] < 0) revealed.rotation.y = Math.PI;
     const revealFade = this.fadePiece(revealed); revealFade.opacity(0); this.board.add(revealed);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(.22, .025, 8, 36), new THREE.MeshBasicMaterial({ color: TILE_FINISHES[this.appearance.theme].trim, transparent: true, opacity: .9, depthWrite: false }));
+    const ring = new THREE.Mesh(this.geometry('effect-promotion-ring', () => new THREE.TorusGeometry(.22, .025, 8, 36)), new THREE.MeshBasicMaterial({ color: TILE_FINISHES[this.appearance.theme].trim, transparent: true, opacity: .9, depthWrite: false }));
     ring.rotation.x = Math.PI / 2; ring.position.copy(point(destination, .04)); this.effects.add(ring);
     return {
       update: (t: number) => {
