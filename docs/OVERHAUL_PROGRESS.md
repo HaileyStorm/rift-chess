@@ -1,6 +1,6 @@
 # Overhaul progress — 2026-09-07
 
-**Overall: approximately 67%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
+**Overall: approximately 69%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
 
 ## Evidence from this iteration
 
@@ -222,3 +222,73 @@ that profile for the eventual verification phase; prepare is not upgrade or
 release acceptance. `world-assembly-final` captures fourteen current originals
 and actual entrance/Return footage without errors; combined visual review is
 pending. The world harness now refuses reused output and records Return timing.
+
+Independent review now passes all six flagship experiences within their recorded
+source scopes, including all fourteen current world originals and eight actual
+video frames. Cold readiness remains approximately 10.472 seconds, during active
+assembly; this is not a startup-speed success. `final-candidate-6` passes three
+independent 72-case board reviews plus root inspection of all twelve application
+originals on `dce3b518d49ad211a9a1`. All twenty-four actual browser-zoom originals
+and the two final wood capture/promotion videos also pass scoped review.
+
+The native A–B–A diagnostic `assembly-aba-3` records 300 raw callbacks per phase
+in one focused window at the host's reported 60-Hz, 150%-scale display. Empty A
+has median/p95/max 18.0/19.1/20.3 ms, Daylight/Low idle has 18.0/20.7/22.1 ms, and
+empty return has 18.1/19.3/287.1 ms. The game canvas is 881×472 rather than the
+prior headless 1195×752. This does not clear either performance target or explain
+the earlier game-specific tails. Two failed diagnostic preparations are retained
+as harness errors, without timing evidence. Native action timing and an exact
+current cold-start trace are the next bounded diagnostics.
+
+The owner rejected the opening's weak shuffle and short duration. Its replacement
+selects among sixteen deterministic 48-slide candidates and runs over 8.5 seconds.
+Both layouts across 128 seeds each have at least twelve displaced tiles in the
+tested distribution. `assembly-strong-1`, build `8e103ed7177ac148f76b`, passes all
+six real-UI checks: its first actual submission has thirteen displaced tiles;
+76 bounded samples span steps 0 through 48 with stable piece-local transforms;
+the observed opening lasts 8.81 seconds. The old 24-slide/3.4-second presentation
+is superseded, while its earlier evidence remains historical. All 54 unit tests
+and the production build pass. Independent review of the new footage is pending.
+
+Native scaling review passed eight board originals and Atelier but identified a
+missing New Match scroll-end capture. The expanded real-keyboard/scroll check
+then reproduced background-page scrolling behind that modal. Dialog overscroll
+containment is added in build `4c389d0d0f55ccfb6d85`; the eleven-capture native
+retest is pending. This CSS correction does not change board geometry, lighting,
+materials, cameras or ordinary motion. Full mode/game acceptance and publication
+remain incomplete; no historical receipt is relabeled as the later build.
+
+The stronger opening now passes independent inspection of twelve actual-video
+frames and both settled originals, and its 8.38-second excerpt has been shown to
+the owner. `native-visual-strong-2` passes all eleven originals, including real
+Tab navigation to Start Match, internal scroll-end visibility, wheel containment
+and Escape focus restoration. `startup-strong-final` passes all seven startup
+checks on `4c389d0d0f55ccfb6d85`.
+
+The exact-build cold trace separates readiness from intentional assembly:
+resources finish by 3.040 seconds, assetsReady returns at 12.669 seconds, the
+first frame is observed at 12.718 seconds, and assembly finishes at 21.440
+seconds. The large cold span is associated with scene preparation/first
+submission; the trace does not distinguish JavaScript CPU work from a blocking
+graphics-driver call. Loading all nine reflection variants rather than the one
+selected variant is a bounded optimization candidate, not a completed fix.
+Three native Gallery/Low loaded-Shift repetitions retain maxima of 116.2, 59.8
+and 53.1 ms, with renderer CPU-submission maxima of 48.2, 51.1 and 45.2 ms. Their
+p95 values are 18.1, 17.9 and 18.5 ms; the raw 30-fps floor remains unresolved.
+
+The owner's directional-edge refinement replaces full movable-tile outlines
+with brighter, wider bands only along fully legal hole-facing edges. Multiple
+directions remain distinct, promotion variants share one edge, and clicking an
+edge from ordinary Move intent selects Shift without committing. Selected edges
+turn gold; only the chosen destination hole gets a full preview outline. The
+guide and on-board instructions now describe that flow.
+
+`shift-edges-2` passes five real-UI checks and independent inspection of all
+twelve originals on `142c32346f8590e8b9f2`. Source review then finds a missed
+reduced-motion transition with an already-selected tile. Rebuilding highlights
+when motion preference changes repairs it; `shift-edges-3` passes the extended
+five checks and twelve captures on `210c1279fca5b11bf478`, including toggling
+motion off and back on while preserving the selected tile. Bounded independent
+closure and the full affected board/application matrix are next. The earlier
+216-view acceptance retains its original build scope and does not substitute
+for the new edge-style matrix. Unit tests remain 54/54 and the build passes.

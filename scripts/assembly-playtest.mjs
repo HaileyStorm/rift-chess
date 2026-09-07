@@ -19,7 +19,7 @@ function verifyShuffled(metrics) {
   const assembly = metrics.assembly;
   assert.ok(metrics.assembling && assembly, 'Expected live assembly metrics');
   assert.equal(metrics.animating, true, 'Main interaction lock must remain active while assembling');
-  assert.equal(assembly.total, 24); assert.equal(assembly.tiles.length, 14);
+  assert.equal(assembly.total, 48); assert.equal(assembly.tiles.length, 14);
   assert.ok(assembly.tiles.some(({ tile, position }) => position.some((value, index) => Math.abs(value - target(tile)[index]) > 1e-6)), 'Assembly must visibly start shuffled');
   for (const { tile, pieces } of assembly.tiles) for (const { square, position } of pieces) {
     assert.equal(Math.floor(square / 8 / 2) * 4 + Math.floor(square % 8 / 2), tile, `piece ${square} must stay with tile ${tile}`);
@@ -56,7 +56,7 @@ try {
   context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, serviceWorkers: 'block', recordVideo: { dir: root, size: { width: 1600, height: 1000 } } });
   await context.addInitScript(() => {
     const clone = value => JSON.parse(JSON.stringify(value));
-    const probe = window.__assemblyProbe = { frames: [], firstSubmittedFrame: null, workers: [], assemblyStarts: 0 };
+    const probe = window.__assemblyProbe = { frames: [], firstSubmittedFrame: null, firstAssemblySettledAt: null, workers: [], assemblyStarts: 0 };
     let wasAssembling = false;
     const request = window.requestAnimationFrame.bind(window);
     window.requestAnimationFrame = callback => {
@@ -64,12 +64,13 @@ try {
       return request(timestamp => {
         callback(timestamp);
         const metrics = window.rift?.metrics?.();
+        if (wasAssembling && metrics && !metrics.assembling && probe.firstSubmittedFrame && probe.firstAssemblySettledAt === null) probe.firstAssemblySettledAt = performance.now();
         if (metrics?.assembling && !wasAssembling) probe.assemblyStarts++;
         wasAssembling = Boolean(metrics?.assembling);
         if (metrics?.assembling && metrics.renderedFrames > 0) {
-          const sample = { submittedAt, timestamp, metrics: clone(metrics) };
+          const sample = { submittedAt, timestamp, recordedAt: performance.now(), metrics: clone(metrics) };
           if (!probe.firstSubmittedFrame) probe.firstSubmittedFrame = sample;
-          if (probe.frames.length < 80) probe.frames.push(sample);
+          if (probe.frames.length < 160 && (!probe.frames.length || sample.recordedAt - probe.frames.at(-1).recordedAt >= 75)) probe.frames.push(sample);
         }
       });
     };
@@ -106,9 +107,19 @@ try {
     assert.equal((await driver.observation()).revision, 0); assert.deepEqual(await driver.record(), before);
     receipt.records.fresh = { before, after: await driver.record() }; await settled(); await capture('fresh-settled');
     const sample = await probe(); receipt.assemblySamples = sample.frames; receipt.firstSubmittedFrame = sample.firstSubmittedFrame;
-    assert.ok(sample.firstSubmittedFrame && sample.frames.length > 1 && sample.frames.length <= 80, 'Expected bounded live assembly RAF evidence');
+    assert.ok(sample.firstSubmittedFrame && sample.frames.length > 1 && sample.frames.length <= 160, 'Expected bounded live assembly RAF evidence');
     assert.equal(sample.firstSubmittedFrame.metrics.renderedFrames, 1, 'First-frame evidence must cover the first actual renderer submission.');
     verifyShuffled(sample.firstSubmittedFrame.metrics);
+    const initialTiles = sample.firstSubmittedFrame.metrics.assembly.tiles;
+    const displaced = initialTiles.filter(({ tile, position }) => position.some((value, index) => Math.abs(value - target(tile)[index]) > 1e-6)).length;
+    assert.ok(displaced >= 12, 'At least twelve of fourteen tiles must begin away from their final slots');
+    receipt.openingPresentation = { displacedTiles: displaced, slides: 48, observedDurationMs: sample.firstAssemblySettledAt - sample.firstSubmittedFrame.recordedAt };
+    assert.ok(receipt.openingPresentation.observedDurationMs >= 8400, 'The uninterrupted opening must retain the 8.5-second clock within observation tolerance');
+    assert.ok(sample.frames.at(-1).recordedAt - sample.firstSubmittedFrame.recordedAt >= 7500, 'Piece attachment samples must span the longer opening');
+    const steps = sample.frames.map(frame => frame.metrics.assembly.step);
+    assert.ok(steps.every((step, index) => index === 0 || step >= steps[index - 1]), 'Observed assembly slides must progress monotonically');
+    assert.ok(steps.at(-1) >= 47, 'Sparse samples must reach the final slides');
+    receipt.openingPresentation.firstSampledStep = steps[0]; receipt.openingPresentation.lastSampledStep = steps.at(-1);
     for (const frame of sample.frames) for (const tile of frame.metrics.assembly.tiles) {
       const original = sample.firstSubmittedFrame.metrics.assembly.tiles.find(item => item.tile === tile.tile);
       assert.deepEqual(tile.pieces, original.pieces, 'Pieces must preserve their tile-local positions during every observed slide.');

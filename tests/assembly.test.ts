@@ -32,11 +32,18 @@ function replay(plan: AssemblyPlan): Array<number | null> {
   return slots;
 }
 
+function mixing(plan: AssemblyPlan): readonly [number, number] {
+  return plan.placements.reduce<readonly [number, number]>(([displaced, distance], { tile, slot }) => {
+    const delta = Math.abs(slot % 4 - tile % 4) + Math.abs(Math.floor(slot / 4) - Math.floor(tile / 4));
+    return [displaced + Number(delta !== 0), distance + delta];
+  }, [0, 0]);
+}
+
 describe('assembly planning', () => {
   it.each(Object.entries(LAYOUTS))('restores layout %s from shuffled plans across seeds', (_, holes) => {
     for (let seed = 0; seed < 128; seed += 1) {
       const plan = planAssembly(holes, seed);
-      expect(plan.solveSteps).toHaveLength(24);
+      expect(plan.solveSteps).toHaveLength(48);
       expect(plan.placements.map(({ tile }) => tile).sort((a, b) => a - b))
         .toEqual(Array.from({ length: 16 }, (_, tile) => tile).filter((tile) => (holes & (1 << tile)) === 0));
       expect(new Set(plan.placements.map(({ slot }) => slot)).size).toBe(14);
@@ -53,10 +60,12 @@ describe('assembly planning', () => {
     expect(planAssembly(LAYOUTS.C, 0xdecafbad)).toEqual(planAssembly(LAYOUTS.C, 0xdecafbad));
   });
 
-  it.each(Object.entries(LAYOUTS))('never returns the solved board as layout %s start', (_, holes) => {
-    for (let seed = 0; seed < 128; seed += 1) {
-      expect(planAssembly(holes, seed).placements.some(({ tile, slot }) => tile !== slot), `seed ${seed}`).toBe(true);
-    }
+  it('selects a strong mix across B/C seeds', () => {
+    const scores = Object.values(LAYOUTS).flatMap((holes) => Array.from({ length: 128 }, (_, seed) => mixing(planAssembly(holes, seed))));
+    const weakest = Math.min(...scores.map(([displaced]) => displaced));
+    const totalDistance = scores.reduce((sum, [, distance]) => sum + distance, 0);
+    expect(weakest).toBeGreaterThanOrEqual(12);
+    expect(totalDistance).toBeGreaterThan(5_900);
   });
 
   it('rejects masks without exactly two 16-bit holes and non-uint32 seeds', () => {

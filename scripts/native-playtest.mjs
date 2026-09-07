@@ -93,6 +93,31 @@ async function captureScalingMatrix(page, classification) {
         const fit = await page.locator(`#${dialog}`).evaluate(element => { const r = element.getBoundingClientRect(); return r.x >= -1 && r.y >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; });
         assert.equal(fit, true, `Native ${dialog} must fit the smallest scaled viewport`);
         await capture(page, `${classification}-scaling-1280x720-zoom-1.5-${dialog}`);
+        if (dialog === 'new-dialog') {
+          const focusPath = [];
+          for (let tab = 0; tab < 24; tab++) {
+            await page.keyboard.press('Tab');
+            const focused = await page.evaluate(() => document.activeElement?.id || document.activeElement?.getAttribute('name') || document.activeElement?.tagName);
+            focusPath.push(focused);
+            if (focused === 'start-game') break;
+          }
+          assert.equal(focusPath.at(-1), 'start-game', 'Tab must reach the New Match action in the native scaled dialog');
+          const readScroll = () => page.locator('#new-dialog').evaluate(element => {
+            const button = element.querySelector('#start-game').getBoundingClientRect(), box = element.getBoundingClientRect();
+            return { scrollTop: element.scrollTop, scrollHeight: element.scrollHeight, clientHeight: element.clientHeight, actionVisible: button.top >= Math.max(0, box.top) && button.bottom <= Math.min(innerHeight, box.bottom) && button.left >= box.left && button.right <= box.right };
+          });
+          let scrollEnd = await readScroll();
+          assert.equal(scrollEnd.actionVisible, true, 'Keyboard focus must reveal the complete Start game control');
+          if (scrollEnd.scrollHeight > scrollEnd.clientHeight + 2) {
+            await page.locator('#new-dialog').hover(); await page.mouse.wheel(0, scrollEnd.scrollHeight);
+            await page.waitForFunction(() => { const dialog = document.querySelector('#new-dialog'); return dialog.scrollTop + dialog.clientHeight >= dialog.scrollHeight - 2; });
+            scrollEnd = await readScroll();
+            assert.ok(scrollEnd.scrollTop > 0 && scrollEnd.scrollTop + scrollEnd.clientHeight >= scrollEnd.scrollHeight - 2, 'An overflowing dialog must be captured at its actual scroll end');
+            assert.equal(scrollEnd.actionVisible, true);
+          }
+          receipt.nativeDialogScroll ??= []; receipt.nativeDialogScroll.push({ classification, focusPath, ...scrollEnd });
+          await capture(page, `${classification}-scaling-1280x720-zoom-1.5-new-dialog-bottom`);
+        }
         await page.keyboard.press('Escape'); await page.locator(`#${dialog}`).waitFor({ state: 'hidden' });
         assert.equal(await page.evaluate(() => document.activeElement?.id), opener, 'Native Escape must return focus to the dialog opener');
       }

@@ -21,7 +21,7 @@ type CameraPreset = 'white' | 'black' | 'overview' | 'top';
 type Theme = 'gallery' | 'nocturne' | 'daylight';
 type Quality = 'low' | 'balanced' | 'high';
 interface Appearance { theme: Theme; family: PieceFamily; material: MaterialStyle; quality: Quality; reducedMotion: boolean }
-interface Highlights { selectedSquare: number | null; selectedTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
+interface Highlights { selectedSquare: number | null; selectedTile: number | null; previewTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
 const TILE_FINISHES = {
   gallery: { light: 0xbacdc6, dark: 0x344957, edge: 0x303c45, trim: 0xbd9e60, fill: 0x84bcd4 },
   nocturne: { light: 0xa6bbd1, dark: 0x263650, edge: 0x202838, trim: 0x8c99c1, fill: 0x8093ff },
@@ -73,7 +73,7 @@ export class BoardScene {
   private fxaa: ShaderPass;
   private cameraTravel: { start: number | null; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
   private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: false };
-  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, focusSquare: null };
+  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, previewTile: null, legalActions: [], showMoves: false, focusSquare: null };
   private frame = 0;
   private resizeObserver: ResizeObserver;
   private disposed = false;
@@ -455,7 +455,7 @@ export class BoardScene {
     const from = new THREE.Vector3(), to = new THREE.Vector3();
     return new Promise<void>(resolve => {
       this.animation = {
-        start: null, duration: 3400,
+        start: null, duration: 8500,
         update: t => {
           const progress = THREE.MathUtils.clamp((t - .08) / .84, 0, 1) * plan.solveSteps.length;
           const whole = Math.floor(progress);
@@ -708,7 +708,7 @@ export class BoardScene {
   }
 
   setHighlights(highlights: Highlights) {
-    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
+    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.previewTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
     this.highlightState = highlights; this.availableTiles = new Set(highlights.legalActions.filter(a => a.type === 'shift').map(a => macroIndex(a.from)));
     if (key !== this.highlightKey) { this.highlightKey = key; if (!this.animation) this.drawHighlights(); }
   }
@@ -718,17 +718,29 @@ export class BoardScene {
     mesh.rotation.x = -Math.PI / 2; mesh.position.copy(point(square, 0.015)); mesh.renderOrder = 5; this.highlights.add(mesh);
   }
 
-  private tileOutline(tile: number, color: number, opacity: number, width = 0.027) {
-    const center = tilePoint(tile, this.highlightState.selectedTile === tile ? .15 : .042);
+  private holeOutline(tile: number, color: number, opacity: number, width: number) {
+    const center = tilePoint(tile, .042);
     for (const side of [-1, 1]) {
       const material = this.basicMaterial({ color, transparent: true, opacity, depthWrite: false });
-      const x = new THREE.Mesh(this.geometry(`outline-x:${width}`, () => new THREE.BoxGeometry(width, 0.018, 1.9)), material); x.position.copy(center).add(new THREE.Vector3(side * 0.956, 0, 0)); this.highlights.add(x);
-      const z = new THREE.Mesh(this.geometry(`outline-z:${width}`, () => new THREE.BoxGeometry(1.9, 0.018, width)), material); z.position.copy(center).add(new THREE.Vector3(0, 0, side * 0.956)); this.highlights.add(z);
+      const x = new THREE.Mesh(this.geometry(`outline-x:${width}`, () => new THREE.BoxGeometry(width, 0.018, 1.9)), material); x.position.copy(center).add(new THREE.Vector3(side * 0.956, 0, 0)); x.userData.previewHole = tile; this.highlights.add(x);
+      const z = new THREE.Mesh(this.geometry(`outline-z:${width}`, () => new THREE.BoxGeometry(1.9, 0.018, width)), material); z.position.copy(center).add(new THREE.Vector3(0, 0, side * 0.956)); z.userData.previewHole = tile; this.highlights.add(z);
     }
   }
 
+  private shiftEdge(from: number, to: number, selected: boolean) {
+    const width = selected ? .10 : .075;
+    const direction = tilePoint(to).sub(tilePoint(from)).normalize();
+    const edge = new THREE.Mesh(this.geometry(`shift-edge:${width}`, () => new THREE.BoxGeometry(1.9, .028, width)), this.basicMaterial({ color: selected ? 0xffd68e : 0x9fffe2, transparent: true, opacity: 1, depthWrite: false }));
+    edge.position.copy(tilePoint(from, selected && !this.appearance.reducedMotion ? .16 : .052)).addScaledVector(direction, .956);
+    edge.rotation.y = Math.atan2(direction.x, direction.z);
+    edge.userData.hitKind = 'shift'; edge.userData.tile = from;
+    edge.userData.shiftEdge = { from, to, selected, width };
+    this.highlights.add(edge);
+  }
+
   private arrow(from: number, to: number, strong: boolean) {
-    const start = tilePoint(from, strong ? .17 : .055); const end = tilePoint(to, strong ? .17 : .055);
+    const height = strong && !this.appearance.reducedMotion ? .17 : .055;
+    const start = tilePoint(from, height); const end = tilePoint(to, height);
     const direction = end.clone().sub(start).normalize();
     const center = start.addScaledVector(direction, 0.8);
     const geometry = this.geometry('shift-direction', () => { const shape = new THREE.Shape(); shape.moveTo(-0.115, -0.1); shape.lineTo(0.115, -0.1); shape.lineTo(0, 0.15); shape.closePath(); return new THREE.ShapeGeometry(shape); });
@@ -738,7 +750,7 @@ export class BoardScene {
   }
 
   private shiftHandle(tile: number) {
-    const handle = new THREE.Group(); handle.position.copy(tilePoint(tile, this.highlightState.selectedTile === tile ? .19 : .075));
+    const handle = new THREE.Group(); handle.position.copy(tilePoint(tile, this.highlightState.selectedTile === tile && !this.appearance.reducedMotion ? .19 : .075));
     handle.userData.hitKind = 'shift'; handle.userData.tile = tile;
     const base = new THREE.Mesh(this.geometry('handle-base', () => new THREE.CylinderGeometry(.16, .16, .035, 24)), this.basicMaterial({ color: 0x143e3e })); handle.add(base);
     const rim = new THREE.Mesh(this.geometry('handle-rim', () => new THREE.TorusGeometry(.15, .014, 6, 24)), this.basicMaterial({ color: 0xa7ffe5 })); rim.rotation.x = Math.PI / 2; rim.position.y = .02; handle.add(rim);
@@ -752,22 +764,22 @@ export class BoardScene {
   private drawHighlights() {
     this.clear(this.highlights);
     if (!this.position) return;
-    const { selectedSquare, selectedTile, legalActions, showMoves, focusSquare } = this.highlightState;
+    const { selectedSquare, selectedTile, previewTile, legalActions, showMoves, focusSquare } = this.highlightState;
     {
-      const done = new Set<number>(); const arrows = new Set<string>();
+      const done = new Set<number>(); const directions = new Set<string>();
       for (const action of legalActions) if (action.type === 'shift') {
         const tile = macroIndex(action.from); const dest = macroIndex(action.to);
-        if (!done.has(tile)) { this.tileOutline(tile, 0x75e9d1, .8, .034); this.shiftHandle(tile); done.add(tile); }
+        if (!done.has(tile)) { this.shiftHandle(tile); done.add(tile); }
         const key = `${tile}-${dest}`;
-        if (!arrows.has(key)) { this.arrow(tile, dest, tile === selectedTile); arrows.add(key); }
+        if (!directions.has(key)) { this.shiftEdge(tile, dest, tile === selectedTile); this.arrow(tile, dest, tile === selectedTile); directions.add(key); }
       }
     }
     if (selectedTile !== null) {
-      this.tileOutline(selectedTile, 0xffd68e, 1, .056);
       const holes = new Set<number>();
       for (const action of legalActions) if (action.type === 'shift' && macroIndex(action.from) === selectedTile) holes.add(macroIndex(action.to));
-      for (const hole of holes) {
-        this.tileOutline(hole, 0xffd68e, 1, .046);
+      if (previewTile !== null && holes.has(previewTile)) {
+        const hole = previewTile;
+        this.holeOutline(hole, 0xffd68e, 1, .046);
         const pad = new THREE.Mesh(this.geometry('destination-pad', () => new THREE.PlaneGeometry(1.78, 1.78)), this.basicMaterial({ color: 0x57dcbf, transparent: true, opacity: .20, depthWrite: false }));
         pad.rotation.x = -Math.PI / 2; pad.position.copy(tilePoint(hole, -.035)); this.highlights.add(pad);
       }
@@ -850,7 +862,10 @@ export class BoardScene {
       }
       if (worldChanged) { this.buildEnvironment(); this.resizePending = true; }
       if (boardChanged && this.position) this.buildBoard(this.position);
-      if (motionChanged && !next.reducedMotion && !boardChanged) this.prepareFadeWarmups();
+      if (motionChanged && !boardChanged) {
+        this.drawHighlights();
+        if (!next.reducedMotion) this.prepareFadeWarmups();
+      }
       if (worldChanged || boardChanged) {
         this.sceneReady = this.surfaceLoaded ? this.prepareScene() : this.surfaceReady;
       } else if (motionChanged) this.sceneReady = this.surfaceLoaded ? this.afterNextFrame() : this.surfaceReady;
@@ -876,8 +891,12 @@ export class BoardScene {
 
   /** Read-only instrumentation: test clicks still pass through the real canvas. */
   squareScreenPosition(square: number): { x: number; y: number } {
+    return this.screenPosition(point(square, this.position?.board[square] ? 0.3 : 0.02));
+  }
+
+  private screenPosition(position: THREE.Vector3): { x: number; y: number } {
     this.camera.updateMatrixWorld();
-    const value = point(square, this.position?.board[square] ? 0.3 : 0.02).project(this.camera);
+    const value = position.clone().project(this.camera);
     const rect = this.renderer.domElement.getBoundingClientRect();
     return { x: rect.left + (value.x + 1) * rect.width / 2, y: rect.top + (1 - value.y) * rect.height / 2 };
   }
@@ -888,6 +907,8 @@ export class BoardScene {
     return { samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
       cameraTravelling: this.cameraTravel !== null, cameraPosition: this.camera.position.toArray(), cameraTravelDestination: this.cameraTravel?.to.toArray() ?? null,
       checkPulseActive: this.checkPulse !== null,
+      shiftEdges: this.highlights.children.filter(object => object.userData.shiftEdge).map(object => ({ ...object.userData.shiftEdge, position: object.position.toArray(), screen: this.screenPosition(object.getWorldPosition(new THREE.Vector3())) })),
+      shiftPreview: this.highlights.children.find(object => Number.isInteger(object.userData.previewHole))?.userData.previewHole ?? null,
       assembling: this.assembling, assembly: this.assemblyState ? { ...this.assemblyState, tiles: [...this.tiles].map(([tile, group]) => ({ tile, position: group.position.toArray(), pieces: group.children.filter(child => child.userData.hitKind === 'piece').map(piece => ({ square: piece.userData.square as number, position: piece.position.toArray() })) })) } : null,
       maxTileLift: Math.max(0, ...Array.from(this.tiles.values(), tile => tile.position.y)), reducedMotion: this.appearance.reducedMotion, pendingSceneReadiness: this.readyAfterFrame.length,
       medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,

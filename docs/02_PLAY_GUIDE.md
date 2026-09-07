@@ -6,7 +6,7 @@ Read [the full rules](01_RULES.md) for edge cases. This guide describes the ship
 
 ## Start a first game
 
-Use the Gallery environment, Classic pieces, the White camera, and **Prompted agreement** for draws. Start a hotseat match or play against the local bot. Turn on **Show moves** for your first game, then try a game without ordinary-move hints. Legal Shift handles stay visible.
+Use the Gallery environment, Classic pieces, the White camera, and **Prompted agreement** for draws. Start a hotseat match or play against the local bot. Turn on **Show moves** for your first game, then try a game without ordinary-move hints. Legal Shift edges stay lit.
 
 On first launch and New Match, the shuffled tiles slide into their starting
 positions with their pieces aboard. This opening animation happens before the
@@ -74,14 +74,14 @@ These are strategic hypotheses and lessons suggested by the mechanics, not solve
 | Task | Mouse / touch | Keyboard alternative |
 |---|---|---|
 | Ordinary move | **Move** is selected by default. Select a piece, then a legal destination. | Focus the board, use arrows to move focus, then press Enter to select the source and destination. |
-| Shift an empty tile | Select **Shift**, choose a tile with a visible legal handle, choose a highlighted neighboring hole, then choose **Confirm Shift**. | Press **S** for Shift, then use arrows and Enter for the tile and hole. |
+| Shift an empty tile | Click a lit tile edge, choose the hole it points toward, then choose **Confirm Shift**. | Press **S** for Shift, then use arrows and Enter for the tile and hole. |
 | Shift a passenger | Select your piece on a Shiftable tile, choose **Shift this tile**, choose the neighboring hole preview, then choose **Confirm Shift**. If the passenger reaches the back rank, choose queen, rook, bishop, or knight in the promotion dialog. | Use **S**, arrows, and Enter for the same selection sequence. |
 | Cancel a selection | Choose **Cancel**. | Press Escape. |
 | See ordinary legal moves | Choose **Show moves**. | Hold **H** while the board has focus. |
 | Camera presets | Use the visible White, Black, Overview, or Top buttons in **Match & view**. | Press **1** through **4**. |
 | Free camera | Right-drag to orbit; use the wheel, middle-drag, or two-finger touch gestures to adjust the view. | Use the visible camera buttons in **Match & view**. |
 
-Legal Shift handles remain visible even when ordinary move hints are off. A handle means the tile has at least one fully legal Shift now. Selecting it shows valid neighboring holes; choosing a hole opens the preview. The action does not commit until **Confirm Shift** (and, when needed, a promotion choice). Board shortcuts require board focus, and arrow navigation follows files and ranks regardless of the camera angle.
+Bright tile edges point toward holes that tile can legally slide into, even when ordinary move hints are off. A tile with two legal directions lights both corresponding edges. Click a lit edge or the center grip to select the tile; its legal edges turn gold. Choosing a hole outlines that destination and opens the preview. The action does not commit until **Confirm Shift** (and, when needed, a promotion choice). Board shortcuts require board focus, and arrow navigation follows files and ranks regardless of the camera angle.
 
 ## Visual comfort, match controls, and draws
 

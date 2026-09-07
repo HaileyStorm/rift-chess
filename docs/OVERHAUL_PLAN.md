@@ -61,9 +61,10 @@ Exit: a materially redesigned playable scene with coherent composition, strong s
 
 - Make the board dominant. Replace the two permanently busy side rails with a compact turn/match bar, concise action guidance near the board, a slim history area, and secondary settings/match actions in well-organized panels. Essential move/Shift controls remain visible at supported desktop sizes and Windows scaling.
 - Design one explicit interaction state model: idle, piece selected, tile selected, destination preview, promotion, animating, bot thinking, replay and ended. Use one source of truth for mode, highlights, cursor, instructions and accessibility announcements.
-- Support direct tile selection through a visible tile affordance, plus an always-accessible Move/Shift control. Selecting a passenger must offer an unambiguous route to moving its tile. A piece click must never silently start a Shift. Highlight the entire eligible macro-tile, its allowed direction(s), and the selected destination hole, using outlines/shapes as well as color.
+- Support direct tile selection through a visible tile affordance, plus an always-accessible Move/Shift control. Selecting a passenger must offer an unambiguous route to moving its tile. A piece click must never silently start a Shift. Distinguish legal source edges, selected source edges, and the chosen destination hole using outlines/shapes as well as color.
 - Show legal Shift availability from the full king-safe action set for the active side. Make source, selected source, target hole and unavailable tile visually distinct. On invalid selection, explain the precise reason in context. Permit easy reselection and Escape/cancel; do not trap the player in a dead selection.
 - Preview passenger transport and destination before commitment. Commit only on deliberate destination action, with promotion selection before the atomic transition. Camera gestures, hover and previews cannot commit moves.
+- Owner refinement: emphasize only the source edges facing fully legal Shift destinations, using stronger directional highlights instead of a full movable-tile outline. Light every legal direction when more than one exists. Reserve a full hole outline for the chosen destination preview.
 - Redesign new-match setup, guided tutorials, promotion, draw/undo consent, check/game-over feedback, save/import/export and replay as clear flows. Fix stale New game text and keyboard focus loss from rebuilding controls. Explain the selected mode and player's color without an actor dropdown dominating normal play.
 - Retain keyboard and non-drag paths, visible focus, contrast and reduced motion. Test touch emulation separately from physical-device claims. Ordinary legal destinations remain hidden by default; this must not hide Shift affordances.
 
@@ -134,6 +135,10 @@ play and bot dispatch until settlement, support skipping and reduced motion,
 and preserve existing saved-match, import, replay and lesson flows without
 reshuffling. Inspect actual first-frame, intermediate and settled footage before
 acceptance, including interruption and bot timing.
+
+Owner refinement: the first opening looked insufficiently shuffled and too fast.
+Use substantially displaced starting tiles and slower, more readable assembly;
+the earlier 24-slide, 3.4-second presentation no longer satisfies this row.
 
 Use bounded parallel lanes for geometry/assets, renderer/environment, UI/interaction and independent review when independent work is available. Reserve files before writes; root owns cross-cutting interaction contracts, integration, acceptance and publishing. Existing rules/match/API behavior stays under deterministic regression checks. Avoid duplicating the same test or expensive screenshot sweep across agents.
 
