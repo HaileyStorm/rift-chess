@@ -1,6 +1,6 @@
 # Overhaul progress — 2026-09-07
 
-**Overall: approximately 69%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
+**Overall: approximately 70%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
 
 ## Evidence from this iteration
 
@@ -292,3 +292,27 @@ motion off and back on while preserving the selected tile. Bounded independent
 closure and the full affected board/application matrix are next. The earlier
 216-view acceptance retains its original build scope and does not substitute
 for the new edge-style matrix. Unit tests remain 54/54 and the build passes.
+
+The affected visual review is now complete on `210c1279fca5b11bf478`: all 216
+board views pass three independent theme reviews; all twelve application views,
+thirteen close-up/state views, twenty-four actual browser-zoom views and eleven
+native development views pass their scoped inspections. The current loaded-rook
+Shift and Shift-knight-promotion videos also pass sampled independent review.
+The other unchanged asset/motion rows retain their documented source scopes.
+
+All 67 Python reference tests pass, and the compiled API exactly matches all
+fourteen original fixtures, 223 successors and their 21,760-entry legal masks.
+The final JavaScript suite passed 53 tests but its nine-texture validation hit
+the default five-second timeout during concurrent CPU work. Both texture tests
+then passed in isolation at that same timeout; the failure and rerun logs are
+retained. All 54 distinct tests have passing evidence on the unchanged source.
+
+The current browser mechanics run passes seventeen checks. The first lifecycle
+run reaches the import-adapter check before exposing a test race: it reads the
+old randomized opening before asynchronous file parsing finishes. The harness
+now waits for rejection feedback or the imported game's new identity and exact
+hash. The corrected lifecycle run passes all twelve checks, including all eight
+promotion choices and semantic recovery. No game-source change was needed for
+that mismatch. Tutorial, interruption, full-mode and complete-game gates remain
+in progress. Both performance targets remain unresolved; the single instrumented
+Shift trace is diagnostic evidence, not performance acceptance.
