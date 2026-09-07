@@ -92,6 +92,7 @@ export class BoardScene {
   private readyAfterFrame: Array<() => void> = [];
   private resizePending = true;
   private drawingSize = '';
+  private warmAllPrograms = false;
 
   constructor(private container: HTMLElement, private onPick: (square: number, tile: number, kind?: 'piece' | 'tile' | 'shift') => void) {
     const stone = loadStoneTexture(); this.stoneTexture = stone.texture;
@@ -272,7 +273,14 @@ export class BoardScene {
     this.controls.update();
     this.renderer.info.reset();
     if (this.renderer.shadowMap.needsUpdate) this.shadowFrames++;
-    if (this.composer && this.appearance.quality !== 'low') this.composer.render(); else this.renderer.render(this.scene, this.camera);
+    const culled: THREE.Object3D[] | null = this.warmAllPrograms ? [] : null;
+    if (culled) {
+      this.warmAllPrograms = false;
+      this.scene.traverse(object => { if (object.frustumCulled) { object.frustumCulled = false; culled.push(object); } });
+    }
+    try {
+      if (this.composer && this.appearance.quality !== 'low') this.composer.render(); else this.renderer.render(this.scene, this.camera);
+    } finally { culled?.forEach(object => { object.frustumCulled = true; }); }
     this.lastRenderedAt = performance.now(); this.renderedFrames++;
     this.fadeWarmups.splice(0).forEach(mesh => mesh.removeFromParent());
     if (drawnAnimation && this.animation === drawnAnimation && drawnAnimation.start === null) drawnAnimation.start = this.lastRenderedAt;
@@ -830,6 +838,8 @@ export class BoardScene {
     if (this.disposed) throw new DOMException('Renderer disposed before frame readiness.', 'AbortError');
     // compileAsync polls material properties after disposal during rapid UI changes. A completed
     // render submission warms the current scene without retaining a stale set of materials.
+    // Submit off-camera materials once too; otherwise a later orbit can block on their first use.
+    this.warmAllPrograms = true;
     this.renderer.compile(this.scene, this.camera);
     await this.afterNextFrame();
   }
