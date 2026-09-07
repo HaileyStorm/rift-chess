@@ -1,216 +1,313 @@
 import './style.css';
 import { BoardScene } from './render/scene';
 import { Game } from './match/game';
-import { inCheck, legalActions, macroName, macroOfSquare, present, pieceType, shiftReason, squareName } from './engine/position';
+import { inCheck, macroName, macroOfSquare, present, pieceType, shiftReason, squareName } from './engine/position';
 import type { Action, DrawPolicy, GameRecord, Position } from './engine/types';
-import { consumeLoadNotice, defaultPreferences, exportSave, importSave, loadSave, persistSave, type Preferences, type SaveEnvelope } from './persistence';
+import { consumeLoadNotice, defaultPreferences, exportSave, importSave, loadSave, persistSave, type Preferences } from './persistence';
 import conformance from '../fixtures/conformance.json';
 
 type Mode = 'hotseat' | 'bot-white' | 'bot-black';
 type Tutorial = 'ordinary' | 'emptyShift' | 'loadedShift' | 'cutCheck';
+type Intent = 'move' | 'shift';
+type HitKind = 'piece' | 'tile' | 'shift';
 const app = document.querySelector<HTMLElement>('#app')!;
 
-app.innerHTML = `
-  <header class="topbar"><a class="brand" href="#home" aria-label="Rift Chess home"><span>RIFT</span> CHESS</a>
-    <div class="top-actions"><button id="new-game" class="brass">New game</button><button id="undo" title="Practice undo">Undo</button><a class="text-link" href="./rules.html">Rules</a><button id="settings" aria-haspopup="dialog">Settings</button></div></header>
-  <main class="game-shell"><aside class="left-rail panel" aria-label="Match details">
-    <p class="eyebrow">LOCAL MATCH</p><h1 id="turn">White to move</h1><p id="check" class="status" aria-live="polite">Opening position</p><button id="bot-retry" hidden>Retry opponent</button>
-    <div class="counter"><span>Quiet actions</span><strong id="quiet">0 / 100</strong></div><p id="policy" class="muted">Prompted agreement</p>
-    <div id="quiet-prompt" class="quiet-prompt" hidden><p id="quiet-message"></p><button id="quiet-dismiss">Dismiss reminder</button></div><div id="draw-area" class="draw-area"></div><button id="resign" class="subtle">Resign match</button>
-    <div class="rule"></div><p class="eyebrow">CAMERA</p><div class="camera-grid"><button data-camera="white">1 White</button><button data-camera="black">2 Black</button><button data-camera="overview">3 Overview</button><button data-camera="top">4 Top</button><button id="camera-home">Home view</button><button id="orbit-left">◀ Orbit</button><button id="orbit-right">Orbit ▶</button></div>
-    <div class="rule"></div><button id="show-moves" aria-pressed="false">◎ Show moves <kbd>H</kbd></button><button id="shift-mode" aria-pressed="false">↔ Shift mode <kbd>S</kbd></button><button id="reveal" class="subtle">Hold to reveal</button><details id="legal-panel"><summary>Legal actions · reveal</summary><div id="legal-list"></div></details>
-  </aside>
-  <section class="board-area" aria-label="Rift Chess board"><div id="scene" tabindex="0" role="application" aria-label="3D Rift Chess board. Arrow keys move focus, Enter selects, S enters Shift mode."></div><div class="board-meta"><span id="selection" aria-live="polite">Select a piece or a tile to Shift.</span><button id="skip" class="subtle">Skip animation</button></div></section>
-  <aside class="right-rail panel"><div class="history-head"><div><p class="eyebrow">GAME RECORD</p><h2>Moves</h2></div><button id="replay" aria-pressed="false">Replay</button></div><ol id="history" class="history" aria-label="Move history"></ol><div id="replay-controls" class="replay-controls" hidden><button id="replay-back">‹ Previous</button><span id="replay-position"></span><button id="replay-next">Next ›</button><button id="replay-exit">Exit replay</button></div><div class="rule"></div><p class="eyebrow">LESSONS</p><div class="tutorials"><button data-tutorial="ordinary">01 · Find a move</button><button data-tutorial="emptyShift">02 · Shift an empty tile</button><button data-tutorial="loadedShift">03 · Carry one passenger</button><button data-tutorial="cutCheck">04 · Cut a checking ray</button></div><div class="footer-links"><button id="export">Export</button><label class="import" tabindex="0" role="button" aria-label="Import saved game">Import<input id="import" type="file" accept="application/json,.json" /></label><a href="./support.html">Support</a></div></aside>
-  </main>
-  <footer><span>Rift Chess · offline local play</span><button id="about">About & credits</button></footer>
-  <dialog id="new-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">NEW MATCH</p><button value="cancel" aria-label="Close">×</button></div><h2>Set the table</h2><fieldset><legend>Players</legend><label><input type="radio" name="mode" value="hotseat" checked /> Hotseat</label><label><input type="radio" name="mode" value="bot-black" /> Play White vs bot</label><label><input type="radio" name="mode" value="bot-white" /> Play Black vs bot</label></fieldset><fieldset><legend>Opening layout</legend><label><input type="radio" name="layout" value="B" /> B-rift</label><label><input type="radio" name="layout" value="C" /> C-rift</label><label><input type="radio" name="layout" value="random" checked /> Random B / C</label></fieldset><fieldset><legend>Quiet-action policy</legend><label><input type="radio" name="draw" value="prompt" checked /> Prompted agreement</label><label><input type="radio" name="draw" value="auto100" /> Automatic at 100</label><label><input type="radio" name="draw" value="off" /> No reminder</label></fieldset><label class="checkline"><input id="practice" type="checkbox" checked /> Practice match — allow undo</label><p class="muted">Bot offers are declined in this first local version.</p><button id="start-game" class="brass" value="start">Start match</button></form></dialog>
-  <dialog id="promotion-dialog" class="dialog promotion"><form method="dialog"><p class="eyebrow">PROMOTION</p><h2>Choose the new piece</h2><div><button value="Q">Queen</button><button value="R">Rook</button><button value="B">Bishop</button><button value="N">Knight</button></div></form></dialog>
-  <dialog id="about-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">RIFT CHESS</p><button value="close">×</button></div><h2>Chess on moving ground.</h2><p>Designed and built as an offline, local game. The rules are Rift Chess 1.0.</p><p>The xkcd reference is credited as a link, not bundled artwork: <a href="https://xkcd.com/3139/" target="_blank" rel="noreferrer">xkcd #3139</a>. Built with Astra-assisted development and original procedural geometry.</p><p><a href="./guide.html">How to play</a> · <a href="./support.html">Support</a> · <a href="./licenses.txt">Licenses</a></p><button class="brass" value="close">Close</button></form></dialog>
-  <div id="notice" role="status" aria-live="polite"></div>`;
+app.innerHTML = [
+  '<header class="topbar"><a class="brand" href="#home"><span>RIFT</span><b>CHESS</b><i>moving ground · local play</i></a><div class="match-pulse"><span id="match-kind">LOCAL MATCH</span><strong id="turn">White to move</strong></div><nav class="top-actions"><button id="new-game" class="brass">New match</button><button id="undo">Undo</button><button id="settings">Atelier</button><a class="text-link" href="./rules.html">Rules</a></nav></header>',
+  '<main class="game-shell"><section class="board-area" aria-label="Rift Chess board"><div class="scene-frame"><div id="scene" tabindex="0" role="application" aria-label="3D Rift Chess board. Arrow keys move focus. Enter selects. S selects Shift."></div><section id="launch-surface" class="launch-surface"><p class="eyebrow">THE KINETIC CHESS TABLE</p><h1>A board that<br><em>moves beneath you.</em></h1><p>Rift Chess is a local game of ordinary moves and deliberate shifts. Explore the table, then take your turn.</p><div class="launch-actions"><button id="launch-resume" class="brass">Resume match</button><button id="launch-new">Set a new match</button><button id="launch-explore" class="subtle">Explore the table</button></div><button id="launch-skip" class="skip-link">Skip view</button></section></div>',
+  '<div class="turn-strip"><span id="check" class="status" aria-live="polite">Opening position</span><span class="quiet-readout">Quiet <strong id="quiet">0 / 100</strong></span><span id="policy" class="muted">Prompted agreement</span><button id="bot-retry" hidden>Retry opponent</button></div>',
+  '<section class="action-dock"><div class="intent-control" role="group" aria-label="Action type"><button id="move-mode" class="active" aria-pressed="true">Move</button><button id="shift-mode" aria-pressed="false">Shift <kbd>S</kbd></button></div><div class="selection-copy"><strong id="selection" aria-live="polite">Select a piece to move, or a tile handle to Shift.</strong><span id="selection-detail">Shift handles remain visible while ordinary move hints are hidden.</span></div><div class="commit-actions"><button id="shift-passenger" hidden>Shift this tile</button><button id="confirm-shift" class="brass" hidden>Confirm Shift</button><button id="cancel-selection" class="subtle" hidden>Cancel <kbd>Esc</kbd></button></div><button id="show-moves" class="subtle" aria-pressed="false">Show moves <kbd>H</kbd></button><button id="skip" class="subtle">Skip animation</button></section></section>',
+  '<aside class="utility-deck" aria-label="Match tools"><details class="drawer" open><summary><span>Record</span><small id="record-count">0 actions</small></summary><div class="drawer-body"><div class="history-head"><span>Move history</span><button id="replay" aria-pressed="false">Replay</button></div><ol id="history" class="history"></ol><div id="replay-controls" class="replay-controls" hidden><button id="replay-back">‹ Previous</button><span id="replay-position"></span><button id="replay-next">Next ›</button><button id="replay-exit">Return to live match</button></div></div></details>',
+  '<details class="drawer"><summary><span>Learn the rift</span><small>4 guided tables</small></summary><div class="drawer-body tutorials"><button data-tutorial="ordinary"><b>01</b> Find an ordinary move</button><button data-tutorial="emptyShift"><b>02</b> Shift an empty tile</button><button data-tutorial="loadedShift"><b>03</b> Carry one passenger</button><button data-tutorial="cutCheck"><b>04</b> Cut a checking ray</button></div></details>',
+  '<details class="drawer"><summary><span>Match & view</span><small>camera, draws, saves</small></summary><div class="drawer-body tool-grid"><div class="camera-grid"><button data-camera="white">1 White</button><button data-camera="black">2 Black</button><button data-camera="overview">3 Overview</button><button data-camera="top">4 Top</button><button id="orbit-left">Orbit left</button><button id="orbit-right">Orbit right</button></div><div id="quiet-prompt" class="quiet-prompt" hidden><p id="quiet-message"></p><button id="quiet-dismiss">Dismiss reminder</button></div><div id="draw-area" class="draw-area"><p id="draw-offer" class="muted" hidden></p><button id="offer-draw">Offer draw</button><button id="accept-draw" hidden>Accept draw</button><button id="decline-draw" hidden>Decline draw</button></div><button id="resign" class="subtle">Resign match</button><div class="save-row"><button id="export">Export</button><label class="import" tabindex="0" role="button">Import<input id="import" type="file" accept="application/json,.json" /></label><a href="./support.html">Support</a></div></div></details>',
+  '<details id="legal-panel" class="drawer"><summary><span>Action ledger</span><small>legal actions</small></summary><div id="legal-list" class="drawer-body legal-list"></div></details></aside></main>',
+  '<footer><span>Rift Chess · offline, local, and fully playable without an account</span><button id="about">About & credits</button></footer>',
+  '<dialog id="new-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">NEW MATCH</p><button value="cancel">×</button></div><h2>Set the table</h2><p class="muted">Choose who moves, the rift layout, and when a quiet game may end.</p><fieldset><legend>Players</legend><label><input type="radio" name="mode" value="hotseat" checked> Hotseat</label><label><input type="radio" name="mode" value="bot-black"> Play White vs local bot</label><label><input type="radio" name="mode" value="bot-white"> Play Black vs local bot</label></fieldset><fieldset><legend>Opening layout</legend><label><input type="radio" name="layout" value="B"> B-rift</label><label><input type="radio" name="layout" value="C"> C-rift</label><label><input type="radio" name="layout" value="random" checked> Random B / C</label></fieldset><fieldset><legend>Quiet-action policy</legend><label><input type="radio" name="draw" value="prompt" checked> Ask both players at 100</label><label><input type="radio" name="draw" value="auto100"> Draw automatically at 100</label><label><input type="radio" name="draw" value="off"> Continue without a reminder</label></fieldset><label class="checkline"><input id="practice" type="checkbox" checked> Practice match — allow undo</label><p class="muted">A local bot declines draw offers; hotseat opponents can accept or decline here.</p><button id="start-game" class="brass" value="start">Start match</button></form></dialog>',
+  '<dialog id="promotion-dialog" class="dialog promotion"><form method="dialog"><p class="eyebrow">PROMOTION</p><h2>Choose the new piece</h2><p class="muted">This choice is made before the move or Shift is committed.</p><div><button value="Q">Queen</button><button value="R">Rook</button><button value="B">Bishop</button><button value="N">Knight</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>',
+  '<dialog id="settings-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">ATELIER</p><button value="close">×</button></div><h2>Appearance & access</h2><label>Environment<select name="theme"><option value="gallery">Gallery</option><option value="nocturne">Observatory</option><option value="daylight">Stone court</option></select></label><label>Pieces<select name="family"><option value="classic">Classic sculpture</option><option value="faceted">Faceted architecture</option></select></label><label>Material<select name="material"><option value="ceramic">Ceramic</option><option value="metal">Metal</option><option value="wood">Wood</option></select></label><label>Quality<select name="quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><label class="checkline"><input name="motion" type="checkbox"> Reduced motion</label><label class="checkline"><input name="contrast" type="checkbox"> High contrast</label><button class="brass" value="apply">Apply</button></form></dialog>',
+  '<dialog id="about-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">RIFT CHESS</p><button value="close">×</button></div><h2>Chess on moving ground.</h2><p>Designed and built as an offline, local game. The rules are Rift Chess 1.0.</p><p>The xkcd reference is credited as a link, not bundled artwork: <a href="https://xkcd.com/3139/" target="_blank" rel="noreferrer">xkcd #3139</a>. Built with original procedural geometry.</p><p><a href="./guide.html">How to play</a> · <a href="./support.html">Support</a> · <a href="./licenses.txt">Licenses</a></p><button class="brass" value="close">Close</button></form></dialog><div id="notice" role="status" aria-live="polite"></div>'
+].join('');
+app.insertAdjacentHTML('beforeend', '<dialog id="actor-dialog" class="dialog actor-dialog"><form method="dialog"><p class="eyebrow">MATCH ACTION</p><h2 id="actor-dialog-title">Choose a side</h2><p id="actor-dialog-detail" class="muted"></p><div><button id="actor-white" value="white">White</button><button id="actor-black" value="black">Black</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>');
 
-const $ = <T extends HTMLElement>(id: string) => document.querySelector<T>(`#${id}`)!;
-const sceneHost = $('scene'); const turn = $('turn'); const check = $('check'); const quiet = $('quiet'); const history = $('history');
-const selection = $('selection'); const notice = $('notice'); const drawArea = $('draw-area'); const replayControls = $('replay-controls');
+const $ = <T extends HTMLElement>(id: string) => document.querySelector<T>('#' + id)!;
+const sceneHost = $('scene'), turn = $('turn'), check = $('check'), quiet = $('quiet'), history = $('history');
+const selection = $('selection'), selectionDetail = $('selection-detail'), notice = $('notice'), replayControls = $('replay-controls');
 let preferences: Preferences = { ...defaultPreferences };
-let mode: Mode = 'hotseat'; let practice = true; let game = new Game(Math.random() < 0.5 ? 'B' : 'C', 'prompt');
-let scene: BoardScene; let selectedSquare: number | null = null; let selectedTile: number | null = null; let shiftMode = false; let animating = false;
-let replayIndex: number | null = null; let promptEpisodes = { white: false, black: false }; let bot: Worker | null = null;
-let revealHeld = false; let keyboardSquare = 0; let tutorial: Tutorial | null = null;
-let noticeTimer = 0;
-let controlActor: 1 | -1 | null = null;
-let botFailed = false;
+let mode: Mode = 'hotseat', practice = true, game = new Game(Math.random() < 0.5 ? 'B' : 'C', 'prompt');
+let scene: BoardScene, selectedSquare: number | null = null, selectedTile: number | null = null, previewTile: number | null = null, passengerTile: number | null = null;
+let intent: Intent = 'move', animating = false, replayIndex: number | null = null, promptEpisodes = { white: false, black: false }, bot: Worker | null = null;
+let revealHeld = false, keyboardSquare = 0, tutorial: Tutorial | null = null, noticeTimer = 0, botFailed = false;
+let actionCache: { gameId: string; revision: number; actions: Action[] } | null = null, historyKey = '', legalKey = '';
+let actorDialogAction: ((side: 1 | -1) => void) | null = null;
+let sceneEpoch = 0;
 
 function say(message: string): void { notice.textContent = message; clearTimeout(noticeTimer); noticeTimer = window.setTimeout(() => { notice.textContent = ''; }, 5000); }
-function labels(action: Action): string { return `${action.type === 'shift' ? 'Shift ' : ''}${action.from} → ${action.to}${action.promotion ? `=${action.promotion}` : ''}`; }
+function label(action: Action): string { return (action.type === 'shift' ? 'Shift ' : '') + action.from + ' → ' + action.to + (action.promotion ? '=' + action.promotion : ''); }
 function visiblePosition(): Position { return replayIndex === null ? game.state : game.states[replayIndex] ?? game.state; }
-function boardLocked(): boolean { return animating || replayIndex !== null || game.observe().outcome !== null || isBotTurn(); }
 function isBotTurn(): boolean { return (mode === 'bot-white' && game.state.side === 1) || (mode === 'bot-black' && game.state.side === -1); }
+function boardLocked(): boolean { return animating || replayIndex !== null || game.observe().outcome !== null || isBotTurn(); }
 function policyLabel(policy: DrawPolicy): string { return policy === 'prompt' ? 'Prompted agreement' : policy === 'auto100' ? 'Automatic at 100' : 'No quiet-action reminder'; }
-
-function save(): void {
-  const issue = persistSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes });
-  if (issue) say(issue);
-}
+function actions(): Action[] { if (replayIndex !== null) return []; if (!actionCache || actionCache.gameId !== game.game_id || actionCache.revision !== game.revision) actionCache = { gameId: game.game_id, revision: game.revision, actions: game.legalActions() }; return actionCache.actions; }
+function invalidateActions(): void { actionCache = null; }
+function enterPlay(skip = false): void { scene.enterPlay(skip || preferences.reducedMotion ? 0 : undefined); $('launch-surface').hidden = true; try { sessionStorage.setItem('rift-launch-seen', '1'); } catch {} }
+function clearSelection(message = 'Select a piece to move, or a tile handle to Shift.'): void { selectedSquare = null; selectedTile = null; previewTile = null; passengerTile = null; intent = 'move'; selection.textContent = message; selectionDetail.textContent = 'Shift handles remain visible while ordinary move hints are hidden.'; }
+function reasonText(reason: string | null): string { return reason === 'hole' ? 'That is a hole, so there is no tile to Shift.' : reason === 'occupancy' ? 'A tile may carry at most one friendly non-king passenger.' : reason === 'not_adjacent' ? 'This tile has no adjacent hole to move into.' : reason === 'king_safety' ? 'Moving this tile would leave your king unsafe.' : 'This tile cannot Shift in the current position.'; }
+function save(): void { const issue = persistSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes }); if (issue) say(issue); }
+function chooseActor(title: string, detail: string, action: (side: 1 | -1) => void): void { actorDialogAction = action; $('actor-dialog-title').textContent = title; $('actor-dialog-detail').textContent = detail; ($('actor-dialog') as HTMLDialogElement).showModal(); }
+function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, showShifts: true, focusSquare: selectedSquare ?? (document.activeElement === sceneHost ? keyboardSquare : null) }); }
 function renderScene(previous?: Position, action?: Action): void {
-  const position = visiblePosition();
-  scene.setHighlights({ selectedSquare, selectedTile, legalActions: replayIndex === null ? game.legalActions() : [], showMoves: preferences.showMoves || revealHeld, showShifts: preferences.showShifts, focusSquare: selectedSquare ?? (document.activeElement === sceneHost ? keyboardSquare : null) });
-  const maybe = previous && action && replayIndex === null ? scene.setPosition(position, { previous, action }) : scene.setPosition(position);
-  if (maybe && typeof (maybe as Promise<void>).then === 'function') {
-    animating = true; maybe.finally(() => { animating = false; refresh(); });
-  }
+  const epoch = ++sceneEpoch; updateHighlights(); animating = Boolean(previous && action && replayIndex === null);
+  const transition = animating ? { previous: previous!, action: action! } : undefined;
+  void scene.setPosition(visiblePosition(), transition).finally(() => { if (sceneEpoch === epoch) { animating = false; refresh(); } });
+}
+function refreshHistory(): void {
+  const key = game.game_id + ':' + game.revision + ':' + (replayIndex ?? 'live');
+  if (key === historyKey) return;
+  historyKey = key; $('record-count').textContent = game.actionMetadata.length + (game.actionMetadata.length === 1 ? ' action' : ' actions');
+  history.replaceChildren(...game.actionMetadata.map((action: Action, index: number) => { const item = document.createElement('li'); item.textContent = (index + 1) + '. ' + label(action); if (replayIndex === index + 1) item.className = 'current'; return item; }));
+}
+function refreshLegalPanel(): void {
+  const panel = $('legal-panel') as HTMLDetailsElement;
+  if (!panel.open) return;
+  const key = game.game_id + ':' + game.revision + ':' + (replayIndex ?? 'live') + ':' + boardLocked();
+  if (key === legalKey) return;
+  legalKey = key;
+  $('legal-list').replaceChildren(...actions().map(action => { const button = document.createElement('button'); button.textContent = label(action); button.disabled = boardLocked(); button.onclick = () => { void chooseAction([action]); }; return button; }));
+}
+function refreshDraw(offer: number | null, finished: boolean): void {
+  const active = !finished && replayIndex === null, message = $('draw-offer'), offerButton = $('offer-draw'), accept = $('accept-draw'), decline = $('decline-draw');
+  message.hidden = offer === null; message.textContent = offer === null ? '' : (offer === 1 ? 'White' : 'Black') + ' offers a draw.';
+  offerButton.hidden = offer !== null; offerButton.toggleAttribute('disabled', !active);
+  accept.hidden = offer === null || mode !== 'hotseat'; decline.hidden = offer === null || mode !== 'hotseat'; accept.toggleAttribute('disabled', !active); decline.toggleAttribute('disabled', !active);
+}
+function maybeQuietPrompt(side: number): void {
+  const key = side === 1 ? 'white' : 'black';
+  if (promptEpisodes[key]) return;
+  promptEpisodes[key] = true; $('quiet-message').textContent = (side === 1 ? 'White' : 'Black') + ' has reached 100 quiet actions. A draw still needs agreement.'; $('quiet-prompt').hidden = false; save();
 }
 function refresh(): void {
-  const observation = game.observe(); const position = visiblePosition();
+  const observation = game.observe(), position = visiblePosition(), finished = replayIndex === null || replayIndex === game.actions.length ? observation.outcome : null;
   sceneHost.setAttribute('aria-busy', String(animating || (replayIndex === null && isBotTurn() && !observation.outcome)));
-  const side = position.side === 1 ? 'White' : 'Black';
-  const opening = game.initial.holes === 544 ? 'B-rift' : game.initial.holes === 1088 ? 'C-rift' : 'Practice';
-  document.querySelector('.left-rail .eyebrow')!.textContent = `${mode === 'hotseat' ? 'HOTSEAT' : 'LOCAL BOT'} · ${opening}`;
-  const finished = replayIndex === null || replayIndex === game.actions.length ? observation.outcome : null;
-  turn.textContent = replayIndex !== null ? `Replay · ${replayIndex} of ${game.actions.length}` : finished ? (finished.result === 'draw' ? 'Draw' : finished.winner === 1 ? 'White wins' : 'Black wins') : `${side} to move${isBotTurn() ? botFailed ? ' · bot paused' : ' · bot thinking' : ''}`;
-  const checked = inCheck(position, position.side); check.textContent = finished ? `${finished.reason.replaceAll('_', ' ')}` : checked ? `${side} is in check` : 'Position steady';
-  check.classList.toggle('danger', checked || Boolean(finished)); quiet.textContent = `${position.halfmove} / 100`; quiet.closest('.counter')!.toggleAttribute('hidden', game.draw_policy === 'off'); $('policy').textContent = policyLabel(game.draw_policy);
-  $('show-moves').setAttribute('aria-pressed', String(preferences.showMoves)); $('shift-mode').setAttribute('aria-pressed', String(shiftMode));
-  $('undo').toggleAttribute('disabled', !(practice && !animating && replayIndex === null && game.actions.length));
-  history.replaceChildren(...game.actionMetadata.map((action: Action, index: number) => { const li = document.createElement('li'); li.textContent = `${index + 1}. ${labels(action)}`; if (replayIndex === index + 1) li.className = 'current'; return li; }));
-  $('bot-retry').hidden = !botFailed || !isBotTurn() || Boolean(finished);
-  drawArea.replaceChildren(); renderDrawControls(observation.draw_offer, observation.outcome !== null);
-  replayControls.hidden = replayIndex === null; $('replay').setAttribute('aria-pressed', String(replayIndex !== null)); $('replay-position').textContent = replayIndex === null ? '' : `${replayIndex} / ${game.actions.length}`;
+  const side = position.side === 1 ? 'White' : 'Black', opening = game.initial.holes === 544 ? 'B-RIFT' : game.initial.holes === 1088 ? 'C-RIFT' : 'PRACTICE';
+  $('match-kind').textContent = (mode === 'hotseat' ? 'HOTSEAT' : 'LOCAL BOT') + ' · ' + opening;
+  turn.textContent = replayIndex !== null ? 'Replay · ' + replayIndex + ' / ' + game.actions.length : finished ? (finished.result === 'draw' ? 'Draw' : finished.winner === 1 ? 'White wins' : 'Black wins') : side + ' to move' + (isBotTurn() ? botFailed ? ' · bot paused' : ' · bot thinking' : '');
+  const checked = inCheck(position, position.side); check.textContent = finished ? finished.reason.replaceAll('_', ' ') : checked ? side + ' is in check' : intent === 'shift' ? 'Shift intent: select a moving tile' : 'Position steady'; check.classList.toggle('danger', checked || Boolean(finished));
+  quiet.textContent = position.halfmove + ' / 100'; document.querySelector('.quiet-readout')!.toggleAttribute('hidden', game.draw_policy === 'off'); $('policy').textContent = policyLabel(game.draw_policy);
+  $('move-mode').setAttribute('aria-pressed', String(intent === 'move')); $('move-mode').classList.toggle('active', intent === 'move'); $('shift-mode').setAttribute('aria-pressed', String(intent === 'shift')); $('shift-mode').classList.toggle('active', intent === 'shift'); $('show-moves').setAttribute('aria-pressed', String(preferences.showMoves));
+  $('undo').toggleAttribute('disabled', !(practice && !animating && replayIndex === null && game.actions.length)); $('bot-retry').hidden = !botFailed || !isBotTurn() || Boolean(finished);
+  $('cancel-selection').hidden = selectedSquare === null && selectedTile === null && passengerTile === null; $('shift-passenger').hidden = passengerTile === null; $('confirm-shift').hidden = previewTile === null;
+  refreshHistory(); refreshDraw(observation.draw_offer, observation.outcome !== null); replayControls.hidden = replayIndex === null; $('replay').setAttribute('aria-pressed', String(replayIndex !== null)); $('replay-position').textContent = replayIndex === null ? '' : replayIndex + ' / ' + game.actions.length;
   if (finished || position.halfmove < 100 || game.draw_policy !== 'prompt' || replayIndex !== null) $('quiet-prompt').hidden = true;
-  if (!finished && replayIndex === null && game.draw_policy === 'prompt' && position.halfmove >= 100) maybeQuietPrompt(localActor());
-  scene.setHighlights({ selectedSquare, selectedTile, legalActions: replayIndex === null ? game.legalActions() : [], showMoves: preferences.showMoves || revealHeld, showShifts: preferences.showShifts, focusSquare: selectedSquare ?? (document.activeElement === sceneHost ? keyboardSquare : null) });
-  $('legal-list').replaceChildren(...(replayIndex === null ? game.legalActions() : []).map(action => { const button = document.createElement('button'); button.textContent = labels(action); button.disabled = boardLocked(); button.onclick = () => { void chooseAction([action]); }; return button; }));
+  if (!finished && replayIndex === null && game.draw_policy === 'prompt' && position.halfmove >= 100) maybeQuietPrompt(position.side);
+  updateHighlights(); refreshLegalPanel();
 }
-function localActor(): 1 | -1 { return mode === 'bot-black' ? 1 : mode === 'bot-white' ? -1 : controlActor ?? game.state.side; }
-function renderDrawControls(offer: number | null, finished: boolean): void {
-  if (finished || replayIndex !== null) return;
-  if (mode === 'hotseat') {
-    const choice = document.createElement('select'); choice.setAttribute('aria-label', 'Match controls for');
-    for (const side of [1, -1] as const) choice.add(new Option(side === 1 ? 'White' : 'Black', String(side)));
-    choice.value = String(localActor()); choice.onchange = () => { controlActor = Number(choice.value) as 1 | -1; };
-    const label = document.createElement('label'); label.textContent = 'Match controls for'; label.append(choice); drawArea.append(label);
-  }
-  if (offer === null) {
-    const button = document.createElement('button'); button.textContent = 'Offer draw';
-    button.onclick = () => { game.offerDraw(localActor()); if (mode !== 'hotseat') declineBotOffer(); else { save(); refresh(); } };
-    drawArea.append(button); return;
-  }
-  const message = document.createElement('p'); message.className = 'muted'; message.textContent = `${offer === 1 ? 'White' : 'Black'} offers a draw.`; drawArea.append(message);
-  if (mode === 'hotseat') {
-    const actor = offer === 1 ? -1 : 1;
-    for (const [text, action] of [['Accept', () => game.acceptDraw(actor)], ['Decline', () => game.declineDraw(actor)]] as const) {
-      const button = document.createElement('button'); button.textContent = `${text} as ${actor === 1 ? 'White' : 'Black'}`;
-      button.onclick = () => { action(); save(); refresh(); }; drawArea.append(button);
-    }
-  }
-}
-function declineBotOffer(): void { if (game.draw_offer !== null && mode !== 'hotseat') { game.declineDraw(game.draw_offer === 1 ? -1 : 1); save(); refresh(); say('The local bot declines draw offers.'); if (isBotTurn()) askBot(); } }
-function maybeQuietPrompt(side: number): void { const key = side === 1 ? 'white' : 'black'; if (promptEpisodes[key]) return; promptEpisodes[key] = true; $('quiet-message').textContent = `${side === 1 ? 'White' : 'Black'}: 100 quiet actions. You may offer a draw; play continues without agreement.`; $('quiet-prompt').hidden = false; save(); }
-
 function tutorialSolved(action: Action, previous: Position): boolean {
   if (tutorial === 'ordinary') return action.type === 'move';
-  if (tutorial === 'emptyShift') return action.type === 'shift' && previous.board.filter((piece, square) => macroOfSquare(square) === Number((action.from.charCodeAt(0) - 65) + (Number(action.from[1]) - 1) * 4) && piece !== 0).length === 0;
-  if (tutorial === 'loadedShift') return action.type === 'shift' && previous.board.filter((piece, square) => macroOfSquare(square) === Number((action.from.charCodeAt(0) - 65) + (Number(action.from[1]) - 1) * 4) && piece !== 0).length === 1;
+  const occupied = previous.board.filter((piece, square) => macroOfSquare(square) === Number((action.from.charCodeAt(0) - 65) + (Number(action.from[1]) - 1) * 4) && piece !== 0).length;
+  if (tutorial === 'emptyShift') return action.type === 'shift' && occupied === 0;
+  if (tutorial === 'loadedShift') return action.type === 'shift' && occupied === 1;
   return tutorial === 'cutCheck' && inCheck(previous, previous.side);
 }
 async function commit(action: Action, botAction = false): Promise<void> {
   if (animating || replayIndex !== null || game.observe().outcome !== null || (!botAction && isBotTurn())) return;
-  const previous = game.state; const expected = game.revision; const gameId = game.game_id;
-  try { game.step(action.id, expected, gameId); } catch (error) { say(error instanceof Error ? error.message : 'That action is no longer legal.'); refresh(); return; }
-  const completedLesson = tutorialSolved(action, previous); controlActor = null; if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false };
-  selectedSquare = null; selectedTile = null; shiftMode = false; save(); animating = true;
-  scene.setHighlights({ selectedSquare, selectedTile, legalActions: game.legalActions(), showMoves: preferences.showMoves || revealHeld, showShifts: preferences.showShifts, focusSquare: document.activeElement === sceneHost ? keyboardSquare : null });
-  selection.textContent = `${labels(action)}. ${game.state.side === 1 ? 'White' : 'Black'} to move.`;
-  try { await scene.setPosition(game.state, { previous, action }); } finally { animating = false; }
-  if (game.game_id !== gameId) return;
-  refresh(); if (completedLesson) { say('Lesson complete — that legal solution works.'); tutorial = null; } if (isBotTurn()) askBot();
+  const previous = game.state, expected = game.revision, gameId = game.game_id;
+  try { game.step(action.id, expected, gameId); invalidateActions(); } catch (error) { say(error instanceof Error ? error.message : 'That action is no longer legal.'); refresh(); return; }
+  const completed = tutorialSolved(action, previous); if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false }; clearSelection(label(action) + '. ' + (game.state.side === 1 ? 'White' : 'Black') + ' to move.'); save(); animating = true; updateHighlights();
+  const epoch = ++sceneEpoch;
+  try { await scene.setPosition(game.state, { previous, action }); } finally { if (sceneEpoch === epoch) animating = false; }
+  if (game.game_id !== gameId || sceneEpoch !== epoch) return;
+  refresh(); if (completed) { say('Lesson complete — that legal solution works.'); tutorial = null; } if (isBotTurn()) askBot();
 }
-function candidateActions(): Action[] { return legalActions(visiblePosition()); }
-async function chooseAction(actions: Action[]): Promise<void> {
-  if (!actions.length) { say('That is not a legal action.'); return; }
-  if (actions.length === 1) { await commit(actions[0]); return; }
-  const promotions = actions.filter((action) => action.promotion); if (promotions.length) {
-    const identity = game.game_id; const revision = game.revision;
-    const dialog = $('promotion-dialog') as HTMLDialogElement; dialog.returnValue = ''; dialog.showModal(); const choice = await new Promise<string>((resolve) => dialog.addEventListener('close', () => resolve(dialog.returnValue), { once: true }));
-    if (identity !== game.game_id || revision !== game.revision) return;
-    const action = promotions.find((item) => item.promotion === choice); if (action) await commit(action); return;
+async function chooseAction(candidates: Action[]): Promise<void> {
+  if (!candidates.length) { say('That destination is not legal from the selected source.'); return; }
+  if (candidates.length === 1) { await commit(candidates[0]); return; }
+  const promotions = candidates.filter(action => action.promotion);
+  if (!promotions.length) { await commit(candidates[0]); return; }
+  const identity = game.game_id, revision = game.revision, dialog = $('promotion-dialog') as HTMLDialogElement;
+  dialog.returnValue = ''; dialog.showModal();
+  const choice = await new Promise<string>(resolve => dialog.addEventListener('close', () => resolve(dialog.returnValue), { once: true }));
+  if (identity !== game.game_id || revision !== game.revision) return;
+  const action = promotions.find(item => item.promotion === choice); if (action) await commit(action);
+}
+function chooseMove(square: number): void {
+  if (selectedSquare !== null && game.state.board[square] * game.state.side > 0) {
+    if (selectedSquare === square) { clearSelection('Selection cancelled.'); return; }
+    selectedSquare = null;
   }
-  await commit(actions[0]);
-}
-function pick(square: number, tile: number): void {
-  if (boardLocked()) return;
-  const actions = candidateActions();
-  if (shiftMode) {
-    if (tile >= 0) {
-      if (selectedTile === null) { const available = actions.some((action) => action.type === 'shift' && macroName(tile) === action.from); if (available) { selectedTile = tile; selection.textContent = `Shift ${macroName(tile)}: choose an adjacent hole.`; } else say(shiftReason(game.state, tile) ?? 'This tile cannot Shift now.'); }
-      else { const source = selectedTile; chooseAction(actions.filter((action) => action.type === 'shift' && action.from === macroName(source) && action.to === macroName(tile))); }
+  if (selectedSquare === null) {
+    const tile = macroOfSquare(square), canShift = actions().some(action => action.type === 'shift' && action.from === macroName(tile));
+    if (!actions().some(action => action.type === 'move' && action.from === squareName(square))) {
+      if (game.state.board[square] * game.state.side > 0 && canShift) { passengerTile = tile; selectedTile = previewTile = null; selection.textContent = squareName(square) + ' can travel with its platform.'; selectionDetail.textContent = 'There is no ordinary move here. Choose Shift this tile to move the platform and its passenger.'; return; }
+      say('Select a friendly piece or a highlighted tile handle.'); return;
     }
-  } else if (square >= 0) {
-    if (selectedSquare === null) { const available = actions.some((action) => action.type === 'move' && action.from === squareName(square)); if (available) { selectedSquare = square; selection.textContent = `${squareName(square)} selected; choose a destination.`; } else say('Choose one of your movable pieces.'); }
-    else { const source = selectedSquare; chooseAction(actions.filter((action) => action.type === 'move' && action.from === squareName(source) && action.to === squareName(square))); }
-  }
+    selectedSquare = square; selectedTile = null; previewTile = null; passengerTile = canShift ? tile : null; intent = 'move'; selection.textContent = squareName(square) + ' selected; choose an ordinary destination.'; selectionDetail.textContent = canShift ? 'You can also choose Shift this tile to transport its platform.' : 'Choose a destination, select another piece, or cancel.';
+  } else { const source = selectedSquare; void chooseAction(actions().filter(action => action.type === 'move' && action.from === squareName(source) && action.to === squareName(square))); }
+}
+function chooseShiftSource(tile: number): void {
+  const source = macroName(tile), available = actions().filter(action => action.type === 'shift' && action.from === source);
+  if (!available.length) { const message = reasonText(shiftReason(game.state, tile)); say(message); selectionDetail.textContent = message; return; }
+  selectedTile = tile; selectedSquare = null; previewTile = null; passengerTile = null; intent = 'shift'; selection.textContent = 'Shift ' + source + ': choose one highlighted adjacent hole.'; selectionDetail.textContent = 'Selecting a hole previews transport. Confirm Shift is the only commit.';
+}
+function chooseShiftTarget(tile: number): void {
+  if (selectedTile === null) { chooseShiftSource(tile); return; }
+  const choices = actions().filter(action => action.type === 'shift' && action.from === macroName(selectedTile!) && action.to === macroName(tile));
+  if (!choices.length) { const message = macroName(tile) + ' is not an available adjacent hole for ' + macroName(selectedTile) + '.'; say(message); selectionDetail.textContent = message; return; }
+  previewTile = tile; selection.textContent = 'Preview Shift ' + macroName(selectedTile) + ' → ' + macroName(tile) + '.'; selectionDetail.textContent = 'Passenger transport is staged. Confirm Shift to commit, or choose another hole.';
+}
+function pick(square: number, tile: number, hitKind?: HitKind): void {
+  if (boardLocked()) return;
+  if (selectedSquare !== null && hitKind !== 'shift') chooseMove(square);
+  else if (hitKind === 'piece') {
+    if (intent === 'shift') chooseShiftSource(tile);
+    else chooseMove(square);
+  } else if (hitKind === 'shift' || hitKind === 'tile' || intent === 'shift') { if (selectedTile === null || hitKind === 'shift') chooseShiftSource(tile); else chooseShiftTarget(tile); }
+  else chooseMove(square);
   refresh();
 }
 function resetBot(): void { bot?.terminate(); bot = null; botFailed = false; }
 function askBot(): void {
-  if (replayIndex !== null || !isBotTurn() || game.observe().outcome) return; resetBot(); try { bot = new Worker(new URL('./bot/worker.ts', import.meta.url), { type: 'module' }); } catch { botFailed = true; refresh(); say('The opponent could not start. Use Retry opponent.'); return; } const identity = { game_id: game.game_id, revision: game.revision };
+  if (replayIndex !== null || !isBotTurn() || game.observe().outcome) return;
+  resetBot();
+  try { bot = new Worker(new URL('./bot/worker.ts', import.meta.url), { type: 'module' }); } catch { botFailed = true; refresh(); say('The opponent could not start. Use Retry opponent.'); return; }
+  const identity = { game_id: game.game_id, revision: game.revision };
   bot.onmessage = (event: MessageEvent<{ type?: string; action?: Action; game_id?: string; revision?: number; error?: string }>) => {
-    const data = event.data; if (data.game_id !== game.game_id || data.revision !== game.revision) return; if (data.type === 'error') { resetBot(); botFailed = true; refresh(); say(data.error ?? 'The opponent paused. Use Retry opponent.'); return; }
-    if (data.game_id !== game.game_id || data.revision !== game.revision || data.game_id !== identity.game_id || data.revision !== identity.revision || !data.action) return;
-    const action = game.legalActions().find((item: Action) => item.id === data.action!.id); if (action) void commit(action, true);
+    const data = event.data;
+    if (data.game_id !== game.game_id || data.revision !== game.revision) return;
+    if (data.type === 'error') { resetBot(); botFailed = true; refresh(); say(data.error ?? 'The opponent paused. Use Retry opponent.'); return; }
+    const action = data.action && actions().find(item => item.id === data.action!.id);
+    if (action && data.game_id === identity.game_id && data.revision === identity.revision) void commit(action, true);
   };
   bot.onerror = event => { event.preventDefault(); if (identity.game_id !== game.game_id || identity.revision !== game.revision) return; resetBot(); botFailed = true; refresh(); say('The opponent paused. Use Retry opponent.'); };
-  bot.postMessage({ type: 'suggest', record: game.exportRecord(), ...identity, depth: 2, max_nodes: 4000, seed: game.revision + 17 }); refresh();
+  bot.postMessage({ type: 'suggest', record: game.exportRecord(), ...identity, depth: 2, max_nodes: 4000, seed: game.revision + 17 });
+  refresh();
 }
 function startNew(layout: 'B' | 'C', draw: DrawPolicy, nextMode: Mode, nextPractice: boolean): void {
-  resetBot(); controlActor = null; game = new Game(layout, draw); mode = nextMode; practice = nextPractice; tutorial = null; promptEpisodes = { white: false, black: false }; selectedSquare = selectedTile = null; shiftMode = false; replayIndex = null; save(); renderScene(); refresh(); if (isBotTurn()) askBot();
+  resetBot(); game = new Game(layout, draw); invalidateActions(); mode = nextMode; practice = nextPractice; tutorial = null; promptEpisodes = { white: false, black: false }; replayIndex = null; clearSelection(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot();
 }
 function openTutorial(which: Tutorial): void {
   const fixtureNames: Record<Tutorial, string> = { ordinary: 'opening_B', emptyShift: 'opening_B', loadedShift: 'shift_promotion', cutCheck: 'cut_check_ray' };
   try {
-    const fixture = conformance.fixtures.find((entry) => entry.name === fixtureNames[which]); if (!fixture) throw new Error('Lesson fixture is missing.');
-    resetBot(); game = Game.fromRecord(fixture.record as GameRecord); mode = 'hotseat'; practice = true; tutorial = which; replayIndex = null; selectedSquare = selectedTile = null; shiftMode = which !== 'ordinary'; save(); renderScene(); refresh();
+    const fixture = conformance.fixtures.find(entry => entry.name === fixtureNames[which]);
+    if (!fixture) throw new Error('Lesson fixture is missing.');
+    resetBot(); game = Game.fromRecord(fixture.record as GameRecord); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = which; replayIndex = null; clearSelection(); renderScene(); enterPlay(); refresh();
     selection.textContent = which === 'ordinary' ? 'Lesson: make any legal ordinary move.' : which === 'emptyShift' ? 'Lesson: Shift any legal empty tile.' : which === 'loadedShift' ? 'Lesson: make a legal Shift with a passenger.' : 'Lesson: answer the checking ray with any legal move.';
   } catch { say('The lesson fixture could not be loaded.'); }
 }
-function restore(): void {
-  const saved = loadSave(); const recoveryNotice = consumeLoadNotice(); if (!saved) { if (!recoveryNotice) save(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); return; }
-  try { const restored = Game.fromRecord(saved.record); game = restored; preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; applyPreferences(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); if (isBotTurn()) askBot(); } catch { say('A saved game was rejected; the corrupt record was left untouched.'); renderScene(); refresh(); }
-}
 function applyPreferences(): void { document.documentElement.dataset.contrast = String(preferences.highContrast); scene.configure(preferences); }
+function restore(): void {
+  const saved = loadSave(), recoveryNotice = consumeLoadNotice();
+  if (!saved) { if (!recoveryNotice) save(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); return; }
+  try { game = Game.fromRecord(saved.record); invalidateActions(); preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; applyPreferences(); renderScene(); refresh(); if (recoveryNotice) say(recoveryNotice); if (isBotTurn()) askBot(); }
+  catch { say('A saved game was rejected; the corrupt record was left untouched.'); renderScene(); refresh(); }
+}
 
 scene = new BoardScene(sceneHost, pick); applyPreferences(); restore();
-$('bot-retry').onclick = askBot;
+try { if (sessionStorage.getItem('rift-launch-seen') === '1') $('launch-surface').hidden = true; else scene.showcase(); } catch { scene.showcase(); }
+$('launch-resume').onclick = () => enterPlay(); $('launch-skip').onclick = () => enterPlay(true); $('launch-new').onclick = () => { ($('new-dialog') as HTMLDialogElement).showModal(); }; $('launch-explore').onclick = () => { $('launch-surface').hidden = true; scene.showcase(); };
 $('new-game').onclick = () => { const dialog = $('new-dialog') as HTMLDialogElement; dialog.returnValue = ''; dialog.showModal(); };
-$('new-dialog').addEventListener('close', () => { const dialog = $('new-dialog') as HTMLDialogElement; if (dialog.returnValue !== 'start') return; const modeChoice = new FormData(dialog.querySelector('form')!).get('mode') as Mode; const rawLayout = new FormData(dialog.querySelector('form')!).get('layout') as 'B' | 'C' | 'random'; const layout = rawLayout === 'random' ? (Math.random() < .5 ? 'B' : 'C') : rawLayout; startNew(layout, new FormData(dialog.querySelector('form')!).get('draw') as DrawPolicy, modeChoice, ($('practice') as HTMLInputElement).checked); });
-$('undo').onclick = () => { if (!practice || animating || replayIndex !== null) return; if (mode === 'hotseat' && !window.confirm('Do both players agree to undo the last action?')) return; resetBot(); try { game.undo(); while (mode !== 'hotseat' && game.actions.length && isBotTurn()) game.undo(); if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false }; save(); selectedSquare = selectedTile = null; renderScene(); refresh(); if (isBotTurn()) askBot(); } catch (error) { say(error instanceof Error ? error.message : 'Nothing to undo.'); } };
-$('resign').onclick = () => { const actor = localActor(); if (replayIndex !== null || game.observe().outcome || !window.confirm(`Resign as ${actor === 1 ? 'White' : 'Black'}?`)) return; game.resign(actor); resetBot(); scene.skipAnimation(); save(); refresh(); say('Match resigned.'); };
+$('new-dialog').addEventListener('close', () => {
+  const dialog = $('new-dialog') as HTMLDialogElement;
+  if (dialog.returnValue !== 'start') return;
+  const data = new FormData(dialog.querySelector('form')!), rawLayout = data.get('layout') as 'B' | 'C' | 'random', layout = rawLayout === 'random' ? (Math.random() < .5 ? 'B' : 'C') : rawLayout;
+  startNew(layout, data.get('draw') as DrawPolicy, data.get('mode') as Mode, ($('practice') as HTMLInputElement).checked);
+});
+$('undo').onclick = () => {
+  if (!practice || animating || replayIndex !== null) return;
+  if (mode === 'hotseat' && !window.confirm('Do both players agree to undo the last action?')) return;
+  resetBot();
+  try { game.undo(); while (mode !== 'hotseat' && game.actions.length && isBotTurn()) game.undo(); invalidateActions(); if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false }; clearSelection(); save(); renderScene(); refresh(); if (isBotTurn()) askBot(); }
+  catch (error) { say(error instanceof Error ? error.message : 'Nothing to undo.'); }
+};
+$('resign').onclick = () => {
+  if (replayIndex !== null || game.observe().outcome) return;
+  const resign = (side: 1 | -1) => { game.resign(side); resetBot(); scene.skipAnimation(); save(); refresh(); say('Match resigned.'); };
+  if (mode === 'hotseat') chooseActor('Who resigns?', 'Either seated player can resign a hotseat match.', resign); else resign(game.state.side);
+};
+$('move-mode').onclick = () => { clearSelection('Move intent: select one of your pieces.'); refresh(); };
+$('shift-mode').onclick = () => { clearSelection('Shift intent: select a legal tile or a visible Shift handle.'); intent = 'shift'; selectionDetail.textContent = 'A passenger click offers “Shift this tile”; it never starts a Shift itself.'; refresh(); };
+$('shift-passenger').onclick = () => { if (passengerTile !== null) chooseShiftSource(passengerTile); refresh(); };
+$('confirm-shift').onclick = () => { if (selectedTile !== null && previewTile !== null) void chooseAction(actions().filter(action => action.type === 'shift' && action.from === macroName(selectedTile!) && action.to === macroName(previewTile!))); };
+$('cancel-selection').onclick = () => { clearSelection('Selection cancelled.'); refresh(); };
 $('show-moves').onclick = () => { preferences.showMoves = !preferences.showMoves; save(); refresh(); };
-$('shift-mode').onclick = () => { shiftMode = !shiftMode; selectedSquare = selectedTile = null; selection.textContent = shiftMode ? 'Shift mode: select a legal tile.' : 'Select a piece or a tile to Shift.'; refresh(); };
-$('reveal').onpointerdown = () => { revealHeld = true; refresh(); }; $('reveal').onpointerup = $('reveal').onpointerleave = () => { revealHeld = false; refresh(); };
-document.querySelectorAll<HTMLButtonElement>('[data-camera]').forEach((button) => button.onclick = () => scene.setCamera(button.dataset.camera as 'white' | 'black' | 'overview' | 'top'));
-$('camera-home').onclick = () => scene.setCamera('white'); $('orbit-left').onclick = () => scene.orbit(-.15, 0); $('orbit-right').onclick = () => scene.orbit(.15, 0); $('skip').onclick = () => { scene.skipAnimation(); animating = false; refresh(); };
+document.querySelectorAll<HTMLButtonElement>('[data-camera]').forEach(button => button.onclick = () => scene.setCamera(button.dataset.camera as 'white' | 'black' | 'overview' | 'top'));
+$('orbit-left').onclick = () => scene.orbit(-.15, 0); $('orbit-right').onclick = () => scene.orbit(.15, 0); $('skip').onclick = () => { scene.skipAnimation(); animating = false; refresh(); };
 $('quiet-dismiss').onclick = () => { $('quiet-prompt').hidden = true; };
-$('replay').onclick = () => { resetBot(); replayIndex = replayIndex === null ? game.actions.length : null; selectedSquare = selectedTile = null; renderScene(); refresh(); if (replayIndex === null && isBotTurn()) askBot(); }; $('replay-back').onclick = () => { replayIndex = Math.max(0, (replayIndex ?? 0) - 1); renderScene(); refresh(); }; $('replay-next').onclick = () => { replayIndex = Math.min(game.actions.length, (replayIndex ?? 0) + 1); renderScene(); refresh(); }; $('replay-exit').onclick = () => { replayIndex = null; renderScene(); refresh(); if (isBotTurn()) askBot(); };
-$('export').onclick = () => { try { const url = URL.createObjectURL(new Blob([exportSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes })], { type: 'application/json' })); const link = document.createElement('a'); link.href = url; link.download = 'rift-chess-save.json'; link.click(); URL.revokeObjectURL(url); } catch (error) { say(error instanceof Error ? error.message : 'Could not export save.'); } };
-($('import') as HTMLInputElement).onchange = async (event) => { const file = (event.target as HTMLInputElement).files?.[0]; if (!file || file.size > 1_000_000) return say('Choose a Rift save under 1 MB.'); try { const saved = importSave(await file.text()); const loaded = Game.fromRecord(saved.record); resetBot(); selectedSquare = selectedTile = null; shiftMode = false; revealHeld = false; controlActor = null; tutorial = null; game = loaded; preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; replayIndex = null; applyPreferences(); save(); renderScene(); refresh(); if (isBotTurn()) askBot(); } catch { say('That file is not a valid Rift Chess save. Your current game was kept.'); } };
-$('about').onclick = () => ($('about-dialog') as HTMLDialogElement).showModal(); document.querySelectorAll<HTMLButtonElement>('[data-tutorial]').forEach((button) => button.onclick = () => openTutorial(button.dataset.tutorial as Tutorial));
-$('settings').onclick = () => { const dialog = document.createElement('dialog'); dialog.className = 'dialog'; dialog.innerHTML = `<form method="dialog"><div class="dialog-title"><p class="eyebrow">ATELIER SETTINGS</p><button value="close">×</button></div><h2>Appearance & access</h2><label>Environment<select name="theme"><option value="gallery">Gallery</option><option value="nocturne">Nocturne</option><option value="daylight">Daylight</option></select></label><label>Pieces<select name="family"><option value="classic">Classic</option><option value="faceted">Faceted</option></select></label><label>Material<select name="material"><option value="ceramic">Ceramic</option><option value="metal">Metal</option><option value="wood">Wood</option></select></label><label>Quality<select name="quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><label class="checkline"><input name="motion" type="checkbox" /> Reduced motion</label><label class="checkline"><input name="contrast" type="checkbox" /> High contrast</label><button class="brass" value="apply">Apply</button></form>`; document.body.append(dialog); const form = dialog.querySelector('form')!; for (const [key, value] of Object.entries(preferences)) { const input = form.elements.namedItem(key === 'reducedMotion' ? 'motion' : key === 'highContrast' ? 'contrast' : key) as HTMLInputElement | null; if (input) input.type === 'checkbox' ? input.checked = Boolean(value) : input.value = String(value); } dialog.addEventListener('close', () => { if (dialog.returnValue === 'apply') { const data = new FormData(form); preferences = { ...preferences, theme: data.get('theme') as Preferences['theme'], family: data.get('family') as Preferences['family'], material: data.get('material') as Preferences['material'], quality: data.get('quality') as Preferences['quality'], reducedMotion: data.has('motion'), highContrast: data.has('contrast') }; applyPreferences(); save(); refresh(); } dialog.remove(); }); dialog.showModal(); };
-sceneHost.addEventListener('keydown', (event) => { const key = event.key.toLowerCase(); if (key === 'h') { revealHeld = true; refresh(); return; } if (key === 's') { $('shift-mode').click(); return; } if (event.key === 'Home') { scene.setCamera('white'); return; } if (/^[1-4]$/.test(event.key)) { scene.setCamera((['white', 'black', 'overview', 'top'] as const)[Number(event.key) - 1]); return; } if (event.key === 'Escape') { selectedSquare = selectedTile = null; shiftMode = false; refresh(); return; } if (event.key === 'Enter') { pick(keyboardSquare, shiftMode ? macroOfSquare(keyboardSquare) : -1); return; } const delta: Record<string, number> = { arrowleft: -1, arrowright: 1, arrowup: 8, arrowdown: -8 }; if (key in delta) { const next = keyboardSquare + delta[key]; if (next >= 0 && next < 64 && (key !== 'arrowleft' || keyboardSquare % 8 !== 0) && (key !== 'arrowright' || keyboardSquare % 8 !== 7)) { keyboardSquare = next; selection.textContent = `${squareName(keyboardSquare)}: ${!present(game.state, keyboardSquare) ? 'hole' : !game.state.board[keyboardSquare] ? 'empty' : (game.state.board[keyboardSquare] > 0 ? 'White ' : 'Black ') + ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'][pieceType(game.state.board[keyboardSquare])]}. Press Enter to select.`; refresh(); } event.preventDefault(); } });
-sceneHost.addEventListener('keyup', (event) => { if (event.key.toLowerCase() === 'h') { revealHeld = false; refresh(); } });
+$('offer-draw').onclick = () => {
+  const offer = (side: 1 | -1) => { game.offerDraw(side); if (mode !== 'hotseat') { game.declineDraw(game.draw_offer === 1 ? -1 : 1); say('The local bot declines draw offers.'); } save(); refresh(); if (isBotTurn()) askBot(); };
+  if (mode === 'hotseat') chooseActor('Who offers the draw?', 'The other player will be able to accept or decline it.', offer); else offer(game.state.side);
+};
+$('accept-draw').onclick = () => { if (game.draw_offer !== null) { game.acceptDraw(game.draw_offer === 1 ? -1 : 1); save(); refresh(); } };
+$('decline-draw').onclick = () => { if (game.draw_offer !== null) { game.declineDraw(game.draw_offer === 1 ? -1 : 1); save(); refresh(); } };
+$('replay').onclick = () => { resetBot(); replayIndex = replayIndex === null ? game.actions.length : null; clearSelection(); renderScene(); refresh(); if (replayIndex === null && isBotTurn()) askBot(); };
+$('replay-back').onclick = () => { replayIndex = Math.max(0, (replayIndex ?? 0) - 1); renderScene(); refresh(); };
+$('replay-next').onclick = () => { replayIndex = Math.min(game.actions.length, (replayIndex ?? 0) + 1); renderScene(); refresh(); };
+$('replay-exit').onclick = () => { replayIndex = null; renderScene(); refresh(); if (isBotTurn()) askBot(); };
+$('export').onclick = () => {
+  try { const url = URL.createObjectURL(new Blob([exportSave({ schema: 'rift-ui-save/1', record: game.exportRecord(), preferences, mode, practice, promptEpisodes })], { type: 'application/json' })), link = document.createElement('a'); link.href = url; link.download = 'rift-chess-save.json'; link.click(); URL.revokeObjectURL(url); }
+  catch (error) { say(error instanceof Error ? error.message : 'Could not export save.'); }
+};
+($('import') as HTMLInputElement).onchange = async event => {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file || file.size > 1_000_000) return say('Choose a Rift save under 1 MB.');
+  try { const saved = importSave(await file.text()); game = Game.fromRecord(saved.record); invalidateActions(); resetBot(); clearSelection(); revealHeld = false; tutorial = null; preferences = { ...defaultPreferences, ...saved.preferences }; mode = saved.mode; practice = saved.practice; promptEpisodes = saved.promptEpisodes; replayIndex = null; applyPreferences(); save(); renderScene(); enterPlay(); refresh(); if (isBotTurn()) askBot(); }
+  catch { say('That file is not a valid Rift Chess save. Your current game was kept.'); }
+};
+$('about').onclick = () => ($('about-dialog') as HTMLDialogElement).showModal();
+document.querySelectorAll<HTMLButtonElement>('[data-tutorial]').forEach(button => button.onclick = () => openTutorial(button.dataset.tutorial as Tutorial));
+$('settings').onclick = () => {
+  const dialog = $('settings-dialog') as HTMLDialogElement, form = dialog.querySelector('form')!;
+  for (const [key, value] of Object.entries(preferences)) { const input = form.elements.namedItem(key === 'reducedMotion' ? 'motion' : key === 'highContrast' ? 'contrast' : key) as HTMLInputElement | null; if (input) input.type === 'checkbox' ? input.checked = Boolean(value) : input.value = String(value); }
+  dialog.returnValue = ''; dialog.showModal();
+};
+$('settings-dialog').addEventListener('close', () => {
+  const dialog = $('settings-dialog') as HTMLDialogElement;
+  if (dialog.returnValue !== 'apply') return;
+  const data = new FormData(dialog.querySelector('form')!);
+  preferences = { ...preferences, theme: data.get('theme') as Preferences['theme'], family: data.get('family') as Preferences['family'], material: data.get('material') as Preferences['material'], quality: data.get('quality') as Preferences['quality'], reducedMotion: data.has('motion'), highContrast: data.has('contrast') };
+  applyPreferences(); save(); refresh();
+});
+$('actor-white').onclick = () => { actorDialogAction?.(1); actorDialogAction = null; };
+$('actor-black').onclick = () => { actorDialogAction?.(-1); actorDialogAction = null; };
+$('legal-panel').addEventListener('toggle', refreshLegalPanel);
+sceneHost.addEventListener('keydown', event => {
+  const key = event.key.toLowerCase();
+  if (key === 'h') { revealHeld = true; refresh(); return; }
+  if (key === 's') { $('shift-mode').click(); return; }
+  if (event.key === 'Home') { scene.setCamera('white'); return; }
+  if (/^[1-4]$/.test(event.key)) { scene.setCamera((['white', 'black', 'overview', 'top'] as const)[Number(event.key) - 1]); return; }
+  if (event.key === 'Escape') { clearSelection('Selection cancelled.'); refresh(); return; }
+  if (event.key === 'Enter') { pick(keyboardSquare, macroOfSquare(keyboardSquare), intent === 'shift' ? 'tile' : 'piece'); return; }
+  const delta: Record<string, number> = { arrowleft: -1, arrowright: 1, arrowup: 8, arrowdown: -8 };
+  if (key in delta) {
+    const next = keyboardSquare + delta[key];
+    if (next >= 0 && next < 64 && (key !== 'arrowleft' || keyboardSquare % 8 !== 0) && (key !== 'arrowright' || keyboardSquare % 8 !== 7)) {
+      keyboardSquare = next;
+      const piece = game.state.board[keyboardSquare];
+      selection.textContent = squareName(keyboardSquare) + ': ' + (!present(game.state, keyboardSquare) ? 'hole' : !piece ? 'empty' : (piece > 0 ? 'White ' : 'Black ') + ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'][pieceType(piece)]) + '. Press Enter to select.';
+      refresh();
+    }
+    event.preventDefault();
+  }
+});
+sceneHost.addEventListener('keyup', event => { if (event.key.toLowerCase() === 'h') { revealHeld = false; refresh(); } });
 window.addEventListener('beforeunload', save);
 window.addEventListener('pagehide', event => { resetBot(); if (!event.persisted) scene.dispose(); });
 window.addEventListener('pageshow', event => { if (event.persisted && isBotTurn()) askBot(); });
 window.addEventListener('blur', () => { revealHeld = false; refresh(); });
 
-// Deliberately diagnostic-only: it exposes observation and fixture loading without bypassing Game.step.
-function loadScenario(input: GameRecord | Position): void { resetBot(); game = 'schema' in input ? Game.fromRecord(input) : new Game('B', 'prompt', input); mode = 'hotseat'; practice = true; tutorial = null; replayIndex = null; selectedSquare = selectedTile = null; renderScene(); refresh(); }
-(window as Window & { rift?: unknown }).rift = { getObservation: () => game.observe(), getLegalActions: () => game.legalActions(), exportRecord: () => game.exportRecord(), loadScenario, loadTutorial: openTutorial, metrics: () => ({ ...scene.metrics(), revision: game.revision, actions: game.actions.length, animating, selectedSquare, selectedTile, shiftMode }), squareScreenPosition: (square: number) => scene.squareScreenPosition(square), resetMetrics: () => scene.resetMetrics() };
+function loadScenario(input: GameRecord | Position): void { resetBot(); game = 'schema' in input ? Game.fromRecord(input) : new Game('B', 'prompt', input); invalidateActions(); mode = 'hotseat'; practice = true; tutorial = null; replayIndex = null; clearSelection(); renderScene(); enterPlay(true); refresh(); }
+(window as Window & { rift?: unknown }).rift = {
+  getObservation: () => game.observe(), getLegalActions: () => actions(), exportRecord: () => game.exportRecord(), loadScenario, loadTutorial: openTutorial,
+  metrics: () => ({ ...scene.metrics(), revision: game.revision, actions: game.actions.length, animating, selectedSquare, selectedTile, shiftMode: intent === 'shift' }),
+  squareScreenPosition: (square: number) => scene.squareScreenPosition(square), resetMetrics: () => scene.resetMetrics(),
+  orbit: (dx: number, dy: number, zoom?: number) => scene.orbit(dx, dy, zoom),
+  setCamera: (preset: 'white' | 'black' | 'overview' | 'top') => scene.setCamera(preset),
+  configureAppearance: (appearance: Partial<Preferences>) => { preferences = { ...preferences, ...appearance }; applyPreferences(); save(); refresh(); },
+};
 
-if (import.meta.env.PROD && location.protocol !== 'rift:' && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => say('Offline browser caching is unavailable. Export your save before leaving.'));
-}
-
-document.querySelectorAll<HTMLAnchorElement>('a[href^="https:"]').forEach(link => link.addEventListener('click', event => { const bridge = (window as Window & { riftDesktop?: { openExternal(url: string): Promise<void> } }).riftDesktop; if (bridge) { event.preventDefault(); void bridge.openExternal(link.href).catch(() => say('This external link could not be opened.')); } }));
-
+if (import.meta.env.PROD && location.protocol !== 'rift:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => say('Offline browser caching is unavailable. Export your save before leaving.'));
+document.querySelectorAll<HTMLAnchorElement>('a[href^="https:"]').forEach(link => link.addEventListener('click', event => {
+  const bridge = (window as Window & { riftDesktop?: { openExternal(url: string): Promise<void> } }).riftDesktop;
+  if (bridge) { event.preventDefault(); void bridge.openExternal(link.href).catch(() => say('This external link could not be opened.')); }
+}));
 document.querySelector('.import')!.addEventListener('keydown', event => { const key = (event as KeyboardEvent).key; if (key === 'Enter' || key === ' ') { event.preventDefault(); ($('import') as HTMLInputElement).click(); } });

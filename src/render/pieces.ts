@@ -5,10 +5,19 @@ export type PieceFamily = 'classic' | 'faceted';
 export type MaterialStyle = 'ceramic' | 'metal' | 'wood';
 
 type PieceKind = 'pawn' | 'knight' | 'bishop' | 'rook' | 'queen' | 'king';
-type Part = { geometry: THREE.BufferGeometry; position?: THREE.Vector3; rotation?: THREE.Euler; name: string };
+type AssetPart = {
+  geometry: THREE.BufferGeometry;
+  name: string;
+  intentionalOpenings?: readonly string[];
+};
 
-const geometryCache = new Map<string, THREE.BufferGeometry>();
-const materialCache = new Map<string, THREE.MeshPhysicalMaterial>();
+type CachedPieceAsset = {
+  geometry: THREE.BufferGeometry;
+  components: readonly AssetPart[];
+};
+
+const geometryCache = new Map<string, CachedPieceAsset>();
+const materialCache = new Map<string, THREE.MeshStandardMaterial>();
 
 const pieceKind = (code: number): PieceKind => {
   switch (Math.abs(code)) {
@@ -22,172 +31,286 @@ const pieceKind = (code: number): PieceKind => {
   }
 };
 
-const lathe = (profile: Array<[number, number]>, family: PieceFamily) =>
-  new THREE.LatheGeometry(profile.map(([radius, y]) => new THREE.Vector2(radius, y)), family === 'classic' ? 40 : 10);
+function closedRevolution(profile: ReadonlyArray<readonly [number, number]>, segments: number): THREE.BufferGeometry {
+  if (profile.length < 2 || profile.some(([radius]) => radius <= 0)) throw new RangeError('A closed revolution needs positive profile radii.');
+  const positions: number[] = [0, profile[0][1], 0];
+  for (const [radius, y] of profile) {
+    for (let side = 0; side < segments; side++) {
+      const angle = side * Math.PI * 2 / segments;
+      positions.push(radius * Math.cos(angle), y, radius * Math.sin(angle));
+    }
+  }
+  const topCenter = positions.length / 3;
+  positions.push(0, profile.at(-1)![1], 0);
+  const indices: number[] = [];
+  const ring = (index: number, side: number) => 1 + index * segments + (side + segments) % segments;
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(0, ring(0, side), ring(0, next));
+  }
+  for (let level = 0; level < profile.length - 1; level++) {
+    for (let side = 0; side < segments; side++) {
+      const next = (side + 1) % segments;
+      indices.push(ring(level, side), ring(level + 1, side), ring(level, next));
+      indices.push(ring(level, next), ring(level + 1, side), ring(level + 1, next));
+    }
+  }
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(topCenter, ring(profile.length - 1, next), ring(profile.length - 1, side));
+  }
+  const geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)).setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
-const vector = (x: number, y: number, z = 0) => new THREE.Vector3(x, y, z);
-const rotation = (x: number, y: number, z: number) => new THREE.Euler(x, y, z);
+function closedYLoft(rings: ReadonlyArray<readonly [number, number, number, number]>, segments: number): THREE.BufferGeometry {
+  if (rings.length < 2 || rings.some(([, , xRadius, zRadius]) => xRadius <= 0 || zRadius <= 0)) throw new RangeError('A closed loft needs positive ring radii.');
+  const positions: number[] = [rings[0][0], rings[0][1], 0];
+  for (const [x, y, xRadius, zRadius] of rings) {
+    for (let side = 0; side < segments; side++) {
+      const angle = side * Math.PI * 2 / segments;
+      positions.push(x + xRadius * Math.cos(angle), y, zRadius * Math.sin(angle));
+    }
+  }
+  const topCenter = positions.length / 3;
+  positions.push(rings.at(-1)![0], rings.at(-1)![1], 0);
+  const indices: number[] = [];
+  const ring = (index: number, side: number) => 1 + index * segments + (side + segments) % segments;
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(0, ring(0, side), ring(0, next));
+  }
+  for (let level = 0; level < rings.length - 1; level++) {
+    for (let side = 0; side < segments; side++) {
+      const next = (side + 1) % segments;
+      indices.push(ring(level, side), ring(level + 1, side), ring(level, next));
+      indices.push(ring(level, next), ring(level + 1, side), ring(level + 1, next));
+    }
+  }
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(topCenter, ring(rings.length - 1, next), ring(rings.length - 1, side));
+  }
+  const geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)).setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
-function extrude(shape: THREE.Shape, family: PieceFamily, depth: number): THREE.ExtrudeGeometry {
+function closedXLoft(rings: ReadonlyArray<readonly [number, number, number, number]>, segments: number): THREE.BufferGeometry {
+  if (rings.length < 2 || rings.some(([, , yRadius, zRadius]) => yRadius <= 0 || zRadius <= 0)) throw new RangeError('A closed loft needs positive ring radii.');
+  const positions: number[] = [rings[0][0], rings[0][1], 0];
+  for (const [x, y, yRadius, zRadius] of rings) {
+    for (let side = 0; side < segments; side++) {
+      const angle = side * Math.PI * 2 / segments;
+      positions.push(x, y + yRadius * Math.cos(angle), zRadius * Math.sin(angle));
+    }
+  }
+  const endCenter = positions.length / 3;
+  positions.push(rings.at(-1)![0], rings.at(-1)![1], 0);
+  const indices: number[] = [];
+  const ring = (index: number, side: number) => 1 + index * segments + (side + segments) % segments;
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(0, ring(0, next), ring(0, side));
+  }
+  for (let level = 0; level < rings.length - 1; level++) {
+    for (let side = 0; side < segments; side++) {
+      const next = (side + 1) % segments;
+      indices.push(ring(level, side), ring(level, next), ring(level + 1, side));
+      indices.push(ring(level, next), ring(level + 1, next), ring(level + 1, side));
+    }
+  }
+  for (let side = 0; side < segments; side++) {
+    const next = (side + 1) % segments;
+    indices.push(endCenter, ring(rings.length - 1, side), ring(rings.length - 1, next));
+  }
+  const geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)).setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function solidExtrusion(points: ReadonlyArray<readonly [number, number]>, depth: number, bevel: number): THREE.ExtrudeGeometry {
+  const shape = new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y)));
   return new THREE.ExtrudeGeometry(shape, {
     depth,
-    bevelEnabled: family === 'classic',
-    bevelThickness: family === 'classic' ? 0.012 : 0,
-    bevelSize: family === 'classic' ? 0.008 : 0,
-    bevelSegments: family === 'classic' ? 2 : 0,
-    curveSegments: family === 'classic' ? 8 : 2,
+    bevelEnabled: bevel > 0,
+    bevelThickness: bevel,
+    bevelSize: bevel * 0.7,
+    bevelSegments: bevel > 0 ? 2 : 0,
+    curveSegments: bevel > 0 ? 8 : 1,
   });
 }
 
 function bishopMitre(family: PieceFamily): THREE.ExtrudeGeometry {
   const shape = new THREE.Shape();
-  shape.moveTo(-0.17, 0.57);
-  shape.quadraticCurveTo(-0.18, 0.80, 0, 0.98);
-  shape.quadraticCurveTo(0.18, 0.80, 0.17, 0.57);
-  shape.quadraticCurveTo(0, 0.51, -0.17, 0.57);
-  const slash = new THREE.Path();
-  slash.moveTo(-0.115, 0.70);
-  slash.lineTo(0.105, 0.875);
-  slash.lineTo(0.122, 0.815);
-  slash.lineTo(-0.098, 0.64);
-  slash.closePath();
-  shape.holes.push(slash);
-  return extrude(shape, family, family === 'classic' ? 0.20 : 0.24);
+  shape.moveTo(-0.18, 0.70); shape.quadraticCurveTo(-0.17, 0.99, 0, 1.17);
+  shape.quadraticCurveTo(0.17, 0.99, 0.18, 0.70); shape.quadraticCurveTo(0, 0.65, -0.18, 0.70);
+  const slot = new THREE.Path();
+  slot.moveTo(-0.12, 0.78); slot.lineTo(0.115, 1.02); slot.lineTo(0.115, 0.94); slot.lineTo(-0.08, 0.74); slot.closePath();
+  shape.holes.push(slot);
+  return new THREE.ExtrudeGeometry(shape, {
+    depth: family === 'classic' ? 0.24 : 0.30,
+    bevelEnabled: family === 'classic',
+    bevelThickness: family === 'classic' ? 0.012 : 0,
+    bevelSize: family === 'classic' ? 0.008 : 0,
+    bevelSegments: family === 'classic' ? 2 : 0,
+    curveSegments: family === 'classic' ? 8 : 1,
+  });
 }
 
-function horseProfile(family: PieceFamily): THREE.ExtrudeGeometry {
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.13, 0.28);
-  shape.lineTo(-0.19, 0.42);
-  shape.lineTo(-0.16, 0.58);
-  shape.lineTo(-0.20, 0.70);
-  shape.lineTo(-0.13, 0.72);
-  shape.lineTo(-0.17, 0.84);
-  shape.lineTo(-0.08, 0.77);
-  shape.lineTo(-0.025, 0.91);
-  shape.lineTo(0.035, 0.79);
-  shape.lineTo(0.12, 0.77);
-  shape.lineTo(0.22, 0.68);
-  shape.lineTo(0.22, 0.59);
-  shape.lineTo(0.31, 0.54);
-  shape.lineTo(0.32, 0.46);
-  shape.lineTo(0.23, 0.41);
-  shape.lineTo(0.10, 0.43);
-  shape.lineTo(0.055, 0.34);
-  shape.lineTo(0.08, 0.28);
-  shape.closePath();
-  return extrude(shape, family, family === 'classic' ? 0.22 : 0.26);
-}
-
-function horseMane(family: PieceFamily): THREE.ExtrudeGeometry {
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.11, 0.34);
-  shape.lineTo(-0.21, 0.43);
-  shape.lineTo(-0.17, 0.49);
-  shape.lineTo(-0.23, 0.56);
-  shape.lineTo(-0.17, 0.63);
-  shape.lineTo(-0.22, 0.71);
-  shape.lineTo(-0.14, 0.75);
-  shape.lineTo(-0.105, 0.64);
-  shape.lineTo(-0.13, 0.54);
-  shape.closePath();
-  return extrude(shape, family, family === 'classic' ? 0.12 : 0.15);
-}
-
-function kingCross(family: PieceFamily): THREE.ExtrudeGeometry {
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.04, 0.97); shape.lineTo(0.04, 0.97);
-  shape.lineTo(0.04, 1.08); shape.lineTo(0.105, 1.08);
-  shape.lineTo(0.105, 1.16); shape.lineTo(0.04, 1.16);
-  shape.lineTo(0.04, 1.30); shape.lineTo(-0.04, 1.30);
-  shape.lineTo(-0.04, 1.16); shape.lineTo(-0.105, 1.16);
-  shape.lineTo(-0.105, 1.08); shape.lineTo(-0.04, 1.08);
-  shape.closePath();
-  return extrude(shape, family, family === 'classic' ? 0.105 : 0.13);
-}
-
-function profile(kind: PieceKind, family: PieceFamily): Array<[number, number]> {
-  const f = family === 'faceted';
-  const taper = f ? 0.93 : 1;
-  const base: Array<[number, number]> = [[0.25, 0], [0.295, 0.035], [0.29, 0.10], [0.23, 0.15], [0.21, 0.19]];
-  const shapes: Record<Exclude<PieceKind, 'knight'>, Array<[number, number]>> = {
-    pawn: [[0.17, 0.25], [0.12, 0.34], [0.12, 0.41], [0.075, 0.45]],
-    bishop: [[0.18, 0.26], [0.13, 0.45], [0.11, 0.57]],
-    rook: [[0.19, 0.30], [0.16, 0.52], [0.18, 0.67]],
-    queen: [[0.20, 0.30], [0.14, 0.53], [0.12, 0.76], [0.17, 0.86]],
-    king: [[0.20, 0.30], [0.145, 0.55], [0.12, 0.82], [0.17, 0.95]],
+function classicBody(kind: Exclude<PieceKind, 'knight'>): THREE.BufferGeometry {
+  const stem: Record<Exclude<PieceKind, 'knight'>, ReadonlyArray<readonly [number, number]>> = {
+    pawn: [[0.31, 0.025], [0.325, 0.055], [0.315, 0.105], [0.275, 0.145], [0.225, 0.17], [0.205, 0.21], [0.16, 0.25], [0.135, 0.36], [0.13, 0.43], [0.10, 0.47]],
+    bishop: [[0.32, 0.025], [0.335, 0.06], [0.32, 0.12], [0.27, 0.16], [0.23, 0.20], [0.20, 0.29], [0.16, 0.38], [0.145, 0.55], [0.12, 0.66]],
+    rook: [[0.325, 0.025], [0.34, 0.06], [0.325, 0.12], [0.28, 0.16], [0.24, 0.19], [0.22, 0.29], [0.19, 0.40], [0.18, 0.65], [0.20, 0.70]],
+    queen: [[0.33, 0.025], [0.34, 0.06], [0.32, 0.13], [0.275, 0.17], [0.24, 0.22], [0.21, 0.31], [0.16, 0.47], [0.145, 0.70], [0.18, 0.80]],
+    king: [[0.33, 0.025], [0.34, 0.065], [0.32, 0.13], [0.28, 0.17], [0.245, 0.22], [0.215, 0.34], [0.165, 0.52], [0.145, 0.82], [0.18, 0.92]],
   };
-  const chosen = kind === 'knight' ? [[0.18, 0.27], [0.14, 0.33], [0.15, 0.38]] : shapes[kind];
-  return [...base, ...chosen].map(([r, y]) => [r * taper, y] as [number, number]);
+  return closedRevolution(stem[kind], 40);
 }
 
-function partsFor(kind: PieceKind, family: PieceFamily): readonly Part[] {
-  const part = (geometry: THREE.BufferGeometry, name: string, position?: THREE.Vector3, rotationValue?: THREE.Euler): Part =>
-    ({ geometry, name, position, rotation: rotationValue });
-  const parts: Part[] = [part(lathe(profile(kind, family), family), 'turned-body')];
-  const segments = family === 'classic' ? 28 : 10;
+function facetedBody(kind: Exclude<PieceKind, 'knight'>): THREE.BufferGeometry {
+  const silhouette: Record<Exclude<PieceKind, 'knight'>, ReadonlyArray<readonly [number, number]>> = {
+    pawn: [[0.32, 0.025], [0.32, 0.11], [0.25, 0.15], [0.22, 0.25], [0.145, 0.30], [0.145, 0.48], [0.105, 0.53]],
+    bishop: [[0.33, 0.025], [0.33, 0.12], [0.27, 0.16], [0.24, 0.28], [0.17, 0.34], [0.16, 0.65], [0.12, 0.69]],
+    rook: [[0.34, 0.025], [0.34, 0.13], [0.28, 0.17], [0.25, 0.29], [0.20, 0.34], [0.20, 0.70], [0.22, 0.75]],
+    queen: [[0.34, 0.025], [0.34, 0.13], [0.28, 0.18], [0.25, 0.31], [0.18, 0.37], [0.18, 0.74], [0.22, 0.80]],
+    king: [[0.34, 0.025], [0.34, 0.13], [0.29, 0.18], [0.25, 0.34], [0.19, 0.40], [0.19, 0.88], [0.22, 0.94]],
+  };
+  return closedRevolution(silhouette[kind], 8);
+}
+
+function addClassicCollars(parts: AssetPart[], y: number, radius: number): void {
+  const collar = new THREE.TorusGeometry(radius, 0.018, 8, 32);
+  collar.rotateX(Math.PI / 2); collar.translate(0, y, 0);
+  parts.push({ geometry: collar, name: 'classic-segmented-collar' });
+}
+
+function makeKnight(family: PieceFamily): AssetPart[] {
+  const faceted = family === 'faceted';
+  const sides = faceted ? 6 : 20;
+  const parts: AssetPart[] = [{
+    geometry: closedRevolution(faceted
+      ? [[0.34, 0.025], [0.34, 0.13], [0.27, 0.18], [0.22, 0.31], [0.18, 0.37]]
+      : [[0.33, 0.025], [0.34, 0.06], [0.32, 0.13], [0.275, 0.17], [0.23, 0.21], [0.20, 0.31], [0.17, 0.39]], faceted ? 8 : 40),
+    name: `${family}-knight-stepped-plinth`,
+  }];
+  if (!faceted) addClassicCollars(parts, 0.355, 0.18);
+  parts.push({
+    geometry: closedYLoft(faceted
+      ? [[0, 0.34, 0.16, 0.15], [-0.02, 0.54, 0.14, 0.14], [0.015, 0.70, 0.12, 0.13], [0.10, 0.84, 0.105, 0.12]]
+      : [[0, 0.35, 0.15, 0.14], [-0.035, 0.51, 0.145, 0.135], [-0.005, 0.68, 0.125, 0.13], [0.10, 0.83, 0.10, 0.115]], sides),
+    name: `${family}-knight-curved-volumetric-neck`,
+  });
+  parts.push({
+    geometry: closedXLoft(faceted
+      ? [[0.055, 0.86, 0.12, 0.12], [0.16, 0.90, 0.15, 0.135], [0.28, 0.89, 0.115, 0.105], [0.34, 0.86, 0.065, 0.07]]
+      : [[0.055, 0.86, 0.115, 0.11], [0.16, 0.91, 0.14, 0.13], [0.27, 0.90, 0.105, 0.10], [0.34, 0.875, 0.055, 0.06]], sides),
+    name: `${family}-knight-dimensional-head-and-muzzle`,
+  });
+  const ear = new THREE.ConeGeometry(faceted ? 0.052 : 0.045, faceted ? 0.18 : 0.15, faceted ? 4 : 8);
+  ear.rotateZ(-0.13); ear.translate(0.12, 1.07, -0.075);
+  const secondEar = ear.clone(); secondEar.translate(0, 0, 0.15);
+  parts.push({ geometry: ear, name: `${family}-knight-left-ear` }, { geometry: secondEar, name: `${family}-knight-right-ear` });
+  const mane = solidExtrusion([[-0.13, 0.42], [-0.23, 0.51], [-0.19, 0.60], [-0.24, 0.70], [-0.17, 0.80], [-0.12, 0.95], [-0.06, 0.91], [-0.09, 0.69], [-0.07, 0.51]], faceted ? 0.15 : 0.12, faceted ? 0 : 0.006);
+  mane.translate(0, 0, faceted ? -0.075 : -0.06);
+  parts.push({ geometry: mane, name: `${family}-knight-carved-mane` });
+  return parts;
+}
+
+function makeAssets(kind: PieceKind, family: PieceFamily): readonly AssetPart[] {
+  if (kind === 'knight') return makeKnight(family);
+  const faceted = family === 'faceted';
+  const segments = faceted ? 8 : 32;
+  const body = faceted ? facetedBody(kind) : classicBody(kind);
+  const parts: AssetPart[] = [{ geometry: body, name: `${family}-${kind}-${faceted ? 'architectural-body' : 'turned-sculptural-body'}` }];
+  if (!faceted) addClassicCollars(parts, kind === 'pawn' ? 0.46 : kind === 'bishop' ? 0.63 : 0.73, kind === 'pawn' ? 0.115 : 0.14);
 
   if (kind === 'pawn') {
-    parts.push(part(new THREE.SphereGeometry(0.115, segments, family === 'classic' ? 14 : 6), 'pawn-head', vector(0, 0.56)));
-  } else if (kind === 'knight') {
-    parts.push(part(horseProfile(family), 'knight-horse-profile-ears-and-muzzle', vector(0, 0, family === 'classic' ? -0.11 : -0.13)));
-    parts.push(part(horseMane(family), 'knight-sculpted-mane', vector(0, 0, family === 'classic' ? -0.06 : -0.075)));
+    parts.push({ geometry: closedRevolution(faceted
+      ? [[0.105, 0.52], [0.16, 0.57], [0.16, 0.68], [0.105, 0.73]]
+      : [[0.07, 0.50], [0.125, 0.54], [0.15, 0.62], [0.14, 0.70], [0.09, 0.77]], faceted ? 8 : 32), name: `${family}-pawn-crowned-head` });
   } else if (kind === 'bishop') {
-    parts.push(part(bishopMitre(family), 'bishop-mitre-with-diagonal-gap', vector(0, 0, family === 'classic' ? -0.10 : -0.12), rotation(0, Math.PI / 5, 0)));
+    const mitre = bishopMitre(family); mitre.translate(0, 0, faceted ? -0.15 : -0.12);
+    parts.push({ geometry: mitre, name: `${family}-bishop-sculpted-mitre-slot`, intentionalOpenings: ['diagonal mitre slot is a deliberate open cut'] });
   } else if (kind === 'rook') {
-    parts.push(part(new THREE.CylinderGeometry(0.19, 0.19, 0.075, segments), 'rook-crown-ring', vector(0, 0.695)));
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      parts.push(part(new THREE.BoxGeometry(0.10, 0.10, 0.10), `rook-merlon-${i}`, vector(Math.cos(a) * 0.16, 0.79, Math.sin(a) * 0.16), rotation(0, -a, 0)));
+    const crown = closedRevolution(faceted ? [[0.22, 0.74], [0.25, 0.78], [0.25, 0.86], [0.21, 0.89]] : [[0.20, 0.69], [0.23, 0.73], [0.23, 0.80], [0.20, 0.84]], faceted ? 8 : 32);
+    parts.push({ geometry: crown, name: `${family}-rook-solid-crown-drum` });
+    const count = faceted ? 4 : 6;
+    for (let index = 0; index < count; index++) {
+      const angle = index * Math.PI * 2 / count;
+      const merlon = new THREE.BoxGeometry(faceted ? 0.16 : 0.115, faceted ? 0.16 : 0.13, faceted ? 0.16 : 0.115);
+      merlon.rotateY(-angle); merlon.translate(Math.cos(angle) * (faceted ? 0.18 : 0.17), faceted ? 0.92 : 0.90, Math.sin(angle) * (faceted ? 0.18 : 0.17));
+      parts.push({ geometry: merlon, name: `${family}-rook-closed-merlon-${index + 1}` });
     }
   } else if (kind === 'queen') {
-    parts.push(part(new THREE.TorusGeometry(0.168, 0.029, family === 'classic' ? 8 : 4, segments), 'queen-coronet', vector(0, 0.89), rotation(Math.PI / 2, 0, 0)));
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      const point = new THREE.ConeGeometry(0.048, family === 'classic' ? 0.16 : 0.18, family === 'classic' ? 8 : 4);
-      parts.push(part(point, `queen-crown-point-${i}`, vector(Math.cos(a) * 0.168, 0.99, Math.sin(a) * 0.168), rotation(0, -a, 0)));
+    const crown = closedRevolution(faceted ? [[0.22, 0.80], [0.24, 0.84], [0.17, 0.91], [0.13, 0.93]] : [[0.18, 0.80], [0.21, 0.85], [0.18, 0.90], [0.15, 0.92]], faceted ? 8 : 32);
+    parts.push({ geometry: crown, name: `${family}-queen-coronet-base` });
+    const count = faceted ? 5 : 7;
+    for (let index = 0; index < count; index++) {
+      const angle = index * Math.PI * 2 / count;
+      const point = new THREE.ConeGeometry(faceted ? 0.065 : 0.045, faceted ? 0.25 : 0.20, faceted ? 4 : 8);
+      point.translate(Math.cos(angle) * (faceted ? 0.18 : 0.16), faceted ? 1.04 : 1.01, Math.sin(angle) * (faceted ? 0.18 : 0.16));
+      parts.push({ geometry: point, name: `${family}-queen-coronet-point-${index + 1}` });
     }
-    parts.push(part(new THREE.SphereGeometry(0.075, segments, family === 'classic' ? 8 : 4), 'queen-crown-orb', vector(0, 1.08)));
-  } else if (kind === 'king') {
-    parts.push(part(new THREE.TorusGeometry(0.145, 0.026, family === 'classic' ? 8 : 4, segments), 'king-collar', vector(0, 0.96), rotation(Math.PI / 2, 0, 0)));
-    const finial = kingCross(family); finial.translate(0, -1.04, 0); finial.scale(1.2, 1.12, 1.2); finial.translate(0, 1.04, 0);
-    parts.push(part(finial, 'king-cross-finial', vector(0, 0, family === 'classic' ? -0.063 : -0.078)));
+    parts.push({ geometry: closedRevolution(faceted ? [[0.06, 1.10], [0.09, 1.15], [0.06, 1.20]] : [[0.04, 1.08], [0.07, 1.13], [0.04, 1.18]], faceted ? 8 : 20), name: `${family}-queen-crown-orb` });
+  } else {
+    const collar = new THREE.TorusGeometry(faceted ? 0.18 : 0.155, faceted ? 0.026 : 0.022, faceted ? 4 : 8, segments);
+    collar.rotateX(Math.PI / 2); collar.translate(0, faceted ? 0.96 : 0.94, 0);
+    parts.push({ geometry: collar, name: `${family}-king-finial-collar` });
+    const cross = solidExtrusion([[-0.05, 0.98], [0.05, 0.98], [0.05, 1.10], [0.13, 1.10], [0.13, 1.20], [0.05, 1.20], [0.05, 1.34], [-0.05, 1.34], [-0.05, 1.20], [-0.13, 1.20], [-0.13, 1.10], [-0.05, 1.10]], faceted ? 0.18 : 0.13, faceted ? 0 : 0.008);
+    cross.translate(0, 0, faceted ? -0.09 : -0.065);
+    parts.push({ geometry: cross, name: `${family}-king-solid-cross-finial` });
   }
   return parts;
 }
 
-function geometryFor(kind: PieceKind, family: PieceFamily): THREE.BufferGeometry {
-  const key = `${family}:${kind}`; const cached = geometryCache.get(key); if (cached) return cached;
-  const pieces = partsFor(kind, family).map(part => {
-    const geometry = part.geometry.index ? part.geometry.toNonIndexed() : part.geometry.clone();
-    const matrix = new THREE.Matrix4().compose(part.position ?? new THREE.Vector3(), new THREE.Quaternion().setFromEuler(part.rotation ?? new THREE.Euler()), new THREE.Vector3(1, 1, 1));
-    geometry.applyMatrix4(matrix); part.geometry.dispose(); return geometry;
+function mergedGeometry(components: readonly AssetPart[]): THREE.BufferGeometry {
+  const copies = components.map(({ geometry }) => {
+    const copy = geometry.clone();
+    copy.deleteAttribute('uv');
+    if (!copy.getAttribute('normal')) copy.computeVertexNormals();
+    if (!copy.getIndex()) copy.setIndex([...Array(copy.getAttribute('position').count).keys()]);
+    return copy;
   });
-  const merged = mergeGeometries(pieces, false); pieces.forEach(geometry => geometry.dispose());
-  if (!merged) throw new Error('Unable to assemble chess geometry');
-  geometryCache.set(key, merged); return merged;
+  const merged = mergeGeometries(copies, false);
+  copies.forEach(copy => copy.dispose());
+  if (!merged || !merged.getIndex()) throw new Error('Unable to merge chess sculpture components into an indexed geometry.');
+  merged.computeBoundingSphere();
+  return merged;
 }
 
-function material(style: MaterialStyle, side: 1 | -1, family: PieceFamily): THREE.MeshPhysicalMaterial {
+function assetsFor(kind: PieceKind, family: PieceFamily): CachedPieceAsset {
+  const key = `${family}:${kind}`;
+  const cached = geometryCache.get(key);
+  if (cached) return cached;
+  const components = makeAssets(kind, family);
+  const asset = { geometry: mergedGeometry(components), components };
+  geometryCache.set(key, asset);
+  return asset;
+}
+
+function material(style: MaterialStyle, side: 1 | -1, family: PieceFamily): THREE.MeshStandardMaterial {
   const key = `${style}:${side}:${family}`;
   const cached = materialCache.get(key);
   if (cached) return cached;
   const white = side > 0;
   const palette = {
-    ceramic: { color: white ? 0xd7c9ac : 0x343f4d, metalness: 0.04, roughness: 0.46, clearcoat: 0.12 },
-    metal: { color: white ? 0xd3d9df : 0x626e7c, metalness: 0.72, roughness: 0.38, clearcoat: 0.08 },
-    wood: { color: white ? 0xc58a58 : 0x65412e, metalness: 0.0, roughness: 0.5, clearcoat: 0.08 },
+    ceramic: { color: white ? 0xe7dcc4 : 0x10263e, metalness: 0.05, roughness: 0.38 },
+    metal: { color: white ? 0xdce3e6 : 0x2d4057, metalness: 0.78, roughness: 0.31 },
+    wood: { color: white ? 0xc2824e : 0x3b241d, metalness: 0.02, roughness: 0.43 },
   }[style];
-  const result = new THREE.MeshPhysicalMaterial({ ...palette, flatShading: family === 'faceted' });
+  const finish = new THREE.MeshStandardMaterial({ ...palette, flatShading: family === 'faceted' });
   if (style === 'wood') {
-    result.onBeforeCompile = shader => {
-      shader.vertexShader = 'varying vec3 vWoodPosition;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvWoodPosition = position;');
-      shader.fragmentShader = 'varying vec3 vWoodPosition;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\nfloat grain = sin(vWoodPosition.y * 95.0 + 4.0 * sin(vWoodPosition.x * 16.0 + vWoodPosition.z * 9.0));\ndiffuseColor.rgb *= 0.95 + 0.05 * grain;');
+    finish.onBeforeCompile = shader => {
+      shader.vertexShader = `varying vec3 vRiftWoodPosition;\n${shader.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRiftWoodPosition = position;');
+      shader.fragmentShader = `varying vec3 vRiftWoodPosition;\n${shader.fragmentShader}`.replace('#include <color_fragment>', '#include <color_fragment>\nfloat riftGrain = sin(vRiftWoodPosition.y * 72.0 + 5.0 * sin(vRiftWoodPosition.x * 15.0 + vRiftWoodPosition.z * 11.0));\ndiffuseColor.rgb *= 0.91 + 0.09 * riftGrain;');
     };
-    result.customProgramCacheKey = () => `rift-wood-grain-${family}`;
+    finish.customProgramCacheKey = () => `rift-dimensional-wood-${family}`;
   }
-  materialCache.set(key, result);
-  return result;
+  materialCache.set(key, finish);
+  return finish;
 }
 
 /** Build a y-up, square-centred chessman. Codes 1 and 7 both mean pawn. */
@@ -199,16 +322,23 @@ export function createPiece(code: number, family: PieceFamily, style: MaterialSt
   group.userData.piece = code;
   group.userData.pieceKind = kind;
   group.userData.sharedPieceAsset = true;
+  group.userData.geometryAudit = { family, kind, componentPolicy: 'each child mesh is a closed solid except the declared bishop slot' };
   const finish = material(style, side, family);
-  {
-    const mesh = new THREE.Mesh(geometryFor(kind, family), finish);
-    mesh.name = `${family}-${kind}-sculpture`;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    mesh.userData.piece = code;
-    mesh.userData.sharedPieceAsset = true;
-    group.add(mesh);
-  }
+  const asset = assetsFor(kind, family);
+  const mesh = new THREE.Mesh(asset.geometry, finish);
+  mesh.name = `${family}-${kind}-sculpture`;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData.piece = code;
+  mesh.userData.sharedPieceAsset = true;
+  mesh.userData.geometryAudit = { componentCount: asset.components.length, merged: true };
+  group.userData.geometryAudit.components = asset.components.map(component => ({
+    name: component.name,
+    geometry: component.geometry,
+    closed: !component.intentionalOpenings,
+    intentionalOpenings: component.intentionalOpenings ?? [],
+  }));
+  group.add(mesh);
   return group;
 }
 
@@ -220,7 +350,10 @@ export function disposePiece(group: THREE.Group): void {
 
 /** Call only after all piece groups made by createPiece have been removed. */
 export function disposePieceAssets(): void {
-  for (const geometry of geometryCache.values()) geometry.dispose();
+  for (const asset of geometryCache.values()) {
+    asset.geometry.dispose();
+    for (const component of asset.components) component.geometry.dispose();
+  }
   for (const finish of materialCache.values()) finish.dispose();
   geometryCache.clear();
   materialCache.clear();
