@@ -22,7 +22,7 @@ const receipt = {
   purpose: 'real-UI stale-worker cancellation/recovery plus bounded responsiveness measurements',
   url: base,
   committedActionPolicy: 'All committed actions use visible controls through ui-driver; no reducer-injected committed actions.',
-  fixtureSetups: [],
+  platformSetups: [],
   checks: [],
   measurements: [],
   workerRequests: [],
@@ -148,11 +148,12 @@ async function measure(name, activity) {
   return metrics;
 }
 
-async function waitForStableIdentity(identity, delay = 2000) {
+async function waitForStableIdentity(identity, expectedRecord, delay = 2000) {
   await page.waitForTimeout(delay);
   const observation = await driver.observation();
   assert.equal(observation.game_id, identity.game_id);
   assert.equal(observation.revision, identity.revision);
+  assert.deepEqual(await driver.record(), expectedRecord, 'The complete match record changed during the stability check');
   return observation;
 }
 
@@ -171,17 +172,21 @@ try {
   const afterUndo = await driver.observation();
   assert.equal(afterUndo.position.side, 1, 'Undo must return control to the human side');
   assert.equal((await driver.record()).actions.length, 0, 'Undo must remove the human move');
+  const undoRecord = await driver.record();
   await releaseAndSettle(undoWorker);
-  await waitForStableIdentity({ game_id: afterUndo.game_id, revision: afterUndo.revision });
+  await waitForStableIdentity(afterUndo, undoRecord);
   receipt.checks.push({ name: 'undo cancels a held real worker before any stale commit', status: 'pass', workerRequest: undoWorker.number });
 
   await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null });
   const newGameWorker = await waitForWorker(2);
+  const priorNewGame = await driver.observation();
   expectedCancelledWorkers.add(newGameWorker.number);
   const replacement = await newGame('hotseat', 'C');
+  assert.notEqual(replacement.game_id, priorNewGame.game_id, 'New match must replace the held worker game identity');
+  const replacementRecord = await driver.record();
   assert.equal(replacement.revision, 0);
   await releaseAndSettle(newGameWorker);
-  await waitForStableIdentity({ game_id: replacement.game_id, revision: replacement.revision });
+  await waitForStableIdentity(replacement, replacementRecord);
   assert.equal((await driver.record()).actions.length, 0);
   receipt.checks.push({ name: 'new match rejects a held previous-game worker', status: 'pass', workerRequest: newGameWorker.number });
 
@@ -202,9 +207,65 @@ try {
   assert.equal((await driver.observation()).position.side, 1, 'Recovered bot reply must return control to the human');
   receipt.checks.push({ name: 'draw decline rejects the stale worker for 2 seconds, then accepts only the fresh worker reply', status: 'pass', staleWorkerRequest: offeredWorker.number, recoveryWorkerRequest: recoveryWorker.number });
 
+  await newGame('bot-black'); await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null });
+  const replayWorker = await waitForWorker(5); expectedCancelledWorkers.add(replayWorker.number);
+  const replayState = await driver.observation(), replayRecord = await driver.record();
+  await page.locator('#replay').click(); await page.locator('#replay-controls').waitFor({ state: 'visible' }); await page.locator('#replay-back').click();
+  const replayPosition = await page.locator('#replay-position').innerText();
+  await releaseAndSettle(replayWorker); await waitForStableIdentity(replayState, replayRecord);
+  assert.equal(await page.locator('#replay-controls').isVisible(), true); assert.equal(await page.locator('#replay-position').innerText(), replayPosition);
+  await page.locator('#replay-exit').click(); const replayRecoveryWorker = await waitForWorker(6); await releaseAndSettle(replayRecoveryWorker);
+  await page.waitForFunction(() => window.rift.exportRecord().actions.length === 2 && !window.rift.metrics().animating, null, { timeout: 30000 });
+  assert.equal((await driver.observation()).position.side, 1);
+  receipt.checks.push({ name: 'replay holds the complete live record against stale search; exit accepts one fresh bot reply', status: 'pass', staleWorkerRequest: 5, recoveryWorkerRequest: 6 });
+
+  await newGame('bot-black'); await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null });
+  const importWorker = await waitForWorker(7); expectedCancelledWorkers.add(importWorker.number);
+  const beforeImport = await driver.observation(), saved = await page.evaluate(() => JSON.parse(localStorage.getItem('rift-chess.save.v1')));
+  await page.locator('#import').setInputFiles({ name: 'saved-bot-turn.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(saved)) });
+  const importRecoveryWorker = await waitForWorker(8), imported = await driver.observation(), importedRecord = await driver.record();
+  assert.notEqual(imported.game_id, beforeImport.game_id); assert.deepEqual(importedRecord, saved.record);
+  await releaseAndSettle(importWorker); await waitForStableIdentity(imported, importedRecord);
+  await releaseAndSettle(importRecoveryWorker);
+  await page.waitForFunction(() => window.rift.exportRecord().actions.length === 2 && !window.rift.metrics().animating, null, { timeout: 30000 });
+  assert.equal((await driver.observation()).position.side, 1);
+  receipt.checks.push({ name: 'valid import creates a fresh identity and rejects old search before accepting one current reply', status: 'pass', staleWorkerRequest: 7, recoveryWorkerRequest: 8 });
+
   releaseAllWorkers = true;
   for (const gate of workerGates) gate.release();
   await context.unroute('**/worker-*.js');
+
+  const learn = await driver.openDrawer('Learn the rift'); await learn.locator('[data-tutorial="loadedShift"]').click(); await driver.ready(); await driver.camera('top');
+  const promotionState = await driver.observation(), promotionRecord = await driver.record();
+  await driver.square('c6'); await page.locator('#shift-passenger').click(); await driver.square(driver.macroSquare('B4'));
+  for (const method of ['Escape', 'Cancel']) {
+    await page.locator('#confirm-shift').click(); await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
+    if (method === 'Escape') await page.keyboard.press('Escape'); else await page.locator('#promotion-dialog button[value="cancel"]').click();
+    await page.locator('#promotion-dialog').waitFor({ state: 'hidden' }); await waitForStableIdentity(promotionState, promotionRecord, 250);
+  }
+  receipt.checks.push({ name: 'visible loaded-Shift promotion Cancel and Escape preserve the complete precommit match', status: 'pass', setup: 'visible Carry one passenger lesson' });
+
+  await newGame(); const storageState = await driver.observation();
+  await page.evaluate(() => { window.__storageDescriptor = Object.getOwnPropertyDescriptor(Storage.prototype, 'setItem'); Object.defineProperty(Storage.prototype, 'setItem', { ...window.__storageDescriptor, value() { throw new DOMException('Test storage unavailable', 'QuotaExceededError'); } }); });
+  receipt.platformSetups.push({ kind: 'storage-write fault', scope: 'isolated test page Storage.prototype.setItem', restoration: 'original property descriptor in finally' });
+  try {
+    await driver.perform({ type: 'move', from: 'e2', to: 'e4', promotion: null });
+    assert.equal((await driver.observation()).revision, storageState.revision + 1);
+    assert.match(await page.locator('#notice').innerText(), /storage is unavailable/i);
+  } finally { await page.evaluate(() => { Object.defineProperty(Storage.prototype, 'setItem', window.__storageDescriptor); delete window.__storageDescriptor; }); }
+  receipt.checks.push({ name: 'unavailable storage reports lost persistence while the actual local move still completes', status: 'pass' });
+
+  const resumedState = await driver.observation(), resumedRecord = await driver.record(), lifecycle = await context.newCDPSession(page);
+  await page.locator('#scene').focus(); await page.keyboard.down('h');
+  try { assert.equal((await driver.metrics()).revealHeld, true); await page.keyboard.press('Tab'); assert.equal((await driver.metrics()).revealHeld, false, 'Blur must clear held hints before keyup'); }
+  finally { await page.keyboard.up('h'); }
+  const beforeFreezeFrame = (await driver.metrics()).lastRenderedAt;
+  receipt.platformSetups.push({ kind: 'browser page freeze/resume', scope: 'CDP Page.setWebLifecycleState; controlled browser lifecycle emulation' });
+  try { await lifecycle.send('Page.setWebLifecycleState', { state: 'frozen' }); await new Promise(resolve => setTimeout(resolve, 500)); }
+  finally { await lifecycle.send('Page.setWebLifecycleState', { state: 'active' }); await lifecycle.detach(); }
+  await page.waitForFunction(previous => window.rift.metrics().lastRenderedAt > previous, beforeFreezeFrame, { timeout: 10000 });
+  await driver.ready(); await waitForStableIdentity(resumedState, resumedRecord, 250);
+  receipt.checks.push({ name: 'focus loss clears temporary hints and emulated browser freeze/resume preserves the complete match', status: 'pass' });
 
   await newGame();
   await setQuality('balanced');

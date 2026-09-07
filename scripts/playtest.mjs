@@ -5,9 +5,9 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { createUiDriver } from './ui-driver.mjs';
 
-const base = process.env.RIFT_TEST_URL || 'http://127.0.0.1:5173/';
+const base = process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/';
 const directory = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'mechanics-pass');
-await fs.mkdir(directory, { recursive: true });
+await fs.mkdir(path.dirname(directory), { recursive: true }); await fs.mkdir(directory);
 const fixtures = JSON.parse(await fs.readFile('fixtures/conformance.json', 'utf8')).fixtures;
 const evidence = { started: new Date().toISOString(), url: base, browser: 'Chrome', tests: [], errors: [], screenshots: [] };
 console.log('Launching isolated Chrome for real rendered interaction.');
@@ -34,6 +34,7 @@ try {
   console.log('Loading game.');
   await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForFunction(() => Boolean(window.rift), null, { timeout: 60000 });
+  evidence.build = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json());
   await test('launch Skip reaches the live board and waits for assets', async () => {
     assert.equal(await page.locator('#launch-skip').isVisible(), true);
     await driver.enterPlay();
@@ -105,6 +106,7 @@ try {
   });
   evidence.metrics = await page.evaluate(() => window.rift.metrics());
   assert.deepEqual(evidence.errors, []);
+  evidence.finalBuild = await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()); assert.deepEqual(evidence.finalBuild, evidence.build);
   evidence.status = 'pass';
 } catch (error) { evidence.status = 'fail'; evidence.failure = error.stack; process.exitCode = 1; console.error(error.message); }
 finally {

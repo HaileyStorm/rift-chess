@@ -1,6 +1,6 @@
 # Rift Chess: visual and interaction overhaul
 
-Status: implementation active; the first integrated scene is not visually accepted. See OVERHAUL_PROGRESS.md for evidence and unresolved gates. This plan is the completion contract for the requested persistent Goal.
+Status: implementation and final acceptance active. The final 216-view board matrix has scoped independent acceptance; remaining motion, application, performance, full-game, and distribution gates are tracked in OVERHAUL_PROGRESS.md. This plan is the completion contract for the requested persistent Goal.
 
 Owner correction: repairing pieces and improving the UI is insufficient. A substantial, explicit WOW factor is mandatory. The experiential requirements below are part of the Goal and cannot be traded away once the defect checks turn green.
 

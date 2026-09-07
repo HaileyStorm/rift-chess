@@ -42,6 +42,29 @@ async function solveLesson(which) {
 async function returnLesson(original) {
   await page.locator('#lesson-return').click(); await driver.ready(); assert.deepEqual(await driver.record(), original.record); const restored = await savedEnvelope(); assert.deepEqual(restored.record, original.record); assert.equal(restored.record.draw_policy, original.record.draw_policy); assert.equal(restored.practice, original.practice); assert.equal(await page.locator('#lesson-status').isVisible(), false);
 }
+async function keyboardSquare(target) {
+  await page.locator('#scene').focus(); let current = (await driver.metrics()).keyboardSquare;
+  while (current % 8 < target % 8) { await page.keyboard.press('ArrowRight'); current++; }
+  while (current % 8 > target % 8) { await page.keyboard.press('ArrowLeft'); current--; }
+  while (current < target) { await page.keyboard.press('ArrowUp'); current += 8; }
+  while (current > target) { await page.keyboard.press('ArrowDown'); current -= 8; }
+  assert.equal((await driver.metrics()).keyboardSquare, target); await page.keyboard.press('Enter');
+}
+async function solveLessonWithKeyboard(which) {
+  const before = await driver.observation(), actions = await page.evaluate(() => window.rift.getLegalActions());
+  if (which === 'ordinary') { await keyboardSquare(12); await keyboardSquare(28); }
+  else {
+    const action = which === 'emptyShift' ? emptyShift(actions, before.position) : actions.find(action => action.type === 'shift' && action.from === (which === 'cutCheck' ? 'C2' : 'B3') && action.to === (which === 'cutCheck' ? 'B2' : 'B4') && (!action.promotion || action.promotion === 'N'));
+    assert.ok(action);
+    if (which === 'loadedShift') { await keyboardSquare(42); await page.locator('#shift-passenger').press('Enter'); }
+    else { await page.locator('#scene').focus(); await page.keyboard.press('s'); await keyboardSquare(driver.macroSquare(action.from)); }
+    await keyboardSquare(driver.macroSquare(action.to));
+    assert.equal((await driver.observation()).revision, before.revision, 'Keyboard preview must remain uncommitted');
+    await page.locator('#confirm-shift').press('Enter');
+    if (action.promotion) await page.locator('#promotion-dialog button[value="N"]').press('Enter');
+  }
+  await driver.ready(); assert.equal((await driver.observation()).revision, before.revision + 1);
+}
 async function test(name, run) { try { await run(); receipt.checks.push({ name, status: 'pass' }); } catch (error) { receipt.checks.push({ name, status: 'fail', error: error.message }); throw error; } finally { await persist(); } }
 
 try {
@@ -55,6 +78,14 @@ try {
   });
   await test('reload from a solved visible lesson restores the held match directly', async () => {
     const original = receipt.original; await openLesson('ordinary'); await solveLesson('ordinary'); assert.deepEqual((await savedEnvelope()).record, original.record); await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }); await driver.enterPlay(); assert.deepEqual(await driver.record(), original.record); assert.equal(await page.locator('#lesson-status').isVisible(), false); await capture('lesson-reload-restores-match');
+  });
+  await test('all four visible lessons also complete through keyboard selection, preview, and commit', async () => {
+    const original = receipt.original;
+    for (const which of ['ordinary', 'emptyShift', 'loadedShift', 'cutCheck']) {
+      const learn = await driver.openDrawer('Learn the rift'); await learn.locator(`[data-tutorial="${which}"]`).press('Enter'); await driver.ready();
+      await solveLessonWithKeyboard(which); assert.deepEqual((await savedEnvelope()).record, original.record); await capture(`lesson-${which}-keyboard-complete`);
+    }
+    await page.locator('#lesson-return').press('Enter'); await driver.ready(); assert.deepEqual(await driver.record(), original.record);
   });
   await test('New match and valid Import inside lessons clear the held-match session', async () => {
     const original = receipt.original; await openLesson('ordinary'); await page.locator('#new-game').click(); const dialog = page.locator('#new-dialog'); await dialog.locator('input[name="layout"][value="C"]').check(); await dialog.locator('#start-game').click(); await driver.ready(); assert.equal(await page.locator('#lesson-status').isVisible(), false); assert.notDeepEqual(await driver.record(), original.record);

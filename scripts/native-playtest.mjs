@@ -88,6 +88,14 @@ async function captureScalingMatrix(page, classification) {
     await app.evaluate(({ BrowserWindow }, bounds) => BrowserWindow.getAllWindows()[0].setBounds(bounds), size); await page.waitForTimeout(250);
     for (const zoom of [.8, 1, 1.25, 1.5]) {
       await app.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom); await page.waitForTimeout(150); await capture(page, `${classification}-scaling-${size.width}x${size.height}-zoom-${zoom}`);
+      if (size.width === 1280 && zoom === 1.5) for (const [opener, dialog] of [['settings', 'settings-dialog'], ['new-game', 'new-dialog']]) {
+        await page.locator(`#${opener}`).click(); await page.locator(`#${dialog}`).waitFor({ state: 'visible' });
+        const fit = await page.locator(`#${dialog}`).evaluate(element => { const r = element.getBoundingClientRect(); return r.x >= -1 && r.y >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; });
+        assert.equal(fit, true, `Native ${dialog} must fit the smallest scaled viewport`);
+        await capture(page, `${classification}-scaling-1280x720-zoom-1.5-${dialog}`);
+        await page.keyboard.press('Escape'); await page.locator(`#${dialog}`).waitFor({ state: 'hidden' });
+        assert.equal(await page.evaluate(() => document.activeElement?.id), opener, 'Native Escape must return focus to the dialog opener');
+      }
     }
   }
   } finally {

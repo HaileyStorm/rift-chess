@@ -3,13 +3,16 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createUiDriver } from './ui-driver.mjs';
-const root = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'lifecycle-pass'); await fs.mkdir(root, { recursive: true });
-const receipt = { started: new Date().toISOString(), checks: [], errors: [] };
+const root = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'lifecycle-pass');
+await fs.mkdir(path.dirname(root), { recursive: true }); await fs.mkdir(root);
+const receipt = { started: new Date().toISOString(), classification: 'labeled edge-case setup; every action and rejection uses rendered UI input', checks: [], errors: [] };
 const fixtures = JSON.parse(await fs.readFile('fixtures/conformance.json', 'utf8')).fixtures;
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-gpu', '--use-angle=d3d11'] });
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } }); const page = await context.newPage();
 const driver = createUiDriver(page);
 page.on('pageerror', e => receipt.errors.push(e.message));
+page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
+const buildIdentity = () => page.evaluate(async () => { const response = await fetch('./precache.json', { cache: 'no-store' }); if (!response.ok) throw new Error('Missing build identity'); return response.json(); });
 const observe = () => driver.observation();
 const record = () => driver.record();
 const index = n => (Number(n[1]) - 1) * 8 + n.charCodeAt(0) - 97;
@@ -23,6 +26,22 @@ async function test(name, run) {
 }
 try {
   await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift)); await driver.enterPlay();
+  receipt.build = { start: await buildIdentity(), end: null };
+  await test('unavailable tile selections explain anchor, passenger count, ownership, and adjacency without mutation', async () => {
+    const cases = [
+      { name: 'anchored king', position: sparse({ e1: 6, h8: -6, a4: 4 }, [6, 9]), square: 'e2', message: /Kings are anchored/i },
+      { name: 'two passengers', position: sparse({ e1: 6, h8: -6, a3: 4, b3: 3 }), square: 'a4', message: /carries 2 pieces/i },
+      { name: 'enemy passenger', position: sparse({ e1: 6, h8: -6, a3: -4, g2: 2 }), square: 'a4', message: /belongs to your opponent/i },
+      { name: 'no adjacent hole', position: sparse({ e1: 6, h8: -6, a1: 4 }), square: 'b2', message: /no adjacent hole/i },
+    ];
+    for (const item of cases) {
+      await load(item.position); const before = await observe(), beforeRecord = await record();
+      await page.locator('#shift-mode').click(); await driver.square(item.square);
+      assert.match(await page.locator('#notice').innerText(), item.message, item.name);
+      assert.deepEqual(await record(), beforeRecord, item.name); assert.equal((await observe()).revision, before.revision, item.name);
+      assert.equal(await page.locator('#confirm-shift').isVisible(), false, item.name);
+    }
+  });
   await test('all ordinary and Shift promotion choices before atomic commit', async () => {
     for (const [promotion, code] of [['Q', 5], ['R', 4], ['B', 3], ['N', 2]]) {
       await load(sparse({ h1: 6, h8: -6, a7: 1 })); await act('move', 'a7', 'a8', promotion); assert.equal((await observe()).position.board[56], code);
@@ -49,6 +68,7 @@ try {
   await test('corrupt file rejected; raw replay adapter accepted', async () => { const before = await record(); await page.locator('#import').setInputFiles({ name: 'corrupt.json', mimeType: 'application/json', buffer: Buffer.from('{"schema":"rift-ui-save/1"}') }); assert.deepEqual(await record(), before); await page.locator('#import').setInputFiles({ name: 'record.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(fixtures.find(f => f.name === 'opening_B').record)) }); assert.deepEqual(await record(), fixtures.find(f => f.name === 'opening_B').record); });
   await test('semantic corruption restores known-good recovery copy', async () => { await driver.camera('top'); await act('move', 'e2', 'e4'); await act('move', 'e7', 'e5'); const recovered = await page.evaluate(() => JSON.parse(localStorage.getItem('rift-chess.save.recovery.v1')).record); await page.evaluate(() => { const original = localStorage.getItem('rift-chess.save.v1'); const recovery = localStorage.getItem('rift-chess.save.recovery.v1'); const x = JSON.parse(original); x.record.final_position_hash = 'corrupt'; addEventListener('beforeunload', () => { localStorage.setItem('rift-chess.save.v1', JSON.stringify(x)); localStorage.setItem('rift-chess.save.recovery.v1', recovery); }); }); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift)); await driver.enterPlay(); assert.deepEqual(await record(), recovered); assert.match(await page.locator('#notice').innerText(), /recovery copy/); });
 
+  receipt.build.end = await buildIdentity(); assert.deepEqual(receipt.build.end, receipt.build.start);
   assert.deepEqual(receipt.errors, []); receipt.status = 'pass';
 } catch (e) { receipt.status = 'fail'; receipt.failure = e.stack; process.exitCode = 1; console.error(e.message); await page.screenshot({ path: path.join(root, 'failure.png') }).catch(() => {}); }
 finally { receipt.finished = new Date().toISOString(); await fs.writeFile(path.join(root, 'receipt.json'), JSON.stringify(receipt, null, 2)); await browser.close(); }
