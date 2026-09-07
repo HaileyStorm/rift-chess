@@ -259,11 +259,11 @@ try {
   await page.locator('#scene').focus(); await page.keyboard.down('h');
   try { assert.equal((await driver.metrics()).revealHeld, true); await page.keyboard.press('Tab'); assert.equal((await driver.metrics()).revealHeld, false, 'Blur must clear held hints before keyup'); }
   finally { await page.keyboard.up('h'); }
-  const beforeFreezeFrame = (await driver.metrics()).lastRenderedAt;
   receipt.platformSetups.push({ kind: 'browser page freeze/resume', scope: 'CDP Page.setWebLifecycleState; controlled browser lifecycle emulation' });
   try { await lifecycle.send('Page.setWebLifecycleState', { state: 'frozen' }); await new Promise(resolve => setTimeout(resolve, 500)); }
   finally { await lifecycle.send('Page.setWebLifecycleState', { state: 'active' }); await lifecycle.detach(); }
-  await page.waitForFunction(previous => window.rift.metrics().lastRenderedAt > previous, beforeFreezeFrame, { timeout: 10000 });
+  const resumedFrame = (await driver.metrics()).lastRenderedAt;
+  await page.waitForFunction(previous => window.rift.metrics().lastRenderedAt > previous, resumedFrame, { timeout: 10000 });
   await driver.ready(); await waitForStableIdentity(resumedState, resumedRecord, 250);
   receipt.checks.push({ name: 'focus loss clears temporary hints and emulated browser freeze/resume preserves the complete match', status: 'pass' });
 
