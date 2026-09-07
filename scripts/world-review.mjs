@@ -2,19 +2,21 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const root = path.resolve('.artifacts/overhaul', process.env.RIFT_TEST_RUN || 'world-review'); await fs.mkdir(root, { recursive: true });
-const receipt = { started: new Date().toISOString(), purpose: 'actual world/entrance inspection candidate; images require visual review', captures: [], checks: [], errors: [] };
+const root = path.resolve('.artifacts/overhaul', process.env.RIFT_TEST_RUN || 'world-review'); await fs.mkdir(path.dirname(root), { recursive: true }); await fs.mkdir(root);
+const receipt = { started: new Date().toISOString(), purpose: 'actual world/entrance inspection candidate; images require visual review', captures: [], checks: [], events: [], errors: [] };
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-gpu', '--use-angle=d3d11'] });
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, serviceWorkers: 'block', recordVideo: { dir: root, size: { width: 1600, height: 1000 } } });
+receipt.pageCreatedAt = Date.now();
 const page = await context.newPage(); page.on('pageerror', error => receipt.errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
+async function event(name) { receipt.events.push({ name, wallTime: Date.now(), ...await page.evaluate(() => ({ performanceTime: performance.now(), timeOrigin: performance.timeOrigin })) }); }
 async function shot(name) {
-  await page.waitForFunction(() => !window.rift.metrics().cameraTravelling);
+  await page.waitForFunction(() => !window.rift.metrics().cameraTravelling && !window.rift.metrics().assembling);
   await page.waitForTimeout(500);
   const layout = await page.evaluate(() => ({ mode: document.querySelector('#app').dataset.presentation, viewport: [innerWidth, innerHeight], scrollY, boxes: Object.fromEntries(['.topbar', '#scene', '.action-dock'].map(selector => { const r = document.querySelector(selector).getBoundingClientRect(); return [selector, { x: r.x, y: r.y, width: r.width, height: r.height }]; })) }));
   if (layout.mode === 'play' && layout.viewport[0] >= 951) for (const [name, box] of Object.entries(layout.boxes)) assert.ok(box.y >= -1 && box.y + box.height <= layout.viewport[1] + 1, name + ' is outside the playing viewport');
   await page.screenshot({ path: path.join(root, name + '.png') }); receipt.captures.push({ name, layout, metrics: await page.evaluate(() => window.rift.metrics()) });
 }
-async function returnToPlay() { await page.locator('#launch-return').click(); await page.waitForFunction(() => !window.rift.metrics().cameraTravelling); }
+async function returnToPlay() { await event('before-return'); await page.locator('#launch-return').click(); await page.waitForFunction(() => !window.rift.metrics().cameraTravelling); await event('after-return'); }
 try {
   await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 }); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
   receipt.readyAt = await page.evaluate(() => ({ at: performance.now(), metrics: window.rift.metrics() }));

@@ -189,3 +189,36 @@ two-phase public-upgrade harness passes independent source review, including
 exact v1/current network and cache bytes, full browser shutdown for worker
 activation, source bindings and preserved failure prefixes. Neither phase has
 run against the public site yet, and no release has been published.
+
+Independent review of `assembly-candidate-3` closes the Skip shadow defect with
+both original settled images and six actual-video frames. The 24-slide opening
+and its six UI checks are accepted within their recorded build scope. The later
+guide-only static refresh produces `dce3b518d49ad211a9a1` with the same application
+JavaScript/CSS. `detail-final-assembly` passes independent inspection of all
+thirteen originals; its 24 configuration cycles show zero measured geometry or
+texture growth against the warm baseline. The phone capture is a full-page
+image of a 390×844 viewport, not a physical-device test.
+
+Targeted video refinement anchored to renderer timestamps closes all eight
+baseline ordinary/Shift promotion cases. Each has an observed pawn-to-correct-
+class bracket, stable transport and a verified settled endpoint; no apparent
+transient clipping or detached passenger is found. The earlier late-frame
+samples remain documented as inconclusive, not rewritten.
+
+`performance-assembly-1` measures all 22 activities without errors on clean
+`ab0f3ea`. Both performance gates remain unresolved: Balanced medians are near
+18 ms and its largest interval is 392.5 ms; five Low activities exceed the raw
+30-fps interval comparison. The same-browser empty-page control,
+`refresh-cadence-control-2`, has a 17.8-ms median, 53.54-Hz mean and 266.9-ms
+maximum across 300 intervals. It establishes a non-game timing limitation in
+this measurement environment, but does not identify its cause or waive any
+game result. Native/environment diagnosis remains separate work.
+
+The real public v1 upgrade preparation completes at
+`.artifacts/public-upgrade/public-v1-to-overhaul/prepared.json`: exact public
+network and installed-cache bytes match v1 build `8fbcc1d7056bd881ae88`, with
+two real moves and Nocturne/Low preferences preserved in a closed profile. Keep
+that profile for the eventual verification phase; prepare is not upgrade or
+release acceptance. `world-assembly-final` captures fourteen current originals
+and actual entrance/Return footage without errors; combined visual review is
+pending. The world harness now refuses reused output and records Return timing.
