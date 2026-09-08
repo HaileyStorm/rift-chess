@@ -402,3 +402,54 @@ application crash or a completed performance run. Its exact ZIP and evidence
 remain historical candidate material. The direct-interaction build still needs
 updated packaged checks, full-mode/game acceptance, and performance resolution.
 Both performance targets and public release remain open; v1 is unchanged.
+
+### Final direct-input acceptance and upgrade-harness repair — September 8
+
+Application source `74b4870` produces build `3629cf6cc06a2acf3d93`. All 54 unit
+tests pass. The final real-input runs pass 19 mechanics, 13 lifecycle, five
+tutorial-preservation, nine responsiveness, seven UI-state and five renderer-state
+checks. Independent reviewers opened all 66 affected static captures and reviewed
+both updated Shift clips. The earlier 216 composition views are retained under
+explicit source/state correspondence, not relabeled as newly captured pixels:
+their unselected states are unaffected and the piece/world/material/assembly
+sources are byte-identical. Current selected, detail, full-UI, zoom, native and
+motion states were recaptured. The hash-bound visual adjudication records that
+scope and its limitations.
+
+The fresh mode run completes all 18 unique sessions with no pending steps or
+browser errors. Its declared 20-action planning bound used at most 13 actions.
+All six fresh complete games reach natural outcomes: four checkmates at
+10/17/210/33 actions and two threefold draws at 76/83. An independent current-API
+audit validates six final records and all 428 persisted observed prefixes,
+covering 429 actions. One grouped observation contains actions 12–13; it is not
+claimed as a separate observed action-12 artifact. No continuation, fabricated
+ending, agreement or resignation was used. The final game survives both normal
+and offline reload.
+
+The replacement 1.1.0 ZIP is independently verified against the same application
+source: 74 extracted files, the 31-file application allowlist, 23 offline assets,
+licenses and checksum. ZIP SHA-256 is
+`50d8ae067fbbb120e16b20d66f8993f74574b7505ed5fec380674f2ee61912cb`.
+The extracted application passes all seven native checks and all 15 native
+captures receive independent visual review. The superseded confirmation-button
+candidate remains preserved with all 76 archived files rehashed.
+
+A local v1-to-current rehearsal exposed asynchronous predicates being passed to
+Playwright's `waitForFunction`. A game-independent check on installed Playwright
+1.63 confirms that an async false predicate returns without polling; synchronous
+false times out. Consequently those waits did not establish worker readiness.
+The four canonical sites now share an awaited service-worker poll with a bounded
+deadline, required target cache, and actual controller/active-worker object
+identity. The final local rehearsal passes preparation, upgrade, exact saved
+envelope/preferences, all current cache/asset hashes, cold offline restart, loaded
+Shift and real bot reply. The standalone current-build cold-restart check also
+passes. Earlier failed rehearsals remain preserved. This is local-origin proof;
+the original prepared public-origin profile is still untouched.
+
+Resumed-profile browser export remains explicitly excluded because of the
+separate game-independent Chrome/Playwright download failure. Upgrade verification
+reads the persisted envelope and checks the live record and settings instead;
+native export/restart already passes. The new async-wait finding is durably queued
+to Universal Harness as `UH-20260907-PLAYWRIGHT-ASYNC-WAIT-PREDICATE`.
+No game assets changed during these harness repairs. Final isolated performance
+measurement and the publication decision remain outstanding.

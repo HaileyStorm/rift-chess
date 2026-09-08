@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { createUiDriver } from './ui-driver.mjs';
-import { cachedBuild } from './offline-assets.mjs';
+import { cachedBuild, waitForServiceWorker } from './offline-assets.mjs';
 
 const phase = process.env.RIFT_UPGRADE_PHASE;
 const run = process.env.RIFT_TEST_RUN;
@@ -20,6 +20,11 @@ const profile = path.join(root, 'profile');
 const preparedPath = path.join(root, 'prepared.json');
 const verifyPath = path.join(root, 'verify.json');
 const options = { channel: 'chrome', headless: true, viewport: { width: 1600, height: 1000 } };
+const restartDownloadLimitation = {
+  reference: '.artifacts/download-restart-minimal-1/receipt.json',
+  scope: 'Chrome 152 / Playwright 1.63 resumed-profile download crash reproduced without game code; resumed-profile export is not exercised or claimed.',
+  replacement: 'Direct persisted-envelope read plus visible record, settings, mode, and policy checks after each resumed browser process.',
+};
 let context;
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -107,6 +112,45 @@ async function exportEnvelope(page, current, label) {
   assert.ok(result.record?.actions?.length, `${label} must have a nonempty record`);
   return result;
 }
+async function persistedEnvelope(page, label) {
+  const raw = await page.evaluate(() => localStorage.getItem('rift-chess.save.v1'));
+  assert.ok(raw, `${label} must retain a persisted Rift save.`);
+  const envelope = JSON.parse(raw);
+  assert.equal(envelope.schema, 'rift-ui-save/1', `${label} persisted save schema mismatch.`);
+  assert.ok(envelope.record?.actions?.length, `${label} persisted save must be nonempty.`);
+  return envelope;
+}
+function policyText(policy) {
+  return policy === 'prompt' ? 'Prompted agreement' : policy === 'auto100' ? 'Automatic at 100' : 'No quiet-action reminder';
+}
+async function assertLiveEnvelope(page, driver, envelope, label) {
+  await page.locator('#settings').click();
+  const settings = page.locator('#settings-dialog');
+  await settings.waitFor({ state: 'visible' });
+  const live = await page.evaluate(() => ({
+    preferences: {
+      theme: document.querySelector('#settings-dialog select[name="theme"]')?.value,
+      family: document.querySelector('#settings-dialog select[name="family"]')?.value,
+      material: document.querySelector('#settings-dialog select[name="material"]')?.value,
+      quality: document.querySelector('#settings-dialog select[name="quality"]')?.value,
+      reducedMotion: document.querySelector('#settings-dialog input[name="motion"]')?.checked,
+      highContrast: document.querySelector('#settings-dialog input[name="contrast"]')?.checked,
+      showMoves: document.querySelector('#show-moves')?.getAttribute('aria-pressed') === 'true',
+    },
+    matchKind: document.querySelector('#match-kind')?.textContent,
+    policy: document.querySelector('#policy')?.textContent,
+  }));
+  await page.keyboard.press('Escape');
+  await settings.waitFor({ state: 'hidden' });
+  assert.deepEqual(await driver.record(), envelope.record, `${label} visible record differs from persisted envelope.`);
+  assert.deepEqual(live.preferences, {
+    theme: envelope.preferences.theme, family: envelope.preferences.family, material: envelope.preferences.material,
+    quality: envelope.preferences.quality, reducedMotion: envelope.preferences.reducedMotion,
+    highContrast: envelope.preferences.highContrast, showMoves: envelope.preferences.showMoves,
+  }, `${label} visible preferences differ from persisted envelope.`);
+  assert.equal(live.matchKind?.startsWith(envelope.mode === 'hotseat' ? 'HOTSEAT' : 'LOCAL BOT'), true, `${label} visible mode differs from persisted envelope.`);
+  assert.equal(live.policy, policyText(envelope.record.draw_policy), `${label} visible policy differs from persisted envelope.`);
+}
 async function action(page, value) {
   const found = await page.evaluate(want => window.rift.getLegalActions().find(item => item.type === want.type && item.from === want.from && item.to === want.to), value);
   assert.ok(found, `Expected legal ${value.type} ${value.from}->${value.to}`);
@@ -148,21 +192,13 @@ async function prepareV1(page, receipt) {
 }
 async function updateWorker(page, cacheVersion, receipt) {
   await page.evaluate(async () => { const registration = await navigator.serviceWorker.getRegistration(); if (!registration) throw new Error('Missing prior service worker.'); await registration.update(); });
-  await page.waitForFunction(async version => {
-    const registration = await navigator.serviceWorker.getRegistration();
-    const names = (await caches.keys()).filter(name => name.startsWith('rift-chess-static-'));
-    return registration?.waiting?.state === 'installed' || registration?.installing?.state === 'installed' || (registration?.active?.state === 'activated' && names.length === 1 && names[0] === `rift-chess-static-${version}`);
-  }, cacheVersion, { timeout: 60000 });
+  receipt.workerUpdate = { installed: await waitForServiceWorker(page, { phase: 'installed', version: cacheVersion }) };
   await context.close(); context = null;
   context = await chromium.launchPersistentContext(profile, options);
   page = context.pages()[0];
   watch(page, receipt);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForFunction(async version => {
-    const registration = await navigator.serviceWorker.getRegistration();
-    const names = (await caches.keys()).filter(name => name.startsWith('rift-chess-static-'));
-    return Boolean(registration?.active?.state === 'activated' && !registration.waiting && !registration.installing && navigator.serviceWorker.controller?.scriptURL === registration.active.scriptURL && names.length === 1 && names[0] === `rift-chess-static-${version}`);
-  }, cacheVersion, { timeout: 60000 });
+  receipt.workerUpdate.controlled = await waitForServiceWorker(page, { phase: 'controlled', version: cacheVersion });
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   return page;
 }
@@ -188,7 +224,7 @@ try {
   const git = promisify(execFile);
   const revision = (await git('git', ['rev-parse', 'HEAD'])).stdout.trim();
   const dirty = Boolean((await git('git', ['status', '--porcelain'])).stdout.trim());
-  receipt.source = { revision, dirty, v1Tag: (await git('git', ['rev-parse', 'v1.0.0^{commit}'])).stdout.trim(), harnessSha256: sha(await fs.readFile(new URL(import.meta.url))) };
+  receipt.source = { revision, dirty, v1Tag: (await git('git', ['rev-parse', 'v1.0.0^{commit}'])).stdout.trim(), harnessSha256: sha(await fs.readFile(new URL(import.meta.url))), offlineAssetsSha256: sha(await fs.readFile(new URL('./offline-assets.mjs', import.meta.url))), uiDriverSha256: sha(await fs.readFile(new URL('./ui-driver.mjs', import.meta.url))) };
   if (phase === 'prepare') {
     try { await fs.access(root); throw new Error(`Prepare requires a fresh root: ${root}`); } catch (error) { if (error.code !== 'ENOENT') throw error; }
     await fs.mkdir(root, { recursive: true });
@@ -197,9 +233,9 @@ try {
     let page = context.pages()[0]; watch(page, receipt);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(() => Boolean(window.rift));
-    await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === 'activated');
+    receipt.prepareWorker = { active: await waitForServiceWorker(page, { phase: 'active' }) };
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+    receipt.prepareWorker.controlled = await waitForServiceWorker(page, { phase: 'controlled', version: baseline.manifest.version });
     await page.waitForFunction(() => !window.rift.metrics().animating);
     await prepareV1(page, receipt);
     receipt.baseline = baseline;
@@ -223,15 +259,18 @@ try {
     try { await fs.access(verifyPath); throw new Error(`Refusing to overwrite verification receipt: ${verifyPath}`); } catch (error) { if (error.code !== 'ENOENT') throw error; }
     const current = await expected(process.env.RIFT_EXPECTED_DIST || 'dist');
     assert.notEqual(current.manifestSha256, prepared.baseline.manifestSha256, 'Current expected manifest must differ from the prepared v1 manifest.');
+    receipt.harnessChange = { preparedHarnessSha256: prepared.source?.harnessSha256 ?? null, verifyHarnessSha256: receipt.source.harnessSha256, preparedHistory: 'prepared.json is immutable and was read only; the current harness awaits service-worker predicates and avoids the documented resumed-profile download failure.' };
+    receipt.restartDownloadLimitation = restartDownloadLimitation;
     context = await chromium.launchPersistentContext(profile, options);
     let page = context.pages()[0]; watch(page, receipt);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     page = await updateWorker(page, current.manifest.version, receipt);
     const driver = createUiDriver(page); await driver.enterPlay(); await driver.camera('top');
-    const restored = await exportEnvelope(page, driver, 'upgraded online save');
-    assert.deepEqual(restored, prepared.preparedEnvelope, 'Upgrade changed the v1 record or preferences before any new match.');
+    const restored = await persistedEnvelope(page, 'upgraded online save');
+    await assertLiveEnvelope(page, driver, restored, 'upgraded online save');
+    assert.deepEqual(restored, prepared.preparedEnvelope, 'Upgrade changed the v1 record, preferences, mode, or policy before any new match.');
     receipt.current = current;
-    receipt.online = { serviceWorker: await swState(page), networkAssets: await networkAssets(current.manifest), assets: await browserAssets(page, current.manifest), envelope: restored };
+    receipt.online = { serviceWorker: await swState(page), networkAssets: await networkAssets(current.manifest), assets: await browserAssets(page, current.manifest), persistedEnvelope: restored };
     assert.deepEqual(receipt.online.networkAssets.files, current.files, 'Current public network responses differ from current expected distribution.');
     receipt.online.cache = await cachedBuild(page, current.manifest, true);
     verifyCacheFiles(receipt.online.cache, current);
@@ -243,9 +282,12 @@ try {
     page = context.pages()[0]; watch(page, receipt);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const offline = createUiDriver(page); await offline.enterPlay(); await offline.camera('top');
-    assert.deepEqual(await exportEnvelope(page, offline, 'offline restored save'), prepared.preparedEnvelope, 'Offline upgraded restart changed the prepared save.');
+    const offlineRestored = await persistedEnvelope(page, 'offline restored save');
+    await assertLiveEnvelope(page, offline, offlineRestored, 'offline restored save');
+    assert.deepEqual(offlineRestored, prepared.preparedEnvelope, 'Offline upgraded restart changed the prepared record, preferences, mode, or policy.');
     receipt.offlineCache = await cachedBuild(page, current.manifest, true);
     assert.deepEqual(receipt.offlineCache, receipt.online.cache, 'Cold offline restart changed installed asset bytes.');
+    receipt.offlineRestored = offlineRestored;
     const loaded = await action(page, { type: 'shift', from: 'A2', to: 'B2' });
     await offline.performPassengerShift({ passenger: 'a3', to: loaded.to, promotion: null });
     const loadedRecord = await offline.record();

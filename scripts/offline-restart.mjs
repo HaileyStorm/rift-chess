@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createUiDriver } from './ui-driver.mjs';
-import { cachedBuild } from './offline-assets.mjs';
+import { cachedBuild, waitForServiceWorker } from './offline-assets.mjs';
 
 const url = process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/';
 const root = path.resolve('.artifacts', process.env.RIFT_TEST_RUN || 'offline-restart');
@@ -79,8 +79,7 @@ try {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await driver.enterPlay();
   await driver.camera('top');
-  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.active?.state === 'activated', null, { timeout: 20000 });
-  receipt.build = { source: await sourceIdentity(), startPublicPrecache: await precache(page) };
+  receipt.build = { worker: { active: await waitForServiceWorker(page, { phase: 'active', timeout: 20_000 }) }, source: await sourceIdentity(), startPublicPrecache: await precache(page) };
   receipt.build.onlineCache = await cachedBuild(page, receipt.build.startPublicPrecache);
   receipt.checks.push('current build service worker activated with bound precache');
 
