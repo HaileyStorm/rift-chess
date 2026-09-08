@@ -1,4 +1,7 @@
 {
-  "source_commit": "9c0d8b01535f04d22bde93dfe22641aedd0c7ebc",
-  "static_hash_manifest": "https://github.com/HaileyStorm/rift-chess/blob/main/docs/evidence/build-sha256.json"
+  "source_commit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "verification_commit": "067ce45260e2c00823cfd38e4b6de3f09e6329a2",
+  "version": "1.1.0",
+  "build": "3629cf6cc06a2acf3d93",
+  "static_hash_manifest": "https://github.com/HaileyStorm/rift-chess/blob/main/docs/evidence/overhaul/build-sha256.json"
 }

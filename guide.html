@@ -1,8 +1,13 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rift Chess play guide</title><style>body{margin:0;background:#101b23;color:#e6ece8;font:16px/1.7 system-ui,sans-serif}main{max-width:900px;margin:5vh auto;padding:28px}h1,h2,h3{font-family:Georgia,serif;line-height:1.25}h1{font-size:40px}h2{margin-top:36px}a{color:#8cdbca}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:10px;border:1px solid #40505a;text-align:left}pre{overflow:auto;background:#1b2933;padding:16px}code{overflow-wrap:anywhere}img{max-width:100%}</style></head><body><main><a href="./index.html">← Return to the game</a><h1>Rift Chess — learn, play, improve</h1>
 <p><strong>The whole idea:</strong> on your turn, move a chess piece <strong>or</strong> slide an eligible 2×2 tile into a neighboring hole. Your king must be safe afterward.</p>
-<p>Read <a href="rules.html">the full rules</a> for edge cases. This guide describes the intended finished application&#39;s controls; the supplied package currently contains the rules and a headless reference, not the 3D client.</p>
+<p>Read <a href="rules.html">the full rules</a> for edge cases. This guide describes the shipped 3D client.</p>
 <h2>Start a first game</h2>
-<p>Use the Gallery environment, Classic pieces, the White camera, and <strong>Prompted agreement</strong> for draws. Start with a local opponent or the beginner bot. Turn on move destinations for your first game, then try a game without them. Legal Shift indicators stay on.</p>
+<p>Use the Gallery environment, Classic pieces, the White camera, and <strong>Prompted agreement</strong> for draws. Start a hotseat match or play against the local bot. Turn on <strong>Show moves</strong> for your first game, then try a game without ordinary-move hints. Legal Shift edges stay lit.</p>
+<p>On first launch and New Match, the shuffled tiles slide into their starting
+positions with their pieces aboard. This opening animation happens before the
+first turn and adds no moves to the record. Choose <strong>Skip animation</strong> to settle
+the table immediately, or enable <strong>Reduced motion</strong> in Atelier. Returning to a
+saved match preserves its position without reshuffling.</p>
 <p>The missing central tiles are intentional. In B-rift, your c- and d-pawns initially face missing squares; in C-rift, your e- and f-pawns do. You can develop on the open part of the board or spend a turn changing that obstruction. Both sides face the same rank-reflected starting geometry.</p>
 <p>At the initial position there are fifteen ordinary moves and four empty-tile Shifts. An opening Shift is available, not compulsory.</p>
 <h2>A two-minute rules card</h2>
@@ -65,7 +70,7 @@
 <p><strong>Tile control:</strong> a second friendly piece anchors a tile, and any enemy occupant denies you the Shift. This can stabilize terrain you want to keep or spoil a planned ride. Anchoring also costs flexibility, so it is not automatically good.</p>
 <p><strong>Endgame:</strong> watch pawn elevators, king escape squares and repetition. The local bot is a practice opponent, not a source of proven piece values. A standard “winning” endgame intuition may need reconsideration when the terrain can move.</p>
 <p>These are strategic hypotheses and lessons suggested by the mechanics, not solved opening theory. Automated tests found that always Shifting was exploitable by the supplied baseline, but did not establish that avoiding Shifts is losing.</p>
-<h2>Intended controls</h2>
+<h2>Controls</h2>
 <table>
 <thead>
 <tr>
@@ -76,53 +81,47 @@
 </thead>
 <tbody><tr>
 <td>Ordinary move</td>
-<td>Select a piece, then a destination</td>
-<td>Board arrows and Enter</td>
+<td><strong>Move</strong> is selected by default. Select a piece, then a legal destination.</td>
+<td>Focus the board, use arrows to move focus, then press Enter to select the source and destination.</td>
 </tr>
 <tr>
-<td>Shift a tile</td>
-<td>Shift tool; select tile, then destination arrow</td>
-<td>S enters Shift mode; arrows and Enter</td>
+<td>Shift an empty tile</td>
+<td>Click a lit tile edge, then click a legal neighboring hole to Shift.</td>
+<td>Press <strong>S</strong> for Shift, then use arrows and Enter for the tile and hole.</td>
 </tr>
 <tr>
-<td>Cancel selection</td>
-<td>Empty UI area or Cancel</td>
-<td>Escape</td>
+<td>Shift a passenger</td>
+<td>Select your piece on a Shiftable tile, choose <strong>Shift this tile</strong>, then click a legal neighboring hole. If the passenger reaches the back rank, choose queen, rook, bishop, or knight in the promotion dialog.</td>
+<td>Use <strong>S</strong>, arrows, and Enter for the same selection sequence.</td>
 </tr>
 <tr>
-<td>See legal piece moves</td>
-<td>Eye button toggles; touch-accessible Reveal button</td>
-<td>Hold H for a temporary reveal</td>
+<td>Cancel a selection</td>
+<td>Choose <strong>Cancel</strong>.</td>
+<td>Press Escape.</td>
+</tr>
+<tr>
+<td>See ordinary legal moves</td>
+<td>Choose <strong>Show moves</strong>.</td>
+<td>Hold <strong>H</strong> while the board has focus.</td>
 </tr>
 <tr>
 <td>Camera presets</td>
-<td>White, Black, Overview, Top buttons</td>
-<td>1–4</td>
+<td>Use the visible White, Black, Overview, or Top buttons in <strong>Match &amp; view</strong>.</td>
+<td>Press <strong>1</strong> through <strong>4</strong>.</td>
 </tr>
 <tr>
 <td>Free camera</td>
-<td>Right-drag orbit; wheel zoom; two-finger touch orbit</td>
-<td>Camera panel controls</td>
-</tr>
-<tr>
-<td>Reset camera</td>
-<td>Home-view button</td>
-<td>Home, when focus is on the board</td>
-</tr>
-<tr>
-<td>Draw / undo / settings</td>
-<td>Clearly labeled toolbar or match menu</td>
-<td>Focusable buttons</td>
+<td>Right-drag to orbit; use the wheel, middle-drag, or two-finger touch gestures to adjust the view.</td>
+<td>Use the visible camera buttons in <strong>Match &amp; view</strong>.</td>
 </tr>
 </tbody></table>
-<p>The implementing agent may adjust exact bindings after testing conflicts. It must retain a non-drag path, a keyboard path, and visible camera controls. Camera movement must not accidentally commit a move.</p>
-<p>Bright tile edges indicate <strong>a legal Shift for the current player</strong>. Direction marks identify legal destinations. Inspecting an unavailable tile explains why: king anchor, enemy occupant, too many pieces, no adjacent hole, or king exposure. Shape and text accompany color.</p>
-<h2>Visual comfort and fairness</h2>
-<p>Use the fixed Top camera when you need maximal geometry clarity. Free orbit is for choosing a comfortable view, not a required skill. Auto-flip is optional and off by default. Backgrounds must never hide holes or make armies hard to distinguish.</p>
-<p>Animations can be shortened or disabled. Reduced-motion mode keeps the same game, with instant or short-fade transitions instead of travel, collapse and camera interpolation.</p>
-<p>The counter says what will happen. <strong>“100 quiet actions — offer a draw?”</strong> is not a forced ending. An opponent can decline. An Auto100 match instead shows an explicit automatic-draw countdown.</p>
-<p>For a fair rematch, exchange colors and keep the same opening layout. Use four games to compare both B-rift and C-rift without coupling layout to color.</p>
-<h2>Optional four-lesson tutorial</h2>
-<p>The launch tutorial should take only a few minutes and be skippable: make an ordinary move around a hole; Shift an empty tile; carry one passenger; answer check by removing a ray segment. Finish with a free game, not a long mandatory rules slideshow.</p>
-<p>Each lesson highlights one task, offers an explanation after a mistake, and accepts every legal equivalent solution. The <a href="https://github.com/HaileyStorm/rift-chess/blob/main/docs/RESEARCH_SOURCES.md#s4-teaching-and-observation">tutorial research</a> motivates testing this approach; it does not establish an ideal lesson length for this game.</p>
+<p>Bright tile edges point toward holes that tile can legally slide into, even when ordinary move hints are off. A tile with two legal directions lights both corresponding edges. Click a lit edge or the center grip to select the tile; its legal edges turn gold. Hover over a legal hole or move keyboard focus there to preview the destination. Clicking the hole or pressing Enter performs the Shift, just as choosing a destination performs an ordinary move. Promotion still waits for your piece choice. Board shortcuts require board focus, and arrow navigation follows files and ranks regardless of the camera angle.</p>
+<h2>Visual comfort, match controls, and draws</h2>
+<p>Use the Top camera when you need the clearest board geometry. Free camera movement changes only the view and cannot commit a chess action.</p>
+<p>Open <strong>Atelier</strong> to choose world, piece, material, and quality settings, and to turn on high contrast or reduced motion. High contrast strengthens the interface contrast. Reduced motion preserves the same legal position and outcome while shortening or skipping camera and board-transition movement.</p>
+<p>The quiet counter is not an automatic draw in a <strong>Prompted agreement</strong> match. At 100 quiet actions, choose whether to offer a draw; in hotseat play, the interface asks which player is acting, and the other player can accept or decline. A local bot declines an offer. <strong>Automatic at 100</strong> applies the automatic quiet-action draw; <strong>Continue without a reminder</strong> disables that prompt and automatic limit. Other ending rules still apply.</p>
+<p>Practice matches enable <strong>Undo</strong>. In hotseat, both players confirm the Undo dialog before the prior action is restored. Against the local bot, practice Undo returns to your previous turn. For a fair rematch, exchange colors and keep the same opening layout. Use four games to compare both B-rift and C-rift without coupling layout to color.</p>
+<h2>Four-lesson tutorial</h2>
+<p>The lessons cover an ordinary move around a hole, an empty-tile Shift, carrying one passenger, and removing a checking ray segment. Entering a lesson preserves the match you were playing and its autosave. The lessons share one backup, so moving between lessons does not replace that preserved match.</p>
+<p>Use <strong>Return to match</strong> to restore the preserved game. Reloading during a lesson opens the preserved match directly when local storage is available. Choosing <strong>New match</strong> or importing a save intentionally replaces it. <strong>Export</strong> downloads the currently open table, so return first when you want to export your match rather than a lesson. If the app reports that saving is unavailable, export your match before closing it. The <a href="https://github.com/HaileyStorm/rift-chess/blob/main/docs/RESEARCH_SOURCES.md#s4-teaching-and-observation">tutorial research</a> motivates guided examples; it does not establish an ideal lesson length for this game.</p>
 </main></body></html>

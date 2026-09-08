@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'rift-chess-static-';
 // Embedded at build time: a restarted worker must never fetch metadata to work offline.
-const CACHE_VERSION = '8fbcc1d7056bd881ae88';
+const CACHE_VERSION = '3629cf6cc06a2acf3d93';
 const ACTIVE_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 function isInScope(requestUrl) {
@@ -39,7 +39,9 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(ACTIVE_CACHE);
-    const cached = await cache.match(event.request, { ignoreSearch: true });
+    // Manifest assets have invariant public bytes. Header-varying content must stay
+    // outside this cache; Vary: Origin must not turn fixed offline assets into misses.
+    const cached = await cache.match(event.request, { ignoreSearch: true, ignoreVary: true });
     if (cached) return cached;
 
     if (event.request.mode === 'navigate') {
