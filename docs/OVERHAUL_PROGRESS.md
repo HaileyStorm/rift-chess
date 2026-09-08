@@ -1,6 +1,6 @@
 # Overhaul progress — 2026-09-07
 
-**Overall: approximately 70%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
+**Overall: approximately 85%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.
 
 ## Evidence from this iteration
 
@@ -344,3 +344,33 @@ non-disjoint timer queries: GPU median/p95/max 7.38/14.26/16.60 ms; callback CPU
 4.30/8.50/13.30 ms. Raw callback max remains 66.5 ms (renderer interval max
 53.6 ms). These measurements add overhead and do not establish whole-page cost
 or explain every delivery gap. Both frame-rate targets remain unresolved.
+
+The mode matrix now has all eighteen unique COMPLETE_FLOW rows, explicitly
+adjudicated from ten original successes, seven adaptive successors, and the last
+Black/C/auto100 row. That row uses twelve real actions, including an empty Shift
+that exposes a new legal preparation square; an isolated hypothetical API check
+guides planning, but the real bot reply and every actual UI action remain fully
+observed and revalidated. The six full games independently replay all 429 exact
+prefixes: four checkmates and two natural threefold draws. Root has written
+hash-bound mode/game and affected-motion verdicts. All 23 precached asset bytes
+are identical across the service-worker-only build change to
+`b31cc91abfeb67575200`.
+
+`offline-gameplay-final` passes the corrected cache path: fresh browser-process
+restart preserves the exact nonempty bot-game record, preferences, complete
+saved envelope and all cached bytes; offline real input then gets a real bot
+reply and completes an ordinary hotseat opening plus a loaded passenger Shift.
+The restored save is read directly and checked against the live match. A separate
+minimal HTML reproducer establishes a Chrome 152/Playwright 1.63 resumed-profile
+download crash both online and offline, without the game or WebGL. First-process
+downloads pass. Delayed/no blob revocation and explicit download acceptance do
+not fix it. That tooling incident is queued to Universal Harness and remains a
+separate limitation; it is not relabeled as successful resumed-profile export.
+
+The original intermediate `overhaul-smoke.mjs` is retired now that canonical
+tutorial, motion, full-mode and world tests cover its flows with current
+readiness and build binding. Its Git history and original integrated-slice
+evidence are preserved. The versioned Windows 1.1.0 ZIP is built and independently
+verified: 74 exact extracted files, the 31-file application allowlist, all 23
+offline assets and required licenses match clean source `5589860`. The actual
+extracted executable is now undergoing the packaged offline gate.

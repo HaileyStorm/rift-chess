@@ -111,7 +111,9 @@ try {
   await driver.enterPlay();
   await driver.camera('top');
   receipt.build.offlineCache = await cachedBuild(page, receipt.build.startPublicPrecache, true);
-  const restoredEnvelope = await exportEnvelope(page, driver, 'offline-restored');
+  const restoredEnvelope = await page.evaluate(() => JSON.parse(localStorage.getItem('rift-chess.save.v1')));
+  assert.deepEqual(await driver.record(), restoredEnvelope.record, 'Restored visible match must agree with its persisted envelope.');
+  receipt.restartDownloadLimitation = 'Separate game-independent Chrome/Playwright resumed-profile download crash: .artifacts/download-restart-minimal-1/receipt.json. This gate reads the restored save directly and does not claim resumed-profile export acceptance.';
   assert.deepEqual(restoredEnvelope.record, onlineEnvelope.record, 'Cold offline restart must restore the exact current-build record.');
   assert.deepEqual(restoredEnvelope.preferences, onlineEnvelope.preferences, 'Cold offline restart must restore exact current-build preferences.');
   assert.deepEqual(restoredEnvelope, onlineEnvelope, 'Cold offline restart must restore the complete current-build UI envelope.');
