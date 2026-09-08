@@ -1,0 +1,246 @@
+{
+  "version": "1.1.0",
+  "build": "3629cf6cc06a2acf3d93",
+  "url": "https://haileystorm.github.io/rift-chess/",
+  "pagesCommit": "e6e8dc66e13e34242afdbacbd758b256b4be5e31",
+  "files": [
+    {
+      "asset": "./api.js",
+      "url": "https://haileystorm.github.io/rift-chess/api.js",
+      "status": 200,
+      "bytes": 5889,
+      "sha256": "a5773503775ee4e2b70c9c13953be54f2f14e2c27cae19d91df0c50e3eb447df",
+      "expectedSha256": "a5773503775ee4e2b70c9c13953be54f2f14e2c27cae19d91df0c50e3eb447df",
+      "matches": true
+    },
+    {
+      "asset": "./assets/game-Bb0WMghv.js",
+      "url": "https://haileystorm.github.io/rift-chess/assets/game-Bb0WMghv.js",
+      "status": 200,
+      "bytes": 21819,
+      "sha256": "5af0e8d1975773783811cc1c1e9b6d7416e1248e750fca7b785325ec0b6b77fc",
+      "expectedSha256": "5af0e8d1975773783811cc1c1e9b6d7416e1248e750fca7b785325ec0b6b77fc",
+      "matches": true
+    },
+    {
+      "asset": "./assets/index-Df3UEiC1.js",
+      "url": "https://haileystorm.github.io/rift-chess/assets/index-Df3UEiC1.js",
+      "status": 200,
+      "bytes": 837794,
+      "sha256": "889af7ac6e3798c5b7f61dbc167025148aa33b83a3e9458d56ad9f165f61890f",
+      "expectedSha256": "889af7ac6e3798c5b7f61dbc167025148aa33b83a3e9458d56ad9f165f61890f",
+      "matches": true
+    },
+    {
+      "asset": "./assets/index-DObvSE75.css",
+      "url": "https://haileystorm.github.io/rift-chess/assets/index-DObvSE75.css",
+      "status": 200,
+      "bytes": 14203,
+      "sha256": "5935febd33b20a3e9b27d52c0242a6ab1527f80c64fc1e5bd0818578523dfe05",
+      "expectedSha256": "5935febd33b20a3e9b27d52c0242a6ab1527f80c64fc1e5bd0818578523dfe05",
+      "matches": true
+    },
+    {
+      "asset": "./assets/marble-albedo.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/marble-albedo.png",
+      "status": 200,
+      "bytes": 2717498,
+      "sha256": "c00c5a61e6693e2ec5a0b4754225561c43d23275d48f2cae00ce51230244b9aa",
+      "expectedSha256": "c00c5a61e6693e2ec5a0b4754225561c43d23275d48f2cae00ce51230244b9aa",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/daylight-balanced.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/daylight-balanced.png",
+      "status": 200,
+      "bytes": 517610,
+      "sha256": "e16230f1a333661800a8c321100f138709b4e404abb5a8881886644dd02a8f8c",
+      "expectedSha256": "e16230f1a333661800a8c321100f138709b4e404abb5a8881886644dd02a8f8c",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/daylight-high.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/daylight-high.png",
+      "status": 200,
+      "bytes": 1491386,
+      "sha256": "4371a456a792b4ff3e00957f91550d56bca65fe6b8c2069a78aa0f69bbb45dfe",
+      "expectedSha256": "4371a456a792b4ff3e00957f91550d56bca65fe6b8c2069a78aa0f69bbb45dfe",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/daylight-low.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/daylight-low.png",
+      "status": 200,
+      "bytes": 517482,
+      "sha256": "1ffae1a1e2583396fdddba75ae0a7771e6a85c5fae0bf7be5a4a91e737ef2f6d",
+      "expectedSha256": "1ffae1a1e2583396fdddba75ae0a7771e6a85c5fae0bf7be5a4a91e737ef2f6d",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/gallery-balanced.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/gallery-balanced.png",
+      "status": 200,
+      "bytes": 428002,
+      "sha256": "c993229d756625f068e4f789d7718bf08699e5e27c16dfd7582a1ab7c668fc2a",
+      "expectedSha256": "c993229d756625f068e4f789d7718bf08699e5e27c16dfd7582a1ab7c668fc2a",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/gallery-high.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/gallery-high.png",
+      "status": 200,
+      "bytes": 1323551,
+      "sha256": "299c762a6cd117f80a3b0326273943a5f6ff1345d43b2f146135b414b1ad5d1c",
+      "expectedSha256": "299c762a6cd117f80a3b0326273943a5f6ff1345d43b2f146135b414b1ad5d1c",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/gallery-low.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/gallery-low.png",
+      "status": 200,
+      "bytes": 427738,
+      "sha256": "f3dd8dad64bc4fff74a365891f6d47c76172a122705e1176286db5e29b72c730",
+      "expectedSha256": "f3dd8dad64bc4fff74a365891f6d47c76172a122705e1176286db5e29b72c730",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/manifest.json",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/manifest.json",
+      "status": 200,
+      "bytes": 4797,
+      "sha256": "b2a3c543725d76d45e4c9897b304165c70929dab3da6809f0a9113ab0973238c",
+      "expectedSha256": "b2a3c543725d76d45e4c9897b304165c70929dab3da6809f0a9113ab0973238c",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/nocturne-balanced.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/nocturne-balanced.png",
+      "status": 200,
+      "bytes": 584244,
+      "sha256": "7530df7544cad1b9f5875ea3c9be02f6e8406c49d6143a5b88fd96c7c336e47e",
+      "expectedSha256": "7530df7544cad1b9f5875ea3c9be02f6e8406c49d6143a5b88fd96c7c336e47e",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/nocturne-high.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/nocturne-high.png",
+      "status": 200,
+      "bytes": 1863142,
+      "sha256": "5276e57874d5b3e621dbbc2f11d8c9bcf91d9636306977cc242796afd6fc8365",
+      "expectedSha256": "5276e57874d5b3e621dbbc2f11d8c9bcf91d9636306977cc242796afd6fc8365",
+      "matches": true
+    },
+    {
+      "asset": "./assets/reflections/nocturne-low.png",
+      "url": "https://haileystorm.github.io/rift-chess/assets/reflections/nocturne-low.png",
+      "status": 200,
+      "bytes": 584406,
+      "sha256": "b6dff38618f42c274963317370acc46b07f4991601d9ff22bd60d76cdaed64f1",
+      "expectedSha256": "b6dff38618f42c274963317370acc46b07f4991601d9ff22bd60d76cdaed64f1",
+      "matches": true
+    },
+    {
+      "asset": "./assets/worker-u3mupga4.js",
+      "url": "https://haileystorm.github.io/rift-chess/assets/worker-u3mupga4.js",
+      "status": 200,
+      "bytes": 24892,
+      "sha256": "b51503d26aea539a44f2c3e28b4ebf4d8c786bf746762c7e963f1d0947e1dcc3",
+      "expectedSha256": "b51503d26aea539a44f2c3e28b4ebf4d8c786bf746762c7e963f1d0947e1dcc3",
+      "matches": true
+    },
+    {
+      "asset": "./guide.html",
+      "url": "https://haileystorm.github.io/rift-chess/guide.html",
+      "status": 200,
+      "bytes": 10994,
+      "sha256": "0a362516e3387eb86d13f57d626543356a8f92de9cb7a8272fd2d6da68db2f1f",
+      "expectedSha256": "0a362516e3387eb86d13f57d626543356a8f92de9cb7a8272fd2d6da68db2f1f",
+      "matches": true
+    },
+    {
+      "asset": "./icon.svg",
+      "url": "https://haileystorm.github.io/rift-chess/icon.svg",
+      "status": 200,
+      "bytes": 328,
+      "sha256": "3c56deb54b7bd62c7b7be2caa49692dae65f39316fc0ce3a07c3270e11820879",
+      "expectedSha256": "3c56deb54b7bd62c7b7be2caa49692dae65f39316fc0ce3a07c3270e11820879",
+      "matches": true
+    },
+    {
+      "asset": "./index.html",
+      "url": "https://haileystorm.github.io/rift-chess/index.html",
+      "status": 200,
+      "bytes": 857,
+      "sha256": "2dfb504a02c3dfe4df00899c7cc268f332b29802dd07851c82cf1a6d8b41ac32",
+      "expectedSha256": "2dfb504a02c3dfe4df00899c7cc268f332b29802dd07851c82cf1a6d8b41ac32",
+      "matches": true
+    },
+    {
+      "asset": "./licenses.txt",
+      "url": "https://haileystorm.github.io/rift-chess/licenses.txt",
+      "status": 200,
+      "bytes": 2261,
+      "sha256": "4c70d521816cfd412b9c1bb856026a227dc595d7488ce8366aad257d7aaa15db",
+      "expectedSha256": "4c70d521816cfd412b9c1bb856026a227dc595d7488ce8366aad257d7aaa15db",
+      "matches": true
+    },
+    {
+      "asset": "./rules.html",
+      "url": "https://haileystorm.github.io/rift-chess/rules.html",
+      "status": 200,
+      "bytes": 14998,
+      "sha256": "5fa20aae975ff7febc9d068c1f83a7396062f8d022187b021a102546ae9f3754",
+      "expectedSha256": "5fa20aae975ff7febc9d068c1f83a7396062f8d022187b021a102546ae9f3754",
+      "matches": true
+    },
+    {
+      "asset": "./support.html",
+      "url": "https://haileystorm.github.io/rift-chess/support.html",
+      "status": 200,
+      "bytes": 2358,
+      "sha256": "df3cfca952d0e3ba63406b90efa4be2b53ff694339d05032dfcc877ebe1ba654",
+      "expectedSha256": "df3cfca952d0e3ba63406b90efa4be2b53ff694339d05032dfcc877ebe1ba654",
+      "matches": true
+    },
+    {
+      "asset": "./support.js",
+      "url": "https://haileystorm.github.io/rift-chess/support.js",
+      "status": 200,
+      "bytes": 381,
+      "sha256": "bb837bc0842884ba4c0f5bd407f1ede2c37d6893ba56f50272841fc4f92c212d",
+      "expectedSha256": "bb837bc0842884ba4c0f5bd407f1ede2c37d6893ba56f50272841fc4f92c212d",
+      "matches": true
+    },
+    {
+      "asset": "./sw.js",
+      "url": "https://haileystorm.github.io/rift-chess/sw.js",
+      "status": 200,
+      "bytes": 2241,
+      "sha256": "849d2108fac5d65d1945563f6c3533212e96b74feb8ef6a5599a5dcaca7fd946",
+      "expectedSha256": "849d2108fac5d65d1945563f6c3533212e96b74feb8ef6a5599a5dcaca7fd946",
+      "matches": true
+    },
+    {
+      "asset": "./precache.json",
+      "url": "https://haileystorm.github.io/rift-chess/precache.json",
+      "status": 200,
+      "bytes": 849,
+      "sha256": "808dec9bcfe691786a595f7673fba749186548a17077934685abed480081ae04",
+      "expectedSha256": "808dec9bcfe691786a595f7673fba749186548a17077934685abed480081ae04",
+      "matches": true
+    },
+    {
+      "asset": "./build-source.json",
+      "url": "https://haileystorm.github.io/rift-chess/build-source.json",
+      "status": 200,
+      "bytes": 314,
+      "sha256": "d3d4164e973aca3ecc29a75079526b898abf4af3c456e1638bdaa84aeaff5163",
+      "expectedSha256": "d3d4164e973aca3ecc29a75079526b898abf4af3c456e1638bdaa84aeaff5163",
+      "matches": true
+    }
+  ],
+  "started": "2026-09-08T04:31:18.807Z",
+  "status": "PASS_EXACT_PUBLIC_BYTES",
+  "finished": "2026-09-08T04:31:22.604Z",
+  "rawReceiptSha256": "1bfc15df6ac6e64ff7aad62a5f42d0bd5cbc94d0ccb3d0b3fdf44c295c71483b"
+}

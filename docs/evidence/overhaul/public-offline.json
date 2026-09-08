@@ -1,0 +1,18 @@
+{
+  "schema": "rift-public-offline-curated/1",
+  "status": "pass",
+  "url": "https://haileystorm.github.io/rift-chess/",
+  "build": "3629cf6cc06a2acf3d93",
+  "rawReceiptSha256": "8de9074da889bb18f554f31a583be116a545ba969e0f322252d3ac02479f7966",
+  "checks": [
+    "current build service worker activated with bound precache",
+    "browser process closed after nonempty bot-black save",
+    "cold offline current-build restart restored exact record, preferences, envelope, and precache",
+    "fresh offline browser process completed a visible human move and real local-worker reply",
+    "offline visible hotseat opening committed b1-a3, g7-g6, and loaded A2-B2 Shift with passenger a3"
+  ],
+  "finished": "2026-09-08T04:34:39.239Z",
+  "evidenceScope": "Fresh public-origin profile, full browser-process cold restart offline before navigation, exact saved record/preferences/envelope/cache, real human and local-worker reply, then a natural hotseat loaded Shift.",
+  "privateProfilePathsOmitted": true,
+  "resumedProfileExportClaimed": false
+}

@@ -11,3 +11,19 @@ For GitHub Pages, copy only the verified `dist/` into a separate staging directo
 Tag the source revision and upload the tested ZIP plus its `.sha256` file to the corresponding GitHub release. Preserve the published build hash manifest, native receipt and replayable UI evidence. v1.0.0's static branch commit is `650e87d8b5d106651cf2045d45c02faf6bb362dc`, built from source commit `9c0d8b01535f04d22bde93dfe22641aedd0c7ebc`; subsequent source changes before the tag contain publication evidence and documentation only.
 
 The package verifier under `reference/verify_package.py` rewrites fixtures and receipts: run it in an isolated copy. The original ZIP and its manifest remain provenance. Do not rewrite them as release receipts.
+
+For v1.1.0, application revision `74b4870d5e854ab167334fa743fc94b6edae0402`
+produces build `3629cf6cc06a2acf3d93`; later harness and release-documentation
+commits do not change its bundled application inputs. The public static commit
+is `e6e8dc66e13e34242afdbacbd758b256b4be5e31`. Its 25 runtime file hashes and
+publication metadata are recorded under `docs/evidence/overhaul/`.
+
+The two-phase `scripts/public-upgrade.mjs` preserves a real v1 public profile
+before deployment, then verifies the current worker, every asset, saved state and
+cold offline gameplay after deployment. Use a fresh run for local rehearsals;
+never rewrite a prepared receipt. Worker polling must await the asynchronous
+registration/cache result: the installed Playwright 1.63 `waitForFunction` does
+not poll an async false predicate. `scripts/offline-assets.mjs` contains the
+shared awaited worker check. The resumed-profile Chrome download limitation is
+separately documented; these checks read persisted state and do not claim that
+unsupported export transport succeeded.

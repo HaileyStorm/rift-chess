@@ -2,6 +2,10 @@
 
 These are automated browser/native application checks and visual inspections, not human usability research, strength ratings or a balance study. Original research remains unchanged under `research/` and in the retained handoff ZIP.
 
+The original pass descriptions below document v1.0.0. Current v1.1.0 evidence is
+summarized in the [overhaul report](OVERHAUL_RELEASE.md) and
+[acceptance receipt](evidence/overhaul/acceptance.json), with an addendum below.
+
 ## Rules and API
 
 - Original Python suite: **67 passed**, 69.52 seconds on Python 3.14.2.
@@ -67,3 +71,50 @@ The v1.0.0 obsolescence audit removed Forge and its configuration/dependency cha
 The published [free browser release](https://haileystorm.github.io/rift-chess/) was then fetched over HTTPS: all 14 build asset hashes matched the tested local bundle. A fresh public-origin browser profile installed the service worker, closed the full browser process, restarted with networking disabled before navigation, restored its complete record, and completed a real canvas move plus local bot response. See `evidence/public-assets.json` and `evidence/public-offline.json`.
 
 Follow-ups: [frame-tail profiling and cosmetic status reset](https://github.com/HaileyStorm/rift-chess/issues/1); [future multiplayer adapter](https://github.com/HaileyStorm/rift-chess/issues/2). These are explicitly outside the verified behavior claimed above.
+
+## v1.1.0 overhaul — September 8
+
+The rebuilt application passes 54 unit tests, 58 real-UI checks, all 18
+mode/layout/policy sessions, and six games ending naturally. The four bot games
+finish by checkmate after 10, 17, 210 and 33 actions; the two hotseat games reach
+threefold draws after 76 and 83. All six final records and 428 observed prefix
+files independently replay through the current API, covering 429 actions. One
+grouped observation covers actions 12–13. These games replace planned resignation
+as overhaul completion evidence; the earlier v1 records remain historical.
+
+Independent visual review covers 66 current captures and two updated Shift clips.
+Prior 216 composition views are retained only under documented unchanged
+source/state correspondence. Repaired piece geometry, worlds, opening assembly,
+ordinary and special motion, current selection states, browser zoom, native
+scaling and responsive layouts have separate scoped evidence. The native
+extracted ZIP passes seven checks; all 74 files, 31 application-archive files,
+23 cached assets and licenses were verified. Touch emulation adds ten checks
+across 390×844 and 1024×768: taps, source cancellation, two-finger camera movement,
+and loaded Shift. This is not physical-device testing.
+
+The live public build passes all 26 expected file hashes (25 runtime files plus
+publication metadata). The original prepared v1 profile retains its exact record
+and preferences through the real public upgrade and a cold offline restart, then
+completes a loaded Shift and a real bot reply. A separate fresh public profile
+also passes full-process offline restart and gameplay. See
+[public upgrade](evidence/overhaul/public-upgrade.json),
+[public offline](evidence/overhaul/public-offline.json), and
+[public hashes](evidence/overhaul/public-assets.json).
+
+The final native run measures 22 focused-visible samples. Most medians are
+approximately 16.7 ms, but Balanced bot play reaches a 99.9 ms renderer interval;
+Daylight Balanced idle/orbit p95 is 33.5/33.4 ms. Low includes a 92.1 ms raw
+Nocturne-orbit tail and a 49.9 ms loaded-Shift interval. Strict max-inclusive
+targets pass in 0/11 Balanced and 4/11 Low samples; sampling granularity affects
+borderline flags but does not explain larger spikes. The owner accepted these
+limits for release. They remain open engineering targets. Click-to-first CPU
+submission is 3.8–27.2 ms, not a display-latency measurement. V1 and v1.1 windows
+differ, so these are not controlled speedup claims.
+
+Two harness limitations are recorded explicitly. Async `waitForFunction`
+predicates could finish before readiness; all four canonical sites now use an
+awaited worker-state poll and real controller identity, checked by negative and
+full-upgrade runs. A separate game-independent Chrome/Playwright download failure
+prevents resumed-profile export proof; restarted browser tests instead compare
+the persisted envelope with the live match/settings. Native export/restart works.
+No saved profile or failed receipt was rewritten to turn a failure into a pass.

@@ -1,0 +1,418 @@
+{
+  "schema": "rift-release-native/1",
+  "sourceCommit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "build": "3629cf6cc06a2acf3d93",
+  "artifact": {
+    "version": "1.1.0",
+    "name": "Rift-Chess-win32-x64-1.1.0.zip",
+    "bytes": 168860090,
+    "sha256": "50d8ae067fbbb120e16b20d66f8993f74574b7505ed5fec380674f2ee61912cb",
+    "appAsarSha256": "22770ee53d924ad142202cd7ab9ce085efee448478f819c48f6f698e0ef7b4ae"
+  },
+  "rawReceiptSha256": "6389749e22ed88a7d6b427ce3594e8366651c7976095cf3eaef8f71ee7a6ae76",
+  "zipVerificationReceiptSha256": "63a60ae2ccba8bcdea8d25a16bf32bc5307b1b99f352cb1ad698dc6ac2873050",
+  "status": "pass",
+  "isolatedProfileDetailsOmitted": true,
+  "evidenceScope": "Actual extracted Windows executable, Electron network-offline emulation and native compositor captures; no Linux/macOS or physical airplane-mode claim",
+  "checks": [
+    "isolated packaged sandbox stays offline; native display scale and Electron zoom are recorded separately",
+    "visible replay returns to the live packaged match",
+    "normal packaged restart restores record and exact served assets",
+    "packaged export/rejected corrupt import preserve the restored match",
+    "both human colors complete a visible move against the shipped offline worker",
+    "visible loaded-Shift tutorial uses passenger selection, hover preview, destination click, and promotion choice",
+    "instrumented native Worker held one actual callback; stale release after real New Hotseat C left the replacement match unchanged"
+  ],
+  "captures": [
+    {
+      "label": "packaged-first-launch",
+      "sha256": "3712fa2010ef08c256434ee64d51689f283e8f5cf3e0af648d340d1840bd0874",
+      "viewport": {
+        "width": 1266,
+        "height": 715,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 752
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1073
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-0.8",
+      "sha256": "17103e1523054654b1bf14529aadf44a0e44579dd8387242c9e950cba420ee61",
+      "viewport": {
+        "width": 1582,
+        "height": 854,
+        "devicePixelRatio": 1.2000000476837158
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 0.8,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1",
+      "sha256": "62efd6065b0995945cad0ba187610db0b0bb5411bf6745a4276b1fdf76bbe0d0",
+      "viewport": {
+        "width": 1266,
+        "height": 683,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1.25",
+      "sha256": "0cd23056c274efcadd5d5108834ece87331fb16a3ca099829a4b981ac6db1120",
+      "viewport": {
+        "width": 1013,
+        "height": 546,
+        "devicePixelRatio": 1.875
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.25,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1.5",
+      "sha256": "dd50d0f2e1e91b5ed84632735588529d5b9b9de82f4f5afc3b48608bb7b420ba",
+      "viewport": {
+        "width": 844,
+        "height": 455,
+        "devicePixelRatio": 2.25
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.5,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1.5-settings-dialog",
+      "sha256": "0051678fb606e3a6a64dd4e44cb167e93a942c530ac5c223f9a2dbd5fc557991",
+      "viewport": {
+        "width": 844,
+        "height": 455,
+        "devicePixelRatio": 2.25
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.5,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1.5-new-dialog",
+      "sha256": "b0bc149ebc05e5400f56f31b967ee7e1a0437aa027dc31ef6b664d2ac868cd8f",
+      "viewport": {
+        "width": 844,
+        "height": 455,
+        "devicePixelRatio": 2.25
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.5,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1280x720-zoom-1.5-new-dialog-bottom",
+      "sha256": "f3c6688fa096204ca8cd4d2ed7d29c464366fad6d6fb1ccb14be338fe5ec6c76",
+      "viewport": {
+        "width": 844,
+        "height": 455,
+        "devicePixelRatio": 2.25
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.5,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1025
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1600x1000-zoom-0.8",
+      "sha256": "9cb9cb1b3b7e6eef906f574b5df1f3ee7d7f776a7321378811c3aadabafef925",
+      "viewport": {
+        "width": 1982,
+        "height": 1204,
+        "devicePixelRatio": 1.2000000476837158
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1000
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 0.8,
+      "image": {
+        "size": {
+          "width": 2379,
+          "height": 1445
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1600x1000-zoom-1",
+      "sha256": "f0f84cb8b9e70b9c0eda5c184c697e3b805576b4b74965991ac8b14be47381aa",
+      "viewport": {
+        "width": 1586,
+        "height": 963,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1000
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 2379,
+          "height": 1445
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1600x1000-zoom-1.25",
+      "sha256": "5862c87e1eb349d93081ee712cf48e6cac0aa9c35cc7f1414bf80b3f2ec44bfd",
+      "viewport": {
+        "width": 1269,
+        "height": 770,
+        "devicePixelRatio": 1.875
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1000
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.25,
+      "image": {
+        "size": {
+          "width": 2379,
+          "height": 1445
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-scaling-1600x1000-zoom-1.5",
+      "sha256": "ebd95607b99258b3c5b297952dbfbee4033d6ab9998147d38dd4719c787f63d5",
+      "viewport": {
+        "width": 1057,
+        "height": 642,
+        "devicePixelRatio": 2.25
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1000
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1.5,
+      "image": {
+        "size": {
+          "width": 2379,
+          "height": 1445
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-offline-human-white-bot",
+      "sha256": "79031f1f516bf3c13fb784dacf2fbab6e1223065c22f20301813361f1671ec9c",
+      "viewport": {
+        "width": 1586,
+        "height": 963,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1000
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 2379,
+          "height": 1445
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-offline-human-black-bot",
+      "sha256": "f795ced87f19f064b2ac71761cb11d18e947421493d257366098882b7444f1be",
+      "viewport": {
+        "width": 1266,
+        "height": 715,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 752
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1073
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    },
+    {
+      "label": "packaged-loaded-shift-promotion",
+      "sha256": "009f1fe7264a9903f31cd94c8397b97e5fc99eeb7dd6f44a69663689436ef1de",
+      "viewport": {
+        "width": 1266,
+        "height": 715,
+        "devicePixelRatio": 1.5
+      },
+      "window": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 752
+      },
+      "osScale": 1.5,
+      "electronZoomFactor": 1,
+      "image": {
+        "size": {
+          "width": 1899,
+          "height": 1073
+        },
+        "scaleFactors": [
+          1
+        ]
+      }
+    }
+  ]
+}

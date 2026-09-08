@@ -1,5 +1,16 @@
 # Release evidence
 
+## v1.1.0 overhaul
+
+The [current acceptance record](overhaul/acceptance.json) links curated actual
+visual, complete-game, native, performance, touch-emulation and public-distribution
+evidence. Complete replay records and raw receipt hashes are retained. Private
+browser/native profile paths are omitted. The [current screenshot](overhaul/gallery.png)
+is an unedited application capture. See the [overhaul report](../OVERHAUL_RELEASE.md)
+for scope, owner-accepted performance limits and retained historical evidence.
+
+## v1.0.0 historical evidence
+
 These receipts are copied from actual local runs, with the private native profile path removed. Screenshots are actual rendered application captures. They are automated interaction and visual-inspection evidence, not human feedback or a strength study.
 
 - `reference.json`: independently rerun original suite verifier; immutable fixture-byte checks.

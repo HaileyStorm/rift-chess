@@ -1,0 +1,47 @@
+{
+  "schema": "rift-release-build/1",
+  "sourceCommit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "verificationCommit": "067ce45260e2c00823cfd38e4b6de3f09e6329a2",
+  "version": "1.1.0",
+  "build": "3629cf6cc06a2acf3d93",
+  "precacheAssetCount": 23,
+  "runtimeFileCount": 25,
+  "files": {
+    "./api.js": "a5773503775ee4e2b70c9c13953be54f2f14e2c27cae19d91df0c50e3eb447df",
+    "./assets/game-Bb0WMghv.js": "5af0e8d1975773783811cc1c1e9b6d7416e1248e750fca7b785325ec0b6b77fc",
+    "./assets/index-Df3UEiC1.js": "889af7ac6e3798c5b7f61dbc167025148aa33b83a3e9458d56ad9f165f61890f",
+    "./assets/index-DObvSE75.css": "5935febd33b20a3e9b27d52c0242a6ab1527f80c64fc1e5bd0818578523dfe05",
+    "./assets/marble-albedo.png": "c00c5a61e6693e2ec5a0b4754225561c43d23275d48f2cae00ce51230244b9aa",
+    "./assets/reflections/daylight-balanced.png": "e16230f1a333661800a8c321100f138709b4e404abb5a8881886644dd02a8f8c",
+    "./assets/reflections/daylight-high.png": "4371a456a792b4ff3e00957f91550d56bca65fe6b8c2069a78aa0f69bbb45dfe",
+    "./assets/reflections/daylight-low.png": "1ffae1a1e2583396fdddba75ae0a7771e6a85c5fae0bf7be5a4a91e737ef2f6d",
+    "./assets/reflections/gallery-balanced.png": "c993229d756625f068e4f789d7718bf08699e5e27c16dfd7582a1ab7c668fc2a",
+    "./assets/reflections/gallery-high.png": "299c762a6cd117f80a3b0326273943a5f6ff1345d43b2f146135b414b1ad5d1c",
+    "./assets/reflections/gallery-low.png": "f3dd8dad64bc4fff74a365891f6d47c76172a122705e1176286db5e29b72c730",
+    "./assets/reflections/manifest.json": "b2a3c543725d76d45e4c9897b304165c70929dab3da6809f0a9113ab0973238c",
+    "./assets/reflections/nocturne-balanced.png": "7530df7544cad1b9f5875ea3c9be02f6e8406c49d6143a5b88fd96c7c336e47e",
+    "./assets/reflections/nocturne-high.png": "5276e57874d5b3e621dbbc2f11d8c9bcf91d9636306977cc242796afd6fc8365",
+    "./assets/reflections/nocturne-low.png": "b6dff38618f42c274963317370acc46b07f4991601d9ff22bd60d76cdaed64f1",
+    "./assets/worker-u3mupga4.js": "b51503d26aea539a44f2c3e28b4ebf4d8c786bf746762c7e963f1d0947e1dcc3",
+    "./guide.html": "0a362516e3387eb86d13f57d626543356a8f92de9cb7a8272fd2d6da68db2f1f",
+    "./icon.svg": "3c56deb54b7bd62c7b7be2caa49692dae65f39316fc0ce3a07c3270e11820879",
+    "./index.html": "2dfb504a02c3dfe4df00899c7cc268f332b29802dd07851c82cf1a6d8b41ac32",
+    "./licenses.txt": "4c70d521816cfd412b9c1bb856026a227dc595d7488ce8366aad257d7aaa15db",
+    "./rules.html": "5fa20aae975ff7febc9d068c1f83a7396062f8d022187b021a102546ae9f3754",
+    "./support.html": "df3cfca952d0e3ba63406b90efa4be2b53ff694339d05032dfcc877ebe1ba654",
+    "./support.js": "bb837bc0842884ba4c0f5bd407f1ede2c37d6893ba56f50272841fc4f92c212d",
+    "./sw.js": "849d2108fac5d65d1945563f6c3533212e96b74feb8ef6a5599a5dcaca7fd946",
+    "./precache.json": "808dec9bcfe691786a595f7673fba749186548a17077934685abed480081ae04"
+  },
+  "publicationMetadata": {
+    "./build-source.json": "d3d4164e973aca3ecc29a75079526b898abf4af3c456e1638bdaa84aeaff5163"
+  },
+  "windowsArtifact": {
+    "version": "1.1.0",
+    "name": "Rift-Chess-win32-x64-1.1.0.zip",
+    "bytes": 168860090,
+    "sha256": "50d8ae067fbbb120e16b20d66f8993f74574b7505ed5fec380674f2ee61912cb",
+    "appAsarSha256": "22770ee53d924ad142202cd7ab9ce085efee448478f819c48f6f698e0ef7b4ae"
+  },
+  "zipVerificationReceiptSha256": "63a60ae2ccba8bcdea8d25a16bf32bc5307b1b99f352cb1ad698dc6ac2873050"
+}

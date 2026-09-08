@@ -116,3 +116,13 @@ The final Windows runtime was tested with networking disabled at the Electron se
 The original art includes two procedural geometry families, three environments and coordinated materials. Actual matrices were inspected and iterated. Measured frame intervals vary by activity; bot-turn tails still warrant profiling, and no universal frame-rate or bot-strength claim is made. See [the implementation playtest record](PLAYTESTS.md) and [curated evidence](evidence/README.md).
 
 Future peer-to-peer or minimal-relay multiplayer remains an extension, with authenticated seat ownership, signaling/reconnect handling and potentially TURN still required. The transport-independent checked API preserves that route without claiming it is delivered. No substantive rule change was made to make tests or demonstrations easier.
+
+## Overhaul addendum - 2026-09-08
+
+The September overhaul moved the 3D presentation toward a more authored table: three worlds, two closed-geometry sculpture families, three materials, and a shuffled 48-slide opening that settles over 8.5 seconds. Shift interaction was simplified around the board itself: source edges indicate legal directions, mouse and keyboard share source and destination behavior, and a promotion choice remains the only pre-commit dialog. The local evidence is summarized in the [overhaul release report](OVERHAUL_RELEASE.md).
+
+The completed local checks cover unit, real UI, full-mode, complete-game, package, cold-offline, and native Windows paths. They include independently checked action prefixes and finals, current image and clip review, and measured focused-visible performance. Earlier composition, asset, motion, and WOW evidence remains historical accepted evidence; it is not relabeled as a new capture set.
+
+Performance remains an accepted release limitation rather than a claim of universal smoothness. Focused-visible medians are often near one 60 Hz frame, while recorded tails and strict-threshold misses remain in the evidence. First CPU feedback is likewise not display latency. No human study, strong-play evaluation, or universal FPS conclusion follows from these checks.
+
+The public browser build now passes exact asset hashes, actual v1 save/preferences upgrade, and fresh cold-offline play. Windows release publication and remote asset verification are being finalized from the tested ZIP. The open performance follow-up remains visible, alongside the distinction between local, emulated, native and public-origin evidence.

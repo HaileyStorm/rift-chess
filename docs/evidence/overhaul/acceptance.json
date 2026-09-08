@@ -1,0 +1,728 @@
+{
+  "schema": "rift-overhaul-acceptance/1",
+  "version": "1.1.0",
+  "sourceCommit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "verificationCommit": "067ce45260e2c00823cfd38e4b6de3f09e6329a2",
+  "build": "3629cf6cc06a2acf3d93",
+  "dateUtc": "2026-09-08",
+  "releaseDecision": {
+    "ownerAcceptedReportedPerformanceLimits": true,
+    "originalPerformanceTargetsFullyAchieved": false,
+    "previousReleasePreserved": true
+  },
+  "unitChecks": {
+    "passed": 54,
+    "files": 8,
+    "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=1 --no-file-parallelism"
+  },
+  "referenceConformance": {
+    "fixtures": 14,
+    "successors": 223,
+    "actionEncodingSlots": 21760,
+    "originalReferenceSuite": 67,
+    "scope": "Original reference and current TypeScript/API conformance; no empirical strength or balance claim"
+  },
+  "realUiChecks": [
+    {
+      "name": "mechanics",
+      "status": "pass",
+      "count": 19,
+      "rawReceiptSha256": "17084d3d8bfe976b096761fa737de4704480d74fd566b57acd4dcd53270c601d",
+      "checks": [
+        {
+          "name": "launch Skip reaches the live board and waits for assets",
+          "status": "pass"
+        },
+        {
+          "name": "Atelier apply waits for renderer assets without a logical commit",
+          "status": "pass"
+        },
+        {
+          "name": "ordinary move from actual 3D piece with hidden/revealed hints",
+          "status": "pass"
+        },
+        {
+          "name": "Shift source and hover are inert, while mouse and keyboard destinations commit exactly once",
+          "status": "pass"
+        },
+        {
+          "name": "ordinary and Shift source clicks or Enter cancel themselves and reselect another legal source",
+          "status": "pass"
+        },
+        {
+          "name": "cut_check_ray",
+          "status": "pass"
+        },
+        {
+          "name": "restore_check_ray",
+          "status": "pass"
+        },
+        {
+          "name": "shift_promotion",
+          "status": "pass"
+        },
+        {
+          "name": "backward_pawn_ride",
+          "status": "pass"
+        },
+        {
+          "name": "orthodox_castling",
+          "status": "pass"
+        },
+        {
+          "name": "en_passant",
+          "status": "pass"
+        },
+        {
+          "name": "auto_at_99",
+          "status": "pass"
+        },
+        {
+          "name": "prompt_at_99",
+          "status": "pass"
+        },
+        {
+          "name": "mate_over_auto100",
+          "status": "pass"
+        },
+        {
+          "name": "third_repetition_on_next_reverse",
+          "status": "pass"
+        },
+        {
+          "name": "passenger click stages a rendered Shift hover preview before destination commit",
+          "status": "pass"
+        },
+        {
+          "name": "king-exposing Shift rejected without mutation",
+          "status": "pass"
+        },
+        {
+          "name": "draw offer decline and acceptance use other player",
+          "status": "pass"
+        },
+        {
+          "name": "camera gesture and presets cannot commit",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "lifecycle",
+      "status": "pass",
+      "count": 13,
+      "rawReceiptSha256": "ad0d01e6c3eed43026690c5f136fbbd5ae88699d5675f3079365cd52aa3bd31f",
+      "checks": [
+        {
+          "name": "unavailable tile selections explain anchor, passenger count, ownership, and adjacency without mutation",
+          "status": "pass"
+        },
+        {
+          "name": "all ordinary and Shift promotion choices before atomic commit",
+          "status": "pass"
+        },
+        {
+          "name": "ordinary and Shift promotion cancellation retain their source without committing",
+          "status": "pass"
+        },
+        {
+          "name": "loaded rook Shift consumes castling right",
+          "status": "pass"
+        },
+        {
+          "name": "transport consumes fresh pawn eligibility",
+          "status": "pass"
+        },
+        {
+          "name": "empty Shift expires en passant",
+          "status": "pass"
+        },
+        {
+          "name": "all progress policies at 100 and prompt dismissal",
+          "status": "pass"
+        },
+        {
+          "name": "threefold survives actual browser reload",
+          "status": "pass"
+        },
+        {
+          "name": "stalemate and bare-kings endings",
+          "status": "pass"
+        },
+        {
+          "name": "nonmoving hotseat player can resign through the actor dialog; earlier replay stays ongoing",
+          "status": "pass"
+        },
+        {
+          "name": "new-game Escape preserves current match",
+          "status": "pass"
+        },
+        {
+          "name": "corrupt file rejected; raw replay adapter accepted",
+          "status": "pass"
+        },
+        {
+          "name": "semantic corruption restores known-good recovery copy",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "tutorial-preservation",
+      "status": "pass",
+      "count": 5,
+      "rawReceiptSha256": "f48bef43d256ed945285a8d8698b6006721b108bdba11319a109deba6d6db40a",
+      "checks": [
+        {
+          "name": "all visible lessons preserve an existing hotseat B/off non-practice match",
+          "status": "pass"
+        },
+        {
+          "name": "reload from a solved visible lesson restores the held match directly",
+          "status": "pass"
+        },
+        {
+          "name": "all four visible lessons also complete through keyboard selection, preview, and commit",
+          "status": "pass"
+        },
+        {
+          "name": "New match and valid Import inside lessons clear the held-match session",
+          "status": "pass"
+        },
+        {
+          "name": "Export in a visible lesson contains the lesson rather than its held backup",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "responsiveness",
+      "status": "pass",
+      "count": 9,
+      "rawReceiptSha256": "86ef6136a443f1ce06c0efbe51058bda28a5d7a1384131ad6636789fa9f5f51c",
+      "checks": [
+        {
+          "name": "undo cancels a held real worker before any stale commit",
+          "status": "pass"
+        },
+        {
+          "name": "new match rejects a held previous-game worker",
+          "status": "pass"
+        },
+        {
+          "name": "draw decline rejects the stale worker for 2 seconds, then accepts only the fresh worker reply",
+          "status": "pass"
+        },
+        {
+          "name": "replay holds the complete live record against stale search; exit accepts one fresh bot reply",
+          "status": "pass"
+        },
+        {
+          "name": "valid import creates a fresh identity and rejects old search before accepting one current reply",
+          "status": "pass"
+        },
+        {
+          "name": "visible loaded-Shift promotion Cancel and Escape preserve the complete precommit match",
+          "status": "pass"
+        },
+        {
+          "name": "unavailable storage reports lost persistence while the actual local move still completes",
+          "status": "pass"
+        },
+        {
+          "name": "focus loss clears temporary hints and emulated browser freeze/resume preserves the complete match",
+          "status": "pass"
+        },
+        {
+          "name": "board remains inside a 1266x680 CSS viewport emulation",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "ui-state",
+      "status": "pass",
+      "count": 7,
+      "rawReceiptSha256": "82e477fec2b2e83093212f38f772887787cc90248feadf7b567f3f45b99a5fce",
+      "checks": [
+        {
+          "name": "edge fixture at 99 quiet actions exposes one aggregate offer and one response",
+          "status": "pass"
+        },
+        {
+          "name": "separate prompt-at-99 fixture loads do not inherit dismissed reminder episodes",
+          "status": "pass"
+        },
+        {
+          "name": "keyboard-only source, destination focus, and Enter commit keep hints hidden",
+          "status": "pass"
+        },
+        {
+          "name": "temporary H hints reset after focus leaves the board",
+          "status": "pass"
+        },
+        {
+          "name": "unchanged Atelier Apply preserves a real bot animation arriving while its dialog is open",
+          "status": "pass"
+        },
+        {
+          "name": "bot-turn resignation and draw offer attribute actions to the human side while worker delivery is delayed",
+          "status": "pass"
+        },
+        {
+          "name": "390x844 exposes compact Undo consent, Atelier, Learn links, active side, and board keyboard focus",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "name": "renderer-state",
+      "status": "pass",
+      "count": 5,
+      "rawReceiptSha256": "12bf417e89bb0aae6b0a2a2abfaa287caee7706bfbca41c67475e5b6782ef3c6",
+      "checks": [
+        {
+          "name": "real UI selected tile snaps its lift immediately under reduced-motion renderer stress",
+          "status": "pass"
+        },
+        {
+          "name": "near angled hole input selects B4 instead of the A4 undercarriage behind it",
+          "status": "pass"
+        },
+        {
+          "name": "actual Explore/Return travel snaps to its recorded destination under renderer stress",
+          "status": "pass"
+        },
+        {
+          "name": "rapid A-B-C renderer changes settle all readiness promises before a real UI move",
+          "status": "pass"
+        },
+        {
+          "name": "check pulse stops on reduced motion and future checks retain only the static cue",
+          "status": "pass"
+        }
+      ]
+    }
+  ],
+  "modeMatrix": {
+    "status": "COMPLETE_FLOW_MATRIX",
+    "rawReceiptSha256": "285b46977935a62b1c0a0fc36da3d90e9451f698ad4af549ba2fe9988bb0742e",
+    "rows": [
+      {
+        "id": "hotseat-B-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "hotseat-B-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "hotseat-B-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "hotseat-C-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "hotseat-C-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "hotseat-C-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-B-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-B-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-B-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-C-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-C-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-black-C-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-B-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-B-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-B-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-C-prompt",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-C-auto100",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      },
+      {
+        "id": "bot-white-C-off",
+        "status": "COMPLETE_FLOW",
+        "steps": {
+          "modal": "complete",
+          "ordinary": "complete",
+          "emptyShift": "complete",
+          "loadedShift": "complete",
+          "cancelReselect": "complete",
+          "checkFeedback": "COMPLETE_EDGE_FIXTURE_CHECK",
+          "camera": "complete",
+          "settings": "complete",
+          "exportImport": "complete",
+          "replay": "complete",
+          "recovery": "complete"
+        }
+      }
+    ],
+    "planningActionBound": 20,
+    "maxActionsUsed": 13
+  },
+  "completeGames": {
+    "status": "COMPLETE_NATURAL_TERMINALS",
+    "count": 6,
+    "totalActions": 429,
+    "observedPrefixArtifacts": 428,
+    "independentReviewSha256": "f68968ae7fef9363b86e5478363dd89da349a247c47ca9e6fc392ca232d1d470",
+    "data": "complete-games.json"
+  },
+  "visual": {
+    "status": "PASS_AFFECTED_VISUAL_SCOPE",
+    "rawVerdictSha256": "ec2f11cfbb785ee6351594016a622a5353571c026aa9d46eec05bbccd74c3796",
+    "independentlyInspectedCurrentPngs": 66,
+    "updatedClips": 2,
+    "groups": [
+      {
+        "count": 12,
+        "scope": "Directional source edges, selected source, hover destination and settled Shift in all three environments.",
+        "receiptSha256": "e9d5e958028b560a531dfc666477f846694c1187ac5d75dcc84f5d2122b110fc",
+        "review": "All originals opened; no actionable visual defects reported"
+      },
+      {
+        "count": 13,
+        "scope": "Detail/contact/cavity, quality, high contrast, reduced motion, check, modal focus return and phone/tablet layout.",
+        "receiptSha256": "fa13930be0131d704619febe47a2f69c06cc68f6ccabe3fd90a7b34fcf68d42b",
+        "review": "All originals opened; no actionable visual defects reported"
+      },
+      {
+        "count": 2,
+        "scope": "Actual keyboard destination opens promotion; Escape retains the source and keyboard destination preview.",
+        "receiptSha256": "bd3bc17038d3dfabde6a07bb82381f08ec2d464d0f44e0ea2c595a2599953725",
+        "review": "All originals opened; no actionable visual defects reported"
+      },
+      {
+        "count": 24,
+        "scope": "Three viewport sizes, four genuine Chromium tab zoom factors, board and Atelier.",
+        "receiptSha256": "ff33bf3e63cf1804a5d836665378c94fcd24ac3a8dc832ca2d018e8766494d99",
+        "review": "All originals opened; no actionable visual defects reported"
+      },
+      {
+        "count": 15,
+        "scope": "Actual extracted Windows package: 11 scaling/dialog frames, first launch, both human bot colors and loaded Shift promotion.",
+        "receiptSha256": "6389749e22ed88a7d6b427ce3594e8366651c7976095cf3eaef8f71ee7a6ae76",
+        "review": "All originals opened; no actionable visual defects reported"
+      }
+    ],
+    "retainedComposition": {
+      "count": 216,
+      "evidenceClass": "SOURCE_AND_STATE_CORRESPONDENCE_INFERENCE; not a new pixel comparison or recapture",
+      "reasoning": "The 216 previously inspected composition rows contain no selected source or destination, animation, camera travel, check pulse or ordinary hints. Changed destination derivation returns null in that state. Piece/world/material/reflection/assembly sources are byte-identical; camera math and idle source-edge geometry are unchanged by the direct-input diff. The removed confirmation button was hidden; the renamed wrapper keeps identical CSS declarations. All dependent selection/detail/full-UI/tab-zoom/native/motion states were recaptured and independently reviewed above.",
+      "priorReceiptSha256": "d90cc194abbc5a4588a9269b5e209a1a65ee008313057d98a4cabbe0b9fc5e1d"
+    },
+    "scope": "Originals were actually reviewed; counts and structural checks alone are not visual acceptance."
+  },
+  "windows": {
+    "status": "pass",
+    "runtimeChecks": 7,
+    "inspectedNativePngsIncludedAbove": 15,
+    "runtimeFileCount": 74,
+    "applicationArchiveFiles": 31,
+    "offlineAssets": 23,
+    "data": "native-windows.json"
+  },
+  "localOffline": {
+    "status": "pass",
+    "checks": [
+      "current build service worker activated with bound precache",
+      "browser process closed after nonempty bot-black save",
+      "cold offline current-build restart restored exact record, preferences, envelope, and precache",
+      "fresh offline browser process completed a visible human move and real local-worker reply",
+      "offline visible hotseat opening committed b1-a3, g7-g6, and loaded A2-B2 Shift with passenger a3"
+    ],
+    "rawReceiptSha256": "ecedf2538e14b0e75b3dd17f7395957a4e27b49fa924e128fc937105ca6bec13"
+  },
+  "localUpgradeRehearsal": {
+    "status": "PASS_LOCAL_UPGRADE",
+    "receiptSha256": "c6c9c6c45ceb38a5c4be9a20b10887a91f8063fa47d61d7a2475e2aefcae1485",
+    "scope": "Local-origin rehearsal using exact v1/current static bytes; not public-origin acceptance."
+  },
+  "performance": {
+    "data": "performance.json",
+    "samples": 22,
+    "strictBalancedPasses": 0,
+    "strictLowPasses": 4,
+    "targetStatus": "UNMET_WITH_OWNER_ACCEPTANCE_FOR_RELEASE"
+  },
+  "publicDistribution": {
+    "status": "PASS",
+    "url": "https://haileystorm.github.io/rift-chess/",
+    "pagesCommit": "e6e8dc66e13e34242afdbacbd758b256b4be5e31",
+    "exactPublicFileHashes": 26,
+    "runtimeAssetsAndMetadata": "25 runtime files plus build-source.json",
+    "publicAssets": "public-assets.json",
+    "publicUpgrade": "public-upgrade.json",
+    "publicColdOffline": "public-offline.json"
+  },
+  "limitations": [
+    "Automated full games and inspection are not a human usability study, bot Elo, or balance result.",
+    "Resumed-profile Chrome/Playwright export is excluded following a game-independent transport failure; saved envelope/live state and native export are checked separately.",
+    "Private browser/native profiles and full local diagnostic traces are excluded from publication."
+  ],
+  "touchEmulation": {
+    "status": "pass",
+    "contexts": 2,
+    "checks": 10,
+    "data": "touch-emulation.json",
+    "scope": "Chrome touch emulation at phone/tablet viewport sizes; not physical-device proof"
+  }
+}

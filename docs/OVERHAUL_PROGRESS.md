@@ -453,3 +453,23 @@ native export/restart already passes. The new async-wait finding is durably queu
 to Universal Harness as `UH-20260907-PLAYWRIGHT-ASYNC-WAIT-PREDICATE`.
 No game assets changed during these harness repairs. Final isolated performance
 measurement and the publication decision remain outstanding.
+
+### Owner acceptance and public deployment — September 8
+
+The isolated extracted-Windows run completes all 22 samples with zero errors and
+every raw interval focused and visible. Most renderer medians are about 16.7 ms;
+the Balanced bot window reaches 99.9 ms, while Low has occasional larger tails.
+Strict max-inclusive gates remain unmet (Balanced 0/11, Low 4/11); sub-millisecond
+boundary granularity does not explain the substantial spikes. The owner accepted
+these reported performance limits for release. They remain documented engineering
+follow-ups, not reclassified measurement passes.
+
+The exact static build is now published at Pages commit
+`e6e8dc66e13e34242afdbacbd758b256b4be5e31`. All 26 public file hashes match the
+staged bytes, including publication metadata. The original public v1 profile
+passes real upgrade, exact record/preferences retention, cold offline restart,
+loaded Shift and bot reply. A separate fresh public profile passes cold offline
+restart and gameplay. Ten touch-emulation checks also pass across phone/tablet
+viewports on the public build. No additional application change was needed.
+The Windows tag/upload verification is the final publication step at this
+checkpoint. Prior v1 assets, profiles and failed-run receipts remain preserved.

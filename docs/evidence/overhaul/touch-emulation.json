@@ -1,0 +1,215 @@
+{
+  "started": "2026-09-08T04:44:46.063Z",
+  "classification": "Chrome CDP touch emulation only; not physical-device or human-usability proof.",
+  "url": "https://haileystorm.github.io/rift-chess/",
+  "build": {
+    "version": "3629cf6cc06a2acf3d93",
+    "assets": [
+      "./api.js",
+      "./assets/game-Bb0WMghv.js",
+      "./assets/index-Df3UEiC1.js",
+      "./assets/index-DObvSE75.css",
+      "./assets/marble-albedo.png",
+      "./assets/reflections/daylight-balanced.png",
+      "./assets/reflections/daylight-high.png",
+      "./assets/reflections/daylight-low.png",
+      "./assets/reflections/gallery-balanced.png",
+      "./assets/reflections/gallery-high.png",
+      "./assets/reflections/gallery-low.png",
+      "./assets/reflections/manifest.json",
+      "./assets/reflections/nocturne-balanced.png",
+      "./assets/reflections/nocturne-high.png",
+      "./assets/reflections/nocturne-low.png",
+      "./assets/worker-u3mupga4.js",
+      "./guide.html",
+      "./icon.svg",
+      "./index.html",
+      "./licenses.txt",
+      "./rules.html",
+      "./support.html",
+      "./support.js"
+    ]
+  },
+  "contexts": [
+    {
+      "name": "phone-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "hasTouch": true,
+      "checks": [
+        {
+          "name": "two-finger orbit/pinch changes camera without mutation"
+        },
+        {
+          "name": "same ordinary source tap cancels without mutation"
+        },
+        {
+          "name": "ordinary source/destination taps commit once",
+          "actionIds": [
+            400,
+            17510
+          ]
+        },
+        {
+          "name": "same Shift source tap cancels without mutation"
+        },
+        {
+          "name": "visible Shift control and source/destination taps commit loaded Shift",
+          "actionId": 20825
+        }
+      ],
+      "manifest": {
+        "start": {
+          "version": "3629cf6cc06a2acf3d93",
+          "assets": [
+            "./api.js",
+            "./assets/game-Bb0WMghv.js",
+            "./assets/index-Df3UEiC1.js",
+            "./assets/index-DObvSE75.css",
+            "./assets/marble-albedo.png",
+            "./assets/reflections/daylight-balanced.png",
+            "./assets/reflections/daylight-high.png",
+            "./assets/reflections/daylight-low.png",
+            "./assets/reflections/gallery-balanced.png",
+            "./assets/reflections/gallery-high.png",
+            "./assets/reflections/gallery-low.png",
+            "./assets/reflections/manifest.json",
+            "./assets/reflections/nocturne-balanced.png",
+            "./assets/reflections/nocturne-high.png",
+            "./assets/reflections/nocturne-low.png",
+            "./assets/worker-u3mupga4.js",
+            "./guide.html",
+            "./icon.svg",
+            "./index.html",
+            "./licenses.txt",
+            "./rules.html",
+            "./support.html",
+            "./support.js"
+          ]
+        },
+        "end": {
+          "version": "3629cf6cc06a2acf3d93",
+          "assets": [
+            "./api.js",
+            "./assets/game-Bb0WMghv.js",
+            "./assets/index-Df3UEiC1.js",
+            "./assets/index-DObvSE75.css",
+            "./assets/marble-albedo.png",
+            "./assets/reflections/daylight-balanced.png",
+            "./assets/reflections/daylight-high.png",
+            "./assets/reflections/daylight-low.png",
+            "./assets/reflections/gallery-balanced.png",
+            "./assets/reflections/gallery-high.png",
+            "./assets/reflections/gallery-low.png",
+            "./assets/reflections/manifest.json",
+            "./assets/reflections/nocturne-balanced.png",
+            "./assets/reflections/nocturne-high.png",
+            "./assets/reflections/nocturne-low.png",
+            "./assets/worker-u3mupga4.js",
+            "./guide.html",
+            "./icon.svg",
+            "./index.html",
+            "./licenses.txt",
+            "./rules.html",
+            "./support.html",
+            "./support.js"
+          ]
+        }
+      }
+    },
+    {
+      "name": "tablet-1024x768",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "hasTouch": true,
+      "checks": [
+        {
+          "name": "two-finger orbit/pinch changes camera without mutation"
+        },
+        {
+          "name": "same ordinary source tap cancels without mutation"
+        },
+        {
+          "name": "ordinary source/destination taps commit once",
+          "actionIds": [
+            400,
+            17510
+          ]
+        },
+        {
+          "name": "same Shift source tap cancels without mutation"
+        },
+        {
+          "name": "visible Shift control and source/destination taps commit loaded Shift",
+          "actionId": 20825
+        }
+      ],
+      "manifest": {
+        "start": {
+          "version": "3629cf6cc06a2acf3d93",
+          "assets": [
+            "./api.js",
+            "./assets/game-Bb0WMghv.js",
+            "./assets/index-Df3UEiC1.js",
+            "./assets/index-DObvSE75.css",
+            "./assets/marble-albedo.png",
+            "./assets/reflections/daylight-balanced.png",
+            "./assets/reflections/daylight-high.png",
+            "./assets/reflections/daylight-low.png",
+            "./assets/reflections/gallery-balanced.png",
+            "./assets/reflections/gallery-high.png",
+            "./assets/reflections/gallery-low.png",
+            "./assets/reflections/manifest.json",
+            "./assets/reflections/nocturne-balanced.png",
+            "./assets/reflections/nocturne-high.png",
+            "./assets/reflections/nocturne-low.png",
+            "./assets/worker-u3mupga4.js",
+            "./guide.html",
+            "./icon.svg",
+            "./index.html",
+            "./licenses.txt",
+            "./rules.html",
+            "./support.html",
+            "./support.js"
+          ]
+        },
+        "end": {
+          "version": "3629cf6cc06a2acf3d93",
+          "assets": [
+            "./api.js",
+            "./assets/game-Bb0WMghv.js",
+            "./assets/index-Df3UEiC1.js",
+            "./assets/index-DObvSE75.css",
+            "./assets/marble-albedo.png",
+            "./assets/reflections/daylight-balanced.png",
+            "./assets/reflections/daylight-high.png",
+            "./assets/reflections/daylight-low.png",
+            "./assets/reflections/gallery-balanced.png",
+            "./assets/reflections/gallery-high.png",
+            "./assets/reflections/gallery-low.png",
+            "./assets/reflections/manifest.json",
+            "./assets/reflections/nocturne-balanced.png",
+            "./assets/reflections/nocturne-high.png",
+            "./assets/reflections/nocturne-low.png",
+            "./assets/worker-u3mupga4.js",
+            "./guide.html",
+            "./icon.svg",
+            "./index.html",
+            "./licenses.txt",
+            "./rules.html",
+            "./support.html",
+            "./support.js"
+          ]
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "status": "pass",
+  "finished": "2026-09-08T04:45:46.200Z",
+  "rawReceiptSha256": "49659c9c4170b3b6065ab5690506e80b5eccffcf30dd38f204e1904411a2a946"
+}

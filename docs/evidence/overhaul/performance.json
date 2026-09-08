@@ -1,0 +1,642 @@
+{
+  "schema": "rift-release-performance/1",
+  "sourceCommit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "verificationCommit": "067ce45260e2c00823cfd38e4b6de3f09e6329a2",
+  "build": "3629cf6cc06a2acf3d93",
+  "rawReceiptSha256": "71f4f1aa292dff91e35810cdf99f87ed84c82c5726bdb8ca3529039ed28ffa33",
+  "status": "MEASURED_WITH_ACCEPTED_RELEASE_LIMITS",
+  "environment": {
+    "platform": "Windows 11 x64",
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "electron": "44.2.0",
+    "chromium": "152.0.7977.76",
+    "displayHz": 60,
+    "osScale": 1.5,
+    "cssViewport": {
+      "width": 1266,
+      "height": 715,
+      "dpr": 1.5
+    }
+  },
+  "samples": [
+    {
+      "activity": "idle",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 305,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17.7,
+        "maxMs": 33.3,
+        "cpuMedianMs": 9.6,
+        "cpuP95Ms": 17,
+        "cpuMaxMs": 18.5
+      },
+      "rawCallbackIntervals": {
+        "count": 301,
+        "medianMs": 16.8,
+        "p95Ms": 25.3,
+        "p99Ms": 27.9,
+        "maxMs": 28.9
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "orbit",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 485,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 33.1,
+        "p99Ms": 33.5,
+        "maxMs": 66.8,
+        "cpuMedianMs": 13.4,
+        "cpuP95Ms": 18.8,
+        "cpuMaxMs": 27.8
+      },
+      "rawCallbackIntervals": {
+        "count": 478,
+        "medianMs": 17.8,
+        "p95Ms": 22.9,
+        "p99Ms": 27.5,
+        "maxMs": 53.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [
+        53,
+        63
+      ],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "idle",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 304,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17,
+        "maxMs": 33.4,
+        "cpuMedianMs": 5.1,
+        "cpuP95Ms": 14.7,
+        "cpuMaxMs": 18.4
+      },
+      "rawCallbackIntervals": {
+        "count": 301,
+        "medianMs": 16.6,
+        "p95Ms": 24.5,
+        "p99Ms": 28.7,
+        "maxMs": 29.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "orbit",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 446,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17,
+        "maxMs": 17.1,
+        "cpuMedianMs": 6.1,
+        "cpuP95Ms": 15.1,
+        "cpuMaxMs": 17.2
+      },
+      "rawCallbackIntervals": {
+        "count": 445,
+        "medianMs": 16.5,
+        "p95Ms": 26.9,
+        "p99Ms": 29.4,
+        "maxMs": 29.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": true
+    },
+    {
+      "activity": "idle",
+      "environment": "nocturne",
+      "quality": "balanced",
+      "rendererFrames": 305,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17,
+        "maxMs": 18.2,
+        "cpuMedianMs": 7.3,
+        "cpuP95Ms": 15.4,
+        "cpuMaxMs": 17.9
+      },
+      "rawCallbackIntervals": {
+        "count": 302,
+        "medianMs": 16.6,
+        "p95Ms": 25.4,
+        "p99Ms": 28.4,
+        "maxMs": 29.6
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "orbit",
+      "environment": "nocturne",
+      "quality": "balanced",
+      "rendererFrames": 484,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17.1,
+        "maxMs": 33.3,
+        "cpuMedianMs": 8.4,
+        "cpuP95Ms": 15.2,
+        "cpuMaxMs": 24.4
+      },
+      "rawCallbackIntervals": {
+        "count": 453,
+        "medianMs": 16.7,
+        "p95Ms": 21.6,
+        "p99Ms": 24.2,
+        "maxMs": 37.9
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "idle",
+      "environment": "nocturne",
+      "quality": "low",
+      "rendererFrames": 306,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17,
+        "maxMs": 17.3,
+        "cpuMedianMs": 7.5,
+        "cpuP95Ms": 13.4,
+        "cpuMaxMs": 15
+      },
+      "rawCallbackIntervals": {
+        "count": 302,
+        "medianMs": 16.6,
+        "p95Ms": 19.4,
+        "p99Ms": 26.1,
+        "maxMs": 28.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": true
+    },
+    {
+      "activity": "orbit",
+      "environment": "nocturne",
+      "quality": "low",
+      "rendererFrames": 456,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17.2,
+        "maxMs": 83.3,
+        "cpuMedianMs": 7.8,
+        "cpuP95Ms": 14.1,
+        "cpuMaxMs": 15.2
+      },
+      "rawCallbackIntervals": {
+        "count": 452,
+        "medianMs": 16.6,
+        "p95Ms": 24.5,
+        "p99Ms": 28.5,
+        "maxMs": 92.1
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "idle",
+      "environment": "daylight",
+      "quality": "balanced",
+      "rendererFrames": 254,
+      "rendererIntervals": {
+        "medianMs": 16.8,
+        "p95Ms": 33.5,
+        "p99Ms": 33.7,
+        "maxMs": 50,
+        "cpuMedianMs": 18.5,
+        "cpuP95Ms": 21.5,
+        "cpuMaxMs": 23.2
+      },
+      "rawCallbackIntervals": {
+        "count": 250,
+        "medianMs": 20.4,
+        "p95Ms": 23.5,
+        "p99Ms": 24.8,
+        "maxMs": 31.4
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [
+        55
+      ],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "orbit",
+      "environment": "daylight",
+      "quality": "balanced",
+      "rendererFrames": 416,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 33.4,
+        "p99Ms": 33.7,
+        "maxMs": 83.3,
+        "cpuMedianMs": 17.6,
+        "cpuP95Ms": 20.6,
+        "cpuMaxMs": 22.9
+      },
+      "rawCallbackIntervals": {
+        "count": 412,
+        "medianMs": 19.9,
+        "p95Ms": 23.6,
+        "p99Ms": 25.2,
+        "maxMs": 31.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [
+        82
+      ],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "idle",
+      "environment": "daylight",
+      "quality": "low",
+      "rendererFrames": 306,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 17,
+        "p99Ms": 33.2,
+        "maxMs": 41.3,
+        "cpuMedianMs": 13.2,
+        "cpuP95Ms": 17.3,
+        "cpuMaxMs": 19.1
+      },
+      "rawCallbackIntervals": {
+        "count": 300,
+        "medianMs": 16.8,
+        "p95Ms": 22.1,
+        "p99Ms": 27.3,
+        "maxMs": 29.7
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "orbit",
+      "environment": "daylight",
+      "quality": "low",
+      "rendererFrames": 461,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 17,
+        "p99Ms": 33.4,
+        "maxMs": 33.6,
+        "cpuMedianMs": 13.9,
+        "cpuP95Ms": 17.4,
+        "cpuMaxMs": 20.2
+      },
+      "rawCallbackIntervals": {
+        "count": 455,
+        "medianMs": 16.8,
+        "p95Ms": 21.7,
+        "p99Ms": 27.1,
+        "maxMs": 34.2
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "zoom",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 94,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 33.1,
+        "p99Ms": 33.6,
+        "maxMs": 33.6,
+        "cpuMedianMs": 15.8,
+        "cpuP95Ms": 19.1,
+        "cpuMaxMs": 20
+      },
+      "rawCallbackIntervals": {
+        "count": 93,
+        "medianMs": 17.8,
+        "p95Ms": 24,
+        "p99Ms": 36,
+        "maxMs": 36
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "selection",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 100,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 50,
+        "maxMs": 50,
+        "cpuMedianMs": 10.2,
+        "cpuP95Ms": 18.4,
+        "cpuMaxMs": 21.2
+      },
+      "rawCallbackIntervals": {
+        "count": 98,
+        "medianMs": 17.3,
+        "p95Ms": 28.4,
+        "p99Ms": 41.2,
+        "maxMs": 41.2
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 11.6,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "loadedShift",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 70,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 17,
+        "p99Ms": 83.5,
+        "maxMs": 83.5,
+        "cpuMedianMs": 10.5,
+        "cpuP95Ms": 18,
+        "cpuMaxMs": 24.4
+      },
+      "rawCallbackIntervals": {
+        "count": 69,
+        "medianMs": 17.3,
+        "p95Ms": 30.3,
+        "p99Ms": 65.4,
+        "maxMs": 65.4
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 23.1,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 68,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "capture",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 45,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 33.4,
+        "maxMs": 33.4,
+        "cpuMedianMs": 8.7,
+        "cpuP95Ms": 18.4,
+        "cpuMaxMs": 32.7
+      },
+      "rawCallbackIntervals": {
+        "count": 44,
+        "medianMs": 15.5,
+        "p95Ms": 27.9,
+        "p99Ms": 39.9,
+        "maxMs": 39.9
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 5.4,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 40,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "bot",
+      "environment": "gallery",
+      "quality": "balanced",
+      "rendererFrames": 106,
+      "rendererIntervals": {
+        "medianMs": 16.8,
+        "p95Ms": 33.6,
+        "p99Ms": 66.8,
+        "maxMs": 99.9,
+        "cpuMedianMs": 19,
+        "cpuP95Ms": 23.8,
+        "cpuMaxMs": 38.3
+      },
+      "rawCallbackIntervals": {
+        "count": 101,
+        "medianMs": 22.2,
+        "p95Ms": 33.8,
+        "p99Ms": 66.1,
+        "maxMs": 95.4
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 22.9,
+      "longTaskDurationsMs": [
+        102
+      ],
+      "shadowFrames": 83,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "zoom",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 98,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 17.2,
+        "maxMs": 17.2,
+        "cpuMedianMs": 8.7,
+        "cpuP95Ms": 16.9,
+        "cpuMaxMs": 18.3
+      },
+      "rawCallbackIntervals": {
+        "count": 96,
+        "medianMs": 16.8,
+        "p95Ms": 28.2,
+        "p99Ms": 29.3,
+        "maxMs": 29.3
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": null,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": true
+    },
+    {
+      "activity": "selection",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 100,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 33.4,
+        "maxMs": 33.4,
+        "cpuMedianMs": 13.9,
+        "cpuP95Ms": 17,
+        "cpuMaxMs": 20.9
+      },
+      "rawCallbackIntervals": {
+        "count": 97,
+        "medianMs": 16.6,
+        "p95Ms": 28.2,
+        "p99Ms": 31,
+        "maxMs": 31
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 9.2,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 0,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "loadedShift",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 76,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 33.4,
+        "p99Ms": 49.9,
+        "maxMs": 49.9,
+        "cpuMedianMs": 14.1,
+        "cpuP95Ms": 20.1,
+        "cpuMaxMs": 20.7
+      },
+      "rawCallbackIntervals": {
+        "count": 75,
+        "medianMs": 19.6,
+        "p95Ms": 29.1,
+        "p99Ms": 42.3,
+        "maxMs": 42.3
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 27.2,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 75,
+      "strictAllRecordedPercentilesWithinBudget": false
+    },
+    {
+      "activity": "capture",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 44,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 33.2,
+        "maxMs": 33.2,
+        "cpuMedianMs": 6.3,
+        "cpuP95Ms": 16.2,
+        "cpuMaxMs": 21.6
+      },
+      "rawCallbackIntervals": {
+        "count": 43,
+        "medianMs": 17.3,
+        "p95Ms": 26.7,
+        "p99Ms": 29.4,
+        "maxMs": 29.4
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 3.8,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 39,
+      "strictAllRecordedPercentilesWithinBudget": true
+    },
+    {
+      "activity": "bot",
+      "environment": "gallery",
+      "quality": "low",
+      "rendererFrames": 89,
+      "rendererIntervals": {
+        "medianMs": 16.7,
+        "p95Ms": 16.9,
+        "p99Ms": 33.5,
+        "maxMs": 33.5,
+        "cpuMedianMs": 8.6,
+        "cpuP95Ms": 19.5,
+        "cpuMaxMs": 23.4
+      },
+      "rawCallbackIntervals": {
+        "count": 89,
+        "medianMs": 17,
+        "p95Ms": 29.2,
+        "p99Ms": 35.1,
+        "maxMs": 35.1
+      },
+      "allRawRowsFocusedAndVisible": true,
+      "firstCpuSubmissionAfterClickMs": 4.9,
+      "longTaskDurationsMs": [],
+      "shadowFrames": 89,
+      "strictAllRecordedPercentilesWithinBudget": false
+    }
+  ],
+  "interpretation": {
+    "balancedStrictPasses": 0,
+    "lowStrictPasses": 4,
+    "samplesPerQuality": 11,
+    "targets": "Stable 60 fps Balanced; usable 30 fps floor Low",
+    "targetsFullyAchieved": false,
+    "ownerAcceptedReportedLimitsForRelease": true,
+    "acceptedDateUtc": "2026-09-08",
+    "limitations": [
+      "Owner release acceptance does not turn unmet measurement gates into passes.",
+      "Sub-millisecond sampling granularity affects 16.7/33.4 boundary flags, not the larger 41-100 ms tails.",
+      "Callback/render-submission timings are not GPU completion or displayed-frame measurements.",
+      "Values are rounded to 0.001 ms here; strict flags come from the original unrounded receipt.",
+      "These are descriptive windows on one host, not a controlled v1/v1.1 comparative benchmark or a universal frame-rate guarantee."
+    ]
+  }
+}
