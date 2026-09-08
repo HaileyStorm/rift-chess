@@ -21,7 +21,7 @@ type CameraPreset = 'white' | 'black' | 'overview' | 'top';
 type Theme = 'gallery' | 'nocturne' | 'daylight';
 type Quality = 'low' | 'balanced' | 'high';
 interface Appearance { theme: Theme; family: PieceFamily; material: MaterialStyle; quality: Quality; reducedMotion: boolean }
-interface Highlights { selectedSquare: number | null; selectedTile: number | null; previewTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
+interface Highlights { selectedSquare: number | null; selectedTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
 const TILE_FINISHES = {
   gallery: { light: 0xbacdc6, dark: 0x344957, edge: 0x303c45, trim: 0xbd9e60, fill: 0x84bcd4 },
   nocturne: { light: 0xa6bbd1, dark: 0x263650, edge: 0x202838, trim: 0x8c99c1, fill: 0x8093ff },
@@ -62,6 +62,7 @@ export class BoardScene {
   private fadeWarmups: THREE.Mesh[] = [];
   private highlightKey = '';
   private hoveredTile: number | null = null;
+  private pointerTile: number | null = null;
   private availableTiles = new Set<number>();
   private exhibiting = false;
   private cameraMode: 'play' | 'showcase' = 'play';
@@ -73,7 +74,7 @@ export class BoardScene {
   private fxaa: ShaderPass;
   private cameraTravel: { start: number | null; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
   private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: false };
-  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, previewTile: null, legalActions: [], showMoves: false, focusSquare: null };
+  private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, focusSquare: null };
   private frame = 0;
   private resizeObserver: ResizeObserver;
   private disposed = false;
@@ -139,6 +140,7 @@ export class BoardScene {
     this.renderer.domElement.addEventListener('pointermove', this.pointerMove);
     this.renderer.domElement.addEventListener('pointerup', this.pointerUp);
     this.renderer.domElement.addEventListener('pointercancel', this.pointerCancel);
+    this.renderer.domElement.addEventListener('pointerleave', this.pointerLeave);
     this.renderer.domElement.addEventListener('contextmenu', this.contextMenu);
     this.controls.addEventListener('start', this.cameraGesture);
     this.controls.addEventListener('end', this.cameraGestureEnd);
@@ -153,7 +155,7 @@ export class BoardScene {
 
   private contextMenu = (event: Event) => event.preventDefault();
   private visibilityChange = () => { this.lastFrame = 0; if (document.hidden) this.cameraInteracting = false; };
-  private cameraGesture = () => { this.dragged = true; this.cameraInteracting = true; this.hoveredTile = null; this.cameraTravel = null; this.exhibiting = false; };
+  private cameraGesture = () => { this.dragged = true; this.cameraInteracting = true; this.pointerLeave(); this.cameraTravel = null; this.exhibiting = false; };
   private cameraGestureEnd = () => { this.cameraInteracting = false; };
   private pointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || !event.isPrimary) { this.pressed = null; this.dragged = true; return; }
@@ -161,13 +163,15 @@ export class BoardScene {
     this.dragged = false;
   };
   private pointerMove = (event: PointerEvent) => {
-    if (this.pressed && Math.hypot(event.clientX - this.pressed.x, event.clientY - this.pressed.y) > 6) this.dragged = true;
+    if (this.pressed && Math.hypot(event.clientX - this.pressed.x, event.clientY - this.pressed.y) > 6) { this.dragged = true; this.setPointerTile(null); }
     if (!this.pressed && !this.animation && !this.cameraInteracting) {
       const hit = this.hit(event.clientX, event.clientY); this.hoveredTile = hit && this.availableTiles.has(hit.tile) ? hit.tile : null;
-      this.renderer.domElement.style.cursor = hit?.kind === 'piece' || hit?.kind === 'shift' || this.hoveredTile !== null ? 'pointer' : 'default';
+      this.setPointerTile(hit?.tile ?? null);
+      this.renderer.domElement.style.cursor = hit?.kind === 'piece' || hit?.kind === 'shift' || this.hoveredTile !== null || this.destinationPreview() !== null ? 'pointer' : 'default';
     }
   };
-  private pointerCancel = () => { this.pressed = null; this.dragged = true; };
+  private pointerLeave = () => { this.hoveredTile = null; this.setPointerTile(null); };
+  private pointerCancel = () => { this.pressed = null; this.dragged = true; this.pointerLeave(); };
   private pointerUp = (event: PointerEvent) => {
     const press = this.pressed;
     this.pressed = null;
@@ -708,9 +712,23 @@ export class BoardScene {
   }
 
   setHighlights(highlights: Highlights) {
-    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.previewTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
+    if (highlights.focusSquare !== this.highlightState.focusSquare || highlights.selectedTile !== this.highlightState.selectedTile) this.pointerTile = null;
+    const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
     this.highlightState = highlights; this.availableTiles = new Set(highlights.legalActions.filter(a => a.type === 'shift').map(a => macroIndex(a.from)));
     if (key !== this.highlightKey) { this.highlightKey = key; if (!this.animation) this.drawHighlights(); }
+  }
+
+  private destinationPreview(): number | null {
+    const { selectedTile, focusSquare, legalActions } = this.highlightState;
+    if (selectedTile === null) return null;
+    const tile = this.pointerTile ?? (focusSquare === null ? null : macroOfSquare(focusSquare));
+    return tile !== null && legalActions.some(action => action.type === 'shift' && macroIndex(action.from) === selectedTile && macroIndex(action.to) === tile) ? tile : null;
+  }
+
+  private setPointerTile(tile: number | null) {
+    const previous = this.destinationPreview();
+    this.pointerTile = tile;
+    if (previous !== this.destinationPreview() && !this.animation) this.drawHighlights();
   }
 
   private ring(square: number, color: number, radius: number, width: number) {
@@ -764,7 +782,8 @@ export class BoardScene {
   private drawHighlights() {
     this.clear(this.highlights);
     if (!this.position) return;
-    const { selectedSquare, selectedTile, previewTile, legalActions, showMoves, focusSquare } = this.highlightState;
+    const { selectedSquare, selectedTile, legalActions, showMoves, focusSquare } = this.highlightState;
+    const previewTile = this.destinationPreview();
     {
       const done = new Set<number>(); const directions = new Set<string>();
       for (const action of legalActions) if (action.type === 'shift') {
@@ -807,14 +826,14 @@ export class BoardScene {
 
   setCamera(preset: CameraPreset) {
     this.preset = preset;
-    this.hoveredTile = null;
+    this.pointerLeave();
     this.exhibiting = false; this.cameraTravel = null; this.cameraMode = 'play'; this.camera.fov = this.lensForAspect(); this.camera.updateProjectionMatrix();
     const vectors: Record<CameraPreset, [number, number, number]> = { white: [0, 10.8, 9.3], black: [0, 10.8, -9.3], overview: [8.6, 11.8, 8.6], top: [0, 16.2, 2.7] };
     this.camera.position.set(...vectors[preset]); this.controls.target.set(0, 0.15, 0); this.controls.update();
   }
 
   orbit(dx: number, dy: number, zoom = 0) {
-    this.hoveredTile = null;
+    this.pointerLeave();
     this.exhibiting = false; this.cameraTravel = null;
     const offset = this.camera.position.clone().sub(this.controls.target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
@@ -824,6 +843,7 @@ export class BoardScene {
   }
 
   showcase(entrance = false): void {
+    this.pointerLeave();
     this.cameraTravel = null; this.exhibiting = true; this.cameraMode = 'showcase'; this.camera.fov = this.lensForAspect(); this.camera.updateProjectionMatrix(); this.showcaseStarted = performance.now();
     this.camera.position.set(2.66, 6.8, 20.33); this.controls.target.set(-2.48, -.50, .324); this.controls.update();
     if (entrance && !this.appearance.reducedMotion) {
@@ -931,6 +951,7 @@ export class BoardScene {
     document.removeEventListener('visibilitychange', this.visibilityChange);
     this.renderer.domElement.removeEventListener('pointerdown', this.pointerDown); this.renderer.domElement.removeEventListener('pointermove', this.pointerMove);
     this.renderer.domElement.removeEventListener('pointerup', this.pointerUp); this.renderer.domElement.removeEventListener('pointercancel', this.pointerCancel);
+    this.renderer.domElement.removeEventListener('pointerleave', this.pointerLeave);
     this.renderer.domElement.removeEventListener('contextmenu', this.contextMenu); this.controls.removeEventListener('start', this.cameraGesture); this.controls.removeEventListener('end', this.cameraGestureEnd);
     this.controls.dispose(); this.clear(this.board); this.clear(this.furniture); this.clear(this.highlights);
     this.world?.dispose(); this.clear(this.effects);

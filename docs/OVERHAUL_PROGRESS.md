@@ -374,3 +374,31 @@ evidence are preserved. The versioned Windows 1.1.0 ZIP is built and independent
 verified: 74 exact extracted files, the 31-file application allowlist, all 23
 offline assets and required licenses match clean source `5589860`. The actual
 extracted executable is now undergoing the packaged offline gate.
+
+### Direct destination interaction refinement — September 7
+
+The owner found camera movement, piece movement and Shifts worked well in the
+packaged candidate, but rejected its separate off-board confirmation step.
+Shift now follows ordinary movement: select a source, then click a legal
+destination or press Enter. Selecting the same source cancels; another legal
+source reselects. Hover/focus previews and camera gestures remain inert, while
+promotion still requires a piece choice before a single atomic action.
+The obsolete confirmation control, handler and main-thread preview state are
+removed; all affected real-input harnesses use destination action directly.
+
+Actual mouse/keyboard parity tests pass. They exposed a shared keyboard bug:
+Enter opening a promotion dialog could activate its newly focused Queen button.
+Preventing that board key's default action now preserves explicit choice, with
+cancel/retry tests for ordinary and Shift promotion. Recovery feedback is shown
+after rendering becomes ready so startup cannot consume its display lifetime.
+All 19 mechanics checks, 13 lifecycle checks, and five tutorial-preservation
+checks pass in their recorded runs; the final tutorial/lifecycle runs bind build
+`3629cf6cc06a2acf3d93`. Affected visual and motion recapture is in progress.
+
+The earlier Windows candidate passed its seven packaged runtime checks and a
+second offline restart/export; its automation performance connection ended while
+the executable remained alive and the owner interacted with it. This was not an
+application crash or a completed performance run. Its exact ZIP and evidence
+remain historical candidate material. The direct-interaction build still needs
+updated packaged checks, full-mode/game acceptance, and performance resolution.
+Both performance targets and public release remain open; v1 is unchanged.

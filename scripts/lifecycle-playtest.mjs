@@ -39,7 +39,7 @@ try {
       await page.locator('#shift-mode').click(); await driver.square(item.square);
       assert.match(await page.locator('#notice').innerText(), item.message, item.name);
       assert.deepEqual(await record(), beforeRecord, item.name); assert.equal((await observe()).revision, before.revision, item.name);
-      assert.equal(await page.locator('#confirm-shift').isVisible(), false, item.name);
+      assert.equal(await page.locator('#confirm-shift').count(), 0, `${item.name}: Confirm Shift must be absent`);
     }
   });
   await test('all ordinary and Shift promotion choices before atomic commit', async () => {
@@ -49,6 +49,28 @@ try {
     }
     await page.screenshot({ path: path.join(root, 'underpromotion.png') });
   });
+  await test('ordinary and Shift promotion cancellation retain their source without committing', async () => {
+    for (const kind of ['move', 'shift']) for (const method of ['Escape', 'Cancel']) for (const input of ['mouse', 'keyboard']) {
+      await load(kind === 'move' ? sparse({ h1: 6, h8: -6, a7: 1 }) : fixtures.find(f => f.name === 'shift_promotion').record);
+      const before = await observe(), saved = await record();
+      const select = async square => { if (input === 'mouse') await driver.square(square); else { await driver.focusSquare(square); await page.keyboard.press('Enter'); } };
+      if (kind === 'move') { await select('a7'); await select('a8'); }
+      else { if (input === 'mouse') await page.locator('#shift-mode').click(); else { await page.locator('#scene').focus(); await page.keyboard.press('s'); } await select(driver.macroSquare('B3')); await select(driver.macroSquare('B4')); }
+      await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
+      assert.equal((await observe()).revision, before.revision);
+      if (method === 'Escape') await page.keyboard.press('Escape'); else await page.locator('#promotion-dialog button[value="cancel"]').click();
+      await page.locator('#promotion-dialog').waitFor({ state: 'hidden' });
+      assert.equal((await observe()).revision, before.revision); assert.deepEqual(await record(), saved);
+      assert.equal((await driver.metrics())[kind === 'move' ? 'selectedSquare' : 'selectedTile'], kind === 'move' ? index('a7') : 9);
+      if (method === 'Cancel' && input === 'keyboard') {
+        await select(kind === 'move' ? 'a8' : driver.macroSquare('B4')); await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
+        assert.equal((await observe()).revision, before.revision);
+        await page.locator('#promotion-dialog button[value="N"]').press('Enter');
+        await page.waitForFunction(revision => window.rift.getObservation().revision === revision + 1, before.revision); await driver.ready();
+        assert.equal((await observe()).position.board[kind === 'move' ? 56 : 58], 2, 'Keyboard promotion choice must produce the requested knight');
+      }
+    }
+  });
   await test('loaded rook Shift consumes castling right', async () => { await load(sparse({ e1: 6, a1: 4, h8: -6 }, [4, 10], { castling: 2 })); await act('shift', 'A1', 'A2'); const p = (await observe()).position; assert.equal(p.board[16], 4); assert.equal(p.castling, 0); });
   await test('transport consumes fresh pawn eligibility', async () => { await load(sparse({ e1: 6, a2: 7, h8: -6 }, [1, 10])); await act('shift', 'A1', 'B1'); assert.equal((await observe()).position.board[10], 1); });
   await test('empty Shift expires en passant', async () => { await load(fixtures.find(f => f.name === 'en_passant').record); const action = (await page.evaluate(() => window.rift.getLegalActions())).find(a => a.type === 'shift'); await act('shift', action.from, action.to); assert.equal((await observe()).position.ep_target, -1); assert.equal((await observe()).position.ep_pawn, -1); });
@@ -57,7 +79,13 @@ try {
     for (const policy of ['prompt', 'auto100', 'off']) {
       await load({ ...baseline, draw_policy: policy }); await act('shift', 'A2', 'B2'); const o = await observe(); assert.equal(o.position.halfmove, 100);
       assert.equal(o.outcome?.reason ?? null, policy === 'auto100' ? 'progress100' : null);
-      if (policy === 'prompt') { assert.equal(await page.locator('#quiet-prompt').isVisible(), true); await page.locator('#quiet-dismiss').click(); await page.locator('#show-moves').click(); assert.equal(await page.locator('#quiet-prompt').isVisible(), false); await page.locator('#undo').click(); await page.locator('#undo-dialog').waitFor({ state: 'visible' }); await page.locator('#undo-confirm[value="approve"]').click(); await driver.ready(); await act('shift', 'A2', 'B2'); assert.equal(await page.locator('#quiet-prompt').isVisible(), true); }
+      if (policy === 'prompt') {
+        assert.equal(await page.locator('#quiet-prompt').isVisible(), true); await page.locator('#quiet-dismiss').click(); await page.locator('#show-moves').click(); assert.equal(await page.locator('#quiet-prompt').isVisible(), false);
+        const beforeUndo = await observe(), undoLength = (await record()).actions.length;
+        await page.locator('#undo').click(); await page.locator('#undo-dialog').waitFor({ state: 'visible' }); await page.locator('#undo-confirm[value="approve"]').click();
+        await page.waitForFunction(({ id, revision, length }) => { const state = window.rift.getObservation(); return state.game_id === id && state.revision > revision && window.rift.exportRecord().actions.length === length - 1; }, { id: beforeUndo.game_id, revision: beforeUndo.revision, length: undoLength });
+        await driver.ready(); await act('shift', 'A2', 'B2'); assert.equal(await page.locator('#quiet-prompt').isVisible(), true);
+      }
       if (policy === 'off') assert.equal(await page.locator('.quiet-readout').isVisible(), false);
     }
   });

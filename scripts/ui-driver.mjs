@@ -38,6 +38,21 @@ export function createUiDriver(page) {
     await page.mouse.click(point.x, point.y);
   }
 
+  async function hover(square) {
+    const point = await page.evaluate(index => window.rift.squareScreenPosition(index), squareIndex(square));
+    await page.mouse.move(point.x, point.y);
+  }
+
+  async function focusSquare(square) {
+    const target = squareIndex(square);
+    await page.locator('#scene').focus(); let current = (await metrics()).keyboardSquare;
+    while (current % 8 < target % 8) { await page.keyboard.press('ArrowRight'); current++; }
+    while (current % 8 > target % 8) { await page.keyboard.press('ArrowLeft'); current--; }
+    while (current < target) { await page.keyboard.press('ArrowUp'); current += 8; }
+    while (current > target) { await page.keyboard.press('ArrowDown'); current -= 8; }
+    assert.equal((await metrics()).keyboardSquare, target);
+  }
+
   async function openDrawer(name) {
     const drawer = page.locator('details.drawer').filter({ has: page.locator('summary', { hasText: name }) });
     await drawer.waitFor({ state: 'attached' });
@@ -58,17 +73,19 @@ export function createUiDriver(page) {
 
   async function selectShiftSource(from) {
     await ensureIntent('shift');
-    await square(tileSquare(tileIndex(from)));
-    await page.waitForFunction(tile => window.rift.metrics().selectedTile === tile, tileIndex(from));
+    const tile = tileIndex(from);
+    if ((await metrics()).selectedTile === tile) return;
+    await square(tileSquare(tile));
+    await page.waitForFunction(expected => window.rift.metrics().selectedTile === expected, tile);
   }
 
   async function stageShift(action, onPreview) {
     const before = await observation();
     await selectShiftSource(action.from);
-    await square(tileSquare(tileIndex(action.to)));
-    await page.locator('#confirm-shift').waitFor({ state: 'visible' });
-    assert.equal((await observation()).revision, before.revision, 'A Shift preview must not commit before Confirm Shift');
-    await onPreview?.({ phase: 'preview', revision: before.revision, timestamp: Date.now() });
+    await hover(tileSquare(tileIndex(action.to)));
+    await page.waitForFunction(tile => window.rift.metrics().shiftPreview === tile, tileIndex(action.to));
+    assert.equal((await observation()).revision, before.revision, 'A Shift hover preview must not commit');
+    await onPreview?.({ phase: 'hover-preview', revision: before.revision, timestamp: Date.now() });
     return before;
   }
 
@@ -86,7 +103,7 @@ export function createUiDriver(page) {
       if (!action.promotion) await beforeCommit?.();
       await square(action.to);
     }
-    if (action.type === 'shift') { if (!action.promotion) await beforeCommit?.(); await page.locator('#confirm-shift').click(); }
+    if (action.type === 'shift') { if (!action.promotion) await beforeCommit?.(); await square(tileSquare(tileIndex(action.to))); }
     if (action.promotion) {
       await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
       assert.equal((await observation()).revision, before.revision, 'Promotion must not commit before choice');
@@ -103,12 +120,12 @@ export function createUiDriver(page) {
     await page.locator('#shift-passenger').waitFor({ state: 'visible' });
     assert.equal((await observation()).revision, before.revision, 'Selecting a passenger must not commit a Shift');
     await page.locator('#shift-passenger').click();
-    await square(tileSquare(tileIndex(action.to)));
-    await page.locator('#confirm-shift').waitFor({ state: 'visible' });
-    assert.equal((await observation()).revision, before.revision, 'Passenger Shift must remain a rendered preview until confirmation');
-    await hooks.onPreview?.({ phase: 'preview', revision: before.revision, timestamp: Date.now() });
+    await hover(tileSquare(tileIndex(action.to)));
+    await page.waitForFunction(tile => window.rift.metrics().shiftPreview === tile, tileIndex(action.to));
+    assert.equal((await observation()).revision, before.revision, 'Passenger Shift hover preview must not commit');
+    await hooks.onPreview?.({ phase: 'hover-preview', revision: before.revision, timestamp: Date.now() });
     if (!action.promotion) await hooks.beforeCommit?.();
-    await page.locator('#confirm-shift').click();
+    await square(tileSquare(tileIndex(action.to)));
     if (action.promotion) {
       await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
       assert.equal((await observation()).revision, before.revision, 'Passenger promotion must not commit before choice');
@@ -118,5 +135,5 @@ export function createUiDriver(page) {
     return waitForCommit(before.revision);
   }
 
-  return { camera, enterPlay, loadScenario, macroSquare, metrics, observation, openDrawer, perform, performPassengerShift, ready, record, square };
+  return { camera, enterPlay, focusSquare, hover, loadScenario, macroSquare, metrics, observation, openDrawer, perform, performPassengerShift, ready, record, square };
 }

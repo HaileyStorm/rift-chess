@@ -237,11 +237,12 @@ try {
 
   const learn = await driver.openDrawer('Learn the rift'); await learn.locator('[data-tutorial="loadedShift"]').click(); await driver.ready(); await driver.camera('top');
   const promotionState = await driver.observation(), promotionRecord = await driver.record();
-  await driver.square('c6'); await page.locator('#shift-passenger').click(); await driver.square(driver.macroSquare('B4'));
   for (const method of ['Escape', 'Cancel']) {
-    await page.locator('#confirm-shift').click(); await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
+    await page.locator('#move-mode').click();
+    await driver.square('c6'); await page.locator('#shift-passenger').click(); await driver.square(driver.macroSquare('B4')); await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
     if (method === 'Escape') await page.keyboard.press('Escape'); else await page.locator('#promotion-dialog button[value="cancel"]').click();
     await page.locator('#promotion-dialog').waitFor({ state: 'hidden' }); await waitForStableIdentity(promotionState, promotionRecord, 250);
+    assert.equal((await driver.metrics()).selectedTile, 9, 'Promotion cancellation retains its Shift source, as ordinary promotion retains its piece source.');
   }
   receipt.checks.push({ name: 'visible loaded-Shift promotion Cancel and Escape preserve the complete precommit match', status: 'pass', setup: 'visible Carry one passenger lesson' });
 

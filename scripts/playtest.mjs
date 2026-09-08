@@ -29,6 +29,8 @@ async function test(name, operation) {
   finally { await fs.writeFile(path.join(directory, 'receipt.json'), JSON.stringify(evidence, null, 2)); }
 }
 const fixture = name => fixtures.find(item => item.name === name);
+const sources = (actions, type) => [...new Set(actions.filter(action => action.type === type).map(action => action.from))];
+const keyboardTo = target => driver.focusSquare(target);
 
 try {
   console.log('Loading game.');
@@ -58,6 +60,41 @@ try {
     assert.equal((await observation()).position.board[index('e4')], 1);
     await page.waitForTimeout(300);
   });
+  await test('Shift source and hover are inert, while mouse and keyboard destinations commit exactly once', async () => {
+    const setup = fixture('cut_check_ray'), child = setup.children.find(item => item.action.type === 'shift' && item.action.from === 'C2' && item.action.to === 'B2');
+    assert.ok(child, 'Missing C2-to-B2 Shift fixture');
+    await load(setup.record); const before = await observation(), saved = await driver.record();
+    await page.locator('#shift-mode').click(); await driver.square(driver.macroSquare('C2')); assert.equal((await observation()).revision, before.revision);
+    await driver.hover(driver.macroSquare('B2')); await page.waitForFunction(() => window.rift.metrics().shiftPreview === 5); assert.deepEqual(await driver.record(), saved);
+    await page.locator('#selection').hover(); assert.equal((await driver.metrics()).shiftPreview, null, 'Pointer leave clears the destination preview');
+    await driver.hover(driver.macroSquare('B2')); await driver.camera('overview'); assert.equal((await driver.metrics()).shiftPreview, null, 'Camera changes clear the pointer preview');
+    await driver.camera('top'); await driver.hover(driver.macroSquare('B2'));
+    const target = await page.evaluate(index => window.rift.squareScreenPosition(index), driver.macroSquare('B2'));
+    await page.mouse.move(target.x, target.y); await page.mouse.down(); await page.mouse.move(target.x + 18, target.y + 18); await page.mouse.up(); assert.equal((await observation()).revision, before.revision);
+    assert.equal((await driver.metrics()).shiftPreview, null, 'Canceled drag clears the destination preview');
+    await page.locator('#cancel-selection').click(); assert.deepEqual(await driver.record(), saved);
+    await page.locator('#shift-mode').click(); await driver.square(driver.macroSquare('C2')); await driver.hover(driver.macroSquare('B2')); await driver.square(driver.macroSquare('B2'));
+    await page.waitForFunction(revision => window.rift.getObservation().revision === revision + 1, before.revision); assert.deepEqual((await observation()).position, child.position);
+    await load(setup.record); const keyboardBefore = await observation(); await page.locator('#scene').focus(); await page.keyboard.press('s'); await keyboardTo(driver.macroSquare('C2')); await page.keyboard.press('Enter'); assert.equal((await observation()).revision, keyboardBefore.revision);
+    await keyboardTo(driver.macroSquare('B2')); await page.keyboard.press('Enter'); await page.waitForFunction(revision => window.rift.getObservation().revision === revision + 1, keyboardBefore.revision); assert.deepEqual((await observation()).position, child.position);
+  });
+  await test('ordinary and Shift source clicks or Enter cancel themselves and reselect another legal source', async () => {
+    const openingB = fixture('opening_B'), openingC = fixture('opening_C');
+    await load(openingB.record); const beforeMoves = await driver.record(), moveSources = sources(await page.evaluate(() => window.rift.getLegalActions()), 'move'); assert.ok(moveSources.length >= 2);
+    const [moveA, moveB] = moveSources; await driver.square(moveA); assert.equal((await driver.metrics()).selectedSquare, index(moveA)); await driver.square(moveA); assert.equal((await driver.metrics()).selectedSquare, null);
+    await driver.square(moveA); await driver.square(moveB); assert.equal((await driver.metrics()).selectedSquare, index(moveB)); assert.deepEqual(await driver.record(), beforeMoves);
+    await load(openingB.record); await keyboardTo(index(moveA)); await page.keyboard.press('Enter'); await keyboardTo(index(moveA)); await page.keyboard.press('Enter'); assert.equal((await driver.metrics()).selectedSquare, null);
+    await keyboardTo(index(moveA)); await page.keyboard.press('Enter'); await keyboardTo(index(moveB)); await page.keyboard.press('Enter'); assert.equal((await driver.metrics()).selectedSquare, index(moveB)); assert.deepEqual(await driver.record(), beforeMoves);
+    for (const setup of [openingB, openingC]) {
+      await load(setup.record); const beforeShifts = await driver.record(), shiftSources = sources(await page.evaluate(() => window.rift.getLegalActions()), 'shift'); assert.ok(shiftSources.length >= 2);
+      const [shiftA, shiftB] = shiftSources; await page.locator('#shift-mode').click(); await driver.square(driver.macroSquare(shiftA)); assert.equal((await driver.metrics()).selectedTile, (Number(shiftA[1]) - 1) * 4 + shiftA.charCodeAt(0) - 65);
+      await driver.square(driver.macroSquare(shiftA)); assert.equal((await driver.metrics()).selectedTile, null);
+      await driver.square(driver.macroSquare(shiftA)); await driver.square(driver.macroSquare(shiftB)); assert.equal((await driver.metrics()).selectedTile, (Number(shiftB[1]) - 1) * 4 + shiftB.charCodeAt(0) - 65); assert.deepEqual(await driver.record(), beforeShifts);
+    }
+    await load(openingC.record); const keyboardShifts = sources(await page.evaluate(() => window.rift.getLegalActions()), 'shift'), [shiftA, shiftB] = keyboardShifts; assert.ok(shiftB);
+    await page.locator('#scene').focus(); await page.keyboard.press('s'); await keyboardTo(driver.macroSquare(shiftA)); await page.keyboard.press('Enter'); await keyboardTo(driver.macroSquare(shiftA)); await page.keyboard.press('Enter'); assert.equal((await driver.metrics()).selectedTile, null);
+    await keyboardTo(driver.macroSquare(shiftA)); await page.keyboard.press('Enter'); await keyboardTo(driver.macroSquare(shiftB)); await page.keyboard.press('Enter'); assert.equal((await driver.metrics()).selectedTile, (Number(shiftB[1]) - 1) * 4 + shiftB.charCodeAt(0) - 65);
+  });
   for (const [name, predicate] of [
     ['cut_check_ray', a => a.type === 'shift' && a.from === 'C2' && a.to === 'B2'],
     ['restore_check_ray', a => a.type === 'shift' && a.from === 'B2' && a.to === 'C2'],
@@ -76,7 +113,7 @@ try {
     assert.deepEqual(actual.position, child.position); assert.deepEqual(actual.outcome, child.outcome);
     await screenshot(name);
   });
-  await test('passenger click stages a rendered Shift preview before confirmation', async () => {
+  await test('passenger click stages a rendered Shift hover preview before destination commit', async () => {
     const setup = fixture('shift_promotion'), child = setup.children.find(item => item.action.type === 'shift' && item.action.promotion === 'N');
     assert.ok(child, 'Missing expected loaded Shift promotion'); await load(setup.record);
     const actual = await driver.performPassengerShift({ passenger: 'c6', to: child.action.to, promotion: child.action.promotion }, { onPreview: () => screenshot('passenger-shift-preview') });

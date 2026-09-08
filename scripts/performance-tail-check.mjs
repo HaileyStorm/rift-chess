@@ -366,11 +366,8 @@ async function prepareLoadedPromotion() {
   await page.locator('#shift-passenger').waitFor({ state: 'visible' });
   await page.locator('#shift-passenger').click();
   await driver.square(driver.macroSquare('B4'));
-  await page.locator('#confirm-shift').waitFor({ state: 'visible' });
-  assert.equal((await driver.observation()).revision, before.revision, 'Loaded Shift preview must remain uncommitted');
-  await page.locator('#confirm-shift').click();
   await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
-  assert.equal((await driver.observation()).revision, before.revision, 'Promotion dialog must precede the loaded Shift commit');
+  assert.equal((await driver.observation()).revision, before.revision, 'Destination-click promotion dialog must precede the loaded Shift commit');
   return before;
 }
 

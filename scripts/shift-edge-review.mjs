@@ -105,8 +105,10 @@ try {
     await page.locator('#move-mode').click(); await driver.square('c6'); await page.locator('#shift-passenger').waitFor({ state: 'visible' }); await capture('loaded-promotion-passenger', driver);
     await page.locator('#shift-passenger').click(); await page.waitForFunction(() => window.rift.metrics().selectedTile === 9); await expectEdges(driver, expected, 9, 'loaded promotion selected'); await expectPreview(driver, null, 'loaded promotion source selected');
     assert.equal((await driver.metrics()).shiftEdges.filter(edge => edge.from === 9 && edge.to === 13).length, 1, 'Four promotion choices share one B3-to-B4 edge');
-    await driver.square(driver.macroSquare('B4')); await page.locator('#confirm-shift').waitFor({ state: 'visible' }); assert.equal((await driver.observation()).revision, revision); await expectPreview(driver, 13, 'loaded promotion target selected'); await capture('loaded-promotion-preview', driver);
-    await page.locator('#cancel-selection').click(); assert.deepEqual(await driver.record(), before); await expectEdges(driver, expected, null, 'loaded promotion cancel'); await expectPreview(driver, null, 'loaded promotion cancel');
+    await driver.hover(driver.macroSquare('B4')); await page.waitForFunction(() => window.rift.metrics().shiftPreview === 13); assert.equal((await driver.observation()).revision, revision); assert.deepEqual(await driver.record(), before); await expectPreview(driver, 13, 'loaded promotion hover preview'); await capture('loaded-promotion-preview', driver);
+    await driver.square(driver.macroSquare('B4')); const promotion = page.locator('#promotion-dialog'); await promotion.waitFor({ state: 'visible' }); assert.equal((await driver.observation()).revision, revision); assert.deepEqual(await driver.record(), before);
+    await promotion.locator('button[value="cancel"]').click(); await promotion.waitFor({ state: 'hidden' }); assert.deepEqual(await driver.record(), before); await expectEdges(driver, expected, 9, 'loaded promotion cancel retains source');
+    await driver.hover(driver.macroSquare('B4')); await expectPreview(driver, 13, 'loaded promotion can preview again without a commit');
     const after = await driver.performPassengerShift({ passenger: 'c6', to: 'B4', promotion: 'N' });
     assert.deepEqual(after.position, promoted.position); assert.equal((await driver.record()).actions.at(-1), promoted.action.id); await capture('loaded-promotion-settled', driver);
   });

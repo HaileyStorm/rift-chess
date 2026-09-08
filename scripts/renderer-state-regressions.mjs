@@ -52,11 +52,10 @@ try {
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     const before = await driver.observation(); assert.equal((await driver.metrics()).selectedTile, 9);
     await driver.square(driver.macroSquare('B4'));
-    await page.locator('#confirm-shift').waitFor({ state: 'visible' });
-    assert.match(await page.locator('#selection').innerText(), /Preview Shift B3.*B4/);
+    await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
     assert.equal((await driver.observation()).revision, before.revision);
-    await page.screenshot({ path: path.join(root, 'near-hole-preview.png') });
-    await page.locator('#confirm-shift').click(); await page.locator('#promotion-dialog button[value="N"]').click(); await driver.ready();
+    await page.screenshot({ path: path.join(root, 'near-hole-promotion.png') });
+    await page.locator('#promotion-dialog button[value="N"]').click(); await driver.ready();
     assert.equal((await driver.observation()).revision, before.revision + 1); assert.equal((await driver.observation()).position.board[58], 2);
     receipt.probes.push({ label: 'near-hole-input', evidence: 'Same camera, tutorial position and actual canvas destination click as the failed close-up capture; promotion committed through visible UI.', metrics: await driver.metrics() });
   });

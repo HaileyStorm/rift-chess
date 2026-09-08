@@ -193,7 +193,6 @@ async function loadLoadedShiftTutorial() {
   await driver.square('c6');
   await page.locator('#shift-passenger').click();
   await driver.square(driver.macroSquare('B4'));
-  await page.locator('#confirm-shift').click();
   await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
 }
 

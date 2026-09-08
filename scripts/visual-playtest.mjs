@@ -126,21 +126,21 @@ async function captureLoadedShiftDetail() {
   const action = await page.evaluate(() => window.rift.getLegalActions().find(item => item.type === 'shift' && item.from === 'B3' && item.to === 'B4' && item.promotion === 'N'));
   assert.ok(action, 'Loaded-Shift tutorial is missing the expected B3 to B4 underpromotion');
   const before = await driver.observation();
+  const beforeRecord = await driver.record();
 
   await driver.square('c6');
   await page.locator('#shift-passenger').waitFor({ state: 'visible' });
   assert.equal((await driver.observation()).revision, before.revision, 'Passenger selection must not commit');
-  assert.match(await page.locator('#selection').innerText(), /travel|selected/i);
   await capture('detail-distance-7-loaded-passenger-selected', {
     note: `Actual tutorial passenger click, camera distance ${distance.toFixed(2)}; inspect grounding, seams, cavity, and board corners`,
   });
 
   await page.locator('#shift-passenger').click();
-  await driver.square(driver.macroSquare(action.to));
-  await page.locator('#confirm-shift').waitFor({ state: 'visible' });
-  assert.equal((await driver.observation()).revision, before.revision, 'Rendered Shift preview must remain uncommitted');
-  assert.match(await page.locator('#selection').innerText(), /Preview Shift B3.*B4/i);
-  receipt.structuralChecks.push('Loaded selection and preview expose text plus a Confirm Shift control, so state is not communicated by color alone.');
+  await driver.hover(driver.macroSquare(action.to));
+  await page.waitForFunction(tile => window.rift.metrics().shiftPreview === tile, (Number(action.to[1]) - 1) * 4 + action.to.charCodeAt(0) - 65);
+  assert.equal((await driver.observation()).revision, before.revision, 'Rendered Shift hover preview must remain uncommitted');
+  assert.deepEqual(await driver.record(), beforeRecord, 'Rendered Shift hover preview must preserve the record');
+  receipt.structuralChecks.push('Loaded Shift hover previews the full legal destination without committing it.');
   await capture('detail-distance-7-loaded-shift-preview', {
     note: 'Inspect passenger seating, selected platform, destination cavity, macro-tile seams, bevels, and near frame corners',
   });
@@ -149,7 +149,14 @@ async function captureLoadedShiftDetail() {
   await capture('detail-distance-7-cavity-seams-corners', {
     note: 'Alternate near angle for cavity depth, internal square boundaries, macro seams, and frame-corner finish',
   });
-  await page.locator('#cancel-selection').click();
+  await driver.square(driver.macroSquare(action.to));
+  const promotion = page.locator('#promotion-dialog');
+  await promotion.waitFor({ state: 'visible' });
+  assert.equal((await driver.observation()).revision, before.revision, 'Promotion dialog must remain uncommitted before a choice');
+  await page.keyboard.press('Escape');
+  await promotion.waitFor({ state: 'hidden' });
+  assert.equal((await driver.observation()).revision, before.revision, 'Promotion Escape must preserve the revision');
+  assert.deepEqual(await driver.record(), beforeRecord, 'Promotion Escape must preserve the record');
 }
 
 async function captureCheckAndModalStates() {

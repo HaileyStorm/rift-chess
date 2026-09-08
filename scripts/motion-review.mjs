@@ -51,7 +51,7 @@ try {
       let operation;
       const watch = new Promise((resolve, reject) => {
         operation = driver.perform(result.action, {
-          onPreview: () => page.screenshot({ path: path.join(directory, 'preview.png') }),
+          onPreview: preview => { result.hoverPreview = preview; return page.screenshot({ path: path.join(directory, 'preview.png') }); },
           beforeCommit: () => { void page.waitForFunction(() => window.rift.metrics().animating, null, { polling: 'raf', timeout: 10000 }).then(resolve, reject); },
         });
         void operation.catch(reject);
