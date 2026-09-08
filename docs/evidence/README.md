@@ -8,6 +8,8 @@ evidence. Complete replay records and raw receipt hashes are retained. Private
 browser/native profile paths are omitted. The [current screenshot](overhaul/gallery.png)
 is an unedited application capture. See the [overhaul report](../OVERHAUL_RELEASE.md)
 for scope, owner-accepted performance limits and retained historical evidence.
+The [published release-asset receipt](overhaul/release-assets.json) verifies the
+source tag, GitHub-computed digests and public download routes.
 
 ## v1.0.0 historical evidence
 

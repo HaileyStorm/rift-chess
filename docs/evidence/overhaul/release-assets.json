@@ -1,0 +1,36 @@
+{
+  "schema": "rift-release-assets/1",
+  "tag": "v1.1.0",
+  "checkedAt": "2026-09-08T05:14:14.667Z",
+  "assets": [
+    {
+      "id": 549899186,
+      "name": "Rift-Chess-win32-x64-1.1.0.zip",
+      "bytes": 168860090,
+      "sha256": "50d8ae067fbbb120e16b20d66f8993f74574b7505ed5fec380674f2ee61912cb",
+      "githubDigest": "sha256:50d8ae067fbbb120e16b20d66f8993f74574b7505ed5fec380674f2ee61912cb",
+      "publicUrl": "https://github.com/HaileyStorm/rift-chess/releases/download/v1.1.0/Rift-Chess-win32-x64-1.1.0.zip",
+      "publicHeadStatus": 200,
+      "publicSidecarBytesCompared": false
+    },
+    {
+      "id": 549899184,
+      "name": "Rift-Chess-win32-x64-1.1.0.zip.sha256",
+      "bytes": 97,
+      "sha256": "1890cf340eabae6c1b238c3bd32416e28f3005ad923292d2043594717eb2e348",
+      "githubDigest": "sha256:1890cf340eabae6c1b238c3bd32416e28f3005ad923292d2043594717eb2e348",
+      "publicUrl": "https://github.com/HaileyStorm/rift-chess/releases/download/v1.1.0/Rift-Chess-win32-x64-1.1.0.zip.sha256",
+      "publicHeadStatus": 200,
+      "publicSidecarBytesCompared": true
+    }
+  ],
+  "sourceTagCommit": "7181cc904583c7b2078137ab123a6f937cc0178a",
+  "annotatedTagObject": "9d6bf657d980b91e78a16eb11cb0d2d2906151d5",
+  "applicationSourceCommit": "74b4870d5e854ab167334fa743fc94b6edae0402",
+  "taggedApplicationInputsMatchTestedSource": true,
+  "releaseUrl": "https://github.com/HaileyStorm/rift-chess/releases/tag/v1.1.0",
+  "publishedAt": "2026-09-08T05:12:55Z",
+  "latestReleaseVerified": true,
+  "status": "pass",
+  "scope": "GitHub-computed asset digests match the locally extracted/tested ZIP and sidecar; public download routes return 200 and sidecar bytes match. No claim of a second downloaded/extracted ZIP run."
+}

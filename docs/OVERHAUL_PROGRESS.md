@@ -473,3 +473,15 @@ restart and gameplay. Ten touch-emulation checks also pass across phone/tablet
 viewports on the public build. No additional application change was needed.
 The Windows tag/upload verification is the final publication step at this
 checkpoint. Prior v1 assets, profiles and failed-run receipts remain preserved.
+
+### Published release closure — September 8
+
+Release `v1.1.0` is published from annotated source tag
+`7181cc904583c7b2078137ab123a6f937cc0178a`. GitHub's computed SHA-256 matches
+both the tested ZIP and its checksum file. Public download routes return 200,
+the checksum file matches exact bytes, and GitHub identifies v1.1.0 as latest.
+The tagged application inputs match the tested application revision; subsequent
+documentation records remote verification without moving the tag. Issue #1 now
+tracks remaining frame spikes, with New game status explicitly recorded fixed.
+The public browser, actual upgrade/offline checks and packaged Windows evidence
+are complete under the owner's documented performance acceptance.

@@ -678,7 +678,13 @@
     "runtimeFileCount": 74,
     "applicationArchiveFiles": 31,
     "offlineAssets": 23,
-    "data": "native-windows.json"
+    "data": "native-windows.json",
+    "publication": {
+      "status": "pass",
+      "tag": "v1.1.0",
+      "sourceTagCommit": "7181cc904583c7b2078137ab123a6f937cc0178a",
+      "evidence": "release-assets.json"
+    }
   },
   "localOffline": {
     "status": "pass",

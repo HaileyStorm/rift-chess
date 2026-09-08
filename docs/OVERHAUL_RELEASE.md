@@ -2,7 +2,8 @@
 
 This report records the accepted v1.1.0 application and its evidence limits.
 The public browser deployment, actual v1 upgrade and fresh cold-offline checks
-have passed. GitHub release-asset verification is the remaining publication step.
+have passed. GitHub's uploaded-asset digests and public download routes are also
+verified.
 
 ## Candidate identity
 
@@ -87,6 +88,11 @@ also passes offline restart. See [public hashes](evidence/overhaul/public-assets
 [offline restart](evidence/overhaul/public-offline.json). Pages commit is
 `e6e8dc66e13e34242afdbacbd758b256b4be5e31`.
 
-The tested Windows package is ready for GitHub release publication under the
-accepted limits above. Its remote digest verification will be recorded after
-upload, without changing the package bytes or the open performance follow-up.
+The [Windows v1.1.0 release](https://github.com/HaileyStorm/rift-chess/releases/tag/v1.1.0)
+is published. GitHub's computed ZIP and checksum-file digests match the tested
+files; both public download routes return 200 and the downloaded checksum file
+matches exactly. The [release-asset receipt](evidence/overhaul/release-assets.json)
+binds annotated source tag `7181cc904583c7b2078137ab123a6f937cc0178a` to the
+unchanged tested application inputs. This verifies server digests and download
+routes; it does not claim a second full ZIP download/extraction. The original
+v1 release and the open performance follow-up remain preserved.

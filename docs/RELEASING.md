@@ -18,6 +18,12 @@ commits do not change its bundled application inputs. The public static commit
 is `e6e8dc66e13e34242afdbacbd758b256b4be5e31`. Its 25 runtime file hashes and
 publication metadata are recorded under `docs/evidence/overhaul/`.
 
+The annotated v1.1.0 source tag points to
+`7181cc904583c7b2078137ab123a6f937cc0178a`. Post-publication documentation adds
+the verified GitHub asset digests without moving that tag or changing application
+inputs. `docs/evidence/overhaul/release-assets.json` distinguishes remote digest
+and download-route checks from the already completed local ZIP extraction/run.
+
 The two-phase `scripts/public-upgrade.mjs` preserves a real v1 public profile
 before deployment, then verifies the current worker, every asset, saved state and
 cold offline gameplay after deployment. Use a fresh run for local rehearsals;
