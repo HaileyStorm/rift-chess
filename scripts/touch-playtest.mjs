@@ -41,6 +41,7 @@ async function runContext(profile) {
     const point = square => page.evaluate(index => window.rift.squareScreenPosition(index), typeof square === 'number' ? square : (Number(square[1]) - 1) * 8 + square.charCodeAt(0) - 97);
     const tapControl = async selector => { const control = page.locator(selector); await control.waitFor({ state: 'visible' }); await control.scrollIntoViewIfNeeded(); const box = await control.boundingBox(); assert.ok(box, `No visible touch target for ${selector}`); await tap(session, { x: box.x + box.width / 2, y: box.y + box.height / 2 }); };
     const tapSquare = square => point(square).then(value => tap(session, value));
+    const tapEdge = async from => { const edge = (await driver.metrics()).shiftEdges.find(edge => edge.from === from); assert.ok(edge); await tap(session, edge.screen); };
     const commitMove = async (from, to) => {
       const before = await driver.observation(), record = await driver.record();
       const action = await page.evaluate(({ from, to }) => window.rift.getLegalActions().find(item => item.type === 'move' && item.from === from && item.to === to), { from, to });
@@ -69,9 +70,10 @@ async function runContext(profile) {
     const before = await driver.observation(), record = await driver.record();
     const shift = await page.evaluate(() => window.rift.getLegalActions().find(item => item.type === 'shift' && item.from === 'A2' && item.to === 'B2'));
     assert.equal(before.position.board[16], 2, 'B opening must load A2 with the knight from b1-a3'); assert.ok(shift, 'B opening after b1-a3/g7-g6 must expose loaded A2-B2 Shift'); await tapControl('#shift-mode'); assert.equal(await page.locator('#confirm-shift').count(), 0, 'Confirm Shift must be absent');
-    await tapSquare(driver.macroSquare('A2')); await page.waitForFunction(() => window.rift.metrics().selectedTile === 4);
-    await tapSquare(driver.macroSquare('A2')); await page.waitForFunction(() => window.rift.metrics().selectedTile === null); assert.deepEqual(await driver.record(), record); evidence.checks.push({ name: 'same Shift source tap cancels without mutation' });
-    await tapSquare(driver.macroSquare('A2')); await page.waitForFunction(() => window.rift.metrics().selectedTile === 4); await tapSquare(driver.macroSquare('B2'));
+    await tapSquare('a3'); assert.equal((await driver.metrics()).selectedSquare, 16); assert.equal((await driver.metrics()).selectedTile, null); assert.equal((await driver.metrics()).selectedFeedback.visible, true); await tapSquare('a3');
+    await tapEdge(4); await page.waitForFunction(() => window.rift.metrics().selectedTile === 4);
+    await tapEdge(4); await page.waitForFunction(() => window.rift.metrics().selectedTile === null); assert.deepEqual(await driver.record(), record); evidence.checks.push({ name: 'same Shift source tap cancels without mutation' });
+    await tapEdge(4); await page.waitForFunction(() => window.rift.metrics().selectedTile === 4); await tapSquare(driver.macroSquare('B2'));
     await page.waitForFunction(expected => window.rift.getObservation().revision === expected + 1, before.revision); await driver.ready();
     assert.equal((await driver.observation()).revision, before.revision + 1); assert.equal((await driver.record()).actions.at(-1), shift.id); assert.equal((await driver.record()).actions.length, record.actions.length + 1); evidence.checks.push({ name: 'visible Shift control and source/destination taps commit loaded Shift', actionId: shift.id });
     evidence.manifest.end = await servedBuild(page); assert.deepEqual(evidence.manifest.end, evidence.manifest.start, 'Manifest changed during touch emulation'); receipt.contexts.push(evidence);

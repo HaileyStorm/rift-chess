@@ -129,6 +129,7 @@ async function captureScalingMatrix(page, classification) {
   }
 }
 async function loadedTutorial(page, driver) {
+  await driver.openDrawer('Learn the rift');
   const learn = page.locator('details.drawer').filter({ has: page.locator('[data-tutorial="loadedShift"]') }); if (!await learn.evaluate(element => element.open)) await learn.locator('summary').click();
   await page.locator('[data-tutorial="loadedShift"]').click(); await driver.ready(); await driver.camera('top');
   const actual = await driver.performPassengerShift({ passenger: 'c6', to: 'B4', promotion: 'N' }); assert.equal(actual.position.board[58], 2); receipt.checks.push('visible loaded-Shift tutorial uses passenger selection, hover preview, destination click, and promotion choice');

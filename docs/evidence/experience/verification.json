@@ -1,0 +1,203 @@
+{
+  "status": "verified development candidate; no new release or owner aesthetic acceptance",
+  "date": "2026-09-21",
+  "final_build": {
+    "version": "dd9c8d79e3035f11da44",
+    "assets": [
+      "./api.js",
+      "./assets/game-Bb0WMghv.js",
+      "./assets/index-BsssSumI.css",
+      "./assets/index-C_uzHSSm.js",
+      "./assets/marble-albedo.png",
+      "./assets/reflections/daylight-balanced.png",
+      "./assets/reflections/daylight-high.png",
+      "./assets/reflections/daylight-low.png",
+      "./assets/reflections/gallery-balanced.png",
+      "./assets/reflections/gallery-high.png",
+      "./assets/reflections/gallery-low.png",
+      "./assets/reflections/manifest.json",
+      "./assets/reflections/nocturne-balanced.png",
+      "./assets/reflections/nocturne-high.png",
+      "./assets/reflections/nocturne-low.png",
+      "./assets/worker-u3mupga4.js",
+      "./guide.html",
+      "./icon.svg",
+      "./index.html",
+      "./licenses.txt",
+      "./rules.html",
+      "./support.html",
+      "./support.js"
+    ]
+  },
+  "interaction": {
+    "status": "pass",
+    "checks": [
+      "gallery: piece click overrides tile intent; hover and persistent selection exist without move hints",
+      "nocturne: piece click overrides tile intent; hover and persistent selection exist without move hints",
+      "daylight: piece click overrides tile intent; hover and persistent selection exist without move hints",
+      "knight capture completed through real input; video records attack and death",
+      "menu opens/closes, settings/new match dialogs, immediate persistent sound toggle",
+      "1092x921: selection text fits and dock stays visible",
+      "390x844: selection text fits and dock stays visible"
+    ],
+    "receipt": ".artifacts/experience/final-20260921/receipt.json"
+  },
+  "world": {
+    "status": "pass",
+    "captures": 14,
+    "errors": [],
+    "receipt": ".artifacts/overhaul/experience-final-world-20260921/receipt.json"
+  },
+  "touch": {
+    "status": "pass",
+    "classification": "Chrome CDP touch emulation only; not physical-device or human-usability proof.",
+    "contexts": [
+      {
+        "name": "phone-390x844",
+        "checks": [
+          {
+            "name": "two-finger orbit/pinch changes camera without mutation"
+          },
+          {
+            "name": "same ordinary source tap cancels without mutation"
+          },
+          {
+            "name": "ordinary source/destination taps commit once",
+            "actionIds": [
+              400,
+              17510
+            ]
+          },
+          {
+            "name": "same Shift source tap cancels without mutation"
+          },
+          {
+            "name": "visible Shift control and source/destination taps commit loaded Shift",
+            "actionId": 20825
+          }
+        ]
+      },
+      {
+        "name": "tablet-1024x768",
+        "checks": [
+          {
+            "name": "two-finger orbit/pinch changes camera without mutation"
+          },
+          {
+            "name": "same ordinary source tap cancels without mutation"
+          },
+          {
+            "name": "ordinary source/destination taps commit once",
+            "actionIds": [
+              400,
+              17510
+            ]
+          },
+          {
+            "name": "same Shift source tap cancels without mutation"
+          },
+          {
+            "name": "visible Shift control and source/destination taps commit loaded Shift",
+            "actionId": 20825
+          }
+        ]
+      }
+    ]
+  },
+  "renderer": {
+    "status": "pass",
+    "checks": [
+      {
+        "name": "real UI selected tile snaps its lift immediately under reduced-motion renderer stress",
+        "status": "pass"
+      },
+      {
+        "name": "near angled hole input selects B4 instead of the A4 undercarriage behind it",
+        "status": "pass"
+      },
+      {
+        "name": "actual Explore/Return travel snaps to its recorded destination under renderer stress",
+        "status": "pass"
+      },
+      {
+        "name": "rapid A-B-C renderer changes settle all readiness promises before a real UI move",
+        "status": "pass"
+      },
+      {
+        "name": "check pulse stops on reduced motion and future checks retain only the static cue",
+        "status": "pass"
+      }
+    ]
+  },
+  "captures": {
+    "status": "captured-requires-review",
+    "cases": [
+      {
+        "name": "knight-capture",
+        "status": "captured",
+        "orientation": "upright before contact; bounded quaternion tilt after contact"
+      },
+      {
+        "name": "capture",
+        "status": "captured",
+        "orientation": "upright before contact; bounded quaternion tilt after contact"
+      },
+      {
+        "name": "en-passant",
+        "status": "captured",
+        "orientation": "upright before contact; bounded quaternion tilt after contact"
+      }
+    ],
+    "visual_review": "Inspected actual knight capture frames: bishop stays upright and visible during approach, then tilts/shrinks/fades on contact. Corrected absolute Euler overwrite after attach with baseline quaternion composition.",
+    "receipt": ".artifacts/overhaul/capture-orientation-fixed-20260921/receipt.json"
+  },
+  "audio": {
+    "status": "pass",
+    "source": "current src/audio.ts, real Chromium OfflineAudioContext",
+    "cues": [
+      {
+        "cue": "select",
+        "peak": 0.09080122411251068,
+        "rms": 0.007862334518669903
+      },
+      {
+        "cue": "move",
+        "peak": 0.08629755675792694,
+        "rms": 0.011724791502085443
+      },
+      {
+        "cue": "capture",
+        "peak": 0.11004557460546494,
+        "rms": 0.01862824091265609
+      },
+      {
+        "cue": "shift",
+        "peak": 0.05092579498887062,
+        "rms": 0.008897799539921807
+      },
+      {
+        "cue": "promote",
+        "peak": 0.08162006735801697,
+        "rms": 0.017832331090311498
+      },
+      {
+        "cue": "check",
+        "peak": 0.052369214594364166,
+        "rms": 0.009464031170396785
+      }
+    ],
+    "note": "Select, move, capture, shift, promote, check; 1.2 seconds apart. Waveform checks do not establish subjective audio quality."
+  },
+  "limits": [
+    "Audio waveform rendered in real Chromium OfflineAudioContext, but this session cannot listen to audio input; subjective listening remains unverified.",
+    "Phone/tablet inputs are CDP emulation, not physical-device usability evidence.",
+    "Checks are incremental: final build adds corrected victim orientation after world/touch/renderer checks; their relevant source paths are unchanged.",
+    "The previous 1.1 native package and public release have not been replaced.",
+    "Art direction remains subject to owner judgment."
+  ],
+  "corrected_failures": [
+    "The initial Nocturne platform rim stood upright across play; final source lays it horizontally below board.",
+    "Initial capture Euler tilt flipped black victims below board before contact; quaternion composition and a pre-contact upright regression replace it.",
+    "Two unit checks timed out under concurrent browser load; isolated full-suite rerun passed. Failed local receipts remain preserved."
+  ]
+}

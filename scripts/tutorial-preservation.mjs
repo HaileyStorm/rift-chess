@@ -28,6 +28,7 @@ async function newMatch(layout = 'B', policy = 'off', practice = false) {
   await dialog.locator('input[name="mode"][value="hotseat"]').check(); await dialog.locator(`input[name="layout"][value="${layout}"]`).check(); await dialog.locator(`input[name="draw"][value="${policy}"]`).check(); await dialog.locator('#practice').setChecked(practice); await dialog.locator('#start-game').click(); await driver.ready(); await driver.camera('top');
 }
 async function openLesson(which) {
+  await driver.openDrawer('Learn the rift');
   const learn = page.locator('details.drawer').filter({ has: page.locator(`[data-tutorial="${which}"]`) }); if (!await learn.evaluate(element => element.open)) await learn.locator('summary').click();
   await page.locator(`[data-tutorial="${which}"]`).click(); await driver.ready(); await driver.camera('top'); await page.locator('#lesson-status').waitFor({ state: 'visible' }); await page.locator('#lesson-return').waitFor({ state: 'visible' });
 }

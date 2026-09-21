@@ -20,9 +20,11 @@ Windows 11 x64 is the only tested desktop platform. The app was not tested on Li
 
 ### Controls
 
-Click a piece and then its destination for an ordinary move. For a Shift, select a lit tile edge or choose **Shift mode**, select the tile, then click its legal destination hole. Hover or keyboard focus previews the destination. Selecting the same source cancels; another legal source reselects it. Promotion asks for a piece before the action commits. Legal Shift indicators remain visible even when ordinary move hints are hidden.
+Click a piece and then its destination for an ordinary move. A piece click selects the piece even when **Tile** was active. For a Shift, select a lit tile edge, then click its legal destination hole. For a passenger, select the piece and choose **Move its tile instead**. Hover or keyboard focus previews the destination. Selecting the same source cancels; another legal source reselects it. Promotion asks for a piece before the action commits. Legal Shift indicators remain visible even when ordinary move hints are hidden.
 
-With the board focused, use arrow keys to move focus and **Enter** to select. **S** selects Shift mode, hold **H** to reveal ordinary legal moves, **Escape** clears a selection, **1–4** choose White/Black/Overview/Top cameras, and **Home** resets to White view. Right-drag rotates the camera, the wheel zooms, and two-finger touch orbits/zooms. Camera gestures do not commit moves.
+With the board focused, use arrow keys to move focus and **Enter** to select. **S** selects Tile mode, hold **H** to reveal ordinary legal moves, **Escape** clears a selection, **1–4** choose White/Black/Overview/Top cameras, and **Home** resets to White view. Right-drag rotates the camera, the wheel zooms, and two-finger touch orbits/zooms. Camera gestures do not commit moves.
+
+Use **Menu** for history, lessons, cameras and saves; **Settings** customizes the table. **Sound on/off** mutes the original procedural effects and remembers your preference locally.
 
 Choose local hotseat or play either color against the shipped local search bot. The bot runs in a worker and has no claimed Elo or human-strength rating. Matches support B-rift/C-rift openings, save/import/export/replay, practice undo, draw offers, threefold repetition, and the selected quiet-action policy.
 
@@ -32,7 +34,8 @@ Choose local hotseat or play either color against the shipped local search bot. 
 - [Original decision narrative](docs/05_DECISION_NARRATIVE.md) — including rejected ideas, prior work, and evidence limits
 - [Analysis report](report/RIFT_CHESS_ANALYSIS.html) ([PDF](report/RIFT_CHESS_ANALYSIS.pdf), [Markdown](report/RIFT_CHESS_ANALYSIS.md))
 - [Implementation record](docs/IMPLEMENTATION.md), [local API](docs/API.md), and [playtest record](docs/PLAYTESTS.md)
-- [1.1 overhaul report](docs/OVERHAUL_RELEASE.md) and [current acceptance evidence](docs/evidence/overhaul/acceptance.json)
+- [Current experience pass](docs/EXPERIENCE_V2.md) and [Bend2 architecture exploration](docs/BEND2_OPTIONS.md)
+- [1.1 overhaul report](docs/OVERHAUL_RELEASE.md) and [1.1 release acceptance evidence](docs/evidence/overhaul/acceptance.json)
 
 The implementation has fixture/API conformance checks, real canvas-driven mechanics and lifecycle tests, visual inspection captures, complete-game coverage against the actual local worker, browser offline-restart checks, and an offline packaged-Windows check. These are automated and visual checks, not a human usability study, a balance result, a universal performance guarantee, or a bot-strength rating. See [PLAYTESTS.md](docs/PLAYTESTS.md) for the exact evidence and limitations.
 

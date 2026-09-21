@@ -15,6 +15,7 @@ const position = pieces => { const value = empty(); value.board[0] = 6; value.bo
 const cases = [
   { name: 'ordinary', record: fixture('opening_B').record, match: a => a.from === 'e2' && a.to === 'e4' },
   { name: 'knight', record: fixture('opening_B').record, match: a => a.from === 'g1' && a.to === 'f3' },
+  { name: 'knight-capture', record: position([[21, 2], [38, -3]]), match: a => a.from === 'f3' && a.to === 'g5' },
   { name: 'capture', record: position([[27, 4], [43, -3]]), match: a => a.from === 'd4' && a.to === 'd6' },
   { name: 'checking-move', record: position([[27, 4]]), match: a => a.from === 'd4' && a.to === 'd8' },
   { name: 'castling', record: fixture('orthodox_castling').record, match: a => a.castle === 1 },
@@ -63,6 +64,14 @@ try {
         await page.waitForTimeout(40);
       } while ((await driver.metrics()).animating && result.samples.length < 100);
       await operation; result.observation = await driver.observation();
+      const captureFrames = result.samples.map(sample => sample.metrics.captureFeedback).filter(Boolean);
+      if (captureFrames.length) {
+        const beforeContact = captureFrames.filter(frame => frame.progress < frame.contact);
+        assert.ok(beforeContact.length, 'capture must expose a pre-contact frame');
+        for (const frame of beforeContact) { assert.ok(frame.upY > .999, 'victim must remain upright before contact'); assert.equal(frame.opacity, 1); }
+        assert.ok(captureFrames.every(frame => frame.upY > .65), 'death tilt must preserve the initial orientation');
+        result.captureOrientation = 'upright before contact; bounded quaternion tilt after contact';
+      }
       if (item.name === 'checking-move') { assert.match(await page.locator('#check').innerText(), /check/i); await page.waitForTimeout(1100); }
       await page.screenshot({ path: path.join(directory, 'after.png') });
       assert.deepEqual(await page.evaluate(async () => (await fetch('./precache.json', { cache: 'no-store' })).json()), receipt.build, 'Build changed during motion case');

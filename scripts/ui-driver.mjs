@@ -54,6 +54,7 @@ export function createUiDriver(page) {
   }
 
   async function openDrawer(name) {
+    if (await page.locator('#match-tools').isHidden() && await page.locator('#menu-toggle').count()) await page.locator('#menu-toggle').click();
     const drawer = page.locator('details.drawer').filter({ has: page.locator('summary', { hasText: name }) });
     await drawer.waitFor({ state: 'attached' });
     if (!await drawer.evaluate(element => element.open)) await drawer.locator('summary').click();
@@ -75,7 +76,8 @@ export function createUiDriver(page) {
     await ensureIntent('shift');
     const tile = tileIndex(from);
     if ((await metrics()).selectedTile === tile) return;
-    await square(tileSquare(tile));
+    await focusSquare(tileSquare(tile));
+    await page.keyboard.press('Enter');
     await page.waitForFunction(expected => window.rift.metrics().selectedTile === expected, tile);
   }
 

@@ -34,6 +34,9 @@ const ease = (v: number) => v * v * (3 - 2 * v);
 /** Renders committed board states. Picking returns coordinate IDs, never legal moves. */
 export class BoardScene {
   readonly renderer: THREE.WebGLRenderer;
+  /** Fired once when a capture reaches visual contact; consumers may attach sound. */
+  onImpact: (() => void) | null = null;
+  private captureProbe: { victim: THREE.Group; progress: number; contact: number } | null = null;
   private rendererName: string;
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(37, 1, 0.1, 100);
@@ -62,7 +65,9 @@ export class BoardScene {
   private fadeWarmups: THREE.Mesh[] = [];
   private highlightKey = '';
   private hoveredTile: number | null = null;
+  private hoveredSquare: number | null = null;
   private pointerTile: number | null = null;
+  private pieceFeedbackObjects: THREE.Object3D[] = [];
   private availableTiles = new Set<number>();
   private exhibiting = false;
   private cameraMode: 'play' | 'showcase' = 'play';
@@ -163,14 +168,28 @@ export class BoardScene {
     this.dragged = false;
   };
   private pointerMove = (event: PointerEvent) => {
-    if (this.pressed && Math.hypot(event.clientX - this.pressed.x, event.clientY - this.pressed.y) > 6) { this.dragged = true; this.setPointerTile(null); }
+    if (this.pressed && Math.hypot(event.clientX - this.pressed.x, event.clientY - this.pressed.y) > 6) {
+      this.dragged = true; this.clearPointerHover();
+    }
     if (!this.pressed && !this.animation && !this.cameraInteracting) {
-      const hit = this.hit(event.clientX, event.clientY); this.hoveredTile = hit && this.availableTiles.has(hit.tile) ? hit.tile : null;
-      this.setPointerTile(hit?.tile ?? null);
+      const hit = this.hit(event.clientX, event.clientY);
+      const hoveredSquare = hit?.kind === 'piece' ? hit.square : null;
+      const hoveredTile = hit?.kind === 'piece' ? null : hit && this.availableTiles.has(hit.tile) ? hit.tile : null;
+      const changedSquare = hoveredSquare !== this.hoveredSquare;
+      this.hoveredSquare = hoveredSquare; this.hoveredTile = hoveredTile;
+      this.setPointerTile(hit?.kind === 'piece' ? null : hit?.tile ?? null);
+      if (changedSquare && !this.animation) this.drawHighlights();
       this.renderer.domElement.style.cursor = hit?.kind === 'piece' || hit?.kind === 'shift' || this.hoveredTile !== null || this.destinationPreview() !== null ? 'pointer' : 'default';
     }
   };
-  private pointerLeave = () => { this.hoveredTile = null; this.setPointerTile(null); };
+  private clearPointerHover = () => {
+    const hadFeedback = this.hoveredSquare !== null || this.hoveredTile !== null || this.pointerTile !== null;
+    const previousPreview = this.destinationPreview();
+    this.hoveredSquare = null; this.hoveredTile = null; this.pointerTile = null;
+    if (!this.pressed) this.renderer.domElement.style.cursor = 'default';
+    if ((hadFeedback || previousPreview !== this.destinationPreview()) && !this.animation) this.drawHighlights();
+  };
+  private pointerLeave = () => { this.clearPointerHover(); };
   private pointerCancel = () => { this.pressed = null; this.dragged = true; this.pointerLeave(); };
   private pointerUp = (event: PointerEvent) => {
     const press = this.pressed;
@@ -256,6 +275,11 @@ export class BoardScene {
         const delta = lift - group.position.y;
         if (delta !== 0) { group.position.y = this.appearance.reducedMotion || Math.abs(delta) < .0002 ? lift : group.position.y + delta * .20; this.renderer.shadowMap.needsUpdate = true; }
       }
+    }
+    for (const feedback of this.highlights.children) {
+      const square = feedback.userData.feedbackSquare as number | undefined;
+      const offset = feedback.userData.feedbackOffset as number | undefined;
+      if (typeof square === 'number' && Number.isInteger(square) && offset !== undefined) feedback.position.y = (this.tiles.get(macroOfSquare(square))?.position.y ?? 0) + offset;
     }
     this.updateTileShells();
     if (this.cameraTravel) { const travel = this.cameraTravel; const t = travel.start === null ? 0 : ease(THREE.MathUtils.clamp((now - travel.start) / travel.duration, 0, 1)); this.camera.position.lerpVectors(travel.from, travel.to, t); this.controls.target.lerpVectors(travel.fromTarget, travel.target, t); this.camera.fov = THREE.MathUtils.lerp(travel.fromFov, travel.toFov, t); this.camera.updateProjectionMatrix(); if (t === 1) { this.cameraTravel = null; this.showcaseStarted = now; } }
@@ -374,7 +398,7 @@ export class BoardScene {
 
   private buildBoard(position: Position) {
     this.renderer.shadowMap.needsUpdate = true;
-    this.clear(this.board); this.pieces.clear(); this.tiles.clear(); this.tileShells = []; this.shellPositions.clear();
+    this.clearPieceFeedback(); this.clear(this.board); this.pieces.clear(); this.tiles.clear(); this.tileShells = []; this.shellPositions.clear();
     const colors = TILE_FINISHES[this.appearance.theme];
     for (let tile = 0; tile < 16; tile++) {
       if (position.holes & (1 << tile)) continue;
@@ -446,7 +470,7 @@ export class BoardScene {
   get assembling(): boolean { return this.assemblyState !== null; }
 
   assemblePosition(position: Position, seed: number): Promise<void> {
-    this.skipAnimation(); this.clearCheckPulse();
+    this.skipAnimation(); this.clearCheckPulse(); this.pointerLeave();
     this.position = { ...position, board: [...position.board] };
     this.buildBoard(position);
     if (this.appearance.reducedMotion) return Promise.resolve();
@@ -486,8 +510,16 @@ export class BoardScene {
   async setPosition(position: Position, transition?: { previous: Position; action: Action }): Promise<void> {
     this.skipAnimation();
     this.clearCheckPulse();
+    this.pointerLeave();
     this.position = { ...position, board: [...position.board] };
-    if (!transition || this.appearance.reducedMotion) { this.buildBoard(position); return; }
+    const captureSquare = transition?.action.type === 'move'
+      ? transition.action.en_passant ? transition.previous.ep_pawn : squareIndex(transition.action.to)
+      : -1;
+    const hasCapture = captureSquare >= 0 && transition?.previous.board[captureSquare] !== 0;
+    if (!transition || this.appearance.reducedMotion) {
+      if (transition && this.appearance.reducedMotion && hasCapture) this.onImpact?.();
+      this.buildBoard(position); return;
+    }
     this.buildBoard(transition.previous);
     this.clear(this.highlights);
     const { previous, action } = transition;
@@ -508,20 +540,30 @@ export class BoardScene {
     const rookStart = rook?.position.clone();
     const rookEnd = rook ? point((previous.side === 1 ? 0 : 56) + (action.castle === 1 ? 5 : 3)) : null;
     const passenger = action.type === 'shift' && macroSquares(from).some(square => previous.board[square] !== 0);
-    const duration = action.type === 'shift' ? passenger ? 1040 : 920 : knight ? 620 : victim || action.promotion ? 620 : action.castle ? 560 : 360;
+    const captureContact = victim ? knight ? .72 : .56 : null;
+    this.captureProbe = victim && captureContact ? { victim, progress: 0, contact: captureContact } : null;
+    const duration = action.type === 'shift' ? passenger ? 1040 : 920 : victim ? 780 : knight ? 620 : action.promotion ? 620 : action.castle ? 560 : 360;
     const victimStart = victim?.position.clone();
+    const victimOrientation = victim?.quaternion.clone();
+    const victimTilt = new THREE.Quaternion(), victimTiltAxis = new THREE.Vector3(0, 0, 1);
     const victimFade = victim && victim !== moving ? this.fadePiece(victim) : null;
     const capture = victimStart ? this.captureEffect(victimStart) : null;
     const promotion = action.promotion ? this.promotionEffect(previous, position, action, moving) : null;
     const shift = action.type === 'shift' ? this.shiftEffect(start, end) : null;
     if (shift) this.bumpRift(passenger ? .72 : .48);
-    if (capture) this.bumpRift(.88);
     return new Promise<void>(resolve => {
       let finished = false;
+      let impactFired = false;
+      const direction = end.clone().sub(start).normalize();
+      const impact = () => {
+        if (!captureContact || impactFired) return;
+        impactFired = true; this.bumpRift(.88); this.onImpact?.();
+      };
       this.animation = {
         start: null, duration,
         update: t => {
           const progress = ease(t);
+          if (this.captureProbe) this.captureProbe.progress = t;
           if (shift) {
             const travel = ease(THREE.MathUtils.clamp((t - .16) / .58, 0, 1));
             const lift = t < .18 ? ease(t / .18) : t > .70 ? 1 - ease(Math.min(1, (t - .70) / .12)) : 1;
@@ -529,26 +571,46 @@ export class BoardScene {
             shift.update(t);
             this.riftPulse = Math.max(.08, (t < .18 || t > .78 ? .72 : .22) * (1 - Math.abs(.5 - t)));
           } else if (knight) {
-            const travel = ease(THREE.MathUtils.clamp((t - .20) / .60, 0, 1));
-            const lift = t < .28 ? ease(t / .28) : t > .72 ? ease((1 - t) / .28) : 1;
-            moving.position.lerpVectors(start, end, travel); moving.position.y += lift * 1.65;
+            const contact = captureContact ?? .80;
+            const travel = ease(THREE.MathUtils.clamp((t - .10) / (contact - .10), 0, 1));
+            const lift = t < .28 ? ease(t / .28) : t > contact - .24 ? 1 - ease(THREE.MathUtils.clamp((t - contact + .24) / .24, 0, 1)) : 1;
+            if (captureContact && t >= contact) {
+              const strike = t < contact + .08 ? ease((t - contact) / .08) * .055 : .055 * (1 - ease(THREE.MathUtils.clamp((t - contact - .08) / .16, 0, 1)));
+              moving.position.copy(end).addScaledVector(direction, strike);
+            } else moving.position.lerpVectors(start, end, travel);
+            moving.position.y += lift * 1.65;
           } else {
-            const contact = Math.max(0, 1 - .62 / start.distanceTo(end));
-            const travel = victim ? t < .52 ? ease(t / .52) * contact : t < .72 ? contact : contact + ease((t - .72) / .28) * (1 - contact) : progress;
+            const contact = captureContact ?? .56;
+            let travel: number;
+            if (captureContact) {
+              const distance = Math.max(.1, start.distanceTo(end));
+              const near = Math.min(.88, Math.max(.54, 1 - .24 / distance));
+              const approachEnd = captureContact - .12;
+              const overshoot = .14 / distance;
+              travel = t < .16 ? ease(t / .16) * .06
+                : t < approachEnd ? .06 + ease((t - .16) / (approachEnd - .16)) * (near - .06)
+                : t < contact ? near + ease((t - approachEnd) / .12) * (1 - near)
+                : t < contact + .12 ? 1 + ease((t - contact) / .12) * overshoot
+                : t < contact + .28 ? 1 + overshoot - ease((t - contact - .12) / .16) * overshoot
+                : 1;
+            } else travel = progress;
             moving.position.lerpVectors(start, end, travel); moving.position.y += Math.sin(Math.PI * t) * .10;
           }
-          if (victimFade) {
-            const fade = THREE.MathUtils.clamp((t - .48) / .30, 0, 1);
-            victimFade.opacity(1 - fade);
-            if (victim) { victim.position.y = victimStart!.y + fade * .12; victim.rotation.z = fade * -.16; }
-            capture?.update(fade, t >= .48);
+          if (captureContact && t >= captureContact) impact();
+          if (victim && captureContact !== null) {
+            const fade = ease(THREE.MathUtils.clamp((t - captureContact) / .22, 0, 1));
+            victimFade?.opacity(1 - fade);
+            victim.position.y = victimStart!.y - fade * .35;
+            victim.quaternion.copy(victimOrientation!).multiply(victimTilt.setFromAxisAngle(victimTiltAxis, fade * -.85));
+            victim.scale.setScalar(1 - fade * .65);
+            capture?.update(fade, t >= captureContact);
           }
           if (rook && rookStart && rookEnd) rook.position.lerpVectors(rookStart, rookEnd, progress);
           promotion?.update(t);
         },
         finish: () => {
           if (finished) return;
-          finished = true;
+          finished = true; this.captureProbe = null;
           victimFade?.restore(); promotion?.restore(); this.riftPulse = 0;
           this.clear(this.effects); this.buildBoard(position);
           if (!this.appearance.reducedMotion && inCheck(position, position.side)) this.showCheckPulse(position.board.indexOf(position.side * 6));
@@ -712,6 +774,11 @@ export class BoardScene {
   }
 
   setHighlights(highlights: Highlights) {
+    const stateChanged = highlights.selectedSquare !== this.highlightState.selectedSquare
+      || highlights.selectedTile !== this.highlightState.selectedTile
+      || highlights.focusSquare !== this.highlightState.focusSquare
+      || highlights.showMoves !== this.highlightState.showMoves;
+    if (stateChanged) this.pointerLeave();
     if (highlights.focusSquare !== this.highlightState.focusSquare || highlights.selectedTile !== this.highlightState.selectedTile) this.pointerTile = null;
     const key = `${highlights.selectedSquare}:${highlights.selectedTile}:${highlights.showMoves}:${highlights.focusSquare}:${highlights.legalActions.map(action => action.id).join(',')}`;
     this.highlightState = highlights; this.availableTiles = new Set(highlights.legalActions.filter(a => a.type === 'shift').map(a => macroIndex(a.from)));
@@ -729,6 +796,46 @@ export class BoardScene {
     const previous = this.destinationPreview();
     this.pointerTile = tile;
     if (previous !== this.destinationPreview() && !this.animation) this.drawHighlights();
+  }
+
+  private clearPieceFeedback() {
+    this.pieceFeedbackObjects.splice(0).forEach(object => object.removeFromParent());
+  }
+
+  private pieceSilhouette(square: number, color: number, opacity: number, scale: number) {
+    const source = this.pieces.get(square);
+    if (!source || !source.parent) return false;
+    const shell = new THREE.Group(); shell.userData.rendererShared = true; shell.renderOrder = 6;
+    shell.position.copy(source.position); shell.quaternion.copy(source.quaternion); shell.scale.copy(source.scale).multiplyScalar(scale);
+    source.traverse(object => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const mesh = new THREE.Mesh(object.geometry, this.basicMaterial({ color, side: THREE.BackSide, transparent: true, opacity, depthWrite: false }));
+      mesh.position.copy(object.position); mesh.quaternion.copy(object.quaternion); mesh.scale.copy(object.scale);
+      mesh.renderOrder = 7; mesh.userData.rendererShared = true; mesh.raycast = () => {}; shell.add(mesh);
+    });
+    source.parent.add(shell); this.pieceFeedbackObjects.push(shell); return true;
+  }
+
+  private squareFeedback(square: number, color: number, opacity: number, focus = false) {
+    const tileLift = this.tiles.get(macroOfSquare(square))?.position.y ?? 0;
+    const group = new THREE.Group(); group.userData.rendererShared = true;
+    const center = point(square, tileLift + (focus ? .036 : .046)); group.position.copy(center);
+    group.userData.feedbackSquare = square; group.userData.feedbackOffset = focus ? .036 : .046;
+    const material = this.basicMaterial({ color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide });
+    const pad = new THREE.Mesh(this.geometry(`feedback-pad:${focus}`, () => new THREE.PlaneGeometry(.90, .90)), material);
+    pad.rotation.x = -Math.PI / 2; pad.renderOrder = 4; pad.userData.rendererShared = true; group.add(pad);
+    const size = .91, width = focus ? .028 : .045;
+    const bars = [
+      [size, width, 0, -size / 2], [size, width, 0, size / 2],
+      [width, size, -size / 2, 0], [width, size, size / 2, 0],
+    ] as const;
+    bars.forEach(([barWidth, barDepth, x, z], index) => {
+      const bar = new THREE.Mesh(this.geometry(`feedback-bar:${focus}:${index}`, () => new THREE.BoxGeometry(barWidth, .022, barDepth)), material);
+      bar.position.set(x, .006, z); bar.renderOrder = 5; bar.userData.rendererShared = true; group.add(bar);
+    });
+    const halo = new THREE.Mesh(this.geometry(`feedback-halo:${focus}`, () => new THREE.TorusGeometry(focus ? .53 : .57, focus ? .018 : .032, 8, 48)), material);
+    halo.rotation.x = Math.PI / 2; halo.position.y = .012; halo.renderOrder = 5; halo.userData.rendererShared = true; group.add(halo);
+    this.highlights.add(group);
   }
 
   private ring(square: number, color: number, radius: number, width: number) {
@@ -780,6 +887,7 @@ export class BoardScene {
   }
 
   private drawHighlights() {
+    this.clearPieceFeedback();
     this.clear(this.highlights);
     if (!this.position) return;
     const { selectedSquare, selectedTile, legalActions, showMoves, focusSquare } = this.highlightState;
@@ -803,8 +911,17 @@ export class BoardScene {
         pad.rotation.x = -Math.PI / 2; pad.position.copy(tilePoint(hole, -.035)); this.highlights.add(pad);
       }
     }
-    if (selectedSquare !== null) this.ring(selectedSquare, 0xf2cc83, 0.42, 0.035);
-    if (focusSquare !== null && focusSquare !== selectedSquare) this.ring(focusSquare, 0xffffff, 0.45, 0.016);
+    if (selectedSquare !== null) {
+      this.squareFeedback(selectedSquare, 0xf2cc83, .10);
+      this.pieceSilhouette(selectedSquare, 0xffe2a2, .72, 1.075);
+    }
+    if (focusSquare !== null && focusSquare !== selectedSquare) {
+      this.squareFeedback(focusSquare, 0xffffff, .06, true);
+      this.ring(focusSquare, 0xffffff, 0.49, 0.022);
+    }
+    if (this.hoveredSquare !== null && this.hoveredSquare !== selectedSquare && this.position.board[this.hoveredSquare] * this.position.side > 0) {
+      this.pieceSilhouette(this.hoveredSquare, 0x8ffff0, .56, 1.045);
+    }
     if (showMoves && selectedSquare !== null) {
       const seen = new Set<number>();
       for (const action of legalActions) if (action.type === 'move' && squareIndex(action.from) === selectedSquare) {
@@ -869,6 +986,7 @@ export class BoardScene {
     const motionChanged = next.reducedMotion !== this.appearance.reducedMotion;
     this.appearance = next;
     if (worldChanged || boardChanged || motionChanged) {
+      this.pointerLeave();
       this.skipAnimation();
       this.clearCheckPulse();
       this.controls.enableDamping = !next.reducedMotion;
@@ -924,7 +1042,9 @@ export class BoardScene {
   metrics() {
     const frames = [...this.frameTimes].sort((a, b) => a - b);
     const cpu = [...this.cpuFrameTimes].sort((a, b) => a - b);
-    return { samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
+    const victim = this.captureProbe?.victim;
+    const victimMesh = victim?.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
+    return { captureFeedback: this.captureProbe && victim ? { progress: this.captureProbe.progress, contact: this.captureProbe.contact, position: victim.getWorldPosition(new THREE.Vector3()).toArray(), upY: new THREE.Vector3(0, 1, 0).applyQuaternion(victim.quaternion).y, visible: victim.visible, childVisible: victimMesh?.visible, opacity: (victimMesh?.material as THREE.Material)?.opacity, scale: victim.scale.toArray() } : null, samples: frames.length, renderedFrames: this.renderedFrames, lastRenderedAt: this.lastRenderedAt,
       cameraTravelling: this.cameraTravel !== null, cameraPosition: this.camera.position.toArray(), cameraTravelDestination: this.cameraTravel?.to.toArray() ?? null,
       checkPulseActive: this.checkPulse !== null,
       shiftEdges: this.highlights.children.filter(object => object.userData.shiftEdge).map(object => ({ ...object.userData.shiftEdge, position: object.position.toArray(), screen: this.screenPosition(object.getWorldPosition(new THREE.Vector3())) })),
@@ -936,7 +1056,12 @@ export class BoardScene {
       renderer: this.rendererName, quality: this.appearance.quality,
       shellDraws: this.tileShells.length, shellInstances: this.tileShells.reduce((sum, batch) => sum + batch.parts.length, 0),
       programs: this.renderer.info.programs?.length ?? 0, cachedFadeMaterials: [...this.fadeMaterials.values()].reduce((sum, pool) => sum + pool.length, 0), activeFadeMaterials: [...this.fadeMaterials.values()].reduce((sum, pool) => sum + pool.filter(lease => lease.busy).length, 0),
-      width: this.renderer.domElement.width, height: this.renderer.domElement.height, memory: { ...this.renderer.info.memory }, calls: this.renderer.info.render.calls, callsScope: 'complete scene, shadows and postprocessing', shadowFrames: this.shadowFrames, preset: this.preset, focusSquare: this.highlightState.focusSquare, moveHints: this.highlightState.showMoves, shiftTiles: [...this.availableTiles], cameraDistance: this.camera.position.distanceTo(this.controls.target), assetError: this.assetError };
+      width: this.renderer.domElement.width, height: this.renderer.domElement.height, memory: { ...this.renderer.info.memory }, calls: this.renderer.info.render.calls, callsScope: 'complete scene, shadows and postprocessing', shadowFrames: this.shadowFrames, preset: this.preset, focusSquare: this.highlightState.focusSquare, hoveredSquare: this.hoveredSquare,
+      selectedFeedback: this.highlightState.selectedSquare === null ? null : {
+        square: this.highlightState.selectedSquare, visible: !this.animation && this.pieces.has(this.highlightState.selectedSquare),
+        halo: !this.animation, silhouette: this.pieces.has(this.highlightState.selectedSquare),
+        mode: this.pieces.has(this.highlightState.selectedSquare) ? 'piece-silhouette+square-halo' : 'square-halo',
+      }, moveHints: this.highlightState.showMoves, shiftTiles: [...this.availableTiles], cameraDistance: this.camera.position.distanceTo(this.controls.target), assetError: this.assetError };
   }
 
   resetMetrics() { this.frameTimes.length = 0; this.cpuFrameTimes.length = 0; this.lastFrame = 0; this.shadowFrames = 0; }
@@ -946,14 +1071,15 @@ export class BoardScene {
   }
 
   dispose() {
-    this.skipAnimation(); this.clearCheckPulse(); this.disposed = true; cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
+    this.skipAnimation(); this.clearCheckPulse(); this.pointerLeave(); this.disposed = true; cancelAnimationFrame(this.frame); this.resizeObserver.disconnect();
     this.readyAfterFrame.splice(0).forEach(resolve => resolve());
     document.removeEventListener('visibilitychange', this.visibilityChange);
     this.renderer.domElement.removeEventListener('pointerdown', this.pointerDown); this.renderer.domElement.removeEventListener('pointermove', this.pointerMove);
     this.renderer.domElement.removeEventListener('pointerup', this.pointerUp); this.renderer.domElement.removeEventListener('pointercancel', this.pointerCancel);
     this.renderer.domElement.removeEventListener('pointerleave', this.pointerLeave);
     this.renderer.domElement.removeEventListener('contextmenu', this.contextMenu); this.controls.removeEventListener('start', this.cameraGesture); this.controls.removeEventListener('end', this.cameraGestureEnd);
-    this.controls.dispose(); this.clear(this.board); this.clear(this.furniture); this.clear(this.highlights);
+    this.controls.dispose(); this.clearPieceFeedback(); this.clear(this.board); this.clear(this.furniture); this.clear(this.highlights);
+    this.pieces.clear(); this.tiles.clear(); this.tileShells = []; this.shellPositions.clear();
     this.world?.dispose(); this.clear(this.effects);
     this.fadeWarmups.length = 0;
     this.geometryCache.forEach(geometry => geometry.dispose()); this.materialCache.forEach(material => material.dispose()); this.geometryCache.clear(); this.materialCache.clear();

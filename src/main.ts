@@ -1,4 +1,5 @@
 import './style.css';
+import { GameAudio, type GameAudioEvent } from './audio';
 import { BoardScene } from './render/scene';
 import { Game } from './match/game';
 import { inCheck, macroIndex, macroName, macroOfSquare, macroSquares, present, pieceType, shiftReason, squareName } from './engine/position';
@@ -12,21 +13,29 @@ type Intent = 'move' | 'shift';
 type HitKind = 'piece' | 'tile' | 'shift';
 type Presentation = 'launch' | 'explore' | 'play';
 const app = document.querySelector<HTMLElement>('#app')!;
+app.dataset.tools = 'closed';
+const sound = new GameAudio();
+try { sound.setEnabled(localStorage.getItem('rift-chess.sound') !== 'off'); } catch {}
+window.addEventListener('pointerdown', () => { void sound.unlock(); }, { capture: true });
+window.addEventListener('keydown', () => { void sound.unlock(); }, { capture: true });
+document.addEventListener('visibilitychange', () => { if (document.hidden) sound.stop(); });
+window.addEventListener('pagehide', event => { if (event.persisted) sound.stop(); else sound.dispose(); });
+function playSound(event: GameAudioEvent): void { if (!document.hidden) sound.play(event); }
 
 app.innerHTML = [
-  '<header class="topbar"><a class="brand" href="#home"><span>RIFT</span><b>CHESS</b><i>moving ground · local play</i></a><div class="match-pulse"><span id="match-kind">LOCAL MATCH</span><strong id="turn">White to move</strong></div><nav class="top-actions"><button id="new-game" class="brass">New match</button><button id="undo">Undo</button><button id="settings">Atelier</button><a class="text-link" href="./rules.html">Rules</a></nav></header>',
+  '<header class="topbar"><a class="brand" href="#home"><span>RIFT</span><b>CHESS</b><i>moving ground · local play</i></a><div class="match-pulse"><span id="match-kind">LOCAL MATCH</span><strong id="turn">White to move</strong></div><nav class="top-actions"><button id="new-game" class="brass">New match</button><button id="undo">Undo</button><button id="sound-toggle" aria-pressed="true" title="Mute sound">Sound on</button><button id="settings">Settings</button><button id="menu-toggle" aria-expanded="false" aria-controls="match-tools">Menu</button></nav></header>',
   '<main class="game-shell"><section class="board-area" aria-label="Rift Chess board"><div class="scene-frame"><div id="scene" tabindex="0" role="application" aria-label="3D Rift Chess board. Arrow keys move focus. Enter selects. S selects Shift."></div><section id="launch-surface" class="launch-surface"><p class="eyebrow">THE KINETIC CHESS TABLE</p><h1>A board that<br><em>moves beneath you.</em></h1><p>Rift Chess is a local game of ordinary moves and deliberate shifts. Explore the table, then take your turn.</p><div class="launch-actions"><button id="launch-resume" class="brass">Resume match</button><button id="launch-new">Set a new match</button><button id="launch-explore" class="subtle">Explore the table</button></div><button id="launch-skip" class="skip-link">Skip view</button></section></div>',
   '<div class="turn-strip"><span id="check" class="status" aria-live="polite">Opening position</span><span class="quiet-readout">Quiet <strong id="quiet">0 / 100</strong></span><span id="policy" class="muted">Prompted agreement</span><button id="bot-retry" hidden>Retry opponent</button></div>',
   '<div id="quiet-prompt" class="quiet-prompt response-bar" hidden><p id="quiet-message"></p><button id="quiet-offer-draw">Offer draw</button><button id="quiet-dismiss">Dismiss reminder</button></div><div id="draw-response" class="response-bar" hidden><p id="draw-offer" class="muted" hidden></p><button id="accept-draw" hidden>Accept draw</button><button id="decline-draw" hidden>Decline draw</button></div>',
-  '<section class="action-dock"><div class="intent-control" role="group" aria-label="Action type"><button id="move-mode" class="active" aria-pressed="true">Move</button><button id="shift-mode" aria-pressed="false">Shift <kbd>S</kbd></button></div><div class="selection-copy"><strong id="selection" aria-live="polite">Select a piece to move, or a lit edge to Shift.</strong><span id="selection-detail">Lit edges point toward legal tile slides, even with move hints off.</span></div><div class="selection-actions"><button id="shift-passenger" hidden>Shift this tile</button><button id="cancel-selection" class="subtle" hidden>Cancel <kbd>Esc</kbd></button></div><button id="show-moves" class="subtle" aria-pressed="false">Show moves <kbd>H</kbd></button><button id="skip" class="subtle">Skip animation</button></section></section>',
-  '<aside class="utility-deck" aria-label="Match tools"><details class="drawer" open><summary><span>Record</span><small id="record-count">0 actions</small></summary><div class="drawer-body"><div class="history-head"><span>Move history</span><button id="replay" aria-pressed="false">Replay</button></div><ol id="history" class="history"></ol><div id="replay-controls" class="replay-controls" hidden><button id="replay-back">‹ Previous</button><span id="replay-position"></span><button id="replay-next">Next ›</button><button id="replay-exit">Return to live match</button></div></div></details>',
+  '<section class="action-dock"><div class="intent-control" role="group" aria-label="Action type"><button id="move-mode" class="active" aria-pressed="true" title="Select a piece directly on the board">Piece</button><button id="shift-mode" aria-pressed="false" title="Select a tile or click its lit edge">Tile <kbd>S</kbd></button></div><div class="selection-copy"><strong id="selection" aria-live="polite">Choose a piece. Make your move.</strong><span id="selection-detail">Click a piece to move it. Lit edges move the tiles.</span></div><div class="selection-actions"><button id="shift-passenger" class="subtle" hidden>Move its tile instead</button><button id="cancel-selection" class="subtle" hidden>Cancel <kbd>Esc</kbd></button></div><button id="show-moves" class="subtle" aria-pressed="false">Show moves <kbd>H</kbd></button><button id="skip" class="subtle">Skip animation</button></section></section>',
+  '<aside id="match-tools" class="utility-deck" aria-label="Match tools" hidden><details class="drawer" open><summary><span>Record</span><small id="record-count">0 actions</small></summary><div class="drawer-body"><div class="history-head"><span>Move history</span><button id="replay" aria-pressed="false">Replay</button></div><ol id="history" class="history"></ol><div id="replay-controls" class="replay-controls" hidden><button id="replay-back">‹ Previous</button><span id="replay-position"></span><button id="replay-next">Next ›</button><button id="replay-exit">Return to live match</button></div></div></details>',
   '<details class="drawer"><summary><span>Learn the rift</span><small>4 guided tables</small></summary><div class="drawer-body tutorials"><button data-tutorial="ordinary"><b>01</b> Find an ordinary move</button><button data-tutorial="emptyShift"><b>02</b> Shift an empty tile</button><button data-tutorial="loadedShift"><b>03</b> Carry one passenger</button><button data-tutorial="cutCheck"><b>04</b> Cut a checking ray</button><div class="learn-links"><a href="./guide.html">How to play</a><a href="./rules.html">Full rules</a><button id="about" class="subtle">About & credits</button></div></div></details>',
   '<details class="drawer"><summary><span>Match & view</span><small>camera, draws, saves</small></summary><div class="drawer-body tool-grid"><div class="camera-grid"><button data-camera="white">1 White</button><button data-camera="black">2 Black</button><button data-camera="overview">3 Overview</button><button data-camera="top">4 Top</button><button id="orbit-left">Orbit left</button><button id="orbit-right">Orbit right</button><button id="explore-table">Explore table</button></div><div id="draw-area" class="draw-area"><button id="offer-draw">Offer draw</button></div><button id="resign" class="subtle">Resign match</button><div class="save-row"><button id="export">Export</button><label class="import" tabindex="0" role="button">Import<input id="import" type="file" accept="application/json,.json" /></label><a href="./support.html">Support</a></div></div></details>',
   '<details id="legal-panel" class="drawer"><summary><span>Action ledger</span><small>legal actions</small></summary><div id="legal-list" class="drawer-body legal-list"></div></details></aside></main>',
   '<footer><span>Rift Chess · offline, local, and fully playable without an account</span></footer>',
   '<dialog id="new-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">NEW MATCH</p><button value="cancel">×</button></div><h2>Set the table</h2><p class="muted">Choose who moves, the rift layout, and when a quiet game may end.</p><fieldset><legend>Players</legend><label><input type="radio" name="mode" value="hotseat" checked> Hotseat</label><label><input type="radio" name="mode" value="bot-black"> Play White vs local bot</label><label><input type="radio" name="mode" value="bot-white"> Play Black vs local bot</label></fieldset><fieldset><legend>Opening layout</legend><label><input type="radio" name="layout" value="B"> B-rift</label><label><input type="radio" name="layout" value="C"> C-rift</label><label><input type="radio" name="layout" value="random" checked> Random B / C</label></fieldset><fieldset><legend>Quiet-action policy</legend><label><input type="radio" name="draw" value="prompt" checked> Ask both players at 100</label><label><input type="radio" name="draw" value="auto100"> Draw automatically at 100</label><label><input type="radio" name="draw" value="off"> Continue without a reminder</label></fieldset><label class="checkline"><input id="practice" type="checkbox" checked> Practice match — allow undo</label><p class="muted">A local bot declines draw offers; hotseat opponents can accept or decline here.</p><button id="start-game" class="brass" value="start">Start match</button></form></dialog>',
   '<dialog id="promotion-dialog" class="dialog promotion"><form method="dialog"><p class="eyebrow">PROMOTION</p><h2>Choose the new piece</h2><p class="muted">This choice is made before the move or Shift is committed.</p><div><button value="Q">Queen</button><button value="R">Rook</button><button value="B">Bishop</button><button value="N">Knight</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>',
-  '<dialog id="settings-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">ATELIER</p><button value="close">×</button></div><h2>Appearance & access</h2><label>Environment<select name="theme"><option value="gallery">Gallery</option><option value="nocturne">Observatory</option><option value="daylight">Stone court</option></select></label><label>Pieces<select name="family"><option value="classic">Classic sculpture</option><option value="faceted">Faceted architecture</option></select></label><label>Material<select name="material"><option value="ceramic">Ceramic</option><option value="metal">Metal</option><option value="wood">Wood</option></select></label><label>Quality<select name="quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><label class="checkline"><input name="motion" type="checkbox"> Reduced motion</label><label class="checkline"><input name="contrast" type="checkbox"> High contrast</label><button class="brass" value="apply">Apply</button></form></dialog>',
+  '<dialog id="settings-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">YOUR TABLE</p><button value="close">×</button></div><h2>Make it yours</h2><label>Environment<select name="theme"><option value="gallery">Gallery</option><option value="nocturne">Observatory</option><option value="daylight">Stone court</option></select></label><label>Pieces<select name="family"><option value="classic">Classic sculpture</option><option value="faceted">Faceted architecture</option></select></label><label>Material<select name="material"><option value="ceramic">Ceramic</option><option value="metal">Metal</option><option value="wood">Wood</option></select></label><label>Quality<select name="quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><label class="checkline"><input name="motion" type="checkbox"> Reduced motion</label><label class="checkline"><input name="contrast" type="checkbox"> High contrast</label><button class="brass" value="apply">Apply</button></form></dialog>',
   '<dialog id="about-dialog" class="dialog"><form method="dialog"><div class="dialog-title"><p class="eyebrow">RIFT CHESS</p><button value="close">×</button></div><h2>Chess on moving ground.</h2><p>Designed and built as an offline, local game. The rules are Rift Chess 1.0.</p><p>The xkcd reference is credited as a link, not bundled artwork: <a href="https://xkcd.com/3139/" target="_blank" rel="noreferrer">xkcd #3139</a>. Built with original procedural geometry.</p><p><a href="./guide.html">How to play</a> · <a href="./support.html">Support</a> · <a href="./licenses.txt">Licenses</a></p><button class="brass" value="close">Close</button></form></dialog><div id="notice" role="status" aria-live="polite"></div>'
 ].join('');
 app.insertAdjacentHTML('beforeend', '<dialog id="actor-dialog" class="dialog actor-dialog"><form method="dialog"><p class="eyebrow">MATCH ACTION</p><h2 id="actor-dialog-title">Choose a side</h2><p id="actor-dialog-detail" class="muted"></p><div><button id="actor-white" value="white">White</button><button id="actor-black" value="black">Black</button></div><button value="cancel" class="subtle">Cancel</button></form></dialog>');
@@ -63,12 +72,12 @@ function invalidateActions(): void { actionCache = null; }
 function setPresentation(next: Presentation): void { presentation = next; app.dataset.presentation = next; $('launch-surface').dataset.presentation = next; $('launch-surface').hidden = next === 'play'; }
 function enterPlay(skip = false): void { if (skip && scene.assembling) scene.skipAnimation(); scene.enterPlay(skip || preferences.reducedMotion ? 0 : undefined); setPresentation('play'); try { sessionStorage.setItem('rift-launch-seen', '1'); } catch {} }
 function exploreTable(): void { setPresentation('explore'); scene.showcase(); }
-function clearSelection(message = 'Select a piece to move, or a lit edge to Shift.'): void { selectedSquare = null; selectedTile = null; passengerTile = null; intent = 'move'; selection.textContent = message; selectionDetail.textContent = 'Lit edges point toward legal tile slides, even with move hints off.'; }
+function clearSelection(message = 'Choose a piece. Make your move.'): void { selectedSquare = null; selectedTile = null; passengerTile = null; intent = 'move'; selection.textContent = message; selectionDetail.textContent = 'Click a piece to move it. Lit edges move the tiles.'; }
 function cancelSelection(): void {
   const selectedIntent = intent;
   clearSelection('Selection cancelled.');
   intent = selectedIntent;
-  if (intent === 'shift') selectionDetail.textContent = 'Select a tile, or choose Move for a piece.';
+  if (intent === 'shift') selectionDetail.textContent = 'Click a lit tile edge, or select a piece directly.';
 }
 function reasonText(reason: string | null, tile: number): string {
   if (reason === 'occupancy') {
@@ -87,6 +96,7 @@ function save(): void {
 function chooseActor(title: string, detail: string, action: (side: 1 | -1) => void): void { actorDialogAction = action; $('actor-dialog-title').textContent = title; $('actor-dialog-detail').textContent = detail; ($('actor-dialog') as HTMLDialogElement).showModal(); }
 function updateHighlights(): void { scene.setHighlights({ selectedSquare, selectedTile, legalActions: actions(), showMoves: preferences.showMoves || revealHeld, focusSquare: document.activeElement === sceneHost ? keyboardSquare : null }); }
 async function renderScene(assemble = false): Promise<void> {
+  sound.stop();
   const epoch = ++sceneEpoch; updateHighlights(); animating = assemble && !preferences.reducedMotion;
   try {
     await (assemble ? scene.assemblePosition(visiblePosition(), crypto.getRandomValues(new Uint32Array(1))[0]!) : scene.setPosition(visiblePosition()));
@@ -140,6 +150,7 @@ function refresh(): void {
   refreshHistory(); refreshDraw(observation.draw_offer, observation.outcome !== null); replayControls.hidden = replayIndex === null; $('replay').setAttribute('aria-pressed', String(replayIndex !== null)); $('replay-position').textContent = replayIndex === null ? '' : replayIndex + ' / ' + game.actions.length;
   if (finished || position.halfmove < 100 || game.draw_policy !== 'prompt' || replayIndex !== null) $('quiet-prompt').hidden = true;
   if (!finished && replayIndex === null && game.draw_policy === 'prompt' && position.halfmove >= 100) maybeQuietPrompt(position.side);
+  app.dataset.selection = selectedSquare !== null ? 'piece' : selectedTile !== null ? 'tile' : 'none';
   updateHighlights(); refreshLegalPanel();
 }
 function tutorialSolved(action: Action, previous: Position): boolean {
@@ -155,10 +166,13 @@ async function commit(action: Action, botAction = false): Promise<void> {
   if (animating || replayIndex !== null || game.observe().outcome !== null || (!botAction && isBotTurn())) return;
   const previous = game.state, expected = game.revision, gameId = game.game_id;
   try { game.step(action.id, expected, gameId); invalidateActions(); } catch (error) { say(error instanceof Error ? error.message : 'That action is no longer legal.'); refresh(); return; }
+  if (action.type === 'shift') playSound('shift');
+  else if (!action.en_passant && !previous.board[(Number(action.to[1]) - 1) * 8 + action.to.charCodeAt(0) - 97]) playSound('move');
   const completed = tutorialSolved(action, previous); if (game.state.halfmove < 100) promptEpisodes = { white: false, black: false }; clearSelection(label(action) + '. ' + (game.state.side === 1 ? 'White' : 'Black') + ' to move.'); save(); animating = true; refresh();
   const epoch = ++sceneEpoch;
   try { await scene.setPosition(game.state, { previous, action }); } finally { if (sceneEpoch === epoch) animating = false; }
   if (game.game_id !== gameId || sceneEpoch !== epoch) return;
+  if (action.promotion) playSound('promote'); else if (inCheck(game.state, game.state.side)) playSound('check');
   if (completed) { say('Lesson complete — that legal solution works.'); tutorial = null; } refresh(); if (isBotTurn()) askBot();
 }
 async function chooseAction(candidates: Action[]): Promise<void> {
@@ -178,20 +192,13 @@ function chooseMove(square: number): void {
     selectedSquare = null;
   }
   if (selectedSquare === null) {
+    if (game.state.board[square] * game.state.side <= 0) { say('Select a friendly piece or a lit tile edge.'); return; }
     const tile = macroOfSquare(square), canShift = actions().some(action => action.type === 'shift' && action.from === macroName(tile));
-    if (!actions().some(action => action.type === 'move' && action.from === squareName(square))) {
-      if (game.state.board[square] * game.state.side > 0 && canShift) { passengerTile = tile; selectedTile = null; selection.textContent = squareName(square) + ' can travel with its platform.'; selectionDetail.textContent = 'There is no ordinary move here. Choose Shift this tile to move the platform and its passenger.'; return; }
-      if (game.state.board[square] * game.state.side > 0) {
-        selectedSquare = square; selectedTile = passengerTile = null; intent = 'move';
-        const reason = reasonText(shiftReason(game.state, tile), tile);
-        selection.textContent = squareName(square) + ' selected; it has no legal ordinary move.';
-        selectionDetail.textContent = reason;
-        say(squareName(square) + ' has no legal ordinary move. ' + reason);
-        return;
-      }
-      say('Select a friendly piece or a lit tile edge.'); return;
-    }
-    selectedSquare = square; selectedTile = null; passengerTile = canShift ? tile : null; intent = 'move'; selection.textContent = squareName(square) + ' selected; choose an ordinary destination.'; selectionDetail.textContent = canShift ? 'You can also choose Shift this tile to transport its platform.' : 'Choose a destination, select another piece, or cancel.';
+    const canMove = actions().some(action => action.type === 'move' && action.from === squareName(square));
+    selectedSquare = square; selectedTile = null; passengerTile = canShift ? tile : null; intent = 'move';
+    selection.textContent = ['', 'Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][pieceType(game.state.board[square])] + ' · ' + squareName(square);
+    selectionDetail.textContent = canMove ? 'Choose a destination. Select this piece again to cancel.'
+      : canShift ? 'No ordinary moves. You can move its tile instead.' : 'No legal moves from here. Select another piece.';
   } else { const source = selectedSquare; void chooseAction(actions().filter(action => action.type === 'move' && action.from === squareName(source) && action.to === squareName(square))); }
 }
 function chooseShiftSource(tile: number): void {
@@ -208,13 +215,14 @@ function chooseShiftTarget(tile: number): void {
 }
 function pick(square: number, tile: number, hitKind?: HitKind): void {
   if (boardLocked()) return;
+  const beforeSquare = selectedSquare, beforeTile = selectedTile;
   keyboardSquare = square;
   if (selectedSquare !== null && hitKind !== 'shift') chooseMove(square);
   else if (hitKind === 'piece') {
-    if (intent === 'shift') chooseShiftSource(tile);
-    else chooseMove(square);
+    chooseMove(square);
   } else if (hitKind === 'shift' || hitKind === 'tile' || intent === 'shift') { if (selectedTile === null || hitKind === 'shift' || !(game.state.holes & (1 << tile))) chooseShiftSource(tile); else chooseShiftTarget(tile); }
   else chooseMove(square);
+  if ((selectedSquare !== null && selectedSquare !== beforeSquare) || (selectedTile !== null && selectedTile !== beforeTile)) playSound('select');
   refresh();
 }
 function resetBot(): void { bot?.terminate(); bot = null; botFailed = false; }
@@ -270,12 +278,17 @@ function restore(): string | null {
 setPresentation('launch');
 // Let the loading state paint before WebGL setup and initial shader compilation.
 await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-scene = new BoardScene(sceneHost, pick); applyPreferences(); const restorationNotice = restore();
+scene = new BoardScene(sceneHost, pick); scene.onImpact = () => playSound('capture'); applyPreferences(); const restorationNotice = restore();
 void scene.whenReady().then(() => { boardReady = true; $('startup').hidden = true; refresh(); if (restorationNotice) say(restorationNotice); if (isBotTurn()) askBot(); }).catch(error => { $('startup').querySelector('span')!.textContent = error.message; say(error.message); });
 $('launch-resume').textContent = restoredExistingGame ? 'Resume match' : 'Take your seat';
 try { if (restoredExistingGame || sessionStorage.getItem('rift-launch-seen') === '1') setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } } catch { if (restoredExistingGame) setPresentation('play'); else { setPresentation('launch'); scene.showcase(true); } }
 $('explore-table').onclick = exploreTable;
 $('launch-resume').onclick = () => enterPlay(); $('launch-skip').onclick = () => enterPlay(true); $('launch-return').onclick = () => enterPlay(); $('launch-new').onclick = () => { ($('new-dialog') as HTMLDialogElement).showModal(); }; $('launch-explore').onclick = exploreTable;
+$('menu-toggle').onclick = () => { const tools = $('match-tools'); tools.hidden = !tools.hidden; $('menu-toggle').setAttribute('aria-expanded', String(!tools.hidden)); app.dataset.tools = tools.hidden ? 'closed' : 'open'; };
+$('sound-toggle').textContent = sound.enabled ? 'Sound on' : 'Sound off';
+$('sound-toggle').setAttribute('aria-pressed', String(sound.enabled));
+$('sound-toggle').title = sound.enabled ? 'Mute sound' : 'Enable sound';
+$('sound-toggle').onclick = async () => { sound.setEnabled(!sound.enabled); $('sound-toggle').textContent = sound.enabled ? 'Sound on' : 'Sound off'; $('sound-toggle').setAttribute('aria-pressed', String(sound.enabled)); $('sound-toggle').title = sound.enabled ? 'Mute sound' : 'Enable sound'; try { localStorage.setItem('rift-chess.sound', sound.enabled ? 'on' : 'off'); } catch {} if (sound.enabled) { await sound.unlock(); playSound('select'); } };
 $('lesson-return').onclick = returnFromLesson;
 $('new-game').onclick = () => { const dialog = $('new-dialog') as HTMLDialogElement; dialog.returnValue = ''; dialog.showModal(); };
 $('new-dialog').addEventListener('close', () => {
@@ -308,7 +321,7 @@ $('resign').onclick = () => {
   if (mode === 'hotseat') chooseActor('Who resigns?', 'Either seated player can resign a hotseat match.', resign); else resign(humanSide());
 };
 $('move-mode').onclick = () => { clearSelection('Move intent: select one of your pieces.'); refresh(); };
-$('shift-mode').onclick = () => { clearSelection('Shift intent: select a legal tile or a visible Shift handle.'); intent = 'shift'; selectionDetail.textContent = 'A passenger click offers “Shift this tile”; it never starts a Shift itself.'; refresh(); };
+$('shift-mode').onclick = () => { clearSelection('Shift intent: select a legal tile or a visible Shift handle.'); intent = 'shift'; selectionDetail.textContent = 'Click a lit edge to move a tile. Clicking a piece selects the piece.'; refresh(); };
 $('shift-passenger').onclick = () => { if (passengerTile !== null) chooseShiftSource(passengerTile); refresh(); };
 $('cancel-selection').onclick = () => { cancelSelection(); refresh(); };
 $('show-moves').onclick = () => { preferences.showMoves = !preferences.showMoves; save(); refresh(); };

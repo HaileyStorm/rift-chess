@@ -28,6 +28,7 @@ async function probe(label, appearance) {
   const entry = { label, appearance, before, immediate: states.immediate, settled: states.settled, evidence: 'renderer API stress probe; no game action dispatched' }; receipt.probes.push(entry); await persist(); return entry;
 }
 async function openLoadedTutorial() {
+  if (await page.locator('#match-tools').isHidden()) await page.locator('#menu-toggle').click();
   const learn = page.locator('details.drawer').filter({ has: page.locator('[data-tutorial="loadedShift"]') }); if (!await learn.evaluate(element => element.open)) await learn.locator('summary').click();
   await page.locator('[data-tutorial="loadedShift"]').click(); await driver.ready(); await driver.camera('top');
 }

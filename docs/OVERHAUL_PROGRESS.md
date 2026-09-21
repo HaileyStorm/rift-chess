@@ -1,3 +1,13 @@
+# Current experience pass — 2026-09-21
+
+The owner requested a further visual and interaction pass after the 1.1 release,
+including a blend of physical diorama and surreal rift themes. Current work and
+verification are tracked in [EXPERIENCE_V2.md](EXPERIENCE_V2.md). This development
+candidate is not a newly published release or owner acceptance of its aesthetics.
+The older entries below are historical records of the 1.1 development process.
+
+---
+
 # Overhaul progress — 2026-09-07
 
 **Overall: approximately 85%. Goal active. No replacement release is approved or published.** The full contract is [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md), including the owner's correction that substantial WOW factor is mandatory beyond geometry/UI repair.

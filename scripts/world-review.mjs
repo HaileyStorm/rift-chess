@@ -16,7 +16,7 @@ async function shot(name) {
   if (layout.mode === 'play' && layout.viewport[0] >= 951) for (const [name, box] of Object.entries(layout.boxes)) assert.ok(box.y >= -1 && box.y + box.height <= layout.viewport[1] + 1, name + ' is outside the playing viewport');
   await page.screenshot({ path: path.join(root, name + '.png') }); receipt.captures.push({ name, layout, metrics: await page.evaluate(() => window.rift.metrics()) });
 }
-async function returnToPlay() { await event('before-return'); await page.locator('#launch-return').click(); await page.waitForFunction(() => !window.rift.metrics().cameraTravelling); await event('after-return'); }
+async function returnToPlay() { await event('before-return'); await page.locator('#launch-return').click(); await page.waitForFunction(() => !window.rift.metrics().cameraTravelling); await event('after-return'); if (await page.locator('#menu-toggle').getAttribute('aria-expanded') === 'true') await page.locator('#menu-toggle').click(); }
 try {
   await page.goto(process.env.RIFT_TEST_URL || 'http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 }); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
   receipt.readyAt = await page.evaluate(() => ({ at: performance.now(), metrics: window.rift.metrics() }));
@@ -31,6 +31,7 @@ try {
     await page.locator('#settings').click(); const dialog = page.locator('dialog[open]');
     await dialog.locator('[name="theme"]').selectOption(theme); await dialog.locator('[name="family"]').selectOption('classic'); await dialog.locator('[name="material"]').selectOption('ceramic');
     await dialog.getByRole('button', { name: 'Apply', exact: true }).click(); await page.evaluate(() => window.rift.assetsReady());
+    if (await page.locator('#match-tools').isHidden()) await page.locator('#menu-toggle').click();
     if (!(await page.locator('#explore-table').isVisible())) await page.locator('details').filter({ has: page.locator('#explore-table') }).locator('summary').click();
     await page.locator('#explore-table').click(); await shot(theme + '-world');
     await returnToPlay(); await page.locator('#scene').focus(); await page.keyboard.press('1'); await shot(theme + '-white');

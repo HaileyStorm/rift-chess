@@ -24,19 +24,19 @@ type Palette = {
 
 const PALETTES: Record<WorldTheme, Palette> = {
   gallery: {
-    background: 0x0c171d, fog: 0x1a3039, stone: 0x9c9f91, darkStone: 0x344d50,
-    bronze: 0x805b31, brass: 0xd7af68, energy: 0x86cad3, fill: 0x9dbdc4,
-    floor: 0x293e40, key: 0xffdfaf,
+    background: 0x120f19, fog: 0x2b2432, stone: 0xb09b7d, darkStone: 0x2e2c3a,
+    bronze: 0x7d4d2f, brass: 0xe2b86d, energy: 0x67d8d7, fill: 0x7594bd,
+    floor: 0x211f2e, key: 0xffbd82,
   },
   nocturne: {
-    background: 0x050817, fog: 0x0b1230, stone: 0x28334c, darkStone: 0x10172b,
-    bronze: 0x45547c, brass: 0xa6b5e8, energy: 0x77dfff, fill: 0x788cc4,
-    floor: 0x101936, key: 0xc7d7ff,
+    background: 0x03040d, fog: 0x070a1e, stone: 0x384363, darkStone: 0x11152b,
+    bronze: 0x3e3b70, brass: 0xaebdff, energy: 0x69ddff, fill: 0x6877dd,
+    floor: 0x0c1029, key: 0xd6e0ff,
   },
   daylight: {
-    background: 0x829eaa, fog: 0x829ca4, stone: 0xb9aa8b, darkStone: 0x716752,
-    bronze: 0x806041, brass: 0xd3aa5c, energy: 0x75c5bb, fill: 0xd9f4ee,
-    floor: 0xa6b6ae, key: 0xffefc9,
+    background: 0xb7d2cd, fog: 0xb7cdc8, stone: 0xcfc09f, darkStone: 0x5d756f,
+    bronze: 0x935e37, brass: 0xe8c56e, energy: 0x4dc9ad, fill: 0xe1f8ef,
+    floor: 0xa4c3b8, key: 0xffdca1,
   },
 };
 
@@ -328,77 +328,31 @@ class WorldCraft {
     return mesh;
   }
 
-  private domePanel(phiStart: number, phiLength: number) {
-    const steps = this.segmentCount;
-    const row = steps + 1;
-    const sheetSize = row * row;
-    const positions: number[] = [], indices: number[] = [];
-    for (const radius of [13.2, 12.94]) {
-      for (let j = 0; j <= steps; j++) for (let i = 0; i <= steps; i++) {
-        const theta = .08 + j / steps * (Math.PI / 2 - .08);
-        const phi = phiStart + i / steps * phiLength;
-        positions.push(-radius * Math.cos(phi) * Math.sin(theta), radius * Math.cos(theta), radius * Math.sin(phi) * Math.sin(theta));
-      }
-    }
-    for (let j = 0; j < steps; j++) for (let i = 0; i < steps; i++) {
-      const a = j * row + i, b = a + 1, c = a + row, d = c + 1;
-      indices.push(a, c, b, b, c, d);
-      indices.push(a + sheetSize, b + sheetSize, c + sheetSize, b + sheetSize, d + sheetSize, c + sheetSize);
-    }
-    // Close all four panel edges; interior surfaces have their own outward winding.
-    const edge: number[] = [];
-    for (let i = 0; i <= steps; i++) edge.push(i);
-    for (let j = 1; j <= steps; j++) edge.push(j * row + steps);
-    for (let i = steps - 1; i >= 0; i--) edge.push(steps * row + i);
-    for (let j = steps - 1; j > 0; j--) edge.push(j * row);
-    for (let i = 0; i < edge.length; i++) {
-      const a = edge[i], b = edge[(i + 1) % edge.length];
-      indices.push(a, b, a + sheetSize, b, b + sheetSize, a + sheetSize);
-    }
-    const geometry = this.resources.geometry(new THREE.BufferGeometry());
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.setIndex(indices); geometry.computeVertexNormals();
-    const mesh = new THREE.Mesh(geometry, this.mats.stone); mesh.name = 'observatory-dome-panel';
-    return mesh;
+  private squarePillar(x: number, z: number, height: number, width: number, depth: number, shaft: THREE.Material, cap: THREE.Material = this.mats.stone) {
+    const base = -3.3;
+    const plinth = this.add(this.box(width * 1.55, .34, depth * 1.55, cap, .08));
+    plinth.position.set(x, base + .17, z);
+    const shaftMesh = this.add(this.box(width, height, depth, shaft, .07));
+    shaftMesh.position.set(x, base + .34 + height / 2, z);
+    const capital = this.add(this.box(width * 1.35, .28, depth * 1.35, cap, .06));
+    capital.position.set(x, base + .34 + height + .14, z);
+    return shaftMesh;
   }
 
-  private water(width: number, depth: number, x: number, y: number, z: number, night = false) {
-    const material = this.resources.material(new THREE.ShaderMaterial({
-      uniforms: { uTime: this.volumeTime, uNight: { value: night ? 1 : 0 } },
-      vertexShader: `uniform float uTime; varying vec3 vWater; varying vec2 vWavePosition;
-        void main() {
-          vec3 p = position;
-          float a = p.x * 1.15 + p.y * .48 + uTime * .42;
-          float b = p.x * -.35 + p.y * 1.62 - uTime * .31;
-          p.z += sin(a) * .025 + sin(b) * .016;
-          vWavePosition = position.xy;
-          vWater = (modelMatrix * vec4(p, 1.0)).xyz;
-          gl_Position = projectionMatrix * viewMatrix * vec4(vWater, 1.0);
-        }`,
-      fragmentShader: `uniform float uTime; uniform float uNight; varying vec3 vWater; varying vec2 vWavePosition;
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
-        void main() {
-          if (max(abs(vWater.x), abs(vWater.z)) < 4.2) discard;
-          vec3 view = normalize(cameraPosition - vWater);
-          float a = vWavePosition.x * 1.15 + vWavePosition.y * .48 + uTime * .42;
-          float b = vWavePosition.x * -.35 + vWavePosition.y * 1.62 - uTime * .31;
-          vec3 n = normalize(vec3(-cos(a)*.02875 + cos(b)*.0056, 1.0, cos(a)*.012 + cos(b)*.02592));
-          float fresnel = pow(1.0 - max(dot(n, view), 0.0), 3.0);
-          float glint = pow(max(dot(reflect(normalize(vec3(.6,-1.0,-.3)), n), view), 0.0), 130.0);
-          vec2 p = vWater.xz;
-          float caustic = pow(.5 + .5 * sin(p.x * 2.4 + sin(p.y * 1.7 + uTime * .2)) * sin(p.y * 2.1 - uTime * .16), 9.0);
-          vec3 day = mix(vec3(.055,.20,.18), vec3(.53,.72,.70), fresnel) + vec3(.47,.65,.42) * caustic * .16;
-          vec3 night = mix(vec3(.003,.008,.022), vec3(.025,.045,.10), fresnel);
-          vec2 cell = floor(p * .7); vec2 f = fract(p * .7) - .5;
-          float star = exp(-dot(f,f)*180.0) * step(.982, hash(cell));
-          night += vec3(.19,.31,.54) * star * (.65 + .35 * sin(uTime * .35 + hash(cell) * 6.28));
-          gl_FragColor = vec4(mix(day, night, uNight) + glint * mix(vec3(1.4,1.05,.6),vec3(.012,.022,.035),uNight), 1.0);
-          #include <tonemapping_fragment>
-          #include <colorspace_fragment>
-        }`,
-    }));
-    const subdivisions = qualityValue(this.quality, 24, 48, 72);
-    const mesh = this.add(new THREE.Mesh(this.resources.geometry(new THREE.PlaneGeometry(width, depth, subdivisions, subdivisions)), material));
-    mesh.rotation.x = -Math.PI / 2; mesh.position.set(x, y, z);
+  private starCluster(points: Array<[number, number, number]>, links: Array<[number, number]>) {
+    const starGeometry = this.cachedGeometry('constellation-star', () => new THREE.SphereGeometry(.13, this.segmentCount, Math.max(6, Math.floor(this.segmentCount / 2))));
+    const constellation = new THREE.Group(); constellation.name = 'restrained-constellation';
+    for (const [x, y, z] of points) {
+      const star = new THREE.Mesh(starGeometry, this.mats.energy);
+      star.position.set(x, y, z); star.castShadow = false; star.receiveShadow = false; constellation.add(star);
+    }
+    for (const [from, to] of links) {
+      const a = new THREE.Vector3(...points[from]!); const b = new THREE.Vector3(...points[to]!);
+      const mid = a.clone().add(b).multiplyScalar(.5); const length = a.distanceTo(b);
+      const link = this.add(this.box(.025, .025, length, this.mats.mutedEnergy, .008), constellation);
+      link.position.copy(mid); link.lookAt(b); link.castShadow = false; link.receiveShadow = false;
+    }
+    this.group.add(constellation);
   }
 
   private sky(night: boolean) {
@@ -414,7 +368,7 @@ class WorldCraft {
           vec3 day = mix(vec3(.38,.53,.58), vec3(.105,.28,.43), pow(altitude,.5));
           float cloud = pow(.5 + .5 * sin(d.x * 14.0 + sin(d.z*17.0)) * sin(d.z*12.0 + d.y*25.0), 7.0);
           day += vec3(.15,.14,.10) * cloud * smoothstep(.1,.4,d.y);
-          vec3 night = mix(vec3(.032,.047,.085), vec3(.002,.004,.016), pow(altitude,.35));
+          vec3 night = mix(vec3(.012,.018,.045), vec3(.001,.003,.014), pow(altitude,.35));
           vec2 uv = vec2(atan(d.z,d.x), asin(d.y)) * 150.0;
           vec2 f = fract(uv)-.5; float seed = hash(floor(uv));
           float star = exp(-dot(f,f)*120.0) * step(.982,seed);
@@ -430,307 +384,195 @@ class WorldCraft {
     mesh.renderOrder = -10;
   }
 
-  private galleryFloor() {
-    this.piercedSlab(25.6, 54, .28, this.mats.floor, 0, -3.44, -11);
-    // The aisle terminates at the shaft: its three joined bays leave the front aperture open.
-    for (const x of [-4.8, 4.8]) {
-      const edgeBay = this.add(this.box(1.2, .045, 34.5, this.mats.darkStone, .018)); edgeBay.position.set(x, -3.275, -16.8);
-    }
-    const aisle = this.add(this.box(8.4, .045, 29.85, this.mats.darkStone, .018)); aisle.position.set(0, -3.275, -19.125);
-    for (const [z, width, depth, height] of [[-28.2, 24.2, 4.7, .42], [-32.4, 22.2, 3.8, .72]] as const) {
-      const terrace = this.add(this.box(width, height, depth, this.mats.stone, .1));
-      terrace.position.set(0, -3.3 + height / 2, z);
-      const nosing = this.add(this.box(width - .4, .08, .12, this.mats.brass, .02));
-      nosing.position.set(0, -3.3 + height + .02, z + depth / 2 - .12);
-    }
-    for (const x of [-5.65, 5.65]) {
-      const edge = this.add(this.box(.16, .07, 35, this.mats.brass, .02));
-      edge.position.set(x, -3.23, -16.8);
-    }
-    for (const z of [-8, -16, -24, -28.2]) {
-      const seam = this.add(this.box(10.55, .026, .07, this.mats.bronze, .01));
-      seam.position.set(0, -3.242, z);
-    }
-  }
-
-  private galleryRib(z: number) {
-    const points = [
-      new THREE.Vector3(-10, -3.3, z), new THREE.Vector3(-10, .8, z),
-      new THREE.Vector3(-9.5, 5.3, z), new THREE.Vector3(-7.2, 8.35, z),
-      new THREE.Vector3(-3.9, 9.75, z), new THREE.Vector3(0, 10.15, z),
-      new THREE.Vector3(3.9, 9.75, z), new THREE.Vector3(7.2, 8.35, z),
-      new THREE.Vector3(9.5, 5.3, z), new THREE.Vector3(10, .8, z), new THREE.Vector3(10, -3.3, z),
-    ];
-    this.add(this.tube(points, .34, this.mats.stone));
-    const bronzePoints = points.map(point => point.clone().add(new THREE.Vector3(0, 0, .29)));
-    this.add(this.tube(bronzePoints, .075, this.mats.bronze, this.segmentCount * 2));
-    for (const x of [-10, 10]) {
-      const plinth = this.add(this.box(1.85, .62, 2.2, this.mats.darkStone, .12));
-      plinth.position.set(x, -2.99, z);
-      const pier = this.add(this.box(1.14, 4.2, 1.25, this.mats.stone, .1));
-      pier.position.set(x, -1.2, z);
-      const belt = this.add(this.box(1.28, .16, 1.38, this.mats.bronze, .025));
-      belt.position.set(x, .86, z);
-      const capital = this.add(this.box(1.5, .34, 1.58, this.mats.darkStone, .08));
-      capital.position.set(x, 1.04, z);
-    }
-  }
-
   buildGallery() {
-    this.galleryFloor();
-    for (const z of [-12, -20, -28]) this.galleryRib(z);
-    for (const x of [-10, 10]) {
-      const wall = this.add(this.box(.72, 5.4, 32.8, this.mats.darkStone, .1));
-      wall.position.set(x + (x < 0 ? -1.72 : 1.72), -.6, -20);
-      for (const z of [-12, -20, -28]) {
-        const buttress = this.add(this.box(2.15, 1.05, 1.9, this.mats.stone, .1));
-        buttress.position.set(x + (x < 0 ? -1.08 : 1.08), -2.78, z);
-      }
-      const connector = this.add(this.tube([new THREE.Vector3(x, .8, -12), new THREE.Vector3(x, .8, -20), new THREE.Vector3(x, .8, -28)], .12, this.mats.bronze));
-      connector.castShadow = false;
+    const velvet = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x251d2d, roughness: .92, metalness: .02 }));
+    const plaster = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xc1a982, roughness: .68, metalness: .04 }));
+    applyStoneDetail(plaster, this.stoneTexture, .32, .42);
+    const warmGlass = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x7b4730, emissive: 0xd17a46, emissiveIntensity: .78, roughness: .5 }));
+
+    // A dark, pierced stage turns the two holes into the only real void in the room.
+    this.piercedSlab(30, 52, .34, this.mats.floor, 0, -3.47, 0);
+    const aisle = this.add(this.box(8.7, .045, 26, velvet, .02)); aisle.position.set(0, -3.275, -20);
+    for (const x of [-6.1, 6.1]) {
+      const edge = this.add(this.box(.14, .07, 36, this.mats.brass, .02)); edge.position.set(x, -3.23, -15.5);
     }
-    for (const x of [-7.2, 7.2]) {
-      this.add(this.tube([new THREE.Vector3(x, 8.35, -12), new THREE.Vector3(x, 8.35, -20), new THREE.Vector3(x, 8.35, -28)], .14, this.mats.stone));
+    for (const [z, width, depth, height] of [[-26, 24, 4.6, .42], [-30.3, 21.5, 3.8, .78]] as const) {
+      const step = this.add(this.box(width, height, depth, plaster, .1)); step.position.set(0, -3.3 + height / 2, z);
+      const nosing = this.add(this.box(width - .45, .09, .13, this.mats.brass, .02)); nosing.position.set(0, -3.3 + height + .03, z + depth / 2 - .12);
     }
 
-    const windowZ = -34.15;
-    const warm = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xb9976b, emissive: 0xb4834b, emissiveIntensity: .38, metalness: .05, roughness: .58 }));
-    const windowWall = this.add(this.box(19.8, 13.6, .74, this.mats.darkStone, .13)); windowWall.position.set(0, 3.45, windowZ);
-    const aperture = this.add(new THREE.Mesh(this.resources.geometry(new THREE.CircleGeometry(4.25, this.segmentCount * 3)), warm));
-    aperture.position.set(0, 5.25, windowZ + .4);
-    const oculus = this.add(this.torus(4.65, .36, this.mats.stone, this.segmentCount, this.segmentCount * 3));
-    oculus.position.set(0, 5.25, windowZ + .52);
-    const innerOculus = this.add(this.torus(2.25, .12, this.mats.bronze, this.segmentCount, this.segmentCount * 3));
-    innerOculus.position.set(0, 5.25, windowZ + .6);
-    for (let i = 0; i < 12; i++) {
-      const angle = i / 12 * Math.PI * 2;
-      const spoke = this.add(this.box(.09, 4.05, .13, this.mats.bronze, .015));
-      spoke.position.set(Math.sin(angle) * 1.95, 5.25 + Math.cos(angle) * 1.95, windowZ + .67); spoke.rotation.z = angle;
-    }
-    for (const x of [-7.05, 7.05]) {
-      const jamb = this.add(this.box(1.18, 12.8, 1.02, this.mats.stone, .12)); jamb.position.set(x, 3.1, windowZ);
-      const inset = this.add(this.box(.18, 9.8, .13, this.mats.brass, .02)); inset.position.set(x + (x < 0 ? .47 : -.47), 3.4, windowZ + .56);
-    }
-    const sill = this.add(this.box(15.2, .72, 1.42, this.mats.stone, .12)); sill.position.set(0, -2.94, windowZ);
-    const lintel = this.add(this.box(15.2, .78, 1.42, this.mats.stone, .12)); lintel.position.set(0, 9.25, windowZ);
-
-    for (const [x, y, z, color, intensity] of [[-6, 5.5, -15, 0xc6dadd, 140], [5, 5.5, -24, 0xefd2a9, 170], [-4, 4.5, -31, 0xc6dadd, 85]] as const) {
-      const light = new THREE.PointLight(color, intensity, 24, 2); light.position.set(x, y, z); this.lights.add(light);
+    // Thick arch ribs establish depth while keeping the board as the stage's clear protagonist.
+    for (const [z, inner, outer] of [[-11.5, 7.5, 8.25], [-21, 7.7, 8.55], [-30, 7.9, 8.75]] as const) {
+      const arch = this.add(this.archStone(inner, outer, 0, Math.PI, .9, plaster)); arch.position.set(0, -3.12, z);
+      const inset = this.add(this.archStone(inner + .18, inner + .34, 0, Math.PI, .18, this.mats.brass)); inset.position.set(0, -3.02, z + .49);
+      for (const x of [-outer, outer]) this.squarePillar(x, z, 4.8, 1.3, 1.55, this.mats.stone, this.mats.darkStone);
     }
 
-    for (const [x, z, sx, sz] of [[-4.38, -4.38, -8.9, -9.7], [4.38, -4.38, 8.9, -9.7], [-4.38, 4.38, -9.4, -5.7], [4.38, 4.38, 9.4, -5.7]] as const) {
-      const cable = this.add(this.tube([new THREE.Vector3(x, -.72, z), new THREE.Vector3((x + sx) / 2, -1.68, (z + sz) / 2), new THREE.Vector3(sx, -2.96, sz)], .055, this.mats.bronze));
-      cable.castShadow = false;
-      const anchor = this.add(this.cylinder(.21, .29, .24, this.mats.brass)); anchor.position.set(sx, -3.06, sz);
+    // Side chapels are offset in depth so their mass frames, rather than crowds, the board.
+    for (const side of [-1, 1]) {
+      const wall = this.add(this.box(1.25, 7.6, 22, this.mats.darkStone, .1)); wall.position.set(side * 11.8, .1, -20);
+      // The near pair sits just beyond the board rails so the temple reads in the default play view.
+      this.squarePillar(side * 5.35, -6.2, 4.8, 1.0, 1.2, plaster, this.mats.darkStone);
+      this.squarePillar(side * 5.8, -14.5, 6.5, 1.3, 1.6, this.mats.stone, this.mats.darkStone);
+      this.squarePillar(side * 10.2, -27.2, 8.8, 2.1, 2.7, this.mats.stone, this.mats.darkStone);
+      const relief = this.add(this.box(2.1, 4.5, .2, this.mats.bronze, .04)); relief.position.set(side * 10.15, .5, -20.4); relief.rotation.z = side * .08;
+      const banner = this.add(this.box(.42, 4.8, .16, velvet, .025)); banner.position.set(side * 6.4, 2.45, -14.5); banner.rotation.z = side * .1;
+      const crest = this.add(this.cylinder(.32, .42, .18, this.mats.brass, 8)); crest.position.set(side * 6.4, 5.06, -14.5);
+    }
+
+    // The rear apse is a physical set piece: a glowing oculus behind a broad stone portal.
+    const apseWall = this.add(this.box(22, 10.2, .78, this.mats.darkStone, .12)); apseWall.position.set(0, 1.45, -34.2);
+    const aperture = this.add(new THREE.Mesh(this.resources.geometry(new THREE.CircleGeometry(5.35, this.segmentCount * 3)), warmGlass)); aperture.position.set(0, 3.2, -33.72);
+    const oculus = this.add(this.torus(5.85, .42, plaster, this.segmentCount, this.segmentCount * 3)); oculus.position.set(0, 3.2, -33.58);
+    const innerOculus = this.add(this.torus(3.45, .13, this.mats.brass, this.segmentCount, this.segmentCount * 3)); innerOculus.position.set(0, 3.2, -33.42);
+    for (const side of [-1, 1]) {
+      this.squarePillar(side * 7.2, -33.6, 8.9, 1.45, 1.7, plaster, this.mats.stone);
+      const inset = this.add(this.box(.16, 7.2, .12, this.mats.brass, .02)); inset.position.set(side * 6.7, .2, -33.1);
+    }
+    const apseCap = this.add(this.box(17.4, .72, 1.35, plaster, .1)); apseCap.position.set(0, 6.85, -33.5);
+
+    // Warm practicals and cool spill are visible in the architecture, then echoed by buildLights().
+    const lantern = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xd18751, emissive: 0xf29b55, emissiveIntensity: 1.1, roughness: .42 }));
+    for (const [x, y, z] of [[-8.9, 3.8, -14], [8.9, 4.2, -22], [-9.4, 3.5, -28]] as const) {
+      const shade = this.add(this.cylinder(.34, .24, .52, this.mats.bronze, 8)); shade.position.set(x, y, z);
+      const glow = this.add(this.box(.22, .36, .22, lantern, .035)); glow.position.set(x, y - .38, z);
     }
   }
 
   buildNocturne() {
     this.sky(true);
-    this.water(150, 150, 0, -4.12, -20, true);
-    // A narrow approach and an octagonal landing anchor the instrument above the star sea.
-    this.piercedSlab(15.3, 15.3, .5, this.mats.darkStone, 0, -3.55, 0, true);
-    this.piercedSlab(15.44, 15.44, .055, this.mats.bronze, 0, -3.84, 0, true);
-    const approach = this.add(this.box(4.8, .48, 31.2, this.mats.darkStone, .12)); approach.position.set(0, -3.54, -21.9);
-    for (const x of [-2.29, 2.29]) {
-      const edge = this.add(this.box(.1, .05, 31.05, this.mats.brass, .018)); edge.position.set(x, -3.275, -21.9);
-    }
-    for (const z of [-8, -11.5, -15, -18.5, -22, -25.5, -29, -32.5]) {
-      const joint = this.add(this.box(4.52, .018, .065, this.mats.bronze, .008)); joint.position.set(0, -3.29, z);
-    }
-    for (const x of [-4.31, 4.31]) for (const z of [-4.31, 4.31]) {
-      const foot = this.add(this.cylinder(.37, .67, .30, this.mats.bronze)); foot.position.set(x, -3.14, z);
-      const support = this.add(this.cylinder(.17, .3, 1.8, this.mats.darkStone)); support.position.set(x, -2.2, z);
-    }
+    this.piercedSlab(13.8, 18.5, .4, this.mats.floor, 0, -3.52, 0, true);
+    const rim = this.add(this.torus(6.35, .15, this.mats.brass, this.segmentCount, this.segmentCount * 3)); rim.rotation.x = -Math.PI / 2; rim.position.set(0, -3.08, 0); rim.castShadow = false;
+    const approach = this.add(this.box(5.2, .36, 29, this.mats.darkStone, .1)); approach.position.set(0, -3.36, -18.8);
+    for (const x of [-2.42, 2.42]) { const edge = this.add(this.box(.08, .05, 28.8, this.mats.energy, .015)); edge.position.set(x, -3.14, -18.8); edge.castShadow = false; }
+    for (const z of [-9, -14, -19, -24, -29]) { const seam = this.add(this.box(4.9, .02, .055, this.mats.bronze, .006)); seam.position.set(0, -3.15, z); seam.castShadow = false; }
 
-    const centerZ = -38;
-    const foundation = this.add(this.cylinder(13.7, 14.1, .65, this.mats.darkStone, this.segmentCount * 3));
-    foundation.position.set(0, -3.625, centerZ);
-    // Each hemisphere panel has a gap at its meridian, revealing the metal rib and the sky.
-    for (let i = 0; i < 8; i++) {
-      const phi = Math.PI + i * Math.PI / 8;
-      const shell = this.add(this.domePanel(phi + .035, Math.PI / 8 - .07));
-      shell.position.set(0, -3.3, centerZ);
-      // Solid curved meridians carry the dome shell down to radial foundation blocks.
-      const ribPoints: THREE.Vector3[] = [];
-      for (let j = 0; j <= 12; j++) {
-        const theta = .07 + j / 12 * (Math.PI / 2 - .07);
-        ribPoints.push(new THREE.Vector3(-13.23 * Math.cos(phi) * Math.sin(theta), -3.3 + 13.23 * Math.cos(theta), centerZ + 13.23 * Math.sin(phi) * Math.sin(theta)));
-      }
-      this.add(this.tube(ribPoints, .12, this.mats.brass, this.segmentCount * 3));
-      const shoe = this.add(this.box(1.25, .6, 1.25, this.mats.bronze, .1));
-      shoe.position.set(-13.23 * Math.cos(phi), -3.05, centerZ + 13.23 * Math.sin(phi)); shoe.rotation.y = -phi;
+    // Monumental fragments hang over a star sea, with the playable board left in a quiet aperture.
+    const monoliths: Array<[number, number, number, number, number]> = [
+      [-5.45, -7.2, 4.6, 1.0, .85], [5.45, -7.2, 4.6, 1.0, .85], [-10.5, -17.5, 7.7, 2.5, .9], [10.7, -19.5, 9.2, 2.2, 1.0], [-7.5, -30, 5.4, 1.8, .75], [7.8, -32, 7.1, 2.4, .85], [0, -36, 11.5, 2.4, 1.0],
+    ];
+    for (const [x, z, height, width, depth] of monoliths) {
+      const slab = this.add(this.box(width, height, depth, this.mats.darkStone, .12)); slab.position.set(x, .9 + height / 2, z); slab.rotation.y = (x * .021) % .16;
+      const crown = this.add(this.cylinder(width * .56, width * .70, .24, this.mats.bronze, 5)); crown.position.set(x, .9 + height + .12, z); crown.rotation.y = .2;
+      const seam = this.add(this.box(.07, height * .72, .045, this.mats.energy, .01)); seam.position.set(x + (x < 0 ? width * .25 : -width * .25), .9 + height * .52, z - depth * .53); seam.castShadow = false;
     }
-    const domeLip = this.add(this.archStone(13.08, 13.38, 0, Math.PI, .3, this.mats.bronze));
-    domeLip.position.set(0, -3.3, centerZ);
+    // Split the suspended arc into side fragments; the board remains an unobstructed rift aperture.
+    const leftArc = this.add(this.tube([
+      new THREE.Vector3(-9.2, -1.1, -18), new THREE.Vector3(-8.7, 1.6, -13), new THREE.Vector3(-7.5, 5.0, -9), new THREE.Vector3(-6.1, 8.2, -5.5),
+    ], .23, this.mats.brass, this.segmentCount * 2)); leftArc.castShadow = true;
+    const rightArc = this.add(this.tube([
+      new THREE.Vector3(9.2, -1.1, -18), new THREE.Vector3(8.7, 1.6, -13), new THREE.Vector3(7.5, 5.0, -9), new THREE.Vector3(6.1, 8.2, -5.5),
+    ], .23, this.mats.brass, this.segmentCount * 2)); rightArc.castShadow = true;
+    const leftGlow = this.add(this.tube([
+      new THREE.Vector3(-9.0, -1.0, -18.25), new THREE.Vector3(-8.5, 1.7, -13.1), new THREE.Vector3(-7.35, 5.05, -9.1), new THREE.Vector3(-6.0, 8.1, -5.6),
+    ], .045, this.mats.energy, this.segmentCount * 2)); leftGlow.castShadow = false;
+    const rightGlow = this.add(this.tube([
+      new THREE.Vector3(9.0, -1.0, -18.25), new THREE.Vector3(8.5, 1.7, -13.1), new THREE.Vector3(7.35, 5.05, -9.1), new THREE.Vector3(6.0, 8.1, -5.6),
+    ], .045, this.mats.energy, this.segmentCount * 2)); rightGlow.castShadow = false;
+    const crossArc = this.add(this.tube([
+      new THREE.Vector3(-11, 2.4, -29), new THREE.Vector3(-6.8, 7.1, -30.4), new THREE.Vector3(-1.2, 10.2, -31.4),
+      new THREE.Vector3(5.2, 8.8, -30.3), new THREE.Vector3(10.5, 3.8, -28.7),
+    ], .2, this.mats.bronze, this.segmentCount * 2)); crossArc.rotation.z = -.08;
 
-    // The outer meridian is bolted to two bearings; the tilted equator shares its central axis.
-    const instrumentCenter = new THREE.Vector3(0, 5.25, centerZ + 1.5);
-    for (const x of [-9.6, 9.6]) {
-      const base = this.add(this.box(3.3, .6, 3.3, this.mats.bronze, .16)); base.position.set(x, -3, centerZ + 1.5);
-      const pier = this.add(this.box(1.55, 7.95, 1.95, this.mats.darkStone, .15)); pier.position.set(x, .975, centerZ + 1.5);
-      const capital = this.add(this.box(2.4, .55, 2.65, this.mats.stone, .1)); capital.position.set(x, 4.96, centerZ + 1.5);
-      const bearing = this.add(this.cylinder(.53, .53, 1.5, this.mats.brass)); bearing.rotation.z = Math.PI / 2; bearing.position.set(x, 5.25, centerZ + 1.5);
-      const bearingInset = this.add(this.torus(.38, .065, this.mats.bronze)); bearingInset.rotation.y = Math.PI / 2; bearingInset.position.set(x + (x < 0 ? -.76 : .76), 5.25, centerZ + 1.5);
-    }
-    const meridian = this.add(this.torus(8.8, .17, this.mats.brass, this.segmentCount, this.segmentCount * 5)); meridian.position.copy(instrumentCenter);
-    const innerMeridian = this.add(this.torus(8.47, .045, this.mats.energy, 8, this.segmentCount * 5)); innerMeridian.position.copy(instrumentCenter);
-    const equator = new THREE.Group(); equator.position.copy(instrumentCenter); equator.rotation.set(1.02, -.3, -.3); this.group.add(equator);
-    this.add(this.torus(7.85, .12, this.mats.bronze, this.segmentCount, this.segmentCount * 5), equator);
-    for (let i = 0; i < 48; i++) {
-      const a = i / 48 * Math.PI * 2;
-      const mark = this.add(this.box(i % 4 ? .065 : .105, i % 4 ? .19 : .39, .09, this.mats.brass, .012));
-      mark.position.set(Math.sin(a) * 8.62, 5.25 + Math.cos(a) * 8.62, centerZ + 1.7); mark.rotation.z = -a;
-    }
-    const planetMaterial = this.resources.material(new THREE.ShaderMaterial({
-      uniforms: { uTime: this.volumeTime },
-      vertexShader: `varying vec3 vPlanet; varying vec3 vNormal;
-        void main() { vPlanet = position; vNormal = normalize(mat3(modelMatrix)*normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-      fragmentShader: `uniform float uTime; varying vec3 vPlanet; varying vec3 vNormal;
-        void main() {
-          vec3 p = normalize(vPlanet); float longitude = atan(p.z,p.x) + uTime*.012;
-          float turbulence = sin(longitude*7.0 + p.y*24.0)*.16 + sin(longitude*13.0 - p.y*8.0)*.06;
-          float band = .5 + .5*sin(p.y*29.0 + turbulence*4.0);
-          vec3 surface = mix(vec3(.065,.16,.26), vec3(.43,.63,.67), smoothstep(.15,.88,band));
-          float warmBand = smoothstep(.76,.93,.5+.5*sin(p.y*13.0+.4));
-          surface = mix(surface, vec3(.62,.34,.17), warmBand*.8);
-          float lighting = max(dot(normalize(vNormal),normalize(vec3(-.8,.7,1.0))),0.0);
-          float rim = pow(1.0 - abs(p.z),3.0);
-          gl_FragColor = vec4(surface*(.13+lighting*1.55) + vec3(.065,.17,.24)*rim,1.0);
-          #include <tonemapping_fragment>
-          #include <colorspace_fragment>
-        }`,
-    }));
-    const planet = this.add(new THREE.Mesh(this.resources.geometry(new THREE.SphereGeometry(3.05, this.segmentCount * 3, this.segmentCount * 2)), planetMaterial));
-    planet.position.copy(instrumentCenter); planet.rotation.z = -.27;
-    const arm = this.add(this.cylinder(.15, .15, 17.4, this.mats.bronze)); arm.position.copy(instrumentCenter); arm.rotation.z = -.27;
-    for (const sign of [-1, 1]) {
-      const end = this.add(this.cylinder(.32, .32, .27, this.mats.brass));
-      end.position.set(Math.sin(.27) * sign * 8.68, 5.25 + Math.cos(.27) * sign * 8.68, centerZ + 1.5); end.rotation.z = -.27;
-    }
-    const observatoryLight = new THREE.PointLight(0x9aaeff, 210, 32, 2); observatoryLight.position.set(-4, 8, centerZ + 9); this.lights.add(observatoryLight);
+    this.starCluster([
+      [-10.5, 8.4, -34], [-6.5, 10.2, -32], [-2.2, 8.9, -34.8], [2.7, 11.4, -33], [7.3, 9.1, -35.2],
+      [10.2, 11.2, -31.2], [6.0, 13.1, -25.8], [0.2, 13.8, -27.3], [-5.2, 12.1, -26.2], [-9.4, 11.2, -28],
+    ], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 0]]);
+
+    const anchor = this.add(this.cylinder(1.7, 2.2, .45, this.mats.bronze, this.segmentCount * 2)); anchor.position.set(0, -2.9, -25); anchor.castShadow = false;
+    const anchorRing = this.add(this.torus(1.25, .08, this.mats.energy, this.segmentCount, this.segmentCount * 2)); anchorRing.rotation.x = -Math.PI / 2; anchorRing.position.set(0, -2.58, -25); anchorRing.castShadow = false;
   }
 
   buildDaylight() {
     this.sky(false);
-    const sand = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xbba67e, roughness: .84, metalness: .025 }));
-    applyStoneDetail(sand, this.stoneTexture, .22, .7);
-    const terracotta = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xa56844, roughness: .79, metalness: .035 }));
-    applyStoneDetail(terracotta, this.stoneTexture, .16, .7);
-    const garden = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x46624b, roughness: .93 }));
-    this.piercedSlab(180, 160, .5, this.mats.darkStone, 0, -4.36, -40);
-    this.water(178, 158, 0, -3.86, -40);
+    const limestone = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xe0d3b3, roughness: .8, metalness: .025 }));
+    applyStoneDetail(limestone, this.stoneTexture, .24, .58);
+    const terracotta = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xa86945, roughness: .76, metalness: .03 }));
+    applyStoneDetail(terracotta, this.stoneTexture, .18, .52);
 
-    // The instrument island sits within a reflecting court, connected by a limestone causeway.
-    this.piercedSlab(12.8, 12.8, .56, sand, 0, -3.58, 0);
-    this.piercedSlab(13.05, 13.05, .14, this.mats.darkStone, 0, -3.83, 0);
-    const causeway = this.add(this.box(5.4, .6, 16.4, sand, .12)); causeway.position.set(0, -3.6, -14.35);
-    for (const x of [-6.1, 6.1]) {
-      const joint = this.add(this.box(.075, .015, 12.1, this.mats.bronze, .01)); joint.position.set(x, -3.292, 0);
+    // A clean courtyard plane and a single opening keep every piece silhouetted against light stone.
+    this.piercedSlab(74, 96, .46, this.mats.floor, 0, -3.66, 0);
+    for (const side of [-1, 1]) {
+      const court = this.add(this.box(5.8, .5, 30, limestone, .12)); court.position.set(side * 6.2, -3.42, -10.5);
+      const inset = this.add(this.box(2.65, .035, 25.6, this.mats.darkStone, .05)); inset.position.set(side * 6.2, -3.14, -10.5);
+      const border = this.add(this.box(1.2, .12, 29, terracotta, .04)); border.position.set(side * 8.1, -3.11, -10.5);
     }
-    for (const z of [-6.1, 6.1]) {
-      const joint = this.add(this.box(12.1, .015, .075, this.mats.bronze, .01)); joint.position.set(0, -3.292, z);
-    }
-    for (const x of [-4.31, 4.31]) for (const z of [-4.31, 4.31]) {
-      const foot = this.add(this.box(.94, .24, .94, this.mats.bronze, .10)); foot.position.set(x, -3.18, z);
-      const leg = this.add(this.cylinder(.19, .34, 1.8, this.mats.darkStone)); leg.position.set(x, -2.18, z);
-    }
+    const rearCourt = this.add(this.box(17.8, .5, 11, limestone, .12)); rearCourt.position.set(0, -3.42, -24.4);
+    const rearInset = this.add(this.box(13.4, .035, 9.2, this.mats.darkStone, .05)); rearInset.position.set(0, -3.14, -24.4);
 
-    // Broad, offset terraces form the garden's banks; open water remains between them.
-    for (const [x, z, w, d, rise] of [[-17.2, -11.2, 12.1, 16, .25], [16, -17.5, 10, 30, .55], [-13.3, -28, 20, 13, 1.15], [7.8, -34, 30, 13, 1.75]] as const) {
-      const terrace = this.add(this.box(w, rise + .9, d, sand, .14)); terrace.position.set(x, -3.86 + (rise + .9) / 2 - .45, z);
-      const coping = this.add(this.box(w + .24, .18, d + .24, this.mats.stone, .075)); coping.position.set(x, -3.32 + rise, z);
-      const seam = this.add(this.box(w - .15, .09, .08, terracotta, .02)); seam.position.set(x, -3.42 + rise, z + d / 2 + .08);
-    }
-    for (let i = 0; i < 5; i++) {
-      const step = this.add(this.box(6.1, .19, 1.2, sand, .04)); step.position.set(0, -3.205 + i * .19, -21.6 - i * 1.05);
-    }
-    // Water descends from the upper reservoir through a narrow, wall-mounted spillway.
-    const reservoir = this.add(this.box(14.6, 1.18, 6.2, terracotta, .12)); reservoir.position.set(-8.5, -2.46, -28.8);
-    this.water(13.8, 5.45, -8.5, -1.84, -28.8);
-    for (const x of [-15.7, -1.3]) {
-      const curb = this.add(this.box(.26, .32, 6.2, sand, .05)); curb.position.set(x, -1.76, -28.8);
-    }
-    const backCurb = this.add(this.box(14.6, .32, .25, sand, .05)); backCurb.position.set(-8.5, -1.76, -31.78);
-    for (const x of [-12.3, -4.7]) {
-      const lip = this.add(this.box(1.6, .17, .72, this.mats.darkStone, .04)); lip.position.set(x, -1.91, -25.61);
-      const fallMaterial = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x83b5a5, metalness: .38, roughness: .2, transparent: true, opacity: .74 }));
-      const fall = this.add(this.box(1.36, 1.64, .1, fallMaterial, .02)); fall.position.set(x, -2.75, -25.30); fall.castShadow = false;
+    // Close stepped markers sit outside the rails, so the court's monumentality survives the play camera.
+    for (const side of [-1, 1]) {
+      const plinth = this.add(this.box(1.45, .55, 6.4, limestone, .1)); plinth.position.set(side * 5.35, -3.02, -7.2);
+      const cap = this.add(this.box(1.75, .16, 6.7, this.mats.stone, .06)); cap.position.set(side * 5.35, -2.68, -7.2);
+      const marker = this.add(this.box(.72, 3.8, 1.05, terracotta, .08)); marker.position.set(side * 5.42, -.72, -9.1); marker.rotation.z = side * .04;
+      const markerBand = this.add(this.box(.84, .16, 1.18, this.mats.brass, .04)); markerBand.position.set(side * 5.42, .52, -9.1); markerBand.rotation.z = side * .04;
     }
 
-    // Barrel vaults have solid curved roofs, true open archways, piers, spring courses and footings.
-    for (const [cx, z, depth, spring, radius] of [[18.8, -32.0, 7.8, 1.3, 4.2], [18.8, -43.4, 7.8, 2.1, 4.2], [-9.1, -42.6, 5.4, 2.0, 5.5]] as const) {
-      const footY = cx < 0 ? -1.65 : -1.45;
-      const foundation = this.add(this.box(radius * 2 + 3.2, footY + 4.35, depth + 2.3, sand, .12));
-      foundation.position.set(cx, -4.35 + (footY + 4.35) / 2, z);
-      const roof = this.add(this.archStone(radius, radius + .35, 0, Math.PI, depth, sand)); roof.position.set(cx, spring, z);
-      for (const edgeZ of [z - depth / 2, z + depth / 2]) {
-        for (let i = 0; i < 11; i++) {
-          const voussoir = this.add(this.archStone(radius - .07, radius + .46, i * Math.PI / 11 + .009, (i + 1) * Math.PI / 11 - .009, .46, i === 5 ? terracotta : this.mats.stone));
-          voussoir.position.set(cx, spring, edgeZ);
-        }
-        for (const sign of [-1, 1]) {
-          const x = cx + sign * (radius + .15);
-          const height = spring - footY;
-          const footing = this.add(this.box(1.55, .3, 1.7, this.mats.stone, .08)); footing.position.set(x, footY + .15, edgeZ);
-          const pier = this.add(this.box(.80, height, .94, sand, .07)); pier.position.set(x, footY + height / 2, edgeZ);
-          const capital = this.add(this.box(1.22, .24, 1.36, terracotta, .055)); capital.position.set(x, spring - .10, edgeZ);
-        }
-      }
-      for (const sign of [-1, 1]) {
-        const eave = this.add(this.box(.59, .22, depth + .55, terracotta, .06)); eave.position.set(cx + sign * (radius + .15), spring, z);
-      }
+    // Offset terraces read as monumental geometry while leaving a broad central sightline.
+    const terraces: Array<[number, number, number, number, number]> = [
+      [-13.5, -12, 10.5, 12, .55], [13.2, -16.5, 11.8, 17, .85], [-14.4, -26, 15, 9.2, 1.35], [14.2, -29.5, 16.5, 10, 1.95],
+    ];
+    for (const [x, z, width, depth, height] of terraces) {
+      const lower = this.add(this.box(width, height, depth, limestone, .11)); lower.position.set(x, -3.3 + height / 2, z);
+      const upper = this.add(this.box(width - .65, .22, depth - .52, this.mats.stone, .07)); upper.position.set(x, -3.3 + height + .11, z);
+      const seam = this.add(this.box(width - 1.0, .075, .10, terracotta, .02)); seam.position.set(x, -3.17 + height, z + depth / 2 - .18);
+    }
+    for (let i = 0; i < 6; i++) {
+      const step = this.add(this.box(6.8 - i * .24, .18, 1.1, limestone, .035)); step.position.set(0, -3.05 + i * .18, -20.3 - i * 1.02);
     }
 
-    // Planting belongs to two long recessed beds, with a low, wind-shaped silhouette.
-    for (const [x, z, length] of [[-19.2, -11.4, 12.7], [20, -26.3, 17.0]] as const) {
-      const bed = this.add(this.box(2.4, .45, length, terracotta, .12)); bed.position.set(x, -2.78, z);
-      const soil = this.add(this.box(2.12, .07, length - .28, this.mats.darkStone, .04)); soil.position.set(x, -2.52, z);
-      const stemGeometry = this.resources.geometry(new THREE.CylinderGeometry(.055, .08, 1.15, 6));
-      const leafGeometry = this.resources.geometry(new THREE.SphereGeometry(.6, 10, 8));
-      for (let i = 0; i < 7; i++) {
-        const plantZ = z - length * .4 + i * length * .8 / 6;
-        const stem = this.add(new THREE.Mesh(stemGeometry, terracotta)); stem.position.set(x, -2.06, plantZ); stem.rotation.z = -.13;
-        const crown = this.add(new THREE.Mesh(leafGeometry, garden)); crown.position.set(x + .1, -1.46, plantZ); crown.scale.set(1.4, .65, 1.2);
-        crown.castShadow = true;
-      }
+    // A far colonnade gives the court scale without placing a wall behind the board.
+    const colonnadeZ = -34.5;
+    for (const side of [-1, 1]) {
+      this.squarePillar(side * 10.1, colonnadeZ, 8.3, 2.35, 2.8, limestone, this.mats.stone);
+      this.squarePillar(side * 6.8, colonnadeZ, 6.5, 1.55, 2.1, terracotta, limestone);
     }
-    // One eroded shoreline rises continuously out of the pool bed into the distant limestone ridge.
-    const terrain = this.resources.geometry(new THREE.PlaneGeometry(170, 54, qualityValue(this.quality, 56, 84, 112), qualityValue(this.quality, 18, 27, 36)));
-    terrain.rotateX(-Math.PI / 2); terrain.translate(0, 0, -77);
-    const positions = terrain.getAttribute('position');
-    for (let i = 0; i < positions.count; i++) {
-      const x = positions.getX(i), z = positions.getZ(i);
-      const inland = -z - 50 + Math.sin(x * .09) * 3.3 + Math.sin(x * .27) * 1.1;
-      const ascent = THREE.MathUtils.smoothstep(inland, 1, 19);
-      const ridge = 8.2 + Math.sin(x * .072) * 3.1 + Math.sin(x * .21 + .8) * 1.2 + Math.sin(x * .61) * .42;
-      const erosion = Math.sin(x * .48 + z * .16) * .55 + Math.sin(x * .95 - z * .28) * .20;
-      positions.setY(i, -4.12 + ascent * (ridge + 4.12) + erosion * ascent * (1 - ascent));
+    const lintel = this.add(this.box(20.8, 1.05, 2.9, limestone, .12)); lintel.position.set(0, 5.6, colonnadeZ);
+    const lintelInset = this.add(this.box(16.6, .17, .18, this.mats.brass, .025)); lintelInset.position.set(0, 5.1, colonnadeZ - 1.48);
+    const sunDial = this.add(this.cylinder(1.0, 1.35, 7.3, this.mats.darkStone, 5)); sunDial.position.set(0, .42, -32.9); sunDial.rotation.y = Math.PI / 4;
+    const dialCap = this.add(this.cylinder(1.35, 1.05, .32, terracotta, 5)); dialCap.position.set(0, 4.23, -32.9); dialCap.rotation.y = Math.PI / 4;
+    const dialLine = this.add(this.box(.11, 5.7, .12, this.mats.brass, .025)); dialLine.position.set(0, .55, -31.35); dialLine.rotation.z = -.26; dialLine.castShadow = false;
+
+    // Side buttresses and shade slabs complete the court's stepped silhouette.
+    for (const side of [-1, 1]) {
+      const buttress = this.add(this.box(2.35, 4.3, 4.1, limestone, .1)); buttress.position.set(side * 10.9, -1.05, -24.2); buttress.rotation.y = side * .12;
+      const shade = this.add(this.box(8.5, .42, 2.25, limestone, .09)); shade.position.set(side * 11.4, 3.8, -27.7); shade.rotation.z = side * .07;
+      const trim = this.add(this.box(7.5, .11, .16, terracotta, .025)); trim.position.set(side * 11.4, 3.56, -28.82); trim.rotation.z = side * .07;
     }
-    terrain.computeVertexNormals();
-    const escarpment = this.add(new THREE.Mesh(terrain, sand)); escarpment.name = 'connected-limestone-shore';
-    escarpment.castShadow = true; escarpment.receiveShadow = true;
   }
 
   buildLights() {
-    const hemi = new THREE.HemisphereLight(this.palette.fill, this.palette.floor, this.theme === 'daylight' ? .46 : .48);
+    const hemi = new THREE.HemisphereLight(this.theme === 'nocturne' ? 0x9aabc8 : this.palette.fill, this.palette.floor, this.theme === 'daylight' ? .58 : this.theme === 'gallery' ? .38 : .38);
     this.lights.add(hemi);
-    const key = new THREE.DirectionalLight(this.palette.key, this.theme === 'daylight' ? 1.15 : 1.85);
-    key.position.set(-4.5, 10.5, 5.5); key.castShadow = true;
+    const keyColor = this.theme === 'gallery' ? 0xffb477 : this.theme === 'nocturne' ? 0xffdfba : this.palette.key;
+    const keyIntensity = this.theme === 'gallery' ? 2.15 : this.theme === 'nocturne' ? 1.55 : 1.42;
+    const key = new THREE.DirectionalLight(keyColor, keyIntensity);
+    key.position.set(this.theme === 'gallery' ? -8.5 : -5.5, this.theme === 'daylight' ? 13.5 : 11.5, this.theme === 'gallery' ? 7.5 : 6.5); key.castShadow = true;
     const resolution = qualityValue(this.quality, 512, 1024, 2048);
     key.shadow.mapSize.set(resolution, resolution);
     key.shadow.camera.left = -5.5; key.shadow.camera.right = 5.5; key.shadow.camera.top = 5.5; key.shadow.camera.bottom = -5.5;
     key.shadow.camera.near = 0.5; key.shadow.camera.far = 24;
     key.shadow.bias = 0.00025; key.shadow.normalBias = 0.003; key.shadow.radius = 1.65;
     this.lights.add(key); this.shadowLights.push(key);
-    const rim = new THREE.DirectionalLight(this.palette.fill, this.theme === 'nocturne' ? 1.45 : this.theme === 'daylight' ? .45 : 1.05);
-    rim.position.set(6.5, 6, -8); this.lights.add(rim);
-    const riftLight = new THREE.PointLight(this.palette.energy, this.theme === 'nocturne' ? 16 : 10, 10, 2);
-    riftLight.position.set(0, -1.65, 0); riftLight.userData.riftLight = true; this.lights.add(riftLight);
+    const rimColor = this.theme === 'gallery' ? 0x80a9d2 : this.theme === 'nocturne' ? 0x6878df : 0xc7f2e5;
+    const rim = new THREE.DirectionalLight(rimColor, this.theme === 'nocturne' ? 1.25 : this.theme === 'daylight' ? .52 : .92);
+    rim.position.set(this.theme === 'gallery' ? 9 : 7, 7, -10); this.lights.add(rim);
+    const riftBaseIntensity = this.theme === 'nocturne' ? 13 : this.theme === 'gallery' ? 9 : 7;
+    const riftLight = new THREE.PointLight(this.palette.energy, riftBaseIntensity, 10, 2);
+    riftLight.position.set(0, -1.65, 0); riftLight.userData.riftLight = true; riftLight.userData.riftBaseIntensity = riftBaseIntensity; this.lights.add(riftLight);
+    if (this.theme === 'gallery') {
+      const footWarm = new THREE.PointLight(0xffa05b, 86, 28, 2); footWarm.position.set(-8.5, 3.6, -17); this.lights.add(footWarm);
+      const footCool = new THREE.PointLight(0x64b9d4, 105, 30, 2); footCool.position.set(8.5, 4.2, -24); this.lights.add(footCool);
+      const apseWarm = new THREE.PointLight(0xe9884b, 125, 36, 2); apseWarm.position.set(0, 4, -31); this.lights.add(apseWarm);
+    }
+    if (this.theme === 'nocturne') {
+      const skyGlow = new THREE.PointLight(0x5479ff, 36, 42, 2); skyGlow.position.set(-4, 10, -24); this.lights.add(skyGlow);
+      const cyanGlow = new THREE.PointLight(0x51dfff, 24, 26, 2); cyanGlow.position.set(7, 5, -18); this.lights.add(cyanGlow);
+    }
     if (this.theme === 'daylight') {
-      // A separate shadow volume covers the garden; enlarging the board map would sacrifice piece contact detail.
-      const sun = new THREE.DirectionalLight(0xffe1aa, 1.15); sun.position.set(-18, 23, -19);
-      sun.target.position.set(6, -1, -37); sun.castShadow = true;
+      // A separate shadow volume covers the far court; enlarging the board map would sacrifice piece contact detail.
+      const sun = new THREE.DirectionalLight(0xffe1aa, 1.28); sun.position.set(-20, 24, -17);
+      sun.target.position.set(0, -1, -26); sun.castShadow = true;
       sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true;
       sun.shadow.mapSize.set(resolution, resolution); sun.shadow.camera.left = -28; sun.shadow.camera.right = 28;
       sun.shadow.camera.top = 23; sun.shadow.camera.bottom = -23; sun.shadow.camera.near = 1; sun.shadow.camera.far = 90;
@@ -750,7 +592,10 @@ class WorldCraft {
       });
     }
     const riftLight = this.lights.children.find(object => object.userData.riftLight) as THREE.PointLight | undefined;
-    if (riftLight) riftLight.intensity = (this.theme === 'nocturne' ? 16 : 10) * (reducedMotion ? 1 : 0.9 + Math.sin(seconds * 1.7) * 0.1);
+    if (riftLight) {
+      const base = (riftLight.userData.riftBaseIntensity as number | undefined) ?? (this.theme === 'nocturne' ? 13 : 7);
+      riftLight.intensity = base * (reducedMotion ? 1 : 0.9 + Math.sin(seconds * 1.7) * 0.1);
+    }
   }
 
   dispose() {
@@ -775,9 +620,9 @@ export function buildWorld(theme: WorldTheme, quality: WorldQuality, stoneTextur
     group: craft.group,
     lights: craft.lights,
     background: new THREE.Color(palette.background),
-    fog: new THREE.Fog(palette.fog, theme === 'daylight' ? 60 : theme === 'nocturne' ? 52 : 36, theme === 'daylight' ? 125 : theme === 'nocturne' ? 108 : 78),
-    exposure: theme === 'daylight' ? .85 : theme === 'gallery' ? .95 : .98,
-    environmentIntensity: theme === 'daylight' ? .42 : theme === 'gallery' ? .50 : .52,
+    fog: new THREE.Fog(palette.fog, theme === 'daylight' ? 58 : theme === 'nocturne' ? 44 : 30, theme === 'daylight' ? 138 : theme === 'nocturne' ? 132 : 72),
+    exposure: theme === 'daylight' ? .92 : theme === 'gallery' ? .98 : .94,
+    environmentIntensity: theme === 'daylight' ? .46 : theme === 'gallery' ? .42 : .38,
     tick: (seconds, reducedMotion) => craft.tick(seconds, reducedMotion),
     react: amount => craft.react(amount),
     dispose: () => craft.dispose(),

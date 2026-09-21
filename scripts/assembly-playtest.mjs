@@ -165,7 +165,7 @@ try {
     const saved = await driver.record();
     await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForFunction(() => Boolean(window.rift)); await page.evaluate(() => window.rift.assetsReady());
     assert.deepEqual(await driver.record(), saved); await noAssembly('saved reload');
-    await page.locator('#replay').click(); await page.locator('#replay-back').click(); await noAssembly('replay'); await page.locator('#replay-exit').click();
+    await driver.openDrawer('Record'); await page.locator('#replay').click(); await page.locator('#replay-back').click(); await noAssembly('replay'); await page.locator('#replay-exit').click();
     const priorId = (await driver.observation()).game_id;
     await page.locator('#import').setInputFiles({ name: 'record.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(saved)) });
     await page.waitForFunction(id => window.rift.getObservation().game_id !== id, priorId); assert.deepEqual(await driver.record(), saved); await noAssembly('import');
