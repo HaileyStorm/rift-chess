@@ -1,0 +1,26 @@
+{
+  "at": "2026-09-22T13:34:11.816Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "checks": [
+    "Actual pointer capture a4xb5, animated victim and accepted ledger",
+    "Real eight-ply record leads to underpromotion through the UI",
+    "Draw agreement, resignation and undo reopen finished games",
+    "Bot plays legal replies; undo pauses it; mode and pause survive reload",
+    "Portable imports do not inherit or trigger an old bot",
+    "Newest import wins; a cancelled failing replay cannot replace a new match",
+    "Injected render failure locks stale display; settled retry preserves game",
+    "Malformed save retained with recovery UI until explicit new match",
+    "Original game loaded first: both offline scopes/caches coexist and original save is unchanged",
+    "Cold offline reload and an actual offline move succeed"
+  ],
+  "errors": [],
+  "captures": [
+    "01-capture-animation",
+    "02-promotion-dialog",
+    "03-promoted-knight",
+    "04-warm-court",
+    "05-recovery",
+    "06-offline",
+    "07-mobile-menu"
+  ]
+}

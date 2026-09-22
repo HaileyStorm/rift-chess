@@ -8,6 +8,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1050 } });
 const page = await context.newPage();
 const receipt = { at: new Date().toISOString(), url: process.env.BEND_TEST_URL || 'http://127.0.0.1:4184/', checks: [], errors: [], captures: [] };
+let originalSave = null;
 page.on('pageerror', error => receipt.errors.push(error.message));
 page.on('console', event => { if (event.type() === 'error') receipt.errors.push(event.text()); });
 // Observe the real worker, and support one explicitly labelled host fault test.
@@ -55,6 +56,13 @@ async function newGame(play = 'hotseat', layout = 'B') {
   await count(0);
 }
 try {
+  if (process.env.BEND_TEST_ORIGINAL_URL) {
+    const original = await context.newPage();
+    await original.goto(process.env.BEND_TEST_ORIGINAL_URL, { waitUntil: 'networkidle' });
+    await original.evaluate(async () => { await navigator.serviceWorker.ready; });
+    originalSave = await original.evaluate(() => localStorage.getItem('rift-chess.save.v1'));
+    await original.close();
+  }
   await page.goto(receipt.url, { waitUntil: 'networkidle' });
   await count(0);
   await upload(record(2)); await count(2);
@@ -144,6 +152,21 @@ try {
 
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  if (process.env.BEND_TEST_ORIGINAL_URL) {
+    const isolation = await page.evaluate(async () => ({
+      controller: navigator.serviceWorker.controller.scriptURL,
+      scopes: (await navigator.serviceWorker.getRegistrations()).map(registration => registration.scope),
+      caches: await caches.keys(),
+      originalSave: localStorage.getItem('rift-chess.save.v1'),
+    }));
+    assert.equal(isolation.controller, new URL('sw.js', receipt.url).href);
+    assert(isolation.scopes.includes(process.env.BEND_TEST_ORIGINAL_URL));
+    assert(isolation.scopes.includes(receipt.url));
+    assert(isolation.caches.some(name => name.startsWith('rift-chess-static-')));
+    assert(isolation.caches.some(name => name.startsWith('rift-bend-v1-')));
+    assert.equal(isolation.originalSave, originalSave);
+    receipt.checks.push('Original game loaded first: both offline scopes/caches coexist and original save is unchanged');
+  }
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' }); await count(0);
   await pixel(112, 194); await page.getByRole('button', { name: 'Move to a4', exact: true }).click(); await count(1);

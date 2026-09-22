@@ -1,5 +1,8 @@
 # Rift Chess — the Bend2 experiment
 
+[Play the Bend2 preview](https://haileystorm.github.io/rift-chess-bend2/) ·
+[Play the original game](https://haileystorm.github.io/rift-chess/)
+
 This is a separate, playable adaptation of Rift Chess. It does not replace the
 published Three.js/Electron game. The rules, match history and adjudication,
 opponent scoring, projection, picking, sprites and immutable pixel renderer are
@@ -48,6 +51,11 @@ The preview is then `http://127.0.0.1:4184/`. The browser distribution is
 scoped service worker caches the complete application for subsequent offline
 loads. Production hosting needs only static files. The existing root npm scripts
 continue to build the original app; they do not build this experiment.
+
+The preview uses a separate GitHub Pages repository and sibling URL. The original
+game's offline navigation fallback would intercept an experimental subdirectory,
+so nesting the preview beneath `/rift-chess/` is deliberately avoided. Its
+deployment repository contains only generated files and a source link.
 
 The normal build checks both semantic freezes and the exact proved Kernel and
 proof witnesses. `--draft` is for local iteration before a new reviewed

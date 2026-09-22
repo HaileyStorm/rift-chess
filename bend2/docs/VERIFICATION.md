@@ -35,7 +35,36 @@ Undo record decoding, and a test predicate that attempted to parse a deliberatel
 corrupted save while waiting for its replacement. These were corrected and the
 relevant paths rerun. No frozen law was weakened to make the checks pass.
 
+## Separate public preview
+
+[The Bend2 preview](https://haileystorm.github.io/rift-chess-bend2/) was deployed
+and play-tested on September 22, 2026. The static build is
+`f8cbc16e5ba51a2b9ee5`, from clean source commit
+`6d74914a15ce15add5b56c53a0a48dcca42a02bd`; its deployment commit in
+`HaileyStorm/rift-chess-bend2` is `5af1a229de8a0817e4aeebe322a1de8f682eb56e`.
+Subsequent documentation/test-only commits do not change those application bytes.
+
+- [Publication receipt](evidence/preview-v1/publication.json): every live asset
+  returned HTTP 200 and matched the local SHA256. The original site's index and
+  precache manifest remain byte-for-byte unchanged.
+- [Hosted browser receipt](evidence/preview-v1/browser.json): all ten scenario
+  groups passed with no page/console errors, including a real offline move.
+- [Inspected rendered frame](evidence/preview-v1/board.png): the live Warm court.
+
+The hosted run loaded the original game first. Both service-worker registrations
+and cache namespaces survived, the preview acquired its own controller, and the
+original save stayed unchanged. A sibling Pages URL is necessary because the
+original offline worker intentionally serves its app shell for unknown nested
+navigation routes. The rejected nested staging copy remains only in ignored
+local artifacts; nothing was pushed to the production Pages branch.
+
+To repeat the hosted scenario test, set `BEND_TEST_URL` to the preview URL and
+`BEND_TEST_ORIGINAL_URL` to `https://haileystorm.github.io/rift-chess/`, then run
+`node bend2/tests/browser-scenarios.mjs`. Use a new `BEND_PLAYTEST_RUN` name to
+preserve each receipt. The worker fault injection is explicitly limited to the
+renderer recovery scenario; ordinary play uses actual pointer and menu inputs.
+
 The source compiler/runtime and browser adapters remain trusted. Reference
-coverage is finite, and browser acceptance is local Chrome evidence until the
-separate hosted run is recorded. There is no native Bend CPU/GPU benchmark,
-packaged Bend desktop release or user aesthetic acceptance claim.
+coverage is finite. This is local Chrome exercising the public deployment,
+not a cross-device survey. There is no native Bend CPU/GPU benchmark, packaged
+Bend desktop release or user aesthetic acceptance claim.

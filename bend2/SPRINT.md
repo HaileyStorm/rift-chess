@@ -13,7 +13,7 @@ application and reference remain comparison inputs, not alternative runtime code
 ## Sequence and completion requirements
 
 1. Gather primary docs/examples, pin the toolchain, execute language/proof probes,
-   and write a comprehensive local guide. **Guide drafted; probes passed.**
+   and write a comprehensive local guide. **Complete; probes passed.**
 2. Brainstorm and review laws in plain English. Freeze semantic specification,
    formal laws and normative dependencies with hashes and a versioned decision.
 3. Implement the small pure rules kernel needed to make those laws meaningful and
@@ -49,9 +49,25 @@ amendment gate is part of the build, not just an instruction in prose.
 Documentation, rules, proofs and pixel library complete. Core and pixel semantic
 v1 manifests are frozen; all 13 core/11 pixel laws, six negative mutations,
 14-position/223-successor conformance, 33 match checks and pixel tests pass.
-The isolated browser game is implemented and running at localhost:4184.
+The isolated browser game is implemented and published separately at
+https://haileystorm.github.io/rift-chess-bend2/.
 Rendered pointer moves for both sides, Shift, undo, reload, capture, underpromotion,
 draw/resignation recovery, local bot, rapid replay invalidation, renderer recovery,
 malformed-save preservation, cold offline play and mobile/menu layout pass.
-Current work: separate preview publication, hosted verification and source handoff.
+The public build's seven assets match their local hashes. All ten hosted browser
+scenario groups pass with no page/console errors, including cold offline play and
+coexistence with the original game's service worker. Source is pushed on
+`codex/bend2-adaptation`; the deployment repository contains only static output.
+The requested sprint is complete; receipts and limitations are in
+`docs/VERIFICATION.md`. The original 1.2.1 deployment is unchanged.
 No native Bend CPU/GPU benchmark or owner visual acceptance is claimed.
+
+## Retained material and boundaries
+
+The original TypeScript application remains the production game and its reference
+fixtures remain an independent comparison input. The early law brainstorm is
+design history, not a second normative contract. Failed runs, temporary probes
+and the rejected nested-site staging copy remain in ignored local artifacts;
+canonical positive receipts are checked in. No original runtime code is used by
+the Bend browser app. Future multiplayer, native performance work and a Bend
+desktop package are separate extensions, not hidden prerequisites for this sprint.
