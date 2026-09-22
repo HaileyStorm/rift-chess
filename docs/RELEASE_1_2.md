@@ -1,4 +1,4 @@
-# Rift Chess 1.2.0
+# Rift Chess 1.2.1
 
 This release makes piece selection clear, makes captures visible and audible, and
 adapts graphics detail automatically. Direct piece clicks select the piece even
@@ -12,10 +12,19 @@ from normal play cameras; Gallery retains its established composition.
 - Rules, saved games and offline/local play remain compatible.
 
 Application changes are in source revision `0571a06` and its preceding experience
-commit. The versioned wrapper is 1.2.0; all published runtime assets are bound by
+commit. The versioned wrapper is 1.2.1; all published runtime assets are bound by
 the release verification manifest. The Windows ZIP is unsigned and requires full
 folder extraction.
 
 Publication status: verification in progress. Exact public and packaged receipts
 will be added after live checks. Existing source evidence is in
 `docs/evidence/experience/` and `docs/evidence/auto-worlds/`.
+
+## Preserved publication candidate
+
+The 1.2.0 tag and draft ZIP are preserved as a pre-publication candidate. The live
+upgrade gate found a real cache-installation bug: a new CacheStorage version could
+contain old HTML from the browser HTTP cache. The 1.2.1 worker revalidates every
+asset during install, including unhashed HTML and reflection metadata. A new cache
+version repairs the already-affected profile without clearing the user's save.
+The original failed receipts remain under `.artifacts/current-upgrade/`.

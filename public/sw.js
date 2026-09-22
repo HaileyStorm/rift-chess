@@ -19,7 +19,9 @@ self.addEventListener('install', (event) => {
       if (url.origin !== self.location.origin || !isInScope(url)) throw new Error('Foreign offline asset');
       return url.toString();
     });
-    await (await caches.open(ACTIVE_CACHE)).addAll(urls);
+    // A new CacheStorage name does not bypass the browser HTTP cache. Refresh
+    // unhashed HTML/maps too, otherwise a new cache can retain an old app shell.
+    await (await caches.open(ACTIVE_CACHE)).addAll(urls.map(url => new Request(url, { cache: 'reload' })));
   })());
 });
 
