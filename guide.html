@@ -6,7 +6,7 @@
 <p>On first launch and New Match, the shuffled tiles slide into their starting
 positions with their pieces aboard. This opening animation happens before the
 first turn and adds no moves to the record. Choose <strong>Skip animation</strong> to settle
-the table immediately, or enable <strong>Reduced motion</strong> in Atelier. Returning to a
+the table immediately, or enable <strong>Reduced motion</strong> in Settings. Returning to a
 saved match preserves its position without reshuffling.</p>
 <p>The missing central tiles are intentional. In B-rift, your c- and d-pawns initially face missing squares; in C-rift, your e- and f-pawns do. You can develop on the open part of the board or spend a turn changing that obstruction. Both sides face the same rank-reflected starting geometry.</p>
 <p>At the initial position there are fifteen ordinary moves and four empty-tile Shifts. An opening Shift is available, not compulsory.</p>
@@ -81,7 +81,7 @@ saved match preserves its position without reshuffling.</p>
 </thead>
 <tbody><tr>
 <td>Ordinary move</td>
-<td><strong>Move</strong> is selected by default. Select a piece, then a legal destination.</td>
+<td>Select a piece directly, then a legal destination. A piece click always selects the piece, even when Tile was active.</td>
 <td>Focus the board, use arrows to move focus, then press Enter to select the source and destination.</td>
 </tr>
 <tr>
@@ -91,7 +91,7 @@ saved match preserves its position without reshuffling.</p>
 </tr>
 <tr>
 <td>Shift a passenger</td>
-<td>Select your piece on a Shiftable tile, choose <strong>Shift this tile</strong>, then click a legal neighboring hole. If the passenger reaches the back rank, choose queen, rook, bishop, or knight in the promotion dialog.</td>
+<td>Select your piece on a Shiftable tile, choose <strong>Move its tile instead</strong>, then click a legal neighboring hole. If the passenger reaches the back rank, choose queen, rook, bishop, or knight in the promotion dialog.</td>
 <td>Use <strong>S</strong>, arrows, and Enter for the same selection sequence.</td>
 </tr>
 <tr>
@@ -106,19 +106,21 @@ saved match preserves its position without reshuffling.</p>
 </tr>
 <tr>
 <td>Camera presets</td>
-<td>Use the visible White, Black, Overview, or Top buttons in <strong>Match &amp; view</strong>.</td>
+<td>Use the visible White, Black, Overview, or Top buttons in <strong>Menu → Match &amp; view</strong>.</td>
 <td>Press <strong>1</strong> through <strong>4</strong>.</td>
 </tr>
 <tr>
 <td>Free camera</td>
 <td>Right-drag to orbit; use the wheel, middle-drag, or two-finger touch gestures to adjust the view.</td>
-<td>Use the visible camera buttons in <strong>Match &amp; view</strong>.</td>
+<td>Use the visible camera buttons in <strong>Menu → Match &amp; view</strong>.</td>
 </tr>
 </tbody></table>
 <p>Bright tile edges point toward holes that tile can legally slide into, even when ordinary move hints are off. A tile with two legal directions lights both corresponding edges. Click a lit edge or the center grip to select the tile; its legal edges turn gold. Hover over a legal hole or move keyboard focus there to preview the destination. Clicking the hole or pressing Enter performs the Shift, just as choosing a destination performs an ordinary move. Promotion still waits for your piece choice. Board shortcuts require board focus, and arrow navigation follows files and ranks regardless of the camera angle.</p>
 <h2>Visual comfort, match controls, and draws</h2>
 <p>Use the Top camera when you need the clearest board geometry. Free camera movement changes only the view and cannot commit a chess action.</p>
-<p>Open <strong>Atelier</strong> to choose world, piece, material, and quality settings, and to turn on high contrast or reduced motion. High contrast strengthens the interface contrast. Reduced motion preserves the same legal position and outcome while shortening or skipping camera and board-transition movement.</p>
+<p>Open <strong>Settings</strong> to choose world, piece, material, and quality settings, and to turn on high contrast or reduced motion. High contrast strengthens the interface contrast. Reduced motion preserves the same legal position and outcome while shortening or skipping camera and board-transition movement.</p>
+<p>Graphics detail defaults to <strong>Automatic</strong>. It starts at Balanced and adjusts after sustained play-view performance samples; it pauses calibration during camera movement, animations, loading and background tabs. Choose Low, Balanced or High in Settings to keep a fixed level. The Automatic option shows the currently selected detail level. Older saves without an explicit mode also use Automatic.</p>
+<p>Use <strong>Sound on/off</strong> in the top bar to mute all effects. Your choice is remembered locally. Sounds begin after interaction; every action also has visual feedback. Open <strong>Menu</strong> for history, lessons, cameras, saves and match controls.</p>
 <p>The quiet counter is not an automatic draw in a <strong>Prompted agreement</strong> match. At 100 quiet actions, choose whether to offer a draw; in hotseat play, the interface asks which player is acting, and the other player can accept or decline. A local bot declines an offer. <strong>Automatic at 100</strong> applies the automatic quiet-action draw; <strong>Continue without a reminder</strong> disables that prompt and automatic limit. Other ending rules still apply.</p>
 <p>Practice matches enable <strong>Undo</strong>. In hotseat, both players confirm the Undo dialog before the prior action is restored. Against the local bot, practice Undo returns to your previous turn. For a fair rematch, exchange colors and keep the same opening layout. Use four games to compare both B-rift and C-rift without coupling layout to color.</p>
 <h2>Four-lesson tutorial</h2>

@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'rift-chess-static-';
 // Embedded at build time: a restarted worker must never fetch metadata to work offline.
-const CACHE_VERSION = '3629cf6cc06a2acf3d93';
+const CACHE_VERSION = '5ae0897849318b10dda9';
 const ACTIVE_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 function isInScope(requestUrl) {
