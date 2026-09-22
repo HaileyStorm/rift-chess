@@ -2,19 +2,19 @@
 
 > **Move the piece — or move the ground beneath it.**
 
-[![Rift Chess 1.1: the rebuilt kinetic table](docs/evidence/overhaul/gallery.png)](https://haileystorm.github.io/rift-chess/)
+[![Rift Chess 1.2: Observatory](docs/evidence/auto-worlds/observatory.png)](https://haileystorm.github.io/rift-chess/)
 
 Rift Chess is an offline 3D chess variant played on fourteen sliding 2×2 tiles. On each turn, make an ordinary chess move or Shift a tile into a neighboring hole. A tile may be empty or carry one friendly non-king passenger; holes cut sliding attack lines, and king safety still decides what is legal.
 
-**[Play in your browser](https://haileystorm.github.io/rift-chess/)** · **[Windows download](https://github.com/HaileyStorm/rift-chess/releases/download/v1.1.0/Rift-Chess-win32-x64-1.1.0.zip)** · **[v1.1.0 release notes](https://github.com/HaileyStorm/rift-chess/releases/tag/v1.1.0)** · **[Source](https://github.com/HaileyStorm/rift-chess)**
+**[Play in your browser](https://haileystorm.github.io/rift-chess/)** · **[Windows download](https://github.com/HaileyStorm/rift-chess/releases/download/v1.2.0/Rift-Chess-win32-x64-1.2.0.zip)** · **[v1.2.0 release notes](https://github.com/HaileyStorm/rift-chess/releases/tag/v1.2.0)** · **[Source](https://github.com/HaileyStorm/rift-chess)**
 
-Version 1.1 rebuilds the table, pieces, environments and controls. The opening slides into place from a shuffled arrangement, and lit tile edges show where the ground can move. Explore Gallery, Nocturne and Daylight with Classic or Faceted sculpture in ceramic, metal or wood.
+Version 1.2 adds clear piece hover/selection, capture choreography, original sound, automatic graphics detail, and visible Observatory and Stone Court settings. The opening slides into place from a shuffled arrangement, and lit tile edges show where the ground can move. Explore Gallery, Nocturne and Daylight with Classic or Faceted sculpture in ceramic, metal or wood.
 
 ## Play
 
 The browser edition needs an online first visit so its service worker can cache the bundled game. Later visits can play offline from the same browser and origin. The game, local saves, and local bot have no account, server, model download, or gameplay network dependency.
 
-For Windows 11 x64, download `Rift-Chess-win32-x64-1.1.0.zip`, extract the **entire** folder, then run `Rift Chess.exe`. Do not move the executable out of its folder: it needs the included Electron runtime files. This is an unsigned Electron 44.2 package; Windows may show its usual unsigned-app warning. Node.js is only needed for development, never to play the browser or packaged game.
+For Windows 11 x64, download `Rift-Chess-win32-x64-1.2.0.zip`, extract the **entire** folder, then run `Rift Chess.exe`. Do not move the executable out of its folder: it needs the included Electron runtime files. This is an unsigned Electron 44.2 package; Windows may show its usual unsigned-app warning. Node.js is only needed for development, never to play the browser or packaged game.
 
 Windows 11 x64 is the only tested desktop platform. The app was not tested on Linux or macOS.
 
