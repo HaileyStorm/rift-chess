@@ -16,9 +16,17 @@ commit. The versioned wrapper is 1.2.1; all published runtime assets are bound b
 the release verification manifest. The Windows ZIP is unsigned and requires full
 folder extraction.
 
-Publication status: verification in progress. Exact public and packaged receipts
-will be added after live checks. Existing source evidence is in
-`docs/evidence/experience/` and `docs/evidence/auto-worlds/`.
+Publication status: published and verified on September 22, 2026.
+[Browser](https://haileystorm.github.io/rift-chess/) and
+[Windows release](https://github.com/HaileyStorm/rift-chess/releases/tag/v1.2.1).
+The public build is `3b3f310653b2b9e98962`; Pages commit is
+`f4de8d5e7f75a26cac0aa6e8d332786a9360827e`. The source tag is `v1.2.1`.
+All 62 tests pass with two test workers, the extracted ZIP passed native offline
+play/restart/export/worker checks, and the preserved public profile passed upgrade,
+all 25 static hashes, all 23 cached assets, save preservation and cold-offline play.
+[Verification receipt](evidence/release-1.2.1/verification.json) records exact hashes,
+public asset digests and successful download routes. The 1.2.0 cache defect and
+failed receipts are preserved below; no published tag was moved.
 
 ## Preserved publication candidate
 

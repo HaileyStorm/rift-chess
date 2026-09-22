@@ -1,0 +1,142 @@
+{
+  "version": "1.2.1",
+  "source": "1d6661c",
+  "pages_commit": "f4de8d5e7f75a26cac0aa6e8d332786a9360827e",
+  "build": {
+    "version": "3b3f310653b2b9e98962",
+    "assets": [
+      "./api.js",
+      "./assets/game-Bb0WMghv.js",
+      "./assets/index-BDgj-bcQ.js",
+      "./assets/index-BsssSumI.css",
+      "./assets/marble-albedo.png",
+      "./assets/reflections/daylight-balanced.png",
+      "./assets/reflections/daylight-high.png",
+      "./assets/reflections/daylight-low.png",
+      "./assets/reflections/gallery-balanced.png",
+      "./assets/reflections/gallery-high.png",
+      "./assets/reflections/gallery-low.png",
+      "./assets/reflections/manifest.json",
+      "./assets/reflections/nocturne-balanced.png",
+      "./assets/reflections/nocturne-high.png",
+      "./assets/reflections/nocturne-low.png",
+      "./assets/worker-u3mupga4.js",
+      "./guide.html",
+      "./icon.svg",
+      "./index.html",
+      "./licenses.txt",
+      "./rules.html",
+      "./support.html",
+      "./support.js"
+    ]
+  },
+  "release": {
+    "assets": [
+      {
+        "apiUrl": "https://api.github.com/repos/HaileyStorm/rift-chess/releases/assets/581107998",
+        "contentType": "application/zip",
+        "createdAt": "2026-09-22T10:04:21Z",
+        "digest": "sha256:d336f2c73da5413eda1418187037f6a36ab110c975a70e2b500d5dc7867273b4",
+        "downloadCount": 0,
+        "id": "RA_kwDOUQr7dM4iowEe",
+        "label": "",
+        "name": "Rift-Chess-win32-x64-1.2.1.zip",
+        "size": 169088999,
+        "state": "uploaded",
+        "updatedAt": "2026-09-22T10:04:33Z",
+        "url": "https://github.com/HaileyStorm/rift-chess/releases/download/v1.2.1/Rift-Chess-win32-x64-1.2.1.zip",
+        "download_head_status": 200
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/HaileyStorm/rift-chess/releases/assets/581107996",
+        "contentType": "application/octet-stream",
+        "createdAt": "2026-09-22T10:04:21Z",
+        "digest": "sha256:6eca7cfc142a5799a759329eeeb8dec3a37a7fc04245ebc8603e8ed53e4e5df6",
+        "downloadCount": 0,
+        "id": "RA_kwDOUQr7dM4iowEc",
+        "label": "",
+        "name": "Rift-Chess-win32-x64-1.2.1.zip.sha256",
+        "size": 97,
+        "state": "uploaded",
+        "updatedAt": "2026-09-22T10:04:21Z",
+        "url": "https://github.com/HaileyStorm/rift-chess/releases/download/v1.2.1/Rift-Chess-win32-x64-1.2.1.zip.sha256",
+        "download_head_status": 200
+      }
+    ],
+    "isDraft": false,
+    "tagName": "v1.2.1",
+    "url": "https://github.com/HaileyStorm/rift-chess/releases/tag/v1.2.1"
+  },
+  "tests": {
+    "passed": 62,
+    "files": 11,
+    "command": "node node_modules/vitest/vitest.mjs run --maxWorkers 2"
+  },
+  "native": {
+    "status": "pass",
+    "candidate": {
+      "executable": "C:\\Users\\Haile\\OneDrive\\Documents\\ChatGPT\\Rift Chess\\.artifacts\\release-1.2.1-extracted\\Rift-Chess-win32-x64-1.2.1\\Rift Chess.exe",
+      "executable_sha256": "07b043bf9b0a0ac14a82fac0b612b7b7ed13cde727d706d74e41a45278ab51f1",
+      "resources": "C:\\Users\\Haile\\OneDrive\\Documents\\ChatGPT\\Rift Chess\\.artifacts\\release-1.2.1-extracted\\Rift-Chess-win32-x64-1.2.1\\resources",
+      "app_asar": "C:\\Users\\Haile\\OneDrive\\Documents\\ChatGPT\\Rift Chess\\.artifacts\\release-1.2.1-extracted\\Rift-Chess-win32-x64-1.2.1\\resources\\app.asar",
+      "app_asar_sha256": "0c6ee0d73aaa728da7f502aaaf3f19e31071a6667c8768d853be4b63531225c5"
+    },
+    "checks": [
+      "isolated packaged sandbox stays offline; native display scale and Electron zoom are recorded separately",
+      "visible replay returns to the live packaged match",
+      "normal packaged restart restores record and exact served assets",
+      "packaged export/rejected corrupt import preserve the restored match",
+      "both human colors complete a visible move against the shipped offline worker",
+      "visible loaded-Shift tutorial uses passenger selection, hover preview, destination click, and promotion choice",
+      "instrumented native Worker held one actual callback; stale release after real New Hotseat C left the replacement match unchanged"
+    ]
+  },
+  "upgrade": {
+    "status": "pass",
+    "checks": [
+      "post-control reload bound the renderer document to the newly activated current worker",
+      "Node fetch matched every current manifest, page, worker, and manifest byte to current dist",
+      "registration.update plus close/reopen controlled the new current service worker",
+      "preserved pre-upgrade first-navigation errors remained separately recorded while post-control errors stayed strict",
+      "online upgrade preserved the saved game and preferences; legacy missing qualityMode maps to Automatic",
+      "cold offline restart restored the save and committed a real legal move through the shared UI driver"
+    ],
+    "preUpgradeErrors": [
+      "Failed to load resource: the server responded with a status of 404 ()",
+      "Failed to load resource: the server responded with a status of 404 ()"
+    ],
+    "errors": [],
+    "static_files": {
+      "./api.js": "a5773503775ee4e2b70c9c13953be54f2f14e2c27cae19d91df0c50e3eb447df",
+      "./assets/game-Bb0WMghv.js": "5af0e8d1975773783811cc1c1e9b6d7416e1248e750fca7b785325ec0b6b77fc",
+      "./assets/index-BDgj-bcQ.js": "63dc68690cd181600f0d4cdee719e3d4b307c23bc015dec08ac59a32da8195cb",
+      "./assets/index-BsssSumI.css": "7ec0fd9e58e98c0228ebadf5b70bd67a8b25bc64b1138a7995c35e6f5016309f",
+      "./assets/marble-albedo.png": "c00c5a61e6693e2ec5a0b4754225561c43d23275d48f2cae00ce51230244b9aa",
+      "./assets/reflections/daylight-balanced.png": "fd3165f6f111856a521f6df1338ec26804f308d02464002642edc58d6052cfa9",
+      "./assets/reflections/daylight-high.png": "c7274603ef5053d7e0c1c27f112a303575b8117105007a7f785201b132b759b7",
+      "./assets/reflections/daylight-low.png": "eb47b7d115444274d2ba0791b4fc3c4a09685280ee4323c6b52b0c2cd151416d",
+      "./assets/reflections/gallery-balanced.png": "bb24d2b0f862754ff96b1b0f0e1b85ea87f0222186835858a1c0c37e9e6d29e1",
+      "./assets/reflections/gallery-high.png": "42029ce29e2eb84a5357402a072d95885f7e97439a7ae3a046603f76b74ca0c2",
+      "./assets/reflections/gallery-low.png": "bcdd9692d1bb20f64d9a58efea73ef8c6a5da20b0525d3ceb47a0189976da665",
+      "./assets/reflections/manifest.json": "50b98a2efc60fa3d37f7bffcef14578a9f5895b3409aca5b331e1d8757b098c7",
+      "./assets/reflections/nocturne-balanced.png": "4021c1496803937353a39dcdccb25ba73259d5b369f3049e4e413c7e0a5a5506",
+      "./assets/reflections/nocturne-high.png": "f6ad817803d2a7834ad04b4e70ff1f96754c53f684425830ba61f9183baac0c4",
+      "./assets/reflections/nocturne-low.png": "c3f50aee852f305d7728af63d40f5772bc5d924a3c867a6119b9cb3e8f40dcad",
+      "./assets/worker-u3mupga4.js": "b51503d26aea539a44f2c3e28b4ebf4d8c786bf746762c7e963f1d0947e1dcc3",
+      "./guide.html": "ffe1aecaf68728c66997691e0d3889212a2a892a486048878b9a19e9e5dabc93",
+      "./icon.svg": "3c56deb54b7bd62c7b7be2caa49692dae65f39316fc0ce3a07c3270e11820879",
+      "./index.html": "05275c202778bebcb85333734a0a5e9c1884204d32d3a3dc86408261f68a125f",
+      "./licenses.txt": "4c70d521816cfd412b9c1bb856026a227dc595d7488ce8366aad257d7aaa15db",
+      "./rules.html": "5fa20aae975ff7febc9d068c1f83a7396062f8d022187b021a102546ae9f3754",
+      "./support.html": "df3cfca952d0e3ba63406b90efa4be2b53ff694339d05032dfcc877ebe1ba654",
+      "./support.js": "bb837bc0842884ba4c0f5bd407f1ede2c37d6893ba56f50272841fc4f92c212d",
+      "./sw.js": "f40c11a11a1d631fbe5ef9eca16ede3348d39af6f6d1c658e6a8438264d080ad",
+      "./precache.json": "395bf8be7d007bba6d70b562d3a36f3a612b01b2ee25ef8acd3c44e6baac2f3d"
+    }
+  },
+  "limits": [
+    "Windows package is unsigned.",
+    "Audio waveforms were rendered; this session does not provide subjective listening evidence.",
+    "1.2.0 draft/tag is preserved as a superseded candidate after the cache freshness defect."
+  ]
+}

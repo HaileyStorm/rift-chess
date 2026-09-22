@@ -166,9 +166,12 @@ async function chooseHotseatOpening(page, driver, receipt) {
   return save;
 }
 
-function watch(page, receipt) {
-  page.on('pageerror', error => receipt.errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error') receipt.errors.push(message.text()); });
+function watch(page, receipt, bucket = receipt.errors) {
+  const onPageError = error => bucket.push(error.message);
+  const onConsole = message => { if (message.type() === 'error') bucket.push(message.text()); };
+  page.on('pageerror', onPageError);
+  page.on('console', onConsole);
+  return () => { page.off('pageerror', onPageError); page.off('console', onConsole); };
 }
 
 async function launch() {
@@ -192,9 +195,11 @@ async function updateAndControl(page, version, receipt) {
   receipt.workerUpdate = { installed: await waitForServiceWorker(page, { phase: 'installed', version }) };
   await closeContext();
   page = await launch();
-  watch(page, receipt);
+  const preUpgradeWatch = watch(page, receipt, receipt.preUpgradeErrors ?? receipt.errors);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   receipt.workerUpdate.controlled = await waitForServiceWorker(page, { phase: 'controlled', version });
+  preUpgradeWatch();
+  watch(page, receipt);
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
   receipt.workerUpdate.reloaded = true;
   receipt.checks.push('post-control reload bound the renderer document to the newly activated current worker');
@@ -256,8 +261,13 @@ try {
     if (current.manifestSha256 === prepared.oldBuild.manifestSha256) throw new Error('Current distribution manifest is identical to the prepared live old build.');
     receipt.currentBuild = current;
     receipt.preparedSaveSha256 = prepared.preparedSave?.rawSha256 ?? null;
+    receipt.preUpgradeErrors = [];
+    receipt.errorScopes = {
+      preUpgradeErrors: 'Recorded from the preserved profile first navigation before registration.update; known stale-shell errors remain visible here.',
+      errors: 'Strict final bucket covering the new-worker reload, online restored match, and cold offline restart.',
+    };
     const page = await launch();
-    watch(page, receipt);
+    watch(page, receipt, receipt.preUpgradeErrors);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const currentNetwork = await staticNetwork(current.manifest);
     verifyStaticNetwork(currentNetwork, current, 'Current');
@@ -275,6 +285,7 @@ try {
     receipt.online = { worker: receipt.workerUpdate.controlled, persistedSave: restored, cache: receipt.currentBuild.cache };
     receipt.checks.push('Node fetch matched every current manifest, page, worker, and manifest byte to current dist');
     receipt.checks.push('registration.update plus close/reopen controlled the new current service worker');
+    receipt.checks.push('preserved pre-upgrade first-navigation errors remained separately recorded while post-control errors stayed strict');
     receipt.checks.push('online upgrade preserved the saved game and preferences; legacy missing qualityMode maps to Automatic');
     await closeContext();
     const offlineContextPage = await launch();
