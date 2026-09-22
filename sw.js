@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'rift-chess-static-';
 // Embedded at build time: a restarted worker must never fetch metadata to work offline.
-const CACHE_VERSION = '5ae0897849318b10dda9';
+const CACHE_VERSION = '3b3f310653b2b9e98962';
 const ACTIVE_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 function isInScope(requestUrl) {
@@ -19,7 +19,9 @@ self.addEventListener('install', (event) => {
       if (url.origin !== self.location.origin || !isInScope(url)) throw new Error('Foreign offline asset');
       return url.toString();
     });
-    await (await caches.open(ACTIVE_CACHE)).addAll(urls);
+    // A new CacheStorage name does not bypass the browser HTTP cache. Refresh
+    // unhashed HTML/maps too, otherwise a new cache can retain an old app shell.
+    await (await caches.open(ACTIVE_CACHE)).addAll(urls.map(url => new Request(url, { cache: 'reload' })));
   })());
 });
 
