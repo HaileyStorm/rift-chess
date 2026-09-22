@@ -46,5 +46,12 @@ amendment gate is part of the build, not just an instruction in prose.
 
 ## Status
 
-Documentation/toolchain phase. No app laws are frozen yet. No Bend game or full
-correctness claim is made. See `docs/LOCAL_BEND_GUIDE.md` and `SOURCE_CATALOG.md`.
+Documentation, rules, proofs and pixel library complete. Core and pixel semantic
+v1 manifests are frozen; all 13 core/11 pixel laws, six negative mutations,
+14-position/223-successor conformance, 33 match checks and pixel tests pass.
+The isolated browser game is implemented and running at localhost:4184.
+Rendered pointer moves for both sides, Shift, undo, reload, capture, underpromotion,
+draw/resignation recovery, local bot, rapid replay invalidation, renderer recovery,
+malformed-save preservation, cold offline play and mobile/menu layout pass.
+Current work: separate preview publication, hosted verification and source handoff.
+No native Bend CPU/GPU benchmark or owner visual acceptance is claimed.

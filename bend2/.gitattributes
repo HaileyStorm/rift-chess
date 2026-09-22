@@ -1,0 +1,3 @@
+# Frozen contracts hash exact bytes, including line endings. Keep their verified
+# bytes portable across checkouts; this disables conversion, not textual diffs.
+* -text whitespace=blank-at-eol,space-before-tab,cr-at-eol,-blank-at-eof

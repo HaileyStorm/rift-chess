@@ -1,0 +1,13 @@
+{
+  "schema": "rift-bend-proof-attestation/1",
+  "at": "2026-09-22T12:20:36.599Z",
+  "semanticSha256": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+  "pixelSemanticSha256": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+  "proofReceiptSha256": "64ab7b492b6257084d1e6f668c7ba2225bc0dc86b54edbee3604b364a4520872",
+  "readinessReceiptSha256": "914843bef17ed7c12d34fb22f4c0b254737b7380493a60faf49a5f1bfce12403",
+  "witnesses": {
+    "bend2/core/Kernel.bend": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+    "bend2/core/PROOF.bend": "f0864382a0167dd27119571cdfc88e7513e23965d14b0aae68f7c1dbf70e4a8a",
+    "bend2/graphics/PROOF.bend": "8e4d60373335777f0241a212d66ec109e65ca37d741dda1cfe21640c680cd7da"
+  }
+}

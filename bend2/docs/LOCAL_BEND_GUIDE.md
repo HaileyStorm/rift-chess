@@ -398,3 +398,51 @@ animation and input remain JavaScript responsibilities.
   option, not a native Bend Windows build.
 - Keep laws, proofs, compiler pins, generated output, and rendered captures
   tied to exact commits. A local green check is not a release claim.
+
+## Lessons from this actual adaptation
+
+The project now has a checked rules kernel and immutable pixel library. These
+are practical observations from this pinned version, not promises about a newer
+Bend release:
+
+- **Check small slices early.** Record fields need destructuring or explicit
+  getters. A computed scrutinee needs a helper parameter. A pair produced by a
+  computation cannot simply be destructured in the middle of a recursive body;
+  a small Data constructor with getters can keep recursion structurally clear.
+- **Helpers do not permit mutual recursion.** A recursive loop cannot call a
+  helper that calls the loop back. Put the Boolean branch flag in the recursive
+  function's parameters, then match it before making the smaller call.
+- **Strict arguments matter for pixels.** Computing all four child images before
+  `Bool.pick(outside, old, children)` still performs the work. Classify outside,
+  inside and partial nodes before recursive calls. Untouched subtrees should
+  return directly. The same lesson applies to cheap legality rejection before
+  candidate validation.
+- **Inspect emitted JavaScript when optimizing.** A U32 pattern's residual
+  branch can reconstruct a 32-bit Word on every iteration. A structural list
+  traversal with a separate Boolean zero flag retained numeric indices and
+  avoided that allocation hotspot. Do not assume a shorter Bend expression is
+  faster after lowering.
+- **A proof can be true but expensive to normalize.** The pinned comparator
+  unfolds weak heads before comparing them. Generic Boolean guard lemmas reduced
+  repeated expansion of large predicates. Explicitly matching a Position
+  parameter in `Spec.legal_range` left a symbolic call stuck at that parameter,
+  making exact enumeration refinement practical without changing runtime meaning
+  or weakening the law. Earlier timeout/stack failures were retained.
+- **Use one browser facade import.** `App.bend` collects the core and rendering
+  APIs. It avoids repeatedly compiling overlapping books through concurrent Bun
+  module loads. `tools/loader.ts` also normalizes backslashes before the pinned
+  loader resolves relative imports; this is a local Windows adapter, not a
+  modification to the upstream compiler.
+- **Guard proofs and chess correctness are different evidence.** A proof that
+  accepted results pass `valid` and `post` does not establish that those
+  predicates capture every intended rule. Independent review caught missing
+  fresh-pawn attacks and EP-counter validation; complete reference lists and
+  successor comparisons prevented those mistakes from being frozen.
+- **The browser still needs play-testing.** A typed host can contain a wrong DOM
+  selector, cancel a click with a later hover, retain an animation's old frame or
+  misdecode an Undo record. The host serializes input, tags worker sessions and
+  treats its own storage/animation checks as separate from the Bend source laws.
+
+The current law and proof receipts are linked from `../README.md`. JavaScript
+runtime measurements and rendered browser checks do not establish native CPU,
+CUDA or Metal speed.

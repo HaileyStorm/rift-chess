@@ -7,9 +7,9 @@ All entries in this catalog refer to the local vendored source at
 
 `https://github.com/bendlang/bend/tree/a49524265bdfa5753a4bf38e25f0574a705dd868`
 
-The catalog records what was read for `LOCAL_BEND_GUIDE.md`. It does not claim
-that any example, proof gate, native binary, GPU path, or browser page was run
-in this worktree.
+The catalog records what was read for `LOCAL_BEND_GUIDE.md`. The guide records
+limited root-reported proof/interpreter checks; this catalog does not turn those
+checks into native-binary, GPU, browser, release, or owner-acceptance claims.
 
 ## Primary references
 

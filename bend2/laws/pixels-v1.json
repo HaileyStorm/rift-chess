@@ -1,0 +1,12 @@
+{
+  "schema": "rift-bend-pixels/1",
+  "version": 1,
+  "frozenAt": "2026-09-22T12:03:17.583Z",
+  "readinessSha256": "914843bef17ed7c12d34fb22f4c0b254737b7380493a60faf49a5f1bfce12403",
+  "files": {
+    "bend2/TOOLCHAIN.json": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+    "bend2/graphics/Pixel.bend": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3",
+    "bend2/graphics/LAWS.bend": "4b7b6f6046c985facf4937c9b6deab3071e14fa79f5beca256ea5b4228ff89d3",
+    "bend2/docs/GRAPHICS_LAWS_V1.md": "82e4d983bfcd4b4364b640956372d04d48c0d61f641e161adb057aea9710a309"
+  }
+}

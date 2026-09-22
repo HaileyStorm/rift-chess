@@ -1,0 +1,15 @@
+Bend 2 compiler, standard library, examples and emitted runtime
+https://github.com/bendlang/bend
+Pinned source: a49524265bdfa5753a4bf38e25f0574a705dd868 (2.0.25)
+License: Apache License, Version 2.0
+Full license: Bend-Apache-2.0.txt in the browser distribution, or
+licenses/Bend-Apache-2.0.txt in this source directory.
+
+The browser worker includes generated Bend standard-library/runtime code.
+The project's constructive proof-helper idioms and small pixel-tree architecture
+were informed by the pinned examples, as catalogued in docs/SOURCE_CATALOG.md.
+Project-specific modifications and implementations are recorded in this Git
+branch. The pinned upstream checkout itself is unchanged.
+
+This experiment includes no downloaded image or sound assets. Sprites are
+project-authored pixel silhouettes; sounds are synthesized through Web Audio.
