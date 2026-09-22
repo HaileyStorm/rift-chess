@@ -1,0 +1,13 @@
+{
+  "at": "2026-09-22T15:18:20.162Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "beforeVersion": "f8cbc16e5ba51a2b9ee5",
+  "afterVersion": "8106a3f0fed5f9274f95",
+  "initialNavigation": "Cached old shell; no game mutation before timeout. Explicit browser reload tested next.",
+  "checks": [
+    "Explicit reload of returning old offline profile loads camera controls and preserves exact saved record",
+    "Resumed saved match accepts Black knight g8-f6 through the overhead board",
+    "Cold offline reload retains camera and record; an actual offline Undo succeeds"
+  ],
+  "errors": []
+}

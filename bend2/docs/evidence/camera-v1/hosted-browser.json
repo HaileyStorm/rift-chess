@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-22T15:14:45.566Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "checks": [
+    "Front default and real top-down rendering; pointer knight g1-f3 in top-down view",
+    "Rapid orbit controls settle on latest angle; pointer knight g8-f6 after 180-degree rotation",
+    "An open hole remains a valid Shift destination; Shift and undo preserve the camera",
+    "Injected pick latency: pending destination click survives camera change; rotation during animation never rewinds progress",
+    "Right-drag orbits without issuing a move; camera persists across reload",
+    "Ordinary page scroll preserved; focused-board wheel zoom works",
+    "Mobile presets/sliders fit and render the minimum tilt"
+  ],
+  "errors": [],
+  "captures": [
+    "01-front-open-gaps",
+    "02-overhead",
+    "03-reversed-board",
+    "04-open-shift-target",
+    "05-oblique-open-gaps",
+    "06-mobile-camera"
+  ]
+}

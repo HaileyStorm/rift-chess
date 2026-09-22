@@ -68,3 +68,41 @@ The source compiler/runtime and browser adapters remain trusted. Reference
 coverage is finite. This is local Chrome exercising the public deployment,
 not a cross-device survey. There is no native Bend CPU/GPU benchmark, packaged
 Bend desktop release or user aesthetic acceptance claim.
+
+## Camera and open-gap follow-up
+
+Source `a0599ba00e6243f9d4ba4386e2ff8abcbbaa7bf4` adds a shared Bend camera,
+projected quads and browser controls. Build `8106a3f0fed5f9274f95` retains the
+original semantic and pixel-law hashes; no law or normative dependency changed.
+The prior fixed-isometric projection receipt remains historical evidence for
+preview-v1, and the current presentation contract is in `PICKING_CONTRACT.md`.
+
+- `tests/picking.ts`: 2,304 finite checks including reversed orientations and
+  overlapping sprites. An initial overlap fixture used non-overlapping squares;
+  it was corrected, as was a test call passing signed coordinates into a U32 API.
+- `tests/camera-render.ts`: 4,640 checks across 48 grounds, including open-gap
+  interior masks at shallow/oblique angles and hollow Shift/hover feedback.
+- Strict host TypeScript and Bend facade checks pass. The normal build verifies
+  both frozen semantic manifests and the previously proved witnesses.
+- [Local camera browser receipt](evidence/camera-v1/local-browser.json): seven
+  scenario groups pass without browser errors. Review findings about cancelled
+  clicks and rewound animations were fixed and exercised with explicitly timed
+  pick latency and a camera change during a real move animation.
+- The existing capture, promotion, bot, import/recovery and cold-offline browser
+  scenarios pass at `.artifacts/bend2/scenarios/2026-09-22T14-08-53-107Z/`.
+- [Inspected oblique frame](evidence/camera-v1/oblique.png) shows the background
+  through the missing platforms. Camera math and quad rasterization are tested
+  presentation code, not new formally proved laws.
+
+The follow-up is live at the same separate preview URL. Deployment commit
+`3388c9cebe738736c9404c7e75740da340ff189b` matches the clean source build above.
+[Publication hashes](evidence/camera-v1/publication.json) verify all seven live
+assets and the unchanged original game's index/precache bytes.
+[Hosted camera play-tests](evidence/camera-v1/hosted-browser.json) pass all seven
+scenario groups with no browser errors.
+
+[The returning-profile check](evidence/camera-v1/upgrade.json) retains an exact
+save created on preview-v1, resumes it with a real overhead-view knight move,
+then reloads cold offline and accepts Undo. An ordinary initial navigation used
+the browser's cached old app shell; an explicit browser refresh loaded the new
+controls. Existing open tabs therefore need a refresh, with no save clearing.

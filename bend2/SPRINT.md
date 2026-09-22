@@ -84,5 +84,8 @@ Local projection/picking checks pass (2,304), and 48 rendered-ground cases pass
 4,640 checks including interior gap masks. Original capture, promotion, bot,
 save/recovery and offline scenarios pass. The focused browser check covers
 rotated pointer moves, Shift, persistence, wheel behavior and mobile controls;
-review also prompted click/animation timing regressions. Final hosted verification
-and source handoff are the remaining acceptance steps.
+review also prompted click/animation timing regressions. The dedicated public
+preview passes all seven camera scenario groups. Every live asset matches the
+clean build, and an old offline profile survives an explicit refresh, a resumed
+move and a cold-offline Undo. Source and deployment are pushed; this follow-up is
+complete. Existing open tabs should be refreshed to load the new controls.
