@@ -12,7 +12,7 @@ page.on('pageerror', (error) => receipt.errors.push(error.message));
 page.on('console', (event) => { if (event.type() === 'error') receipt.errors.push(event.text()); });
 async function capture(name) { await page.screenshot({ path: path.join(out, `${name}.png`), fullPage: true }); receipt.captures.push(name); }
 async function ready() {
-  await page.waitForFunction(() => document.querySelector('#busy')?.hidden === true, { timeout: 30000 });
+  await page.waitForFunction(() => document.querySelector('#busy')?.hidden === true, null, { timeout: 30000 });
   await page.waitForFunction(() => {
     const color = document.querySelector('canvas')?.getContext('2d')?.getImageData(256, 256, 1, 1).data;
     return color && color[0] + color[1] + color[2] > 0;
@@ -24,31 +24,34 @@ async function clickPixel(x, y) {
   assert(rect);
   await page.mouse.click(rect.x + x * rect.width / 512, rect.y + y * rect.height / 512);
 }
+async function clickSquare(file, rank, piece = false) {
+  await clickPixel(256 + 45 * (file - 3.5), 274 + 45 * Math.sin(65 * Math.PI / 180) * (7 - rank - 3.5) - (piece ? 8 : 0));
+}
 try {
   await page.goto(receipt.url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => document.querySelector('#turn-label')?.textContent?.includes('White'), { timeout: 60000 });
   await ready();
   await capture('01-start');
   receipt.checks.push('Browser booted actual bundled Bend rules/renderer');
-  await clickPixel(232, 303);
+  await clickSquare(6, 0, true);
   await page.waitForFunction(() => document.querySelector('#selection')?.textContent?.includes('g1'), { timeout: 15000 });
   await ready();
   await capture('02-knight-selected');
-  await clickPixel(274, 268);
+  await clickSquare(5, 2);
   await page.waitForFunction(() => document.querySelector('#turn-label')?.textContent?.includes('Black'), { timeout: 15000 });
   await ready();
   receipt.checks.push('Pointer selected g1 knight and moved to f3');
   await capture('03-knight-f3');
-  await clickPixel(402, 194);
+  await clickSquare(6, 7, true);
   await page.waitForFunction(() => document.querySelector('#selection')?.textContent?.includes('g8'), { timeout: 15000 });
-  await clickPixel(346, 232);
+  await clickSquare(5, 5);
   await page.waitForFunction(() => document.querySelector('#turn-label')?.textContent?.includes('White'), { timeout: 15000 });
   await ready();
   receipt.checks.push('Black knight g8-f6');
-  await clickPixel(154, 208);
+  await clickSquare(0, 2);
   await page.waitForFunction(() => document.querySelector('#selection')?.textContent?.toLowerCase().includes('tile'), { timeout: 15000 });
   await capture('04-shift-selected');
-  await clickPixel(196, 232);
+  await clickSquare(2, 2);
   await page.waitForFunction(() => document.querySelector('#turn-label')?.textContent?.includes('Black'), { timeout: 15000 });
   await ready();
   receipt.checks.push('Empty tile Shift through the rendered board');

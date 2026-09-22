@@ -8,6 +8,7 @@ import ./core/MatchSpec.bend as Match
 import ./core/AI.bend as AI
 import ./graphics/Scene.bend as Scene
 import ./graphics/Picking.bend as Picking
+import ./graphics/Camera.bend as Camera
 
 type Observation is Data:
   Observation{position: M.Position, revision: Nat, legal: List<&2, U32>,
@@ -71,8 +72,8 @@ def render(frame: Scene.Frame) -> Image:
 def background(theme: U32) -> Image:
   Scene.background()
 
-def ground_base(bg: Image, p: M.Position, theme: U32) -> Image:
-  Scene.ground_base(bg, p, theme)
+def ground_base(bg: Image, p: M.Position, theme: U32, view: Camera.View) -> Image:
+  Scene.ground_base(bg, p, theme, view)
 
 def feedback_on(base: Image, frame: Scene.Frame) -> Image:
   Scene.feedback_on(base, frame)
@@ -83,14 +84,14 @@ def pieces_on(ground: Image, frame: Scene.Frame) -> Image:
 def ground_on(bg: Image, frame: Scene.Frame) -> Image:
   Scene.ground_on(bg, frame)
 
-def pick(p: M.Position, x: U32, y: U32) -> U32:
-  Picking.pick(p, x, y)
+def pick(p: M.Position, x: U32, y: U32, view: Camera.View) -> U32:
+  Picking.pick(p, x, y, Camera.basis(view))
 
-def square_at(x: U32, y: U32) -> U32:
-  Picking.square_at(x, y)
+def square_at(x: U32, y: U32, view: Camera.View) -> U32:
+  Camera.square_at(x, y, Camera.basis(view))
 
-def center_x(square: U32) -> U32:
-  Picking.center_x(square)
+def center_x(square: U32, view: Camera.View) -> U32:
+  Camera.center_x(square, Camera.basis(view))
 
-def center_y(square: U32) -> U32:
-  Picking.center_y(square)
+def center_y(square: U32, view: Camera.View) -> U32:
+  Camera.center_y(square, Camera.basis(view))

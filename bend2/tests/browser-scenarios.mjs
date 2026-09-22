@@ -47,6 +47,9 @@ async function pixel(x, y) {
   const b = await page.locator('#board').boundingBox();
   await page.mouse.click(b.x + x * b.width / 512, b.y + y * b.height / 512);
 }
+async function pieceAt(file, rank) {
+  await pixel(256 + 45 * (file - 3.5), 274 + 45 * Math.sin(65 * Math.PI / 180) * (7 - rank - 3.5) - 8);
+}
 async function capture(name) { await page.screenshot({ path: path.join(out, `${name}.png`), fullPage: true }); receipt.captures.push(name); }
 async function newGame(play = 'hotseat', layout = 'B') {
   await page.locator('#new-game').click();
@@ -66,7 +69,7 @@ try {
   await page.goto(receipt.url, { waitUntil: 'networkidle' });
   await count(0);
   await upload(record(2)); await count(2);
-  await pixel(160, 172);
+  await pieceAt(0, 3);
   await page.getByRole('button', { name: 'Move to b5', exact: true }).click();
   await page.waitForTimeout(130); await capture('01-capture-animation');
   await count(3);
@@ -74,7 +77,7 @@ try {
   receipt.checks.push('Actual pointer capture a4xb5, animated victim and accepted ledger');
 
   await upload(record(8)); await count(8);
-  await pixel(256, 147);
+  await pieceAt(1, 6);
   await page.getByRole('button', { name: 'Move to b8', exact: true }).click();
   await page.locator('#promotion-dialog').waitFor({ state: 'visible' });
   await capture('02-promotion-dialog');
@@ -98,7 +101,7 @@ try {
   receipt.checks.push('Draw agreement, resignation and undo reopen finished games');
 
   await newGame('bot');
-  await pixel(232, 303); await page.getByRole('button', { name: 'Move to f3', exact: true }).click();
+  await pieceAt(6, 0); await page.getByRole('button', { name: 'Move to f3', exact: true }).click();
   await count(2);
   await page.locator('#undo').click(); await count(3);
   assert.equal(await page.locator('#resume-bot').isVisible(), true);
@@ -108,7 +111,7 @@ try {
   assert.equal(await page.locator('#resume-bot').isVisible(), true);
   await page.locator('#undo').click(); await count(4);
   assert.match(await page.locator('#turn-label').innerText(), /White to move/);
-  await pixel(208, 242); await page.getByRole('button', { name: 'Move to e4', exact: true }).click(); await count(6);
+  await pieceAt(4, 1); await page.getByRole('button', { name: 'Move to e4', exact: true }).click(); await count(6);
   receipt.checks.push('Bot plays legal replies; undo pauses it; mode and pause survive reload');
 
   await upload(record(1)); await count(1); await page.waitForTimeout(600);
@@ -126,7 +129,7 @@ try {
   receipt.checks.push('Newest import wins; a cancelled failing replay cannot replace a new match');
 
   const stable = JSON.stringify(await saved());
-  const oldColor = await page.evaluate(() => Array.from(document.querySelector('canvas').getContext('2d').getImageData(294, 280, 1, 1).data));
+  const oldColor = await page.evaluate(() => Array.from(document.querySelector('canvas').getContext('2d').getImageData(115, 424, 1, 1).data));
   await page.locator('#menu').click();
   await page.evaluate(() => { window.__faultRenders = 2; });
   await page.getByRole('button', { name: 'Warm theme', exact: true }).click();
@@ -136,7 +139,7 @@ try {
   assert.equal(JSON.stringify(await saved()), stable);
   await page.locator('#retry-render').click(); await ready();
   assert.equal(await page.locator('#retry-render').isVisible(), false);
-  const warmColor = await page.evaluate(() => Array.from(document.querySelector('canvas').getContext('2d').getImageData(294, 280, 1, 1).data));
+  const warmColor = await page.evaluate(() => Array.from(document.querySelector('canvas').getContext('2d').getImageData(115, 424, 1, 1).data));
   assert.notDeepEqual(warmColor, oldColor, 'Warm lighting must actually change rendered pixels after recovery');
   receipt.checks.push('Injected render failure locks stale display; settled retry preserves game');
   await capture('04-warm-court');
@@ -169,7 +172,7 @@ try {
   }
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' }); await count(0);
-  await pixel(112, 194); await page.getByRole('button', { name: 'Move to a4', exact: true }).click(); await count(1);
+  await pieceAt(0, 1); await page.getByRole('button', { name: 'Move to a4', exact: true }).click(); await count(1);
   receipt.checks.push('Cold offline reload and an actual offline move succeed');
   await capture('06-offline');
   assert(await page.evaluate(() => window.__audioStarts > 0), 'User gestures must trigger actual Web Audio oscillators');

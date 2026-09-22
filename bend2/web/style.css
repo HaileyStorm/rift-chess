@@ -48,6 +48,17 @@ canvas { display: block; width: min(100%, 680px, calc(100dvh - 250px)); height: 
 .busy.has-position .spinner { width: 16px; height: 16px; }
 .spinner { width: 25px; height: 25px; border: 2px solid #567c88; border-top-color: var(--gold); border-radius: 50%; animation: spin .85s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.camera-controls { display: grid; gap: .7rem; margin-top: .75rem; padding: .75rem; border: 1px solid #294b59; border-radius: 10px; background: #081a27cc; }
+.camera-buttons { display: flex; flex-wrap: wrap; gap: .4rem; }
+.camera-buttons .button { padding: .42rem .58rem; }
+.camera-buttons .button span { margin-left: .1rem; }
+.camera-sliders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.camera-slider { display: grid; gap: .25rem; color: var(--muted); font-size: .7rem; }
+.camera-slider > span { display: flex; justify-content: space-between; gap: .35rem; }
+.camera-slider output { color: var(--ink); font-variant-numeric: tabular-nums; }
+.camera-slider input { width: 100%; accent-color: var(--cyan); }
+.camera-help { margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.4; }
+canvas.orbiting { cursor: grabbing; }
 .board-foot { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem .25rem 0; color: var(--muted); font-size: .78rem; }
 #selection { color: var(--ink); }
 
@@ -138,6 +149,8 @@ legend { padding: 0 .25rem; color: var(--cyan); font-size: .65rem; font-weight: 
   .board-heading h1 { font-size: 2rem; }
   .badge { padding: .3rem .4rem; font-size: .47rem; }
   .board-wrap { min-height: 0; border-radius: 10px; }
+  .camera-sliders { grid-template-columns: 1fr; gap: .5rem; }
+  .camera-buttons .button { flex: 1 1 auto; }
   .sidebar { grid-template-columns: 1fr; }
   .status-panel { grid-column: auto; }
   footer { display: none; }

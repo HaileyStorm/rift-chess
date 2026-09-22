@@ -2,12 +2,13 @@ import Base
 import ../core/Model.bend as Model
 import ./Pixel.bend as Pixel
 import ./Sprites.bend as Sprites
-import ./Picking.bend as Picking
+import ./Camera.bend as Camera
+import ./Quad.bend as Quad
 
 type Frame is Data:
   Frame{position: Model.Position, previous: Model.Position, selected: U32,
     hovered: U32, targets: List<&2, U32>, tile: U32,
-    tileTargets: List<&2, U32>, lastAction: U32, progress: U32, theme: U32}
+    tileTargets: List<&2, U32>, lastAction: U32, progress: U32, theme: U32, view: Camera.View}
 
 def rect(+x: U32, +y: U32, width: U32, height: U32, color: U32, image: Image) -> Image:
   Pixel.fill_rect(Pixel.Rect{x, y, U32.add(x, width), U32.add(y, height)}, color, image)
@@ -122,13 +123,6 @@ def diamond.tree(+depth: Nat, outside: Bool, inside: Bool,
 def diamond(+cx: U32, +cy: U32, +radius: U32, edge: U32, face: U32, image: Image) -> Image:
   diamond.tree(9n, False{}, False{}, 0, 0, cx, cy, radius, edge, face, image)
 
-def marker(show: Bool, +x: U32, +y: U32, +color: U32, image: Image) -> Image:
-  match show:
-    case False{}:
-      image
-    case True{}:
-      diamond(x, y, 3, color, color, image)
-
 # Animation remains pure: positions are interpolated from the canonical action.
 def motion_source.action(action: Model.Action, +square: U32) -> U32:
   match action:
@@ -149,48 +143,85 @@ def motion_source(decoded: Maybe<Model.Action>, +square: U32) -> U32:
 def lerp(+a: U32, b: U32, +progress: U32) -> U32:
   U32.div(U32.add(U32.mul(a, U32.sub(16, progress)), U32.mul(b, progress)), 16)
 
-def moving_x(+square: U32, +action: U32, progress: U32) -> U32:
-  lerp(Picking.center_x(motion_source(Model.decode(action), square)), Picking.center_x(square), progress)
+def moving_x(+square: U32, +action: U32, progress: U32, +camera: Camera.Basis) -> U32:
+  lerp(Camera.center_x(motion_source(Model.decode(action), square), camera), Camera.center_x(square, camera), progress)
 
-def moving_y(+square: U32, +action: U32, +progress: U32) -> U32:
+def moving_y(+square: U32, +action: U32, +progress: U32, +camera: Camera.Basis) -> U32:
   +source = motion_source(Model.decode(action), square)
   +hop = Bool.pick(U32, U32.is_ne(source, square), U32.div(U32.mul(progress, U32.sub(16, progress)), 4), 0)
-  U32.sub(lerp(Picking.center_y(source), Picking.center_y(square), progress), hop)
+  U32.sub(lerp(Camera.center_y(source, camera), Camera.center_y(square, camera), progress), hop)
 
-def face_color(+square: U32, holes: U32, theme: U32) -> U32:
+def face_color(+square: U32, theme: U32) -> U32:
   +checker = U32.is_zero(U32.mod(U32.add(Model.file_of(square), Model.rank_of(square)), 2))
   +warm = U32.is_ne(theme, 0)
-  Bool.pick(U32, Model.present(holes, square),
-    Bool.pick(U32, checker, Bool.pick(U32, warm, 13940123, 9868194),
-      Bool.pick(U32, warm, 7358018, 3423317)), 1058614)
+  Bool.pick(U32, checker, Bool.pick(U32, warm, 13940123, 9868194), Bool.pick(U32, warm, 7358018, 3423317))
 
-def tile(+square: U32, +holes: U32, +selected: U32, +hovered: U32,
-  +targets: List<&2, U32>, +chosen: U32, +tileTargets: List<&2, U32>, +action: U32, +progress: U32, +theme: U32, image: Image) -> Image:
-  +tile_action = Bool.pick(U32, U32.is_ge(action, 20480), action, 21760)
-  +x = moving_x(square, tile_action, progress)
-  +y = moving_y(square, tile_action, progress)
-  +present = Model.present(holes, square)
-  +face = face_color(square, holes, theme)
-  +base_edge = Bool.pick(U32, present, 10851971, 2854299)
-  +active = Bool.or(U32.is_eq(selected, square), U32.is_eq(chosen, Model.macro_of(square)))
-  +edge = Bool.pick(U32, active, 16767113,
-    Bool.pick(U32, U32.is_eq(hovered, square), 11073279, base_edge))
-  +a = diamond(x, U32.add(y, 9), 11, 1121328, Bool.pick(U32, present, 2634058, 727079), image)
-  +b = diamond(x, U32.add(y, 5), 11, Bool.pick(U32, present, 5000036, 2053993), 2370626, a)
-  +c = diamond(x, y, 11, edge, face, b)
-  +d = marker(Bool.not(present), x, y, 5558735, c)
-  +e = marker(has(targets, square), U32.add(x, 14), y, 16769440, d)
-  marker(has(tileTargets, Model.macro_of(square)), x, U32.sub(y, 3), 16034408, e)
+type Patch is Data:
+  Patch{a: Quad.Point, b: Quad.Point, c: Quad.Point, d: Quad.Point}
 
-def tiles(n: Nat, +i: U32, +holes: U32, +selected: U32, +hovered: U32,
-  +targets: List<&2, U32>, +chosen: U32, +tileTargets: List<&2, U32>, +action: U32, +progress: U32, +theme: U32, image: Image) -> Image:
-  match n:
-    case 0n:
+def projected(+camera: Camera.Basis, +file: F32, +row: F32, drop: F32) -> Quad.Point:
+  Quad.Point{Camera.project_x(camera, file, row), (Camera.project_y(camera, file, row) + drop : F32)}
+
+def patch(+camera: Camera.Basis, +file: F32, +row: F32, +drop: F32) -> Patch:
+  Patch{projected(camera, (file - 0.485 : F32), (row - 0.485 : F32), drop),
+    projected(camera, (file + 0.485 : F32), (row - 0.485 : F32), drop),
+    projected(camera, (file + 0.485 : F32), (row + 0.485 : F32), drop),
+    projected(camera, (file - 0.485 : F32), (row + 0.485 : F32), drop)}
+
+def patch.draw(p: Patch, solid: Bool, edge: U32, face: U32, image: Image) -> Image:
+  match p:
+    case Patch{a, b, c, d}:
+      Quad.draw(Quad.make(a, b, c, d), solid, edge, face, image)
+
+def edge.front(a: Quad.Point, b: Quad.Point) -> Bool:
+  match a b:
+    case Quad.Point{ax, ay} Quad.Point{bx, by}: (ax > bx : F32)
+
+def wall(show: Bool, a: Quad.Point, b: Quad.Point, bb: Quad.Point, aa: Quad.Point,
+  shade: U32, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}: Quad.draw(Quad.make(a, b, bb, aa), True{}, 1121328, shade, image)
+
+def walls(show: Bool, +square: U32, top: Patch, lower: Patch, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}:
+      match top lower:
+        case Patch{+a, +b, +c, +d} Patch{+aa, +bb, +cc, +dd}:
+          +left = U32.is_even(Model.file_of(square))
+          +bottom = U32.is_even(Model.rank_of(square))
+          # A platform is 2x2: its internal checker lines have no side walls.
+          # Back-facing walls are hidden by the top and need no raster work.
+          +one = wall(Bool.and(Bool.not(bottom), edge.front(a, b)), a, b, bb, aa, 2634058, image)
+          +two = wall(Bool.and(Bool.not(left), edge.front(b, c)), b, c, cc, bb, 5000036, one)
+          +three = wall(Bool.and(bottom, edge.front(c, d)), c, d, dd, cc, 5000036, two)
+          wall(Bool.and(left, edge.front(d, a)), d, a, aa, dd, 2634058, three)
+
+def tile.present(present: Bool, +square: U32, action: U32, +progress: U32,
+  theme: U32, +camera: Camera.Basis, image: Image) -> Image:
+  match present:
+    case False{}:
+      # A missing platform contributes no surface, wall, base or center marker.
       image
-    case 1n+p:
-      +square = Model.sq(U32.mod(i, 8), U32.sub(7, U32.div(i, 8)))
-      tiles(p, U32.add(i, 1), holes, selected, hovered, targets, chosen, tileTargets, action, progress, theme,
-        tile(square, holes, selected, hovered, targets, chosen, tileTargets, action, progress, theme, image))
+    case True{}:
+      +source = motion_source(Model.decode(action), square)
+      +t = (U32.to_f32(progress) / 16.0 : F32)
+      +file = F32.lerp(U32.to_f32(Model.file_of(source)), U32.to_f32(Model.file_of(square)), t)
+      +row = F32.lerp(U32.to_f32(U32.sub(7, Model.rank_of(source))), U32.to_f32(U32.sub(7, Model.rank_of(square))), t)
+      +top = patch(camera, file, row, 0.0)
+      +height = Camera.extrusion(camera)
+      +lower = patch(camera, file, row, U32.to_f32(height))
+      +sides = walls(U32.is_ne(height, 0), square, top, lower, image)
+      patch.draw(top, True{}, 10851971, face_color(square, theme), sides)
+
+def tiles(order: List<&2, U32>, +holes: U32, +action: U32, +progress: U32,
+  +theme: U32, +camera: Camera.Basis, image: Image) -> Image:
+  match order:
+    case Nil{}: image
+    case +square <> rest:
+      tiles(rest, holes, action, progress, theme, camera,
+        tile.present(Model.present(holes, square), square, action, progress, theme, camera, image))
 
 def capture_square(decoded: Maybe<Model.Action>, +previous: Model.Position) -> U32:
   match decoded:
@@ -214,115 +245,93 @@ def piece(show: Bool, code: U32, x: U32, y: U32, +selected: Bool, hovered: Bool,
       Sprites.outlined(Bool.or(selected, hovered), code, x, y,
         Bool.pick(U32, selected, 8388607, 13743871), image)
 
-def pieces.cell(valid: Bool, +file: U32, +row: U32, +board: List<&2, U32>,
-  +action: U32, +progress: U32, +selected: U32, +hovered: U32,
-  +victim: U32, +victim_code: U32, image: Image) -> Image:
-  match valid:
-    case False{}:
-      image
-    case True{}:
-      +square = Model.sq(file, U32.sub(7, row))
+def pieces(order: List<&2, U32>, +board: List<&2, U32>, +action: U32, +progress: U32,
+  +selected: U32, +hovered: U32, +victim: U32, +victim_code: U32, +camera: Camera.Basis, image: Image) -> Image:
+  match order:
+    case Nil{}: image
+    case +square <> rest:
       +code = Model.board_get(board, square)
       +a = Sprites.dying(Bool.and(U32.is_eq(victim, square), U32.is_lt(progress, 16)),
-        victim_code, Picking.center_x(square), Picking.center_y(square), progress, image)
-      piece(Model.occupied(code), code, moving_x(square, action, progress), moving_y(square, action, progress),
+        victim_code, Camera.center_x(square, camera), Camera.center_y(square, camera), progress, image)
+      +b = piece(Model.occupied(code), code, moving_x(square, action, progress, camera), moving_y(square, action, progress, camera),
         U32.is_eq(selected, square), U32.is_eq(hovered, square), a)
+      pieces(rest, board, action, progress, selected, hovered, victim, victim_code, camera, b)
 
-def pieces(n: Nat, +i: U32, +board: List<&2, U32>, +action: U32, +progress: U32,
-  +selected: U32, +hovered: U32, +victim: U32, +victim_code: U32, image: Image) -> Image:
-  match n:
-    case 0n:
-      image
-    case 1n+p:
-      +file = U32.mod(i, 8)
-      +depth = U32.div(i, 8)
-      +row = U32.sub(depth, file)
-      pieces(p, U32.add(i, 1), board, action, progress, selected, hovered, victim, victim_code,
-        pieces.cell(U32.is_lt(row, 8), file, row, board, action, progress, selected, hovered, victim, victim_code, image))
-
-def impact.show(show: Bool, +square: U32, +progress: U32, image: Image) -> Image:
+def impact.show(show: Bool, +square: U32, +progress: U32, +camera: Camera.Basis, image: Image) -> Image:
   match show:
-    case False{}:
-      image
+    case False{}: image
     case True{}:
-      +x = Picking.center_x(square)
-      +y = U32.sub(Picking.center_y(square), 10)
+      +x = Camera.center_x(square, camera)
+      +y = U32.sub(Camera.center_y(square, camera), 10)
       +spread = U32.add(6, progress)
       +a = rect(U32.sub(x, spread), U32.sub(y, progress), 3, 3, 16768672, image)
       +b = rect(U32.add(x, spread), U32.sub(y, progress), 3, 3, 11069183, a)
       +c = rect(U32.sub(x, U32.div(spread, 2)), U32.sub(y, spread), 2, 4, 16768672, b)
       rect(U32.add(x, U32.div(spread, 2)), U32.add(y, 3), 3, 2, 11069183, c)
 
-def impact(decoded: Maybe<Model.Action>, previous: Model.Position, +progress: U32, image: Image) -> Image:
+def impact(decoded: Maybe<Model.Action>, previous: Model.Position, +progress: U32, camera: Camera.Basis, image: Image) -> Image:
   +victim = capture_square(decoded, previous)
-  impact.show(Bool.and(U32.is_lt(victim, 64), U32.is_lt(progress, 16)), victim, progress, image)
+  impact.show(Bool.and(U32.is_lt(victim, 64), U32.is_lt(progress, 16)), victim, progress, camera, image)
 
 def background() -> Image:
-  +a = diamond(256, 352, 58, 2631743, 1449009, backdrop())
-  +b = diamond(256, 348, 52, 5522268, 1974842, a)
-  diamond(256, 344, 44, 8676428, 2303551, b)
+  # The stars behind absent platforms remain visible through the board.
+  backdrop()
 
-def ground_base(background: Image, position: Model.Position, theme: U32) -> Image:
-  tiles(64n, 0, Model.pos_holes(position), 64, 64, Nil{}, 16, Nil{}, 21760, 16, theme, background)
+def ground_base(background: Image, position: Model.Position, theme: U32, view: Camera.View) -> Image:
+  +camera = Camera.basis(view)
+  tiles(Camera.depth_order(camera), Model.pos_holes(position), 21760, 16, theme, camera, background)
 
-def feedback.rim(show: Bool, +square: U32, +holes: U32, theme: U32, color: U32, image: Image) -> Image:
+def feedback.rim(show: Bool, +square: U32, color: U32, camera: Camera.Basis, image: Image) -> Image:
   match show:
-    case False{}:
-      image
+    case False{}: image
     case True{}:
-      +face = face_color(square, holes, theme)
-      diamond(Picking.center_x(square), Picking.center_y(square), 11, color, face, image)
+      # Outline only: highlighting a gap must never fill it back in.
+      patch.draw(patch(camera, U32.to_f32(Model.file_of(square)), U32.to_f32(U32.sub(7, Model.rank_of(square))), 0.0), False{}, color, 0, image)
 
-def feedback.go(n: Nat, +square: U32, +holes: U32, +selected: U32, +hovered: U32,
-  +targets: List<&2, U32>, +chosen: U32, +tileTargets: List<&2, U32>, +theme: U32, image: Image) -> Image:
+def feedback.go(n: Nat, +square: U32, +selected: U32, +hovered: U32,
+  +chosen: U32, +tileTargets: List<&2, U32>, +camera: Camera.Basis, image: Image) -> Image:
   match n:
-    case 0n:
-      image
+    case 0n: image
     case 1n+p:
       +active = Bool.or(U32.is_eq(selected, square), U32.is_eq(chosen, Model.macro_of(square)))
-      +a = feedback.rim(Bool.or(active, U32.is_eq(hovered, square)), square, holes, theme,
-        Bool.pick(U32, active, 16767113, 11073279), image)
-      +b = marker(has(targets, square), U32.add(Picking.center_x(square), 14), Picking.center_y(square), 16769440, a)
-      +c = marker(has(tileTargets, Model.macro_of(square)), Picking.center_x(square),
-        U32.sub(Picking.center_y(square), 3), 16034408, b)
-      feedback.go(p, U32.add(square, 1), holes, selected, hovered, targets, chosen, tileTargets, theme, c)
+      +a = feedback.rim(Bool.or(active, U32.is_eq(hovered, square)), square,
+        Bool.pick(U32, active, 16767113, 11073279), camera, image)
+      +b = feedback.rim(has(tileTargets, Model.macro_of(square)), square, 16034408, camera, a)
+      feedback.go(p, U32.add(square, 1), selected, hovered, chosen, tileTargets, camera, b)
 
 def feedback_on(base: Image, frame: Frame) -> Image:
   match frame:
-    case Frame{position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme}:
-      feedback.go(64n, 0, Model.pos_holes(position), selected, hovered, targets, tile, tileTargets, theme, base)
+    case Frame{position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme, view}:
+      feedback.go(64n, 0, selected, hovered, tile, tileTargets, Camera.basis(view), base)
 
-# Cache this layer by holes/selection/hover/targets and settled shift state.
 def ground_on(background: Image, frame: Frame) -> Image:
   match frame:
-    case Frame{position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme}:
-      tiles(64n, 0, Model.pos_holes(position), selected, hovered, targets, tile, tileTargets, lastAction, progress, theme, background)
+    case Frame{position, previous, selected, hovered, targets, tile, tileTargets, +lastAction, progress, theme, view}:
+      +camera = Camera.basis(view)
+      +tile_action = Bool.pick(U32, U32.is_ge(lastAction, 20480), lastAction, 21760)
+      tiles(Camera.depth_order(camera), Model.pos_holes(position), tile_action, progress, theme, camera, background)
 
-# Destination beacons stay visible above foreground silhouettes. They are
-# visual feedback only; Picking deliberately keeps opaque-piece priority.
-def target_beacons(targets: List<&2, U32>, image: Image) -> Image:
+# Beacons stay visible above silhouettes without filling any missing platform.
+def target_beacons(targets: List<&2, U32>, +camera: Camera.Basis, image: Image) -> Image:
   match targets:
-    case Nil{}:
-      image
+    case Nil{}: image
     case +square <> rest:
-      +x = U32.add(Picking.center_x(square), 14)
-      +y = Picking.center_y(square)
+      +x = U32.add(Camera.center_x(square, camera), 14)
+      +y = Camera.center_y(square, camera)
       +a = diamond(x, y, 4, 790561, 16769440, image)
-      target_beacons(rest, a)
+      target_beacons(rest, camera, a)
 
-# Piece move animation may reuse ground_on; shift animation must rebuild it.
 def pieces_on(ground: Image, frame: Frame) -> Image:
   match frame:
-    case Frame{position, +previous, selected, hovered, targets, tile, tileTargets, +lastAction, +progress, theme}:
+    case Frame{position, +previous, selected, hovered, targets, tile, tileTargets, +lastAction, +progress, theme, view}:
+      +camera = Camera.basis(view)
       +victim = capture_square(Model.decode(lastAction), previous)
-      +e = pieces(120n, 0, Model.pos_board(position), lastAction, progress, selected, hovered, victim,
-        Model.board_get(Model.pos_board(previous), victim), ground)
-      target_beacons(targets, impact(Model.decode(lastAction), previous, progress, e))
+      +e = pieces(Camera.depth_order(camera), Model.pos_board(position), lastAction, progress, selected, hovered, victim,
+        Model.board_get(Model.pos_board(previous), victim), camera, ground)
+      target_beacons(targets, camera, impact(Model.decode(lastAction), previous, progress, camera, e))
 
 def view_on(background: Image, +frame: Frame) -> Image:
   pieces_on(ground_on(background, frame), frame)
 
 def view(frame: Frame) -> Image:
   view_on(background(), frame)
-
-

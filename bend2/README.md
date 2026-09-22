@@ -74,7 +74,12 @@ Click a piece, then a highlighted square or its coordinate button. Empty
 platforms select themselves for a Shift; a selected piece also offers **Shift
 its platform** when legal. No Piece/Tile mode switch is required. Click the
 visible body of a piece: nearer sprites can physically cover the floor behind
-them in the isometric view. Coordinate buttons also reach covered destinations.
+them at lower viewing angles. Coordinate buttons also reach covered destinations.
+
+Use **Front**, **Overhead**, rotation, tilt and zoom below the board to choose
+your view. Right-drag or Alt-drag rotates and tilts; click the board to focus it
+before scrolling to zoom. The view is remembered separately from your game.
+Missing platforms are open gaps, including while highlighted for a Shift.
 
 The menu contains table lighting, sound, imports/exports and a short rules guide.
 New matches support hotseat or a local opponent, either human color, layouts B/C

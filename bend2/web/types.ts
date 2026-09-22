@@ -16,6 +16,13 @@ export interface PositionValue extends BendRecord {
   full?: unknown;
 }
 
+export interface ViewValue extends BendRecord {
+  $: 'View';
+  yaw: number;
+  pitch: number;
+  zoom: number;
+}
+
 export interface FrameValue extends BendRecord {
   $: 'Frame';
   position: PositionValue;
@@ -28,6 +35,7 @@ export interface FrameValue extends BendRecord {
   lastAction: number;
   progress: number;
   theme: 0 | 1;
+  view: ViewValue;
 }
 
 export interface ObservationView {
@@ -74,11 +82,11 @@ export interface QuaImage extends BendRecord {
 export type BendImage = PixImage | QuaImage;
 
 export type WorkerRequestPayload =
-  | { kind: 'new'; id: number; layout: boolean; policy: 0 | 1 | 2; theme: 0 | 1 }
-  | { kind: 'replay'; id: number; layout: boolean; policy: 0 | 1 | 2; commands: BrowserCommand[]; theme: 0 | 1 }
+  | { kind: 'new'; id: number; layout: boolean; policy: 0 | 1 | 2; theme: 0 | 1; view: ViewValue }
+  | { kind: 'replay'; id: number; layout: boolean; policy: 0 | 1 | 2; commands: BrowserCommand[]; theme: 0 | 1; view: ViewValue }
   | { kind: 'command'; id: number; command: BrowserCommand }
   | { kind: 'bot'; id: number }
-  | { kind: 'pick'; id: number; x: number; y: number; version: number }
+  | { kind: 'pick'; id: number; x: number; y: number; version: number; view: ViewValue }
   | { kind: 'render'; id: number; frame: FrameValue; version: number };
 
 export type WorkerRequest = WorkerRequestPayload & { epoch: number };
@@ -93,6 +101,34 @@ export type WorkerResponse = WorkerResponsePayload & { epoch: number };
 
 export function isRecord(value: unknown): value is BendRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function defaultView(): ViewValue {
+  return { $: 'View', yaw: 0, pitch: 65, zoom: 100 };
+}
+
+function boundedNumber(value: unknown, fallback: number, minimum: number, maximum: number): number {
+  const number = typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : fallback;
+  return Math.max(minimum, Math.min(maximum, number));
+}
+
+function wrappedYaw(value: unknown, fallback: number): number {
+  const number = typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : fallback;
+  return ((number % 360) + 360) % 360;
+}
+
+export function normalizeView(value: unknown, fallback: ViewValue = defaultView()): ViewValue {
+  const source = isRecord(value) ? value : {};
+  const base = isRecord(fallback) ? fallback : defaultView();
+  const fallbackYaw = wrappedYaw(base.yaw, 0);
+  const fallbackPitch = boundedNumber(base.pitch, 65, 35, 90);
+  const fallbackZoom = boundedNumber(base.zoom, 100, 75, 115);
+  return {
+    $: 'View',
+    yaw: wrappedYaw(source.yaw, fallbackYaw),
+    pitch: boundedNumber(source.pitch, fallbackPitch, 35, 90),
+    zoom: boundedNumber(source.zoom, fallbackZoom, 75, 115),
+  };
 }
 
 export function tag(value: unknown): string | null {

@@ -1,11 +1,11 @@
 // @ts-ignore Bend's pinned loader owns this module boundary during bundling.
 import App from '../App.bend';
 import type {
-  BendImage, BrowserCommand, FrameValue, ObservationView, PositionValue, WorkerRequest, WorkerResponsePayload,
+  BendImage, BrowserCommand, FrameValue, ObservationView, PositionValue, ViewValue, WorkerRequest, WorkerResponsePayload,
 } from './types';
 import {
   bendBool, field, isRecord, linkedList, listValues, normalizeOffer, normalizeOutcome, positionHoles,
-  positionRevision, tag, u32,
+  defaultView, normalizeView, positionRevision, tag, u32,
 } from './types';
 
 type ApiFunction = (...args: any[]) => any;
@@ -69,10 +69,11 @@ function stepResult(value: unknown): { accepted: boolean; match: unknown } {
 }
 
 function frameFor(position: PositionValue, previous: PositionValue, selected: number, hovered: number,
-  targets: number[], tile: number, tileTargets: number[], lastAction: number, progress: number, theme: 0 | 1): FrameValue {
+  targets: number[], tile: number, tileTargets: number[], lastAction: number, progress: number, theme: 0 | 1,
+  view: ViewValue): FrameValue {
   return {
     $: 'Frame', position, previous, selected, hovered,
-    targets: linkedList(targets), tile, tileTargets: linkedList(tileTargets), lastAction, progress, theme,
+    targets: linkedList(targets), tile, tileTargets: linkedList(tileTargets), lastAction, progress, theme, view,
   };
 }
 
@@ -87,6 +88,7 @@ let targets: number[] = [];
 let lastAction = 21_760;
 let progress = 16;
 let theme: 0 | 1 = 0;
+let view: ViewValue = defaultView();
 let latestHoverVersion = 0;
 let latestRenderVersion = 0;
 const backgroundCache = new Map<number, BendImage>();
@@ -94,7 +96,7 @@ const groundCache = new Map<string, BendImage>();
 
 function currentFrame(): FrameValue {
   if (!observation || !previous) throw new Error('Bend match is not initialized.');
-  return frameFor(observation.position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme);
+  return frameFor(observation.position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme, view);
 }
 
 function resetView(nextPosition: PositionValue, oldPosition: PositionValue | null, action: number): void {
@@ -116,10 +118,10 @@ function compose(frame: FrameValue): BendImage {
     backgroundCache.set(backgroundKey, background);
   }
   const holes = positionHoles(frame.position);
-  const groundKey = `${frame.theme}:${holes}`;
+  const groundKey = `${frame.theme}:${holes}:${frame.view.yaw}:${frame.view.pitch}:${frame.view.zoom}`;
   let ground = groundCache.get(groundKey);
   if (!ground) {
-    ground = apiCall('ground_base', background, frame.position, frame.theme) as BendImage;
+    ground = apiCall('ground_base', background, frame.position, frame.theme, frame.view) as BendImage;
     groundCache.set(groundKey, ground);
     if (groundCache.size > 32) groundCache.delete(groundCache.keys().next().value as string);
   }
@@ -138,6 +140,8 @@ function sendState(id: number, accepted: boolean, command?: BrowserCommand): voi
 function render(id: number, version: number, frame = currentFrame()): void {
   if (version < latestRenderVersion) return;
   latestRenderVersion = version;
+  view = normalizeView(frame.view, view);
+  frame = { ...frame, view };
   const started = performance.now();
   const image = compose(frame);
   if (version !== latestRenderVersion) return;
@@ -185,10 +189,11 @@ function replay(layout: boolean, policy: 0 | 1 | 2, commands: BrowserCommand[], 
   sendState(id, true);
 }
 
-function pick(id: number, x: number, y: number, version: number): void {
+function pick(id: number, x: number, y: number, version: number, requestedView: ViewValue): void {
   if (version < latestHoverVersion || !observation) return;
   latestHoverVersion = version;
-  const square = u32(apiCall('pick', observation.position, Math.max(0, Math.min(511, Math.floor(x))), Math.max(0, Math.min(511, Math.floor(y)))), 64);
+  const pickView = normalizeView(requestedView, view);
+  const square = u32(apiCall('pick', observation.position, Math.max(0, Math.min(511, Math.floor(x))), Math.max(0, Math.min(511, Math.floor(y))), pickView), 64);
   reply({ kind: 'picked', id, version, square });
 }
 
@@ -201,10 +206,12 @@ function handle(request: WorkerRequest): void {
     switch (request.kind) {
       case 'new':
         theme = request.theme;
+        view = normalizeView(request.view, view);
         start(request.layout, request.policy, request.id);
         return;
       case 'replay':
         theme = request.theme;
+        view = normalizeView(request.view, view);
         replay(request.layout, request.policy, request.commands, request.id);
         return;
       case 'command':
@@ -218,7 +225,7 @@ function handle(request: WorkerRequest): void {
         return;
       }
       case 'pick':
-        pick(request.id, request.x, request.y, request.version);
+        pick(request.id, request.x, request.y, request.version, request.view);
         return;
       case 'render':
         render(request.id, request.version, request.frame);

@@ -1,12 +1,14 @@
 import { blitImage, createRgbaBuffer, IMAGE_SIZE } from './blit';
 import { RiftAudio } from './audio';
-import type { BendRecordFile, BrowserCommand, FrameValue, ObservationView, StoredCommand, WorkerRequestPayload, WorkerResponse } from './types';
-import { exactCommand, isRecord, linkedList, positionBoard, positionHoles, positionSide } from './types';
+import type { BendRecordFile, BrowserCommand, FrameValue, ObservationView, StoredCommand, ViewValue, WorkerRequestPayload, WorkerResponse } from './types';
+import { defaultView, exactCommand, isRecord, linkedList, normalizeView, positionBoard, positionHoles, positionSide } from './types';
 
 type PlayMode = 'hotseat' | 'bot';
 type Layout = 'B' | 'C';
 type Policy = 0 | 1 | 2;
 type Animation = { token: number; frame: FrameValue; progress: number; step: number; requestVersion: number; capture: boolean; sounded: boolean } | null;
+type CameraRender = { id: number; version: number };
+type CameraDrag = { pointerId: number; startX: number; startY: number; view: ViewValue };
 
 const SAVE_KEY = 'rift-bend-lab/save-v1';
 const BACKUP_PREFIX = `${SAVE_KEY}:backup:`;
@@ -22,7 +24,18 @@ app.innerHTML = `
   <main class="layout" id="table">
     <section class="board-card" aria-label="Rift Chess Bend2 board">
       <div class="board-heading"><div><p class="eyebrow">ASTRAL STUDY · LOCAL EXPERIMENT</p><h1>Chess on moving ground.</h1></div><span class="badge">Bend2 experiment</span></div>
-      <div class="board-wrap"><canvas id="board" width="512" height="512" tabindex="0" role="application" aria-label="Rift Chess board. Arrow keys move focus, Enter selects, Escape clears."></canvas><div id="busy" class="busy" hidden><span class="spinner"></span><span id="busy-label">Preparing the table…</span></div></div>
+      <div class="board-wrap"><canvas id="board" width="512" height="512" tabindex="0" role="application" aria-label="Rift Chess board. Arrow keys move focus, Enter selects, Escape clears. Right-drag or Alt-drag orbits the view."></canvas><div id="busy" class="busy" hidden><span class="spinner"></span><span id="busy-label">Preparing the table…</span></div></div>
+      <section class="camera-controls" aria-label="Board camera controls">
+        <div class="camera-buttons" role="group" aria-label="Camera presets">
+          <button id="camera-front" type="button" class="button">Front</button><button id="camera-overhead" type="button" class="button">Overhead</button><button id="camera-left" type="button" class="button" aria-label="Rotate camera left">↺ <span>Left</span></button><button id="camera-right" type="button" class="button" aria-label="Rotate camera right">↻ <span>Right</span></button><button id="camera-reset" type="button" class="button ghost">Reset</button>
+        </div>
+        <div class="camera-sliders">
+          <label class="camera-slider" for="camera-yaw"><span>Rotation <output id="camera-yaw-value">0°</output></span><input id="camera-yaw" type="range" min="0" max="359" step="1" value="0" /></label>
+          <label class="camera-slider" for="camera-pitch"><span>Tilt <output id="camera-pitch-value">65°</output></span><input id="camera-pitch" type="range" min="35" max="90" step="1" value="65" /></label>
+          <label class="camera-slider" for="camera-zoom"><span>Zoom <output id="camera-zoom-value">100%</output></span><input id="camera-zoom" type="range" min="75" max="115" step="1" value="100" /></label>
+        </div>
+        <p id="camera-help" class="camera-help">Click or drag the board to engage it. Right-drag, or hold Alt, to orbit; scroll to zoom.</p>
+      </section>
       <div class="board-foot"><span id="selection" aria-live="polite">Choose a piece to begin.</span><span id="coordinates">—</span></div>
     </section>
     <aside class="sidebar" aria-label="Match details and controls">
@@ -88,6 +101,13 @@ let renderRetried = false;
 let layout: Layout = 'B';
 let policy: Policy = 0;
 let theme: 0 | 1 = 0;
+let view: ViewValue = defaultView();
+let cameraMoving = false;
+let deferredCamera: ViewValue | null = null;
+let cameraRender: CameraRender | null = null;
+let queuedCameraRender: { frame: FrameValue; version: number } | null = null;
+let boardEngaged = false;
+let cameraDrag: CameraDrag | null = null;
 let observation: ObservationView | null = null;
 let frame: FrameValue | null = null;
 let ledger: StoredCommand[] = [];
@@ -118,8 +138,20 @@ function setBusy(value: boolean, message = 'Thinking…'): void {
   updateDisabled();
 }
 
+function syncCameraControls(): void {
+  const yaw = $('camera-yaw') as HTMLInputElement;
+  const pitch = $('camera-pitch') as HTMLInputElement;
+  const zoom = $('camera-zoom') as HTMLInputElement;
+  yaw.value = String(view.yaw);
+  pitch.value = String(view.pitch);
+  zoom.value = String(view.zoom);
+  $('camera-yaw-value').textContent = `${view.yaw}°`;
+  $('camera-pitch-value').textContent = `${view.pitch}°`;
+  $('camera-zoom-value').textContent = `${view.zoom}%`;
+}
+
 function savePreferences(): void {
-  try { localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ mode, humanWhite, botPaused, theme, volume: sound.getVolume(), sound: sound.isEnabled() })); } catch { /* Optional local preferences. */ }
+  try { localStorage.setItem(PREFERENCES_KEY, JSON.stringify({ mode, humanWhite, botPaused, theme, view, volume: sound.getVolume(), sound: sound.isEnabled() })); } catch { /* Optional local preferences. */ }
 }
 
 function loadPreferences(): void {
@@ -130,6 +162,7 @@ function loadPreferences(): void {
     if (typeof data.humanWhite === 'boolean') humanWhite = data.humanWhite;
     if (typeof data.botPaused === 'boolean') botPaused = data.botPaused;
     if (data.theme === 0 || data.theme === 1) theme = data.theme;
+    if (data.view !== undefined) view = normalizeView(data.view, view);
     if (typeof data.volume === 'number') sound.setVolume(data.volume);
     if (typeof data.sound === 'boolean') sound.setEnabled(data.sound);
     ($('volume') as HTMLInputElement).value = String(Math.round(sound.getVolume() * 100));
@@ -138,10 +171,14 @@ function loadPreferences(): void {
     $('sound').setAttribute('aria-pressed', String(sound.isEnabled()));
     $('theme-label').textContent = theme ? 'Warm' : 'Astral';
     document.querySelectorAll<HTMLElement>('[data-theme]').forEach(button => button.classList.toggle('active', Number(button.dataset.theme) === theme));
+    syncCameraControls();
   } catch { /* Invalid cosmetics do not invalidate a game record. */ }
 }
 
 function recoverRender(reason: string): void {
+  cameraMoving = false;
+  cameraRender = null;
+  queuedCameraRender = null;
   renderFault = true; animation = null;
   if (frame) frame = toFrame({ progress: 16, theme });
   setBusy(true, 'Display paused');
@@ -170,6 +207,7 @@ function toFrame(overrides: Partial<FrameValue> = {}): FrameValue | null {
   next.selected = selected;
   next.hovered = hovered;
   next.theme = theme;
+  next.view = normalizeView(overrides.view ?? view, view);
   return next;
 }
 
@@ -179,8 +217,24 @@ function draw(image: WorkerResponse & { kind: 'image' }): void {
   renderCost = image.renderMs;
 }
 
-function requestRender(nextFrame = toFrame()): void {
+function flushCameraRender(): void {
+  if (cameraRender || !queuedCameraRender) return;
+  const queued = queuedCameraRender;
+  queuedCameraRender = null;
+  const id = nextRequest++;
+  cameraRender = { id, version: queued.version };
+  post({ kind: 'render', id, frame: queued.frame, version: queued.version }, 'render');
+}
+
+function requestRender(nextFrame = toFrame(), camera = false): void {
   if (!nextFrame) return;
+  if (camera || cameraMoving || cameraRender || queuedCameraRender) {
+    const version = ++latestRenderVersion;
+    queuedCameraRender = { frame: nextFrame, version };
+    if (camera) cameraMoving = true;
+    flushCameraRender();
+    return;
+  }
   const version = ++latestRenderVersion;
   post({ kind: 'render', id: nextRequest++, frame: nextFrame, version }, 'render');
 }
@@ -189,8 +243,38 @@ function updateFrame(next: Partial<FrameValue> = {}): void {
   const nextFrame = toFrame(next);
   if (!nextFrame) return;
   frame = nextFrame;
-  if (animation) { animation.frame = { ...animation.frame, ...nextFrame }; return; }
+  if (animation) {
+    animation.frame = { ...animation.frame, ...nextFrame, progress: animation.progress };
+    if (cameraMoving) requestRender(animation.frame, true);
+    return;
+  }
   requestRender(nextFrame);
+}
+
+function setCamera(next: Partial<Pick<ViewValue, 'yaw' | 'pitch' | 'zoom'>>, persist = true): void {
+  const nextView = normalizeView({ ...(deferredCamera ?? view), ...next }, view);
+  if (pendingClicks.size) {
+    deferredCamera = nextView;
+    syncCameraControls();
+    return;
+  }
+  deferredCamera = null;
+  if (nextView.yaw === view.yaw && nextView.pitch === view.pitch && nextView.zoom === view.zoom) return;
+  view = nextView;
+  queuedHover = null;
+  hoverInFlight = null;
+  latestHoverVersion += 1;
+  hovered = 64;
+  syncCameraControls();
+  const nextFrame = toFrame({ view: nextView, hovered });
+  if (nextFrame) {
+    frame = nextFrame;
+    const renderFrame = animation ? { ...animation.frame, progress: animation.progress, view: nextView, hovered } : nextFrame;
+    if (animation) animation.frame = renderFrame;
+    requestRender(renderFrame, true);
+  }
+  updateDisabled();
+  if (persist) savePreferences();
 }
 
 function opponentToMove(): boolean {
@@ -201,7 +285,7 @@ function opponentToMove(): boolean {
 function isBotTurn(): boolean { return opponentToMove() && !botPaused; }
 
 function shouldLockBoard(): boolean {
-  return recoveryPending || renderFault || busy || animation !== null || !observation || observation.outcome !== null || opponentToMove();
+  return recoveryPending || renderFault || cameraMoving || busy || animation !== null || !observation || observation.outcome !== null || opponentToMove();
 }
 
 function canUndo(): boolean {
@@ -410,7 +494,11 @@ function handleSquare(square: number): void {
 
 function handlePicked(square: number, version: number): void {
   // A subsequent hover must never cancel a click while Bend is picking it.
-  if (pendingClicks.delete(version)) { handleSquare(square); return; }
+  if (pendingClicks.delete(version)) {
+    handleSquare(square);
+    if (!pendingClicks.size && deferredCamera) setCamera(deferredCamera);
+    return;
+  }
   if (hoverInFlight !== version) return;
   hoverInFlight = null;
   if (!queuedHover && version === latestHoverVersion && hovered !== square) {
@@ -426,10 +514,34 @@ function pointerPosition(event: PointerEvent): { x: number; y: number } {
   return { x: (event.clientX - rect.left) * IMAGE_SIZE / rect.width, y: (event.clientY - rect.top) * IMAGE_SIZE / rect.height };
 }
 
+function beginCameraDrag(event: PointerEvent): void {
+  cameraDrag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, view: { ...view } };
+  boardEngaged = true;
+  boardCanvas.classList.add('orbiting');
+  boardCanvas.setPointerCapture(event.pointerId);
+  event.preventDefault();
+}
+
+function endCameraDrag(event: PointerEvent): void {
+  if (!cameraDrag || cameraDrag.pointerId !== event.pointerId) return;
+  if (boardCanvas.hasPointerCapture(event.pointerId)) boardCanvas.releasePointerCapture(event.pointerId);
+  cameraDrag = null;
+  boardCanvas.classList.remove('orbiting');
+  savePreferences();
+}
+
+function cameraWheel(event: WheelEvent): void {
+  if (!boardEngaged && document.activeElement !== boardCanvas) return;
+  const amount = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 4 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? 20 : Math.max(1, Math.min(8, Math.round(Math.abs(event.deltaY) / 18)));
+  if (!amount) return;
+  setCamera({ zoom: view.zoom + (event.deltaY < 0 ? amount : -amount) });
+  event.preventDefault();
+}
+
 function dispatchPick(x: number, y: number, click: boolean): void {
   const version = ++latestHoverVersion;
   if (click) pendingClicks.add(version); else hoverInFlight = version;
-  post({ kind: 'pick', id: nextRequest++, x, y, version });
+  post({ kind: 'pick', id: nextRequest++, x, y, version, view: normalizeView(view) });
 }
 
 function pumpHover(): void {
@@ -457,6 +569,7 @@ function beginAnimation(nextFrame: FrameValue): void {
 
 function queueAnimationFrame(token: number): void {
   if (!animation || animation.token !== token) return;
+  if (cameraMoving) return;
   if (animation.capture && !animation.sounded && animation.progress >= 8) { sound.play('capture'); animation.sounded = true; }
   const nextFrame = { ...animation.frame, progress: animation.progress } as FrameValue;
   const version = ++latestRenderVersion;
@@ -466,7 +579,7 @@ function queueAnimationFrame(token: number): void {
 
 function finishAnimation(): void {
   const wasBot = isBotTurn();
-  if (animation) frame = { ...animation.frame, progress: 16, hovered, theme };
+  if (animation) frame = { ...animation.frame, progress: 16, hovered, theme, view };
   animation = null;
   setBusy(false);
   if (observation?.outcome) { sound.play('win'); say(outcomeName(observation.outcome), 6500); }
@@ -522,6 +635,8 @@ function saveRecord(): void {
 function beginSession(): void {
   epoch++; fileReadVersion++; pending.clear(); pendingReplay = null;
   pendingClicks.clear(); queuedHover = null; hoverInFlight = null; latestHoverVersion++;
+  cameraMoving = false; cameraRender = null; queuedCameraRender = null; cameraDrag = null;
+  deferredCamera = null;
   animation = null; animationToken++;
   renderFault = false; renderRetried = false;
 }
@@ -532,8 +647,9 @@ function startMatch(nextLayout: Layout, nextPolicy: Policy, nextMode: PlayMode, 
   botPaused = false;
   layout = nextLayout; policy = nextPolicy; mode = nextMode; humanWhite = nextHumanWhite; ledger = [];
   observation = null; frame = null; selected = 64; hovered = 64; tile = 16;
+  syncCameraControls();
   setBusy(true, 'Preparing the Bend table…');
-  post({ kind: 'new', id: nextRequest++, layout: layout === 'B', policy, theme }, 'new');
+  post({ kind: 'new', id: nextRequest++, layout: layout === 'B', policy, theme, view }, 'new');
   savePreferences();
 }
 
@@ -542,7 +658,7 @@ function replayRecord(record: BendRecordFile, raw?: string, restoreMode = false)
   const id = nextRequest++;
   pendingReplay = { id, epoch, record, raw, restoreMode };
   setBusy(true, 'Replaying the accepted record…');
-  post({ kind: 'replay', id, layout: record.layout === 'B', policy: record.policy, commands: record.commands, theme }, 'replay');
+  post({ kind: 'replay', id, layout: record.layout === 'B', policy: record.policy, commands: record.commands, theme, view }, 'replay');
 }
 
 function exportRecord(): void {
@@ -566,12 +682,23 @@ worker.addEventListener('message', event => {
   if (message.epoch !== epoch) return;
   if (message.kind === 'image') {
     pending.delete(message.id);
-    if (message.version !== latestRenderVersion) return;
+    const cameraResponse = cameraRender?.id === message.id;
+    if (cameraResponse) cameraRender = null;
+    if (message.version !== latestRenderVersion) {
+      if (cameraResponse) flushCameraRender();
+      return;
+    }
     try { draw(message); } catch (error) { recoverRender(String(error)); return; }
     if (renderFault) {
       renderFault = false; renderRetried = false; setBusy(false);
       say('Board display restored.', 1800);
       if (isBotTurn()) requestBot();
+    }
+    if (cameraResponse) {
+      if (queuedCameraRender) { flushCameraRender(); return; }
+      cameraMoving = false;
+      updateDisabled();
+      if (animation) window.requestAnimationFrame(() => queueAnimationFrame(animation?.token ?? 0));
     }
     if (animation && message.version === animation.requestVersion) {
       if (animation.progress >= 16) { finishAnimation(); return; }
@@ -587,6 +714,8 @@ worker.addEventListener('message', event => {
     if (kind === 'render') { recoverRender(message.message); return; }
     animation = null;
     setBusy(false);
+    pendingClicks.clear();
+    if (deferredCamera) setCamera(deferredCamera);
     const failedStartupReplay = Boolean(pendingReplay?.id === message.id && !observation);
     if (pendingReplay?.id === message.id) {
       if (pendingReplay.raw) backupRaw(pendingReplay.raw, 'Imported record was rejected by Bend.');
@@ -607,7 +736,7 @@ worker.addEventListener('message', event => {
     if (stateKind === 'new') ledger = [];
   }
   observation = message.observation;
-  frame = message.frame;
+  frame = { ...message.frame, view, theme };
   selected = frame.selected; hovered = frame.hovered; tile = frame.tile;
   if (message.accepted && message.command) ledger.push({ ...message.command });
   if (message.accepted && message.command?.$ === 'UndoCommand' && mode === 'bot') botPaused = true;
@@ -615,10 +744,10 @@ worker.addEventListener('message', event => {
   if (!message.accepted && message.command) say('That command is illegal or stale; the table did not change.', 4000);
   if (message.accepted && message.command?.$ === 'MoveCommand') {
     sound.play(message.command.action !== undefined && message.command.action >= 20_480 ? 'shift' : 'move');
-    beginAnimation(message.frame);
+    beginAnimation({ ...message.frame, view, theme });
   } else {
     setBusy(false);
-    requestRender(message.frame);
+    requestRender({ ...message.frame, view, theme });
     if (stateKind === 'bot' && !message.accepted) say('The local bot has no move available.', 3000);
     if (stateKind === 'command' && message.accepted && message.command?.$ === 'ResignCommand') sound.play('win');
     if (observation.outcome) { sound.play('win'); say(outcomeName(observation.outcome), 6500); }
@@ -632,12 +761,38 @@ worker.addEventListener('message', event => {
   savePreferences();
 });
 
-boardCanvas.addEventListener('pointermove', event => requestPick(event, false));
+boardCanvas.addEventListener('pointermove', event => {
+  if (cameraDrag?.pointerId === event.pointerId) {
+    const yaw = cameraDrag.view.yaw + Math.round((event.clientX - cameraDrag.startX) * .8);
+    const pitch = cameraDrag.view.pitch - Math.round((event.clientY - cameraDrag.startY) * .55);
+    setCamera({ yaw, pitch }, false);
+    return;
+  }
+  requestPick(event, false);
+});
 boardCanvas.addEventListener('pointerleave', () => {
   queuedHover = null; latestHoverVersion++; hovered = 64;
-  if (!busy && !animation) updateFrame({ hovered });
+  if (!cameraDrag && !busy && !animation && !cameraMoving) updateFrame({ hovered });
+  if (!cameraDrag && document.activeElement !== boardCanvas) boardEngaged = false;
 });
-boardCanvas.addEventListener('pointerdown', event => { if (!event.isPrimary || event.button !== 0) return; boardCanvas.focus(); requestPick(event, true); void sound.unlock(); });
+boardCanvas.addEventListener('pointerdown', event => {
+  if (!event.isPrimary) return;
+  if (event.button === 2 || (event.button === 0 && event.altKey)) { beginCameraDrag(event); return; }
+  if (event.button !== 0) return;
+  boardCanvas.focus(); boardEngaged = true; requestPick(event, true); void sound.unlock();
+});
+boardCanvas.addEventListener('pointerup', endCameraDrag);
+boardCanvas.addEventListener('pointercancel', endCameraDrag);
+boardCanvas.addEventListener('lostpointercapture', () => {
+  if (!cameraDrag) return;
+  cameraDrag = null;
+  boardCanvas.classList.remove('orbiting');
+  savePreferences();
+});
+boardCanvas.addEventListener('contextmenu', event => event.preventDefault());
+boardCanvas.addEventListener('wheel', cameraWheel, { passive: false });
+boardCanvas.addEventListener('focus', () => { boardEngaged = true; });
+boardCanvas.addEventListener('blur', () => { if (!cameraDrag) boardEngaged = false; });
 boardCanvas.addEventListener('keydown', event => {
   if (event.key === 'Escape') { clearSelection(); return; }
   if (event.key.toLowerCase() === 'u') { if (canUndo()) sendCommand({ $: 'UndoCommand', expected: currentRevision() }); return; }
@@ -677,6 +832,16 @@ $('import').addEventListener('change', async event => {
 });
 $('volume').addEventListener('input', event => { const value = Number((event.target as HTMLInputElement).value); sound.setVolume(value / 100); $('volume-value').textContent = `${value}%`; savePreferences(); });
 $('sound').addEventListener('click', () => { sound.setEnabled(!sound.isEnabled()); const enabled = sound.isEnabled(); $('sound').textContent = enabled ? 'Sound on' : 'Sound off'; $('sound').setAttribute('aria-pressed', String(enabled)); void sound.unlock(); savePreferences(); });
+$('camera-front').addEventListener('click', () => setCamera({ yaw: 0, pitch: 65, zoom: 100 }));
+$('camera-overhead').addEventListener('click', () => setCamera({ yaw: 0, pitch: 90 }));
+$('camera-left').addEventListener('click', () => setCamera({ yaw: view.yaw - 45 }));
+$('camera-right').addEventListener('click', () => setCamera({ yaw: view.yaw + 45 }));
+$('camera-reset').addEventListener('click', () => setCamera(defaultView()));
+for (const [id, key] of [['camera-yaw', 'yaw'], ['camera-pitch', 'pitch'], ['camera-zoom', 'zoom']] as const) {
+  const input = $(id) as HTMLInputElement;
+  input.addEventListener('input', () => setCamera({ [key]: Number(input.value) }, false));
+  input.addEventListener('change', savePreferences);
+}
 document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => button.addEventListener('click', () => updateTheme(Number(button.dataset.theme) === 1 ? 1 : 0)));
 document.querySelectorAll<HTMLElement>('[data-close]').forEach(button => button.addEventListener('click', () => (document.getElementById(button.dataset.close!) as HTMLDialogElement)?.close()));
 document.querySelectorAll<HTMLButtonElement>('[data-promotion]').forEach(button => button.addEventListener('click', () => {
@@ -700,7 +865,7 @@ $('new-form').addEventListener('submit', event => {
 
 window.addEventListener('pointerdown', () => { void sound.unlock(); }, { capture: true });
 window.addEventListener('keydown', () => { void sound.unlock(); }, { capture: true });
-window.addEventListener('pagehide', () => sound.dispose());
+window.addEventListener('pagehide', () => { savePreferences(); sound.dispose(); });
 worker.addEventListener('error', () => { renderFault = true; setBusy(true, 'The game worker stopped. Reload to restore your saved match.'); });
 
 loadPreferences();

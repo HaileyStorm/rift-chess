@@ -71,3 +71,18 @@ and the rejected nested-site staging copy remain in ignored local artifacts;
 canonical positive receipts are checked in. No original runtime code is used by
 the Bend browser app. Future multiplayer, native performance work and a Bend
 desktop package are separate extensions, not hidden prerequisites for this sprint.
+
+## Follow-up: camera and open gaps
+
+The owner reported the fixed isometric view and solid-looking missing platforms.
+The follow-up replaces fixed projection with a shared Bend camera for drawing and
+picking, adds visible orbit/tilt/zoom controls and an overhead preset, and omits
+all missing-platform geometry. Hover and Shift feedback use hollow outlines.
+Frozen laws and their normative dependencies remain byte-for-byte unchanged.
+
+Local projection/picking checks pass (2,304), and 48 rendered-ground cases pass
+4,640 checks including interior gap masks. Original capture, promotion, bot,
+save/recovery and offline scenarios pass. The focused browser check covers
+rotated pointer moves, Shift, persistence, wheel behavior and mobile controls;
+review also prompted click/animation timing regressions. Final hosted verification
+and source handoff are the remaining acceptance steps.
