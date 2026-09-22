@@ -67,3 +67,30 @@ promotion, check). Existing Windows packaging and public hosting remain the prio
 
 Status: implementation and bounded verification complete. Owner aesthetic judgment
 and subjective audio listening remain open; no new release acceptance claimed.
+
+
+## Follow-up: visible worlds and automatic detail
+
+The owner found the experience much better, but Stone Court remained underwhelming
+and the Observatory architecture was outside the normal play view. The follow-up
+brings recognizable observatory buildings and richer planted/water court elements
+into near-board framing. Gallery and the Bend exploration are outside this change.
+
+Graphics now defaults to Automatic, including legacy saves without a quality mode.
+The existing concrete quality value remains in the save for backward compatibility;
+an optional auto/manual mode records the user's choice. Manual levels remain fixed
+and persist. Automatic starts Balanced, waits for settled foreground play, samples
+sustained frame performance, lowers detail under load, and requires two fast windows
+before upgrading. A downgraded tier is not retried until recalibration, preventing
+oscillation. Settings shows the resolved level beside Automatic.
+
+Follow-up status: implemented and verified. The production build and 61 tests in
+10 files pass. Browser checks verify the fresh Automatic default, manual High
+remaining fixed under artificial load, Automatic lowering detail under that load
+without a match change, manual persistence and legacy-save migration. Eight world
+captures cover White, Black, Overview and Top cameras at 1092x921; the dome houses,
+side instruments and near-board planted fountains are now visible during play.
+See [follow-up evidence](evidence/auto-worlds/verification.json). The first migration
+fixture attempt was overwritten by the old page's expected beforeunload autosave;
+the corrected test installs its legacy fixture before the next page starts.
+The public/native release remains unchanged.

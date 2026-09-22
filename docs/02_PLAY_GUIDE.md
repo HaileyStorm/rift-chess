@@ -89,6 +89,8 @@ Use the Top camera when you need the clearest board geometry. Free camera moveme
 
 Open **Settings** to choose world, piece, material, and quality settings, and to turn on high contrast or reduced motion. High contrast strengthens the interface contrast. Reduced motion preserves the same legal position and outcome while shortening or skipping camera and board-transition movement.
 
+Graphics detail defaults to **Automatic**. It starts at Balanced and adjusts after sustained play-view performance samples; it pauses calibration during camera movement, animations, loading and background tabs. Choose Low, Balanced or High in Settings to keep a fixed level. The Automatic option shows the currently selected detail level. Older saves without an explicit mode also use Automatic.
+
 Use **Sound on/off** in the top bar to mute all effects. Your choice is remembered locally. Sounds begin after interaction; every action also has visual feedback. Open **Menu** for history, lessons, cameras, saves and match controls.
 
 The quiet counter is not an automatic draw in a **Prompted agreement** match. At 100 quiet actions, choose whether to offer a draw; in hotseat play, the interface asks which player is acting, and the other player can accept or decline. A local bot declines an offer. **Automatic at 100** applies the automatic quiet-action draw; **Continue without a reminder** disables that prompt and automatic limit. Other ending rules still apply.

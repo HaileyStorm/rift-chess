@@ -38,7 +38,7 @@ intensity remain controlled by the live world.
 
 The PNGs are lossless data containers: three opaque RGB pixels carry each RGBA
 half-float texel's eight bytes and one zero padding byte. They are not pictures to
-display directly. The nine files total 7,812,491 encoded bytes and reconstruct
+display directly. The nine files total 7,962,078 encoded bytes and reconstruct
 27 MiB of texels. The loader verifies each raw checksum before creating its
 HalfFloat CubeUV texture; all nine maps decode on the CPU before the first useful
 frame. GPU upload occurs on first binding. First selection of each world/quality
@@ -76,11 +76,15 @@ historical evidence under `.artifacts/reflection-bake/`.
 ## September 21 experience assets
 
 The three worlds and all nine reflection maps were regenerated for the new
-experience pass. The adopted immutable local bake is
+experience pass. The initial experience-pass immutable local bake is
 `.artifacts/reflection-bakes/experience-v2-horizontal-rim-20260921/`.
 Its receipt records nine captures; the shipped manifest binds the final world
 source, producer, dependencies and both packed and decoded pixel hashes. Prior
 comparison/bake evidence above describes the earlier release, not these new rooms.
+
+The subsequent visible-observatory and planted-court follow-up uses
+`.artifacts/reflection-bakes/auto-worlds-20260921/`. All nine maps were regenerated
+and source/hash verified. Gallery pixel bytes are unchanged.
 
 `src/audio.ts` synthesizes six original cues from oscillators and deterministic
 noise: selection, move, capture, tile Shift, promotion and check. No audio file,

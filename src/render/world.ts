@@ -449,12 +449,67 @@ class WorldCraft {
 
     // Monumental fragments hang over a star sea, with the playable board left in a quiet aperture.
     const monoliths: Array<[number, number, number, number, number]> = [
-      [-5.45, -7.2, 4.6, 1.0, .85], [5.45, -7.2, 4.6, 1.0, .85], [-10.5, -17.5, 7.7, 2.5, .9], [10.7, -19.5, 9.2, 2.2, 1.0], [-7.5, -30, 5.4, 1.8, .75], [7.8, -32, 7.1, 2.4, .85], [0, -36, 11.5, 2.4, 1.0],
+      [-10.5, -17.5, 7.7, 2.5, .9], [10.7, -19.5, 9.2, 2.2, 1.0], [-7.5, -30, 5.4, 1.8, .75], [7.8, -32, 7.1, 2.4, .85], [0, -36, 11.5, 2.4, 1.0],
     ];
     for (const [x, z, height, width, depth] of monoliths) {
       const slab = this.add(this.box(width, height, depth, this.mats.darkStone, .12)); slab.position.set(x, .9 + height / 2, z); slab.rotation.y = (x * .021) % .16;
       const crown = this.add(this.cylinder(width * .56, width * .70, .24, this.mats.bronze, 5)); crown.position.set(x, .9 + height + .12, z); crown.rotation.y = .2;
       const seam = this.add(this.box(.07, height * .72, .045, this.mats.energy, .01)); seam.position.set(x + (x < 0 ? width * .25 : -width * .25), .9 + height * .52, z - depth * .53); seam.castShadow = false;
+    }
+
+    // A paired side observatory makes the setting legible in play: the board stays between the towers,
+    // while each small armillary is kept outside x = +/-4.2 and every ring has an explicit orientation.
+    const observatoryStone = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x536b96, roughness: .46, metalness: .18 }));
+    const observatoryGlass = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x8ec5ee, emissive: 0x3d8dd0, emissiveIntensity: .72, roughness: .24, metalness: .34 }));
+    const observatoryOrb = this.cachedGeometry('observatory-orb', () => new THREE.SphereGeometry(.24, this.segmentCount, Math.max(8, Math.floor(this.segmentCount / 2))));
+    for (const side of [-1, 1]) {
+      const x = side * 5.25, z = .15;
+      const foundation = this.add(this.box(1.6, .30, 1.9, this.mats.darkStone, .08)); foundation.position.set(x, -3.10, z);
+      const pier = this.add(this.box(.98, 2.7, 1.12, observatoryStone, .07)); pier.position.set(x, -1.65, z);
+      const capital = this.add(this.box(1.38, .22, 1.52, this.mats.brass, .05)); capital.position.set(x, -.18, z);
+      const mount = this.add(this.box(.78, .28, .84, this.mats.bronze, .04)); mount.position.set(x, .62, z);
+
+      // x/y ring: the default torus plane is x/y; keep it vertical beside the board.
+      const verticalRing = this.add(this.torus(.83, .068, this.mats.brass, this.segmentCount, this.segmentCount * 2));
+      verticalRing.rotation.set(0, 0, 0); verticalRing.position.set(x, 1.68, z); verticalRing.castShadow = false;
+      // y/z ring: rotate around y; its x extent is only the tube thickness at the side tower.
+      const meridianRing = this.add(this.torus(.72, .052, this.mats.energy, this.segmentCount, this.segmentCount * 2));
+      meridianRing.rotation.set(0, Math.PI / 2, 0); meridianRing.position.set(x, 1.68, z); meridianRing.castShadow = false;
+      const equatorRing = this.add(this.torus(.58, .042, this.mats.bronze, this.segmentCount, this.segmentCount * 2));
+      equatorRing.rotation.set(.42, 0, side * .28); equatorRing.position.set(x, 1.68, z); equatorRing.castShadow = false;
+      const orb = this.add(new THREE.Mesh(observatoryOrb, observatoryGlass)); orb.position.set(x, 1.68, z); orb.castShadow = false; orb.receiveShadow = false;
+
+      // A short telescope points into the star field, parallel to the board's depth axis.
+      const scope = this.add(this.cylinder(.19, .25, 2.25, this.mats.bronze, 10)); scope.rotation.x = Math.PI / 2; scope.position.set(x, 2.38, z - .12);
+      scope.rotation.z = side * .10;
+      for (const scopeZ of [-.86, .52]) {
+        const collar = this.add(this.torus(.27, .038, this.mats.brass, 10, 20)); collar.rotation.set(0, 0, 0); collar.position.set(x, 2.38, z + scopeZ); collar.castShadow = false;
+      }
+      const lens = this.add(this.cylinder(.24, .24, .09, observatoryGlass, 10)); lens.rotation.x = Math.PI / 2; lens.position.set(x, 2.38, z - 1.26); lens.castShadow = false;
+      const observatoryLight = new THREE.PointLight(0x9acbff, 18, 9, 2); observatoryLight.position.set(x, 1.7, z); this.lights.add(observatoryLight);
+    }
+
+    // Low observatory houses sit behind each army. Their front walls remain beyond z = +/-4.3,
+    // but the dome crowns and slit are high enough to read in the normal play frame.
+    const houseWall = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x263960, roughness: .62, metalness: .18 }));
+    const houseDome = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x3f5684, roughness: .48, metalness: .26 }));
+    const houseRib = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x9fbaff, emissive: 0x304cbb, emissiveIntensity: .65, roughness: .30, metalness: .42 }));
+    const domeGeometry = this.cachedGeometry('observatory-house-dome', () => new THREE.SphereGeometry(3.0, this.segmentCount * 2, this.segmentCount, 0, Math.PI * 2, 0, Math.PI / 2));
+    for (const depthSign of [-1, 1]) {
+      const z = depthSign * 8.5;
+      const front = -depthSign;
+      const foundation = this.add(this.cylinder(3.15, 3.38, .4, this.mats.darkStone, this.segmentCount * 2)); foundation.position.set(0, -3.32, z);
+      const wall = this.add(this.cylinder(2.72, 2.92, 1.0, houseWall, this.segmentCount * 2)); wall.position.set(0, -2.8, z);
+      const dome = this.add(new THREE.Mesh(domeGeometry, houseDome)); dome.position.set(0, -2.3, z); dome.castShadow = true; dome.receiveShadow = true;
+      const slit = this.add(this.box(.24, 1.9, .10, this.mats.black, .02)); slit.position.set(0, -1.45, z + front * 2.76); slit.castShadow = false;
+      const slitGlow = this.add(this.box(.07, 1.55, .03, houseRib, .01)); slitGlow.position.set(0, -1.45, z + front * 2.83); slitGlow.castShadow = false;
+      for (const longitude of [-.72, 0, .72]) {
+        const rib = this.add(this.torus(2.98, .055, longitude === 0 ? this.mats.brass : houseRib, this.segmentCount, this.segmentCount * 2));
+        rib.rotation.set(0, longitude, 0); rib.position.set(0, -2.3, z + front * .025); rib.castShadow = false;
+      }
+      const scope = this.add(this.cylinder(.18, .23, 1.1, this.mats.brass, 10)); scope.rotation.x = Math.PI / 2; scope.position.set(0, -.42, z + front * 3.48); scope.castShadow = true;
+      const scopeLens = this.add(this.cylinder(.22, .22, .08, observatoryGlass, 10)); scopeLens.rotation.x = Math.PI / 2; scopeLens.position.set(0, -.42, z + front * 4.02); scopeLens.castShadow = false;
+      const scopeCollar = this.add(this.torus(.24, .035, houseRib, 10, 18)); scopeCollar.position.set(0, -.42, z + front * 3.24); scopeCollar.castShadow = false;
     }
     // Split the suspended arc into side fragments; the board remains an unobstructed rift aperture.
     const leftArc = this.add(this.tube([
@@ -489,6 +544,9 @@ class WorldCraft {
     applyStoneDetail(limestone, this.stoneTexture, .24, .58);
     const terracotta = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xa86945, roughness: .76, metalness: .03 }));
     applyStoneDetail(terracotta, this.stoneTexture, .18, .52);
+    const water = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x5faeaa, roughness: .18, metalness: .42, emissive: 0x164945, emissiveIntensity: .10 }));
+    const garden = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x426b4e, roughness: .92, metalness: .01 }));
+    const cypress = this.resources.material(new THREE.MeshStandardMaterial({ color: 0x315b47, roughness: .88, metalness: .01 }));
 
     // A clean courtyard plane and a single opening keep every piece silhouetted against light stone.
     this.piercedSlab(74, 96, .46, this.mats.floor, 0, -3.66, 0);
@@ -500,12 +558,58 @@ class WorldCraft {
     const rearCourt = this.add(this.box(17.8, .5, 11, limestone, .12)); rearCourt.position.set(0, -3.42, -24.4);
     const rearInset = this.add(this.box(13.4, .035, 9.2, this.mats.darkStone, .05)); rearInset.position.set(0, -3.14, -24.4);
 
+    // Paired cypresses sit just outside the rails in both depth directions, giving White and Black the same landmark.
+    const cypressGeometry = this.cachedGeometry('court-cypress', () => new THREE.SphereGeometry(1, 16, 12));
+    for (const side of [-1, 1]) for (const depthSign of [-1, 1]) {
+      const x = side * 5.2, z = depthSign * 2.35;
+      const planter = this.add(this.box(1.02, .30, 1.02, terracotta, .07)); planter.position.set(x, -3.14, z);
+      const soil = this.add(this.box(.78, .06, .78, this.mats.darkStone, .025)); soil.position.set(x, -2.95, z);
+      const trunk = this.add(this.cylinder(.09, .13, .68, this.mats.bronze, 7)); trunk.position.set(x, -2.58, z);
+      for (const [y, radius, height] of [[-2.0, .49, .72], [-1.35, .43, .83], [-.66, .31, .79], [-.1, .16, .45]]) {
+        const crown = this.add(new THREE.Mesh(cypressGeometry, cypress)); crown.position.set(x, y!, z); crown.scale.set(radius!, height!, radius!); crown.castShadow = true;
+      }
+    }
+
+    const flowingWater = this.resources.material(new THREE.MeshStandardMaterial({ color: 0xa0eee5, emissive: 0x3b746e, emissiveIntensity: .18, roughness: .14, metalness: .35 }));
+    // Low paired fountains mirror the cypresses behind each army without entering the board aperture.
+    for (const depthSign of [-1, 1]) {
+      const z = depthSign * 8.5;
+      const basin = this.add(this.cylinder(1.65, 1.9, .28, limestone, this.segmentCount * 2)); basin.position.set(0, -3.16, z);
+      const basinWater = this.add(this.cylinder(1.25, 1.35, .055, water, this.segmentCount * 2)); basinWater.position.set(0, -2.98, z); basinWater.castShadow = false;
+      const stem = this.add(this.cylinder(.38, .55, 1.8, terracotta, this.segmentCount)); stem.position.set(0, -2.0, z);
+      const bowl = this.add(this.cylinder(.72, .94, .24, limestone, 12)); bowl.position.set(0, -.96, z);
+      const bowlWater = this.add(this.cylinder(.53, .60, .045, water, 12)); bowlWater.position.set(0, -.81, z); bowlWater.castShadow = false;
+      const finial = this.add(this.cylinder(.16, .22, .68, this.mats.brass, 6)); finial.position.set(0, -.43, z);
+      for (let jet = 0; jet < 8; jet++) {
+        const angle = jet * Math.PI / 4, x = Math.cos(angle), dz = Math.sin(angle);
+        const stream = this.add(this.tube([new THREE.Vector3(x * .52, -.78, z + dz * .52), new THREE.Vector3(x * .94, -1.1, z + dz * .94), new THREE.Vector3(x * 1.04, -2.91, z + dz * 1.04)], .025, flowingWater, 14)); stream.castShadow = false;
+      }
+      const ripple = this.add(this.torus(1.12, .016, flowingWater, 6, 48)); ripple.rotation.x = -Math.PI / 2; ripple.position.set(0, -2.94, z); ripple.castShadow = false;
+    }
+
     // Close stepped markers sit outside the rails, so the court's monumentality survives the play camera.
     for (const side of [-1, 1]) {
       const plinth = this.add(this.box(1.45, .55, 6.4, limestone, .1)); plinth.position.set(side * 5.35, -3.02, -7.2);
       const cap = this.add(this.box(1.75, .16, 6.7, this.mats.stone, .06)); cap.position.set(side * 5.35, -2.68, -7.2);
       const marker = this.add(this.box(.72, 3.8, 1.05, terracotta, .08)); marker.position.set(side * 5.42, -.72, -9.1); marker.rotation.z = side * .04;
       const markerBand = this.add(this.box(.84, .16, 1.18, this.mats.brass, .04)); markerBand.position.set(side * 5.42, .52, -9.1); markerBand.rotation.z = side * .04;
+
+      // Narrow canals and planted steps turn the side framing into a lived-in court.
+      const canal = this.add(this.box(1.15, .09, 17.5, water, .025)); canal.position.set(side * 6.68, -2.91, -15.2); canal.castShadow = false;
+      for (const canalSide of [-1, 1]) {
+        const curb = this.add(this.box(.22, .24, 17.8, limestone, .035)); curb.position.set(side * (6.68 + canalSide * .72), -2.83, -15.2);
+      }
+      const bed = this.add(this.box(1.12, .32, 5.9, terracotta, .08)); bed.position.set(side * 5.15, -2.89, -15.4);
+      const soil = this.add(this.box(.88, .07, 5.45, this.mats.darkStone, .03)); soil.position.set(side * 5.15, -2.68, -15.4);
+      for (let i = 0; i < 5; i++) {
+        const plantZ = -17.35 + i * .98;
+        const stem = this.add(this.cylinder(.045, .07, 1.08, terracotta, 6)); stem.position.set(side * 5.15, -2.08, plantZ); stem.rotation.z = side * .12;
+        const crown = this.add(new THREE.Mesh(this.cachedGeometry('court-crown', () => new THREE.SphereGeometry(.34, 8, 6)), garden)); crown.position.set(side * 5.24, -1.52, plantZ); crown.scale.set(1.25, .62, 1.0); crown.castShadow = true;
+      }
+      for (const [terraceZ, terraceY, terraceWidth, terraceDepth] of [[-20.8, -1.88, 1.8, 4.6], [-25.2, -1.02, 2.2, 4.8]] as const) {
+        const terrace = this.add(this.box(terraceWidth, .42, terraceDepth, limestone, .08)); terrace.position.set(side * 5.7, terraceY, terraceZ);
+        const terraceWater = this.add(this.box(terraceWidth - .30, .055, terraceDepth - .38, water, .025)); terraceWater.position.set(side * 5.7, terraceY + .24, terraceZ); terraceWater.castShadow = false;
+      }
     }
 
     // Offset terraces read as monumental geometry while leaving a broad central sightline.

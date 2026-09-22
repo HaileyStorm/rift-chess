@@ -50,8 +50,8 @@
       "width": 384,
       "height": 512,
       "file": "nocturne-low.png",
-      "texelSha256": "d53b232be6f7732dad48292791a6de3fe401790df9d834a652a83fb2d190f467",
-      "pngSha256": "d09c116bdb6234d7bcd3a82e2a807d23b01f0a45c68419fa228f2df4cf5aa7bc"
+      "texelSha256": "94129d0db2f6196090ae372c26eadbf51ce2360122b503a3448b4f21cba449d9",
+      "pngSha256": "c3f50aee852f305d7728af63d40f5772bc5d924a3c867a6119b9cb3e8f40dcad"
     },
     {
       "theme": "nocturne",
@@ -59,8 +59,8 @@
       "width": 384,
       "height": 512,
       "file": "nocturne-balanced.png",
-      "texelSha256": "eda0244bf9bdf27ecc28bcaa1a46efc7a0131c45a8bf82b9e44a48f7d1efd1d8",
-      "pngSha256": "f32e6fb20f06a339571d0ee3cb84d21ce8274babf264f09da2760222406b5bdf"
+      "texelSha256": "10b12a4abd1e7a9dba8f749cc960ed8c13f1bc800884d34c0896bb1653b6e045",
+      "pngSha256": "4021c1496803937353a39dcdccb25ba73259d5b369f3049e4e413c7e0a5a5506"
     },
     {
       "theme": "nocturne",
@@ -68,8 +68,8 @@
       "width": 768,
       "height": 1024,
       "file": "nocturne-high.png",
-      "texelSha256": "46529184ade05ac4f0fdacea9da4a2ee165574f31c44957931d0d9dc72988d9a",
-      "pngSha256": "98a07b91054dd9cd20b4e543ae4d3e6c14b05d1760c93030ee5f27d00accaeb5"
+      "texelSha256": "bc8b0cba7e019ac61bd4fdf32c360249dadc514b42ef8c9cb93ef6ebbeab56f0",
+      "pngSha256": "f6ad817803d2a7834ad04b4e70ff1f96754c53f684425830ba61f9183baac0c4"
     },
     {
       "theme": "daylight",
@@ -77,8 +77,8 @@
       "width": 384,
       "height": 512,
       "file": "daylight-low.png",
-      "texelSha256": "54fb3bdb7e0de0149baa91d15ba0b2ee68493b4bf19ffa40cc1926679c96b106",
-      "pngSha256": "67a2c2c400a6588e154835e176e81c5d1407f93a08ebf520783642a68f0846f8"
+      "texelSha256": "b20a4f826dfea4dbaed84ea198159237a0c568f6bfd9e4f641dfac05daaac918",
+      "pngSha256": "eb47b7d115444274d2ba0791b4fc3c4a09685280ee4323c6b52b0c2cd151416d"
     },
     {
       "theme": "daylight",
@@ -86,8 +86,8 @@
       "width": 384,
       "height": 512,
       "file": "daylight-balanced.png",
-      "texelSha256": "2ea0079cb5e587d6fe6c4980e573131dc715e79f75c0d00ede8529d9b160c633",
-      "pngSha256": "f55d9f0c796202866e4d34862ab5df1a5419d6cd6ebea70beb485048906e5a5a"
+      "texelSha256": "54a1c9205a1417102b5b3eb1437925dee1e755809fb5a1ff1fd4533521c7d750",
+      "pngSha256": "fd3165f6f111856a521f6df1338ec26804f308d02464002642edc58d6052cfa9"
     },
     {
       "theme": "daylight",
@@ -95,12 +95,12 @@
       "width": 768,
       "height": 1024,
       "file": "daylight-high.png",
-      "texelSha256": "292a86da04f0bb18e58b4d4ecd4cfe38a60ef9e60394ac61a78eba1def9abe0a",
-      "pngSha256": "bffc6ac528a31f76769e19f375563bd07a3f6b15d8fbc1fd8614a31fbd365009"
+      "texelSha256": "34d5a555e705675acf326809f1a53784916427d32633db3e37ae521bba847dba",
+      "pngSha256": "c7274603ef5053d7e0c1c27f112a303575b8117105007a7f785201b132b759b7"
     }
   ],
   "inputHashes": {
-    "src/render/world.ts": "2785c3df2cc18a69debec05e6623c2d4423e181d64cd6d487223b10f7737e3f0",
+    "src/render/world.ts": "28dd82f960db9643eec05febbec525d7e69f89994449a60b6be7d41913af6455",
     "src/render/surfaces.ts": "059ca3a037539d46047e2a06881769d05491a76543cc892ce5440277e4df7ff0",
     "scripts/reflection-bake/producer.ts": "71effdd93a14a3e00d61b37c81178aa58f0f9c9ffbc91a08b8e7cd1b2a30e504",
     "scripts/reflection-bake/capture.ts": "f4ad4f95115ee2d991c1b1b57871e88cb0890477fa7f451f81ce03a4816ada86",
@@ -125,12 +125,12 @@
     "worldPulse": 0
   },
   "platform": {
-    "browser": "153.0.8010.48",
+    "browser": "153.0.8010.53",
     "platform": "Win32",
     "devicePixelRatio": 1,
     "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)"
   },
   "sourceBuild": {
-    "buildId": "95ad676865985064411af5f6ce4d73cd1d1cc30fd565809e59803e15eb56197d"
+    "buildId": "cc381b46452861d7d4a55b356a570574a37d52062481b49855512b7c4511768d"
   }
 }

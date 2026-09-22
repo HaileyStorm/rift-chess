@@ -1,0 +1,1114 @@
+{
+  "checks": [
+    "fresh profile defaults to Automatic",
+    "manual high resists workload; Automatic lowers detail under explicit artificial frame load without changing match",
+    "manual override survives reload; legacy saves without qualityMode use Automatic"
+  ],
+  "captures": [
+    {
+      "theme": "nocturne",
+      "camera": "white",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 67,
+        "renderedFrames": 68,
+        "lastRenderedAt": 15288.5,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          0,
+          10.8,
+          9.299999999999999
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 542.8622359095792,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 691.7634045640912,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 543.1398135129119,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 678.8686631729119,
+              "y": 358.94554052329414
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 18,
+        "p95Ms": 35.5,
+        "p99Ms": 6079.199999999999,
+        "maxMs": 6079.199999999999,
+        "cpuMedianMs": 5.899999976158142,
+        "cpuP95Ms": 10.600000023841858,
+        "cpuMaxMs": 5935.800000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 58,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 111,
+          "textures": 20
+        },
+        "calls": 231,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 2,
+        "preset": "white",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 14.139041693127579,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "nocturne",
+      "camera": "black",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 114,
+        "renderedFrames": 115,
+        "lastRenderedAt": 16119.800000011921,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          1.1389215232070384e-15,
+          10.8,
+          -9.299999999999999
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 548.8601864870882,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 413.1313368270882,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 549.1377640904208,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 400.23659543590884,
+              "y": 462.0307670221221
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 18,
+        "p95Ms": 18.80000000000109,
+        "p99Ms": 4291.4,
+        "maxMs": 6079.199999999999,
+        "cpuMedianMs": 6.800000011920929,
+        "cpuP95Ms": 10.900000035762787,
+        "cpuMaxMs": 5935.800000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 58,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 111,
+          "textures": 20
+        },
+        "calls": 230,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 2,
+        "preset": "black",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 14.139041693127579,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "nocturne",
+      "camera": "overview",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 159,
+        "renderedFrames": 160,
+        "lastRenderedAt": 16932.5,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          8.599999999999996,
+          11.8,
+          8.599999999999998
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 502.54415355530574,
+              "y": 435.4109001592397
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 592.473288216836,
+              "y": 501.9059840777135
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 583.4630000881308,
+              "y": 379.34086900187054
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 673.0522667238339,
+              "y": 438.03860500784793
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.80000000000109,
+        "p99Ms": 4291.4,
+        "maxMs": 6079.199999999999,
+        "cpuMedianMs": 7.100000023841858,
+        "cpuP95Ms": 10.900000035762787,
+        "cpuMaxMs": 5935.800000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 58,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 111,
+          "textures": 20
+        },
+        "calls": 241,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 2,
+        "preset": "overview",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 16.84168934519337,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "nocturne",
+      "camera": "top",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 209,
+        "renderedFrames": 210,
+        "lastRenderedAt": 17826.30000001192,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          0,
+          16.2,
+          2.700000000000011
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 543.3755385853071,
+              "y": 463.5088272836699
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 667.9181620825518,
+              "y": 463.5088272836699
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 543.4281905667257,
+              "y": 347.0286962527704
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 665.4722382184676,
+              "y": 347.0286962527704
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.700000000000728,
+        "p99Ms": 35.900000000000546,
+        "maxMs": 6079.199999999999,
+        "cpuMedianMs": 7.399999976158142,
+        "cpuP95Ms": 10.899999976158142,
+        "cpuMaxMs": 5935.800000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 58,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 111,
+          "textures": 20
+        },
+        "calls": 238,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 2,
+        "preset": "top",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 16.275518424922755,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "daylight",
+      "camera": "white",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 287,
+        "renderedFrames": 288,
+        "lastRenderedAt": 26433.5,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          0,
+          10.8,
+          9.299999999999999
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 542.8622359095792,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 691.7634045640912,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 543.1398135129119,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 678.8686631729119,
+              "y": 358.94554052329414
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.80000000000109,
+        "p99Ms": 4291.4,
+        "maxMs": 7218,
+        "cpuMedianMs": 7,
+        "cpuP95Ms": 11.699999988079071,
+        "cpuMaxMs": 6913.300000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 82,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 133,
+          "textures": 23
+        },
+        "calls": 245,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 3,
+        "preset": "white",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 14.139041693127579,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "daylight",
+      "camera": "black",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 360,
+        "renderedFrames": 361,
+        "lastRenderedAt": 27734.69999998808,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          1.1389215232070384e-15,
+          10.8,
+          -9.299999999999999
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 548.8601864870882,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 413.1313368270882,
+              "y": 358.94554052329414
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 549.1377640904208,
+              "y": 462.0307670221221
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 400.23659543590884,
+              "y": 462.0307670221221
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.80000000000291,
+        "p99Ms": 36.29999999999927,
+        "maxMs": 7218,
+        "cpuMedianMs": 7.399999976158142,
+        "cpuP95Ms": 11.5,
+        "cpuMaxMs": 6913.300000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 82,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 133,
+          "textures": 23
+        },
+        "calls": 218,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 3,
+        "preset": "black",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 14.139041693127579,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "daylight",
+      "camera": "overview",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 436,
+        "renderedFrames": 437,
+        "lastRenderedAt": 29058.399999976158,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          8.599999999999996,
+          11.8,
+          8.599999999999998
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 502.54415355530574,
+              "y": 435.4109001592397
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 592.473288216836,
+              "y": 501.9059840777135
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 583.4630000881308,
+              "y": 379.34086900187054
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 673.0522667238339,
+              "y": 438.03860500784793
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.80000000000109,
+        "p99Ms": 35.900000000000546,
+        "maxMs": 7218,
+        "cpuMedianMs": 8,
+        "cpuP95Ms": 11.700000047683716,
+        "cpuMaxMs": 6913.300000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 82,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 133,
+          "textures": 23
+        },
+        "calls": 260,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 3,
+        "preset": "overview",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 16.84168934519337,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    },
+    {
+      "theme": "daylight",
+      "camera": "top",
+      "metrics": {
+        "captureFeedback": null,
+        "samples": 516,
+        "renderedFrames": 517,
+        "lastRenderedAt": 30460,
+        "cameraTravelling": false,
+        "cameraPosition": [
+          0,
+          16.2,
+          2.700000000000011
+        ],
+        "cameraTravelDestination": null,
+        "checkPulseActive": false,
+        "shiftEdges": [
+          {
+            "from": 5,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 543.3755385853071,
+              "y": 463.5088272836699
+            }
+          },
+          {
+            "from": 7,
+            "to": 6,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              1
+            ],
+            "screen": {
+              "x": 667.9181620825518,
+              "y": 463.5088272836699
+            }
+          },
+          {
+            "from": 9,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              -0.04400000000000004,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 543.4281905667257,
+              "y": 347.0286962527704
+            }
+          },
+          {
+            "from": 11,
+            "to": 10,
+            "selected": false,
+            "width": 0.075,
+            "position": [
+              2.044,
+              0.052,
+              -1
+            ],
+            "screen": {
+              "x": 665.4722382184676,
+              "y": 347.0286962527704
+            }
+          }
+        ],
+        "shiftPreview": null,
+        "assembling": false,
+        "assembly": null,
+        "maxTileLift": 0,
+        "reducedMotion": false,
+        "pendingSceneReadiness": 0,
+        "medianMs": 17.900000000001455,
+        "p95Ms": 18.900000000001455,
+        "p99Ms": 35.79999999999927,
+        "maxMs": 7218,
+        "cpuMedianMs": 8.5,
+        "cpuP95Ms": 11.900000035762787,
+        "cpuMaxMs": 6913.300000011921,
+        "skippedAnimations": 0,
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x000046A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "quality": "balanced",
+        "qualityMode": "manual",
+        "qualityChanges": 0,
+        "shellDraws": 5,
+        "shellInstances": 84,
+        "programs": 82,
+        "cachedFadeMaterials": 2,
+        "activeFadeMaterials": 0,
+        "width": 1033,
+        "height": 646,
+        "memory": {
+          "geometries": 133,
+          "textures": 23
+        },
+        "calls": 218,
+        "callsScope": "complete scene, shadows and postprocessing",
+        "shadowFrames": 3,
+        "preset": "top",
+        "focusSquare": 0,
+        "hoveredSquare": null,
+        "selectedFeedback": null,
+        "moveHints": false,
+        "shiftTiles": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "cameraDistance": 16.275518424922755,
+        "assetError": null,
+        "revision": 0,
+        "actions": 0,
+        "animating": false,
+        "selectedSquare": null,
+        "selectedTile": null,
+        "keyboardSquare": 0,
+        "revealHeld": false,
+        "shiftMode": false
+      }
+    }
+  ],
+  "errors": [],
+  "classification": "Real UI input; optional explicit artificial frame workload verifies adaptation, not device benchmarking.",
+  "build": {
+    "version": "5ae0897849318b10dda9",
+    "assets": [
+      "./api.js",
+      "./assets/game-Bb0WMghv.js",
+      "./assets/index-BDgj-bcQ.js",
+      "./assets/index-BsssSumI.css",
+      "./assets/marble-albedo.png",
+      "./assets/reflections/daylight-balanced.png",
+      "./assets/reflections/daylight-high.png",
+      "./assets/reflections/daylight-low.png",
+      "./assets/reflections/gallery-balanced.png",
+      "./assets/reflections/gallery-high.png",
+      "./assets/reflections/gallery-low.png",
+      "./assets/reflections/manifest.json",
+      "./assets/reflections/nocturne-balanced.png",
+      "./assets/reflections/nocturne-high.png",
+      "./assets/reflections/nocturne-low.png",
+      "./assets/worker-u3mupga4.js",
+      "./guide.html",
+      "./icon.svg",
+      "./index.html",
+      "./licenses.txt",
+      "./rules.html",
+      "./support.html",
+      "./support.js"
+    ]
+  },
+  "status": "pass",
+  "unit_tests": {
+    "files": 10,
+    "passed": 61
+  },
+  "visual_review": "Inspected default White, Black and Overview captures. Observatory dome houses and side telescopes are now inside normal play framing; Stone Court has visible fountains and planted edges. All eight 1092x921 camera captures retain the board.",
+  "limits": [
+    "Adaptation workload is artificial, not a hardware benchmark or a frame-rate guarantee.",
+    "Manual Balanced was used for consistent world captures.",
+    "This is a local/source preview update, not a new public or native release."
+  ]
+}

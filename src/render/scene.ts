@@ -13,6 +13,7 @@ import { buildWorld, type BuiltWorld } from './world';
 import { loadStoneTexture, applyStoneDetail } from './surfaces';
 import { ReflectionMapLoader } from './reflections';
 import { planAssembly } from './assembly';
+import { AutoQuality } from './auto-quality';
 import reflectionManifest from '../../public/assets/reflections/manifest.json';
 import type { Position, Action } from '../engine/types';
 import { squareIndex, macroIndex, macroOfSquare, macroSquares, inCheck } from '../engine/position';
@@ -20,7 +21,7 @@ import { squareIndex, macroIndex, macroOfSquare, macroSquares, inCheck } from '.
 type CameraPreset = 'white' | 'black' | 'overview' | 'top';
 type Theme = 'gallery' | 'nocturne' | 'daylight';
 type Quality = 'low' | 'balanced' | 'high';
-interface Appearance { theme: Theme; family: PieceFamily; material: MaterialStyle; quality: Quality; reducedMotion: boolean }
+interface Appearance { theme: Theme; family: PieceFamily; material: MaterialStyle; quality: Quality; qualityMode: 'auto' | 'manual'; reducedMotion: boolean }
 interface Highlights { selectedSquare: number | null; selectedTile: number | null; legalActions: Action[]; showMoves: boolean; focusSquare: number | null }
 const TILE_FINISHES = {
   gallery: { light: 0xbacdc6, dark: 0x344957, edge: 0x303c45, trim: 0xbd9e60, fill: 0x84bcd4 },
@@ -78,7 +79,7 @@ export class BoardScene {
   private bloom: UnrealBloomPass | null = null;
   private fxaa: ShaderPass;
   private cameraTravel: { start: number | null; duration: number; from: THREE.Vector3; to: THREE.Vector3; fromTarget: THREE.Vector3; target: THREE.Vector3; fromFov: number; toFov: number } | null = null;
-  private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', reducedMotion: false };
+  private appearance: Appearance = { theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', qualityMode: 'auto', reducedMotion: false };
   private highlightState: Highlights = { selectedSquare: null, selectedTile: null, legalActions: [], showMoves: false, focusSquare: null };
   private frame = 0;
   private resizeObserver: ResizeObserver;
@@ -89,6 +90,8 @@ export class BoardScene {
   private animation: { start: number | null; duration: number; update: (t: number) => void; finish: () => void } | null = null;
   private assemblyState: { seed: number; step: number; total: number } | null = null;
   private preset: CameraPreset = 'white';
+  private autoQuality = new AutoQuality();
+  private qualityChanges = 0;
   private lastFrame = 0;
   private frameTimes: number[] = [];
   private shadowFrames = 0;
@@ -159,7 +162,7 @@ export class BoardScene {
   }
 
   private contextMenu = (event: Event) => event.preventDefault();
-  private visibilityChange = () => { this.lastFrame = 0; if (document.hidden) this.cameraInteracting = false; };
+  private visibilityChange = () => { this.lastFrame = 0; this.autoQuality.settle(performance.now()); if (document.hidden) this.cameraInteracting = false; };
   private cameraGesture = () => { this.dragged = true; this.cameraInteracting = true; this.pointerLeave(); this.cameraTravel = null; this.exhibiting = false; };
   private cameraGestureEnd = () => { this.cameraInteracting = false; };
   private pointerDown = (event: PointerEvent) => {
@@ -255,6 +258,8 @@ export class BoardScene {
     // arrives compiles an entire interim scene and delays the first useful frame.
     if (!this.surfaceLoaded) { this.frame = requestAnimationFrame(this.renderFrame); return; }
     const cpuStart = performance.now();
+    const frameMs = this.lastFrame ? now - this.lastFrame : 0;
+    const preparing = this.resizePending || this.readyAfterFrame.length > 0;
     // Canvas resizing clears its buffer; do it immediately before the replacement draw.
     if (this.resizePending) this.resize();
     if (this.lastFrame) {
@@ -312,6 +317,11 @@ export class BoardScene {
     if (this.checkPulse?.start === null) this.checkPulse.start = this.lastRenderedAt;
     this.readyAfterFrame.splice(0).forEach(resolve => resolve());
     this.cpuFrameTimes.push(this.lastRenderedAt - cpuStart); if (this.cpuFrameTimes.length > 1800) this.cpuFrameTimes.shift();
+    if (this.appearance.qualityMode === 'auto') {
+      const eligible = !document.hidden && !preparing && !drawnAnimation && !this.exhibiting && !this.cameraTravel && !this.cameraInteracting;
+      const quality = this.autoQuality.sample(now, frameMs, this.lastRenderedAt - cpuStart, this.appearance.quality, eligible);
+      if (quality) { this.qualityChanges++; queueMicrotask(() => { if (!this.disposed && this.appearance.qualityMode === 'auto') this.configure({ quality }); }); }
+    }
     this.frame = requestAnimationFrame(this.renderFrame);
   };
 
@@ -942,6 +952,7 @@ export class BoardScene {
   }
 
   setCamera(preset: CameraPreset) {
+    this.autoQuality.settle(performance.now());
     this.preset = preset;
     this.pointerLeave();
     this.exhibiting = false; this.cameraTravel = null; this.cameraMode = 'play'; this.camera.fov = this.lensForAspect(); this.camera.updateProjectionMatrix();
@@ -950,6 +961,7 @@ export class BoardScene {
   }
 
   orbit(dx: number, dy: number, zoom = 0) {
+    this.autoQuality.settle(performance.now());
     this.pointerLeave();
     this.exhibiting = false; this.cameraTravel = null;
     const offset = this.camera.position.clone().sub(this.controls.target);
@@ -981,6 +993,11 @@ export class BoardScene {
 
   configure(options: Partial<Appearance>) {
     const next = { ...this.appearance, ...options };
+    const modeChanged = next.qualityMode !== this.appearance.qualityMode;
+    // Reapplying unrelated preferences must not overwrite the automatically resolved tier.
+    if (options.qualityMode === 'auto') next.quality = modeChanged ? 'balanced' : this.appearance.quality;
+    if (modeChanged) this.autoQuality.reset(performance.now());
+    if (next.theme !== this.appearance.theme || next.quality !== this.appearance.quality) this.autoQuality.settle(performance.now());
     const worldChanged = next.theme !== this.appearance.theme || next.quality !== this.appearance.quality;
     const boardChanged = next.theme !== this.appearance.theme || next.family !== this.appearance.family || next.material !== this.appearance.material;
     const motionChanged = next.reducedMotion !== this.appearance.reducedMotion;
@@ -1053,7 +1070,7 @@ export class BoardScene {
       maxTileLift: Math.max(0, ...Array.from(this.tiles.values(), tile => tile.position.y)), reducedMotion: this.appearance.reducedMotion, pendingSceneReadiness: this.readyAfterFrame.length,
       medianMs: frames[Math.floor(frames.length * 0.5)] ?? null, p95Ms: frames[Math.floor(frames.length * 0.95)] ?? null,
       p99Ms: frames[Math.floor(frames.length * .99)] ?? null, maxMs: frames.at(-1) ?? null, cpuMedianMs: cpu[Math.floor(cpu.length * .5)] ?? null, cpuP95Ms: cpu[Math.floor(cpu.length * .95)] ?? null, cpuMaxMs: cpu.at(-1) ?? null, skippedAnimations: this.skippedAnimations,
-      renderer: this.rendererName, quality: this.appearance.quality,
+      renderer: this.rendererName, quality: this.appearance.quality, qualityMode: this.appearance.qualityMode, qualityChanges: this.qualityChanges,
       shellDraws: this.tileShells.length, shellInstances: this.tileShells.reduce((sum, batch) => sum + batch.parts.length, 0),
       programs: this.renderer.info.programs?.length ?? 0, cachedFadeMaterials: [...this.fadeMaterials.values()].reduce((sum, pool) => sum + pool.length, 0), activeFadeMaterials: [...this.fadeMaterials.values()].reduce((sum, pool) => sum + pool.filter(lease => lease.busy).length, 0),
       width: this.renderer.domElement.width, height: this.renderer.domElement.height, memory: { ...this.renderer.info.memory }, calls: this.renderer.info.render.calls, callsScope: 'complete scene, shadows and postprocessing', shadowFrames: this.shadowFrames, preset: this.preset, focusSquare: this.highlightState.focusSquare, hoveredSquare: this.hoveredSquare,

@@ -7,7 +7,7 @@ export type Material = 'ceramic' | 'metal' | 'wood';
 export type Quality = 'low' | 'balanced' | 'high';
 
 export interface Preferences {
-  theme: Theme; family: Family; material: Material; quality: Quality;
+  theme: Theme; family: Family; material: Material; quality: Quality; qualityMode?: 'auto' | 'manual';
   reducedMotion: boolean; highContrast: boolean; showMoves: boolean;
   // Retained in rift-ui-save/1 so v1 exports still round-trip; legal Shift cues are now always visible.
   showShifts: boolean;
@@ -22,7 +22,7 @@ const SAVE_KEY = 'rift-chess.save.v1';
 const RECOVERY_KEY = 'rift-chess.save.recovery.v1';
 const MAX_SAVE_BYTES = 1_000_000;
 export const defaultPreferences: Preferences = {
-  theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced',
+  theme: 'gallery', family: 'classic', material: 'ceramic', quality: 'balanced', qualityMode: 'auto',
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
   highContrast: false, showMoves: false, showShifts: true,
 };
@@ -37,6 +37,7 @@ function validPreferences(value: unknown): value is Preferences {
     && isOneOf(item.family, ['classic', 'faceted'] as const)
     && isOneOf(item.material, ['ceramic', 'metal', 'wood'] as const)
     && isOneOf(item.quality, ['low', 'balanced', 'high'] as const)
+    && (item.qualityMode === undefined || isOneOf(item.qualityMode, ['auto', 'manual'] as const))
     && typeof item.reducedMotion === 'boolean' && typeof item.highContrast === 'boolean'
     && typeof item.showMoves === 'boolean' && typeof item.showShifts === 'boolean';
 }
