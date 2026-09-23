@@ -278,7 +278,8 @@ async function scenario(name, viewport, body) {
       await fileChooser.setFiles({ name: 'scenario.json', mimeType: 'application/json',
         buffer: Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)) });
       await page.waitForFunction(before => window.__reply.id > before, before, { timeout: 60000 });
-      await t.ready(180000);
+      // Validation replays every command through the frozen kernel (about a second each).
+      await t.ready(60000 + 1500 * (value.commands?.length ?? 0));
       if (wait && typeof value !== 'string') {
         const stored = await t.record();
         if (JSON.stringify(stored?.commands) !== JSON.stringify(value.commands))
@@ -393,7 +394,7 @@ await scenario('defaults', DESKTOP, async t => {
   t.check(listed.length === 0, 'TARGETS off: the pane lists no destinations', listed.map(c => c.label).join(','));
   t.check((await t.summary()).includes('Selected g1.'), 'The selection is announced with TARGETS off', await t.summary());
   await t.shot('selected-targets-off', { squares: [sq('g1'), sq('f3'), sq('h3')] });
-  await t.play(mv('g1', 'f3')); await t.play(mv('b8', 'c6'));
+  await t.play(mv('g1', 'f3')); await t.play(mv('b8', 'a6'));
   await t.clickSquare(sq('e4'));
   t.check((await t.summary()).includes('Selected tile C2.'), 'An empty platform with a legal Shift is selectable');
   await t.shot('tile-targets-off', { squares: [sq('e3'), sq('c3')] });
