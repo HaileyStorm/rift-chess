@@ -1,0 +1,1 @@
+{"schema":"rift-bend-record/1","layout":"B","policy":0,"commands":[{"$":"MoveCommand","expected":0,"action":2025},{"$":"MoveCommand","expected":1,"action":20065},{"$":"UndoCommand","expected":2}]}

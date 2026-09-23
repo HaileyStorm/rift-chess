@@ -132,7 +132,7 @@ hashes, all 17 hosted scenario groups and a returning old-profile offline
 upgrade pass. The source branch and Pages repository are pushed; receipts are
 in `docs/evidence/whole-app-v2/`. The original published game is unchanged.
 
-## Stage-two main-checkout checkpoint
+## Stage-two main-checkout release
 
 The migrated controller is split into Bend `State`, `Records`, `Commands`,
 `Actions` and the `Program` facade. The local stage-two matrix uses real Chrome
@@ -149,7 +149,17 @@ independently reviewed after v1/v2 proofs, six positive/negative mutation
 controls, the graphics-library checks and a draft build passed. The non-draft
 freeze and browser build then passed without changing any rule law or proof.
 
-This is a local rendered checkpoint, separate from the previous hosted build.
-Measured p95 post-move tick work was 608 ms; local bot reply medians were about
-721 ms for White and 542 ms for Black. Native parallel performance, broader
-device coverage and owner visual acceptance remain unverified.
+The same asset version is hosted at the separate Bend preview from clean source
+`78287a12b6b1098657096864b5193420789c249d` and Pages commit
+`de4d45eea7c05e433df27392d4508217340d379f`. All 18 hosted rendered
+scenarios and 787 checks passed with zero recorded defects. The live browser
+assets, matching CLI C file and unchanged original-game baseline assets have
+exact [publication hashes](docs/evidence/stage2-hosted/publication.json); the
+[hosted receipt](docs/evidence/stage2-hosted/receipt.json) binds the full run.
+An older three-command record also replayed on the hosted build, accepted Undo
+through the actual canvas and survived a cold offline reload in an isolated
+profile; this is record compatibility rather than an old service-worker upgrade.
+Measured p95 post-move tick work was 608 ms locally and 668 ms hosted; local
+bot reply medians were about 721 ms for White and 542 ms for Black. Native
+binary execution, parallel performance, broader-device coverage and owner
+visual acceptance remain unverified.

@@ -205,8 +205,29 @@ The normal semantic freeze, v1 proof/conformance suite, v2 aggregate proof and
 finite conformance, six positive/negative mutations, graphics-library checks,
 non-draft browser build, root 62 tests and root TypeScript check passed.
 
-This is local source and rendered-browser evidence, not yet a hosted stage-two
-release. The tested asset version is `361b9895746876a71757`. Move-tick p95 was
-608 ms; bot reply medians were 721 ms (White) and 542 ms (Black) on this host.
-These are availability and responsiveness limits to revisit before claiming
-native parallel performance or broad-device acceptance.
+Stage two is now live at the separate [Bend preview](https://haileystorm.github.io/rift-chess-bend2/).
+The clean non-draft asset version `361b9895746876a71757` binds source commit
+`78287a12b6b1098657096864b5193420789c249d`; Pages commit
+`de4d45eea7c05e433df27392d4508217340d379f` retained older hashed assets.
+The [publication receipt](evidence/stage2-hosted/publication.json) confirms all
+eight current browser assets, the new content-addressed CLI C source, and the
+original game's two baseline files returned HTTP 200 with exact SHA-256 matches.
+The [hosted rendered receipt](evidence/stage2-hosted/receipt.json) binds 18
+passing scenarios, 787 checks, zero defects and the full ignored Playwright
+summary hash. The [hosted selection](evidence/stage2-hosted/selected.png) and
+[mobile move panel](evidence/stage2-hosted/mobile.png) were inspected. The
+[CLI export manifest](evidence/stage2-hosted/native-cli-export.json) binds the
+same clean source revision and v2 semantic hash; it proves C emission, not a
+native binary or device run.
+An exact three-command saved record from build `8106a3f0fed5f9274f95` was
+seeded by [`tests/returning-save.mjs`](../tests/returning-save.mjs) into a fresh
+isolated browser profile on the new hosted site. It replayed
+without altering its bytes, accepted a real canvas Undo with hotseat consent,
+and survived a cold offline reload. The [returning-record receipt](evidence/stage2-hosted/returning-save.json)
+and inspected [offline frame](evidence/stage2-hosted/returning-offline.png)
+prove record compatibility; seeding into a fresh profile is not a direct test
+of an old service worker upgrading in place.
+
+Local move-tick p95 was 608 ms; hosted p95 was 668 ms. Local bot reply medians
+were 721 ms (White) and 542 ms (Black). These are measured responsiveness
+limits on this host, not native parallel performance or broad-device acceptance.

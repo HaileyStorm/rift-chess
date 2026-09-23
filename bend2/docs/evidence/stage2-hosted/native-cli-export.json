@@ -1,0 +1,44 @@
+{
+  "schema": "rift-chess-native-cli-export/1",
+  "at": "2026-09-23T23:11:22.589Z",
+  "input": "bend2/NativeCLI.bend",
+  "sourceRevision": "78287a12b6b1098657096864b5193420789c249d",
+  "sourceDirty": false,
+  "compiler": {
+    "bendVersion": "2.0.26",
+    "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+    "bunVersion": "1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "portable C source"
+  },
+  "frozen": {
+    "semanticV2Sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+    "parentSemanticSha256": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "pixelSemanticSha256": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "graphicsManifestSha256": "122ae10108a00aa068cf48aa7cd3af03751c873652300167399faa4e286d2b49"
+  },
+  "inputs": {
+    "bend2/NativeCLI.bend": "17aca73a85b2dafe07d5b9a7bd8ff1e85416e80cf647943f5bd13db12c1493f7",
+    "bend2/core/Enumeration.bend": "6f0da28cc0a0823cf30ec6fa7b0f8145fedd998a8924ced264ac12285fe62fc2",
+    "bend2/core/Geometry.bend": "21a778ad5efd1be7ecfd087bb1bda0d91ed9be305fe918d7c8e2ce7022beab55",
+    "bend2/core/Kernel.bend": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+    "bend2/core/MatchSpec.bend": "d58b8e8df57c3c09ba4a0f017fe24007c4e6733f89c5ddd11a15e897a23df4b8",
+    "bend2/core/Model.bend": "126b9cea13fb3a772d7a43557b08a7ec97541124646ab054ccd062fa7b54c328",
+    "bend2/core/Spec.bend": "707d74f20affc74f2d8ae5505f8a0f48e60a3bd1ff731be8d64b8cb73dd0dd51",
+    "bend2/core/Transitions.bend": "017b42039a904bcc826fc9f8ab657898013e0a1798860115d73f39f785bcfcd9",
+    "bend2/core/v2/BoardSpec.bend": "2cd196c0ac88a8469011aa8abbd412e6bde37a71cf0588ffb45d40ea2c3df0c5",
+    "bend2/core/v2/Facade.bend": "af0008a2a18159b99515c945cd3064dac07d250f04f76c4c6eeb142854848dbe",
+    "bend2/core/v2/MatchKernel.bend": "2b1b67236b11c87dbf6309362d9e5225572ad1dd8e23ae277a3f07f17f34888e",
+    "bend2/core/v2/RuleContracts.bend": "5044e30b9ccaa8aada0d50475ec7b5879819b3be3a82add60bce03e3f9b4283f",
+    "bend2/core/v2/RuleKernel.bend": "5b9edfd94f28093260d18038d7c977c8093e49c999709df4b2b0f465e011f22e",
+    "bend2/ui/Codec.bend": "3c7b15e359c5de3a003b9c854a519b4b789618d3be560b032ebfcac391fd3217",
+    "bend2/ui/Json.bend": "9c5af997c70ccd74879aba79f33fe05bdb214c40f6e4a7f76fd11d75df02f906",
+    "bend2/tools/export-native-cli.mjs": "da637b45ccc7ea6bbaf00e3be5ba09817778f92a63f4f6432e7ff816f5eb87c8",
+    "bend2/tools/bend.mjs": "74971c35a350a1e107fd96723c44c25e1ecb7f3da747e447e66de8085788ca30",
+    "bend2/TOOLCHAIN.json": "7d7e5005b273c3737ee7f0585b82b8354f59149aa63e903e9a63cb127d775e10"
+  },
+  "cSource": "rift-chess-native-cli.c",
+  "cSourceSha256": "8b18ec876c91d2ac0794055ef1a44160a5eb9f91597f8fa3b81c0cdb26203e7b",
+  "cSourceBytes": 2176663,
+  "runtime": "Bend C emission only; native binary, audio device and supported-host execution are unverified"
+}

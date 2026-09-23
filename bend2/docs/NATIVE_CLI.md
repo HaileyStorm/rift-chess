@@ -83,11 +83,20 @@ Windows fails before a game can run. The Windows source checker and C emitter
 remain useful independent evidence; a supported-host binary run has its own
 acceptance step.
 
-The clean release export from source `1a6d7d9c32dad19612327ac3eb3f1fd54a18ca07`
-is [available as C](https://haileystorm.github.io/rift-chess-bend2/rift-chess-native-cli-8fbb6fa79899.c)
+The earlier 2.0.25 export from source `1a6d7d9c32dad19612327ac3eb3f1fd54a18ca07`
+remains [available as C](https://haileystorm.github.io/rift-chess-bend2/rift-chess-native-cli-8fbb6fa79899.c)
 (2,182,904 bytes; SHA-256
 `8fbb6fa79899c1a31771ac62113d50cc3f3c99caa765a2ea658cf9ef201b4747`).
 Its [source and compiler manifest](evidence/whole-app-v2/native-cli-export.json)
 binds 18 inputs and the frozen v2 law hash. The Pages download matched that C
 hash after deployment. WSL Ubuntu on the development laptop had no C compiler;
 no native binary or file-effect playthrough was produced there.
+
+The stage-two Bend 2.0.26 export from clean source
+`78287a12b6b1098657096864b5193420789c249d` is
+[available as C](https://haileystorm.github.io/rift-chess-bend2/rift-chess-native-cli-8b18ec876c91.c)
+(2,176,663 bytes; SHA-256
+`8b18ec876c91d2ac0794055ef1a44160a5eb9f91597f8fa3b81c0cdb26203e7b`).
+Its [manifest](evidence/stage2-hosted/native-cli-export.json) binds the same
+source and v2 law hash as the hosted browser build, and the live file matched
+that C hash. Supported-host binary execution is still unverified.

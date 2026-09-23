@@ -1,0 +1,41 @@
+{
+  "schema": "rift-bend-stage2-hosted/1",
+  "at": "2026-09-23T23:14:13.111Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "sourceRevision": "78287a12b6b1098657096864b5193420789c249d",
+  "buildVersion": "361b9895746876a71757",
+  "semanticSha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+  "pagesRevision": "de4d45eea7c05e433df27392d4508217340d379f",
+  "fullSummarySha256": "0d6e702d185908aac0326907a508ce1871d144582e062222fb6f8eaf4719379e",
+  "scenarioCount": 18,
+  "checkCount": 787,
+  "defectCount": 0,
+  "scenarios": [
+    "desktop-start",
+    "defaults",
+    "selection",
+    "hotseat-black-mates",
+    "hotseat-white-mates",
+    "castle-en-passant",
+    "promotion",
+    "shift",
+    "draws",
+    "bot-white",
+    "bot-black",
+    "undo",
+    "camera",
+    "menus",
+    "persistence",
+    "mobile",
+    "resize",
+    "perf"
+  ],
+  "performance": {
+    "hoverMedianMs": 13.4,
+    "selectMedianMs": 35.1,
+    "moveTickP95Ms": 667.7,
+    "orbitMedianMs": 30.6,
+    "botWhiteReplyMedianMs": 841.6000000238419,
+    "botBlackReplyMedianMs": 588
+  }
+}

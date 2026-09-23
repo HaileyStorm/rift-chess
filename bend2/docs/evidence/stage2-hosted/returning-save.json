@@ -1,0 +1,17 @@
+{
+  "schema": "rift-bend-returning-save/1",
+  "at": "2026-09-23T23:34:43.935Z",
+  "evidenceClass": "Historical saved bytes seeded into an isolated current-browser profile; not an old service-worker upgrade",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "beforeVersion": "8106a3f0fed5f9274f95",
+  "afterVersion": "361b9895746876a71757",
+  "oldRecordSha256": "d4b52bbf41236151bd831ab10130669b38b606569097de0a320e23973c09abb4",
+  "fixtureSha256": "9c18c5294f5e131f2e5711abe59f38413e30cd6825d7f4e50c7fc916b107e344",
+  "oldCommands": 3,
+  "checks": [
+    "Exact three-command record from build 8106 survives new hosted boot and replay",
+    "Real canvas Undo and other-player consent append one accepted command",
+    "Cold offline reload retains the historical record and accepted Undo"
+  ],
+  "errors": []
+}

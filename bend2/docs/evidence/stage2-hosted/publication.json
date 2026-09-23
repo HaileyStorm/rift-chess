@@ -1,0 +1,95 @@
+{
+  "schema": "rift-bend-publication/2",
+  "at": "2026-09-23T23:13:59.816Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "sourceRevision": "78287a12b6b1098657096864b5193420789c249d",
+  "currentRevision": "78287a12b6b1098657096864b5193420789c249d",
+  "pagesRevision": "de4d45eea7c05e433df27392d4508217340d379f",
+  "buildVersion": "361b9895746876a71757",
+  "semanticSha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+  "buildSha256": "1cf4062362855f7c1d4853176d13f499482f9e363f1287a790d19021ae2c2f7d",
+  "assets": [
+    {
+      "file": "build.json",
+      "status": 200,
+      "sha256": "1cf4062362855f7c1d4853176d13f499482f9e363f1287a790d19021ae2c2f7d",
+      "expectedSha256": "1cf4062362855f7c1d4853176d13f499482f9e363f1287a790d19021ae2c2f7d",
+      "ok": true
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "sha256": "e89093e447bc9d2bfd0d7fe68236733eb9621f476f57da9f03bc905fc9edb046",
+      "expectedSha256": "e89093e447bc9d2bfd0d7fe68236733eb9621f476f57da9f03bc905fc9edb046",
+      "ok": true
+    },
+    {
+      "file": "host-d0e3dkvk.js",
+      "status": 200,
+      "sha256": "845e98c66fece6e746461e74437f917f3b8331373830255547ca4219ad691ff5",
+      "expectedSha256": "845e98c66fece6e746461e74437f917f3b8331373830255547ca4219ad691ff5",
+      "ok": true
+    },
+    {
+      "file": "worker-7sefw2hv.js",
+      "status": 200,
+      "sha256": "af2a675d39b0232bfcc515057013ed74d85a8195012cd1d055f3c213509ac0af",
+      "expectedSha256": "af2a675d39b0232bfcc515057013ed74d85a8195012cd1d055f3c213509ac0af",
+      "ok": true
+    },
+    {
+      "file": "style-4cc0cbc1299f.css",
+      "status": 200,
+      "sha256": "4cc0cbc1299fda4b5f369f1fa92656f4f6734f72a9b82af47b47c0a8c7d6eca0",
+      "expectedSha256": "4cc0cbc1299fda4b5f369f1fa92656f4f6734f72a9b82af47b47c0a8c7d6eca0",
+      "ok": true
+    },
+    {
+      "file": "THIRD_PARTY_NOTICES.txt",
+      "status": 200,
+      "sha256": "fdfb294ccb38ddb08d871b9f6f566c8c7c3388e702e923fac761d037ed35a8c1",
+      "expectedSha256": "fdfb294ccb38ddb08d871b9f6f566c8c7c3388e702e923fac761d037ed35a8c1",
+      "ok": true
+    },
+    {
+      "file": "Bend-Apache-2.0.txt",
+      "status": 200,
+      "sha256": "78418ed3cfa4c3f320f827a96ed83349ef9e1af6dc4430b256a0ba2037c42615",
+      "expectedSha256": "78418ed3cfa4c3f320f827a96ed83349ef9e1af6dc4430b256a0ba2037c42615",
+      "ok": true
+    },
+    {
+      "file": "sw.js",
+      "status": 200,
+      "sha256": "b75749bdcb6d79cad84421e4e9463455199613b4e90dcd7ed109339f3ac39313",
+      "expectedSha256": "b75749bdcb6d79cad84421e4e9463455199613b4e90dcd7ed109339f3ac39313",
+      "ok": true
+    }
+  ],
+  "nativeCLI": {
+    "file": "rift-chess-native-cli-8b18ec876c91.c",
+    "status": 200,
+    "sha256": "8b18ec876c91d2ac0794055ef1a44160a5eb9f91597f8fa3b81c0cdb26203e7b",
+    "expectedSha256": "8b18ec876c91d2ac0794055ef1a44160a5eb9f91597f8fa3b81c0cdb26203e7b",
+    "ok": true,
+    "manifestSha256": "24f1d4a14fb174f708ae5d4611333405304c11b3f7eb6ee33288321a8f3d0a3f"
+  },
+  "originalUnchanged": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "sha256": "05275c202778bebcb85333734a0a5e9c1884204d32d3a3dc86408261f68a125f",
+      "expectedSha256": "05275c202778bebcb85333734a0a5e9c1884204d32d3a3dc86408261f68a125f",
+      "ok": true
+    },
+    {
+      "file": "precache.json",
+      "status": 200,
+      "sha256": "395bf8be7d007bba6d70b562d3a36f3a612b01b2ee25ef8acd3c44e6baac2f3d",
+      "expectedSha256": "395bf8be7d007bba6d70b562d3a36f3a612b01b2ee25ef8acd3c44e6baac2f3d",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "ok": true
+}

@@ -29,6 +29,8 @@ record codec; it emits C through the pinned compiler.
   Bend, browser/native adapter responsibilities, and interruption-safe replay.
 - [Stage-two local evidence](docs/evidence/stage2-local/receipt.json): migrated
   controller, real canvas/reference playtest and measured performance limits.
+- [Stage-two hosted evidence](docs/evidence/stage2-hosted/receipt.json): live
+  hash verification and the 18-scenario rendered browser run.
 - [Law change policy](docs/LAW_CHANGE_POLICY.md): preserve the initial contract;
   fix implementation or proofs before considering a semantic amendment.
 - [Frozen semantics](laws/semantic-v1.json), [pixel contract](laws/pixels-v1.json)
