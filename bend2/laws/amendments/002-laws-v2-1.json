@@ -1,0 +1,49 @@
+{
+  "schema": "rift-bend-amendment/1",
+  "sequence": 2,
+  "parentSha256": "721cdfb2830acf23fe767a21c58e29b18868e5d79ca9b48427a37949eb21de8d",
+  "createdAt": "2026-09-23T07:26:43.346Z",
+  "kind": "documentation",
+  "semanticMeaning": "unchanged",
+  "rationale": "Revision 2.1 of the English v2 law document. It corrects imprecise prose found by a line-by-line audit against bend2/core/v2, docs/01_RULES.md and the gate tools, and adds a mechanically checked 134-law index, proof limits and re-verification guidance. No law, proof, contract, implementation, fixture or reference byte changes; no correction strengthens or weakens a law. The frozen 2.0 bytes are preserved in bend2/docs/history/LAWS_V2.0.md; the exact diff is bend2/docs/history/LAWS_V2.1.diff (and LAWS_V2.1.prose.diff ignoring carriage returns). No semantic defect was found.",
+  "toolchain": {
+    "bendVersion": "2.0.25",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "records": {
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/laws/pixels-v1.json": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "bend2/laws/proof-v1.json": "7dc690646fb84b66ffbc525fd1ee2d3ddc0908679b45cc34fa2572e2737b18d6",
+    "bend2/laws/semantic-v2.json": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "substitutions": {
+    "bend2/docs/LAWS_V2.md": {
+      "from": "f5e555f222d56fec8f9c3ec70b54c8d1be496cc860df0247201228ab0efb550e",
+      "to": "64043d00de9003ed75aff98d264c2c95ef32e8e46d1f3db307b351c72493df82",
+      "records": [
+        "semantic-v2"
+      ],
+      "reason": "Revision 2.1: prose corrections listed in its revision record, law index, proof limits, re-verification guidance; line endings normalized to LF."
+    }
+  },
+  "preserved": {
+    "bend2/docs/history/LAWS_V2.0.md": "bend2/docs/LAWS_V2.md"
+  },
+  "evidence": {
+    "bend2/docs/evidence/amendments/002-laws-v2-1/v1.json": "091462711121b8ea3ca0c8eaee795d5b32b9dda70846802be536df3938091958",
+    "bend2/docs/evidence/amendments/002-laws-v2-1/v2.json": "b1c3e38a85ba5ee6f8967a0adfcb2e9d3b78609baed234480c890d614455b2e9",
+    "bend2/docs/evidence/amendments/002-laws-v2-1/mutations.json": "794742a0fd2fbb2524619ccd5a147c54527eccb276c51d166bd2195c0f4bdf13",
+    "bend2/docs/evidence/amendments/002-laws-v2-1/library.json": "a579a4b46b20e7656302d543a55013b9cac22ea99fce170ce92217f11d3daaba",
+    "bend2/docs/evidence/amendments/002-laws-v2-1/build.json": "d9b7b2cb81f72d15244671b7f586109aa8a62369eed94669c2de39cea82756bc",
+    "bend2/docs/evidence/amendments/002-laws-v2-1/review.md": "52a4c676384218868b4c953274db234da1366802725d79d6c502708adfbd7e0c"
+  },
+  "tools": {
+    "bend2/tools/amendments.mjs": "fde126541451c483f922920744fc7fbe35d9c0103fee466b166c8c4ab2c75c6e",
+    "bend2/tools/amend.mjs": "e6b095784e48c9de1ef08bf5277da363419b32926f8df6dd7c1b9dcc2cf8f240"
+  }
+}

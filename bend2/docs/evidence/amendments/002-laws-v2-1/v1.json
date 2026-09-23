@@ -1,0 +1,63 @@
+{
+  "schema": "rift-bend-readiness/1",
+  "at": "2026-09-23T07:02:38.280Z",
+  "draft": false,
+  "passed": true,
+  "unchanged": true,
+  "files": {
+    "bend2/core/AI.bend": "64f2a10970abd9e9bffb044fbd537e02615ef3594cd74aa56a155985df358aff",
+    "bend2/core/Enumeration.bend": "6f0da28cc0a0823cf30ec6fa7b0f8145fedd998a8924ced264ac12285fe62fc2",
+    "bend2/core/Geometry.bend": "21a778ad5efd1be7ecfd087bb1bda0d91ed9be305fe918d7c8e2ce7022beab55",
+    "bend2/core/Kernel.bend": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+    "bend2/core/LAWS.bend": "dad9565874807f464099d17c56f6f0fa7040ffa78c0a2c3d9473e5a9e2625fd4",
+    "bend2/core/MatchSpec.bend": "d58b8e8df57c3c09ba4a0f017fe24007c4e6733f89c5ddd11a15e897a23df4b8",
+    "bend2/core/Model.bend": "126b9cea13fb3a772d7a43557b08a7ec97541124646ab054ccd062fa7b54c328",
+    "bend2/core/PROOF.bend": "f0864382a0167dd27119571cdfc88e7513e23965d14b0aae68f7c1dbf70e4a8a",
+    "bend2/core/ProofKit.bend": "c806ecb6de5ad59f107bc032ad2a59d18e608247cbdc1a694480739a6c2b845e",
+    "bend2/core/Spec.bend": "707d74f20affc74f2d8ae5505f8a0f48e60a3bd1ff731be8d64b8cb73dd0dd51",
+    "bend2/core/Transitions.bend": "017b42039a904bcc826fc9f8ab657898013e0a1798860115d73f39f785bcfcd9",
+    "bend2/TOOLCHAIN.json": "8832b35e791298a9474a6b33ed611d69a3f9cc675f3289feb91d8d99c88214bf",
+    "bend2/docs/LAWS_V1.md": "997687d9c9e8ce7aade3e69252e10b867ab2bfdb86e6e2d5583c21fabaa0d79e",
+    "bend2/docs/LAW_CHANGE_POLICY.md": "1be32efb916589e5a5fe7f383510c75797e45d5fccd0d7dbb2fb7cff234b8e09",
+    "bend2/tests/conformance.ts": "d9c3b29a6cd7dd893732eb024c28df3677ade4ea82c5c110b34e6c3f86838a56",
+    "bend2/tests/interop.ts": "bfdf19b053b7792eda06cfd84665da31085e83d9c7c6659ec4109dc8930213bf",
+    "bend2/tests/pixels.ts": "db5fab09f183892a2863514e3d102f554715a9c17368bf7e5438e45eade7d796",
+    "bend2/graphics/Pixel.bend": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3",
+    "bend2/graphics/LAWS.bend": "4b7b6f6046c985facf4937c9b6deab3071e14fa79f5beca256ea5b4228ff89d3",
+    "bend2/graphics/PROOF.bend": "8e4d60373335777f0241a212d66ec109e65ca37d741dda1cfe21640c680cd7da",
+    "bend2/docs/GRAPHICS_LAWS_V1.md": "82e4d983bfcd4b4364b640956372d04d48c0d61f641e161adb057aea9710a309",
+    "fixtures/conformance.json": "93b71f1625d011ae5b411dd4b69d51bf5360e04340c565b1d12a3491ab7675d6"
+  },
+  "results": [
+    {
+      "name": "proofs",
+      "exit": 0,
+      "error": null,
+      "outputSha256": "a048d8e7c041e556f5a62d7835e69ee56281afe9708693c91d67007249dbc5c4"
+    },
+    {
+      "name": "conformance",
+      "exit": 0,
+      "error": null,
+      "outputSha256": "478ad5cc3fbc270ca44023df88c8ff77b6502a43477973a8b3a5407466ffeed8"
+    },
+    {
+      "name": "match",
+      "exit": 0,
+      "error": null,
+      "outputSha256": "5c973ceea676a975c0bf3b1d0103e40839f5f447146946c5c5284cc54dd58210"
+    },
+    {
+      "name": "graphics-proof",
+      "exit": 0,
+      "error": null,
+      "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84"
+    },
+    {
+      "name": "pixels",
+      "exit": 0,
+      "error": null,
+      "outputSha256": "a6c6a00e94a3ce027baf4d03ee945d22b143acf95d78b86fc2108beafee1f6db"
+    }
+  ]
+}
