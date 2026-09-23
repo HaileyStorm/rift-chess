@@ -3,7 +3,7 @@
 # sprint opponent, not a claim of strong chess play or a solved game.
 import Base
 import ./Model.bend as M
-import ./Spec.bend as S
+import ./v2/RuleContracts.bend as S
 import ./Geometry.bend as G
 
 type Choice is Data:
@@ -57,7 +57,7 @@ def hanging_decoded(next: M.Position, action: Maybe<M.Action>) -> U32:
     case Some{value}: hanging_action(next, value)
 
 def score(+p: M.Position, +id: U32) -> U32:
-  +next = S.candidate(p, id)
+  +next = S.expected(p, id)
   +base = board_score(M.pos_board(next), M.pos_side(p), 0, 100000)
   +check = Bool.pick(U32, G.in_check(next, M.pos_side(next)), 35, 0)
   U32.sub(U32.add(base, check), hanging_decoded(next, M.decode(id)))

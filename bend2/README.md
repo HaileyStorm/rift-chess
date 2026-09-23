@@ -5,17 +5,28 @@
 
 This is a separate, playable adaptation of Rift Chess. It does not replace the
 published Three.js/Electron game. The rules, match history and adjudication,
-opponent scoring, projection, picking, sprites and immutable pixel renderer are
-written in Bend 2. The browser host supplies DOM controls, input, a worker,
-Canvas image blitting, Web Audio and local storage.
+opponent scoring, projection, picking, sprites, menus, bitmap fonts, input policy,
+record codec and audio synthesis are written in Bend 2. The browser adapter only
+transports events and explicit IO effects, copies Bend pixels to Canvas and Bend
+PCM samples to Web Audio, and mirrors Bend controls for assistive technology.
+`Native.bend` expresses the same pixel application with Base Window, Audio and
+File effects, but its full C emission exceeded the bounded local run. The smaller
+`NativeCLI.bend` is a browser-independent text game over the same Bend rules and
+record codec; it emits C through the pinned compiler.
 
 ## Start here
 
 - [Local Bend guide](docs/LOCAL_BEND_GUIDE.md): language, proof, runtime and browser
   notes gathered from the pinned compiler, standard library and many examples.
 - [Source catalog](docs/SOURCE_CATALOG.md): primary documentation and example map.
-- [Rules laws in plain English](docs/LAWS_V1.md) and
-  [graphics laws](docs/GRAPHICS_LAWS_V1.md): exact promises and limits.
+- [Closed v2 rule laws](docs/LAWS_V2.md), with explicit proof limits, and the
+  [preserved v1 laws](docs/LAWS_V1.md).
+- [Reusable graphics](lib/graphics/README.md), including its colocated
+  [laws and proof limits](lib/graphics/LAWS.md).
+- [Browser-independent CLI export](docs/NATIVE_CLI.md) and
+  [graphical native experiment](docs/NATIVE.md): distinct source and acceptance evidence.
+- [Application and IO boundary](docs/PORTABLE_APPLICATION.md): which code runs in
+  Bend, browser/native adapter responsibilities, and interruption-safe replay.
 - [Law change policy](docs/LAW_CHANGE_POLICY.md): preserve the initial contract;
   fix implementation or proofs before considering a semantic amendment.
 - [Frozen semantics](laws/semantic-v1.json), [pixel contract](laws/pixels-v1.json)
@@ -30,6 +41,13 @@ their focused positive controls pass. These are source proofs and finite
 reference comparisons, not a universal claim that chess, the compiler or the
 browser is bug-free.
 
+The later v2 freeze closes 134 named source laws for complete canonical legal
+action enumeration, both colors, match commands, history and adjudication. It
+passed 14 reference positions, 223 successors and six v2 mutation controls.
+The frozen manifest and independent review receipts are in
+[`laws/semantic-v2.json`](laws/semantic-v2.json) and
+[`docs/evidence/laws-v2/`](docs/evidence/laws-v2/).
+
 ## Build and verify
 
 The compiler is pinned in `TOOLCHAIN.json`. The local layout expects the upstream
@@ -42,6 +60,8 @@ Run these from the **repository root**, not from `bend2/`:
 
 ```text
 node bend2/tools/verify.mjs
+node bend2/core/v2/check.mjs
+node bend2/tools/verify-library.mjs --check
 node bend2/tools/bend.mjs --run bend2/tools/build.ts
 node bend2/tools/serve.mjs 4184
 ```
@@ -61,7 +81,10 @@ The normal build checks both semantic freezes and the exact proved Kernel and
 proof witnesses. `--draft` is for local iteration before a new reviewed
 attestation, not for a published acceptance claim. Full proof normalization can
 take a couple of minutes with the pinned young checker. The proof runner uses a
-bounded five-minute child timeout and retains diagnostics; timeout is failure.
+bounded ten-minute child timeout for the combined v2 proof entry and retains
+diagnostics; timeout is failure. The same pinned checker runs in a pinned Node
+worker with a 64 MiB stack for that proof entry; application generation remains
+on the pinned Bun runtime. See `core/v2/proof-runtime.json`.
 
 The wrapper verifies compiler commit, tracked cleanliness and Bun version. It
 sets `BEND_NO_TELEMETRY=1`. A small local loader normalizes Windows paths while
@@ -76,16 +99,26 @@ its platform** when legal. No Piece/Tile mode switch is required. Click the
 visible body of a piece: nearer sprites can physically cover the floor behind
 them at lower viewing angles. Coordinate buttons also reach covered destinations.
 
-Use **Front**, **Overhead**, rotation, tilt and zoom below the board to choose
+Use **Front**, **Overhead**, rotation, tilt and zoom in the play panel to choose
 your view. Right-drag or Alt-drag rotates and tilts; click the board to focus it
 before scrolling to zoom. The view is remembered separately from your game.
 Missing platforms are open gaps, including while highlighted for a Shift.
 
-The menu contains table lighting, sound, imports/exports and a short rules guide.
+Clicking the selected piece or platform again clears it. The menu contains table
+lighting, sound, imports/exports and a short rules guide.
 New matches support hotseat or a local opponent, either human color, layouts B/C
 and the original quiet-draw policies. Arrows/Enter select cells; Escape clears
 selection and U undoes an action. After undo in a bot game the opponent pauses,
 so another undo can restore your own move; **Resume opponent** resumes it.
+
+Hotseat Undo first requests the other player's agreement. **Agree** commits the
+rewind; **Cancel** keeps the match unchanged. Local play relies on the people at
+the shared device to honor the displayed roles; this is not network identity or
+multiplayer authentication.
+
+In hotseat, **Offer draw** and **Resign** let either player choose White or Black,
+even when it is the other player's turn. In a bot match, those actions belong to
+the human color. The opposite side may accept or decline an outstanding offer.
 
 The record format `rift-bend-record/1` stores layout, draw policy and accepted
 commands, including undo and draw/resignation commands. Loading reconstructs a
@@ -96,9 +129,10 @@ Invalid saves retain a recovery copy and are not silently overwritten.
 
 ## What parallelism means here
 
-`Kernel.legal_ids` joins four independent canonical ID ranges in fixed order.
-The laws prove exact list parity with the frozen sequential specification. The
-pixel library splits independent image quadrants; the opponent scores balanced
+The v2 move enumerator joins a balanced tree of independent canonical ID ranges
+in fixed order; short leaves also respect browser recursion limits. Its exact
+proof status is recorded in the v2 law document. The pixel library splits
+independent image quadrants; the opponent scores balanced
 candidate groups and resolves ties by canonical ID. None uses shared mutable
 pixel buffers or unsafe array aliases. Input and match transitions remain serial.
 
@@ -111,10 +145,11 @@ implemented here.
 
 ## Rendering and evidence boundaries
 
-The picture is a 512-square `Pix`/`Qua` tree generated by Bend. JavaScript only
-expands colored leaves into RGBA bytes. Static scenery and platform ground are
-cached; hover, selection and animated pieces remain live. Animation detail
-adapts to measured rendering cost. Ordinary moves hop, platform moves transport
+The complete screen is a `Pix`/`Qua` tree generated by Bend, with a 512-square
+board embedded in a responsive pixel UI. JavaScript only expands colored leaves
+into RGBA bytes. Static scenery, UI chrome and platform ground are cached;
+camera motion uses a cheaper ground pass and restores full detail on release.
+Hover, selection and animated pieces remain live. Ordinary moves hop, platform moves transport
 their passengers, and captured pieces flash and break apart.
 
 The formal pixel contract covers sampling and inert empty/outside fills.

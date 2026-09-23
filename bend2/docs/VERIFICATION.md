@@ -60,7 +60,7 @@ local artifacts; nothing was pushed to the production Pages branch.
 
 To repeat the hosted scenario test, set `BEND_TEST_URL` to the preview URL and
 `BEND_TEST_ORIGINAL_URL` to `https://haileystorm.github.io/rift-chess/`, then run
-`node bend2/tests/browser-scenarios.mjs`. Use a new `BEND_PLAYTEST_RUN` name to
+`node bend2/tests/historical/browser-scenarios.mjs` on the historical source revision. Use a new `BEND_PLAYTEST_RUN` name to
 preserve each receipt. The worker fault injection is explicitly limited to the
 renderer recovery scenario; ordinary play uses actual pointer and menu inputs.
 
@@ -106,3 +106,48 @@ save created on preview-v1, resumes it with a real overhead-view knight move,
 then reloads cold offline and accepts Undo. An ordinary initial navigation used
 the browser's cached old app shell; an explicit browser refresh loaded the new
 controls. Existing open tabs therefore need a refresh, with no save clearing.
+
+## Whole-application follow-up
+
+The previous sections describe the published hybrid version. Current source puts
+the complete application in Bend, with generic browser IO and native Base effects.
+The source-law boundary is expanded in `LAWS_V2.md`; the reusable graphics package
+has its own source freeze and colocated proofs under `lib/graphics`.
+
+The closed v2 manifest is `laws/semantic-v2.json` (SHA-256
+`c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf`).
+Its readiness, six positive/negative mutation controls, and independent accepted
+review are pinned under `docs/evidence/laws-v2/`. The aggregate checker closes
+134 named laws in 19 proof/API and 18 declaration modules, with no open, unsafe
+or foreign proof dependency. All 14 canonical reference positions and 223
+successors pass. Independent specification of canonical membership/order,
+move/Undo ledgers, both actor colors, draw/resignation and adjudication prevents
+the six selected regressions from hiding behind an implementation-owned oracle.
+Geometry attacks and admissibility remain shared trusted definitions, and a
+structurally admissible puzzle is not necessarily opening-reachable.
+
+The final local rendered run is
+`.artifacts/bend2/native-ui/whole-app-copy-final/receipt.json`: 17 scenario
+groups pass without browser errors. Actual canvas interaction covers both-color
+moves, selection toggles, hotseat Undo consent, off-turn actor choice, capture and
+underpromotion, Shift, bot play, full menus, mobile overflow, records and
+recovery, actual Web Audio starts, and cold offline play. A separate keyboard-only
+accessibility-control run starts Web Audio through the same Bend PCM effect.
+Inspected desktop, mobile, selected-piece and actor-chooser frames are in that
+run folder. Failed attempts remain retained beside passing receipts.
+
+The generic incremental image port was compared against the original full blit
+for 28 actual emitted frames (91,750,400 bytes) with exact equality. On build
+`f007dd10a4ee3aa67708`, warm Bend camera computation measured 48 ms median and
+pixel transport 8.6 ms; end-to-end worker replies measured 60 ms median under
+concurrent host load. Cold and p95 times are higher. These results do not promise
+a particular frame rate on another device. A 4×4 motion-ground experiment gained
+only 1.5 ms while worsening edges, so the existing 2×2 motion pass was retained.
+
+The graphical native source check passes with 32 explicitly unsafe/effect-bound
+wrappers, and pure framing, recovery, modifier and audio-capacity tests are
+separate evidence. Two bounded 600-second full graphical C-emitter attempts did
+not produce C. The smaller text CLI emitted C under the pinned Bun compiler;
+the source-bound export manifest and platform execution evidence are recorded in
+`NATIVE_CLI.md`. C emission does not certify a linked native binary or graphics/
+audio device behavior. Hosted playtesting and publication are separate checks.

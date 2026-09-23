@@ -62,6 +62,23 @@ The requested sprint is complete; receipts and limitations are in
 `docs/VERIFICATION.md`. The original 1.2.1 deployment is unchanged.
 No native Bend CPU/GPU benchmark or owner visual acceptance is claimed.
 
+## Active follow-up: complete portable Bend application
+
+The completed release above is historical evidence for the initial hybrid host.
+The owner's expanded acceptance request is now active: move all application UI,
+font rendering, input policy, audio synthesis and persistence codec into Bend;
+retain only generic browser IO transport; export the same application through
+native Bend Window/Audio/File effects; repair drag responsiveness/direction and
+selection toggling. Keep reusable graphics and their laws/proofs in `lib/graphics`.
+
+The new independent v2 rule contracts cover both colors, ordinary chess and Rift
+special rules, with structural legality, reachable play and coherent history
+distinguished explicitly. Original frozen v1 files remain immutable provenance.
+Current gates include closed per-rule/match laws, both-color differential cases,
+library pixel checks and pure application tests. Final law freeze/review,
+integrated browser playtesting, native export, deployment and source handoff are
+still in progress; earlier completion statements do not cover this expansion.
+
 ## Retained material and boundaries
 
 The original TypeScript application remains the production game and its reference
@@ -89,3 +106,30 @@ preview passes all seven camera scenario groups. Every live asset matches the
 clean build, and an old offline profile survives an explicit refresh, a resumed
 move and a cold-offline Undo. Source and deployment are pushed; this follow-up is
 complete. Existing open tabs should be refreshed to load the new controls.
+
+## Whole Bend application release checkpoint
+
+The camera release above is historical. The expanded whole-application sprint
+remains active until the clean source/C export and hosted publication checks.
+The browser UI, bitmap text, input policy, replay, PCM and game are now Bend;
+the reusable graphics package and its own Laws/Proofs are separated and frozen.
+The final v2 semantic manifest closes 134 named laws, including independent
+canonical membership/order/uniqueness, both-color ordinary and Rift rules,
+move/Undo history, either-side controls and adjudication. Six mutations reject
+after positive controls pass. Its immutable readiness and independent review
+receipts are in `docs/evidence/laws-v2/`.
+
+The final local rendered run at `.artifacts/bend2/native-ui/whole-app-copy-final/`
+passes 17 groups: both-color moves, off-turn choices, capture/promotion, Shift,
+selection toggles, animation, PCM audio, hotseat Undo consent, bot play, offline
+use, corrupted/transient storage recovery, incremental import and mobile
+destination overflow. The inspected actor chooser and selected piece are legible.
+Incremental generic pixel transport removes a measured 32–44 ms full-blit cost.
+
+The graphical Base Window/Audio/File entry point checks as source but exceeded
+two bounded 600-second C emitter attempts. A separate text Bend CLI over the
+same v2 kernel and record codec emits browser-independent C. Its pure command
+tests pass; native binary execution is not claimed. The pinned JS Base File/IO
+effects require POSIX libc and cannot run on this Windows host; available WSL
+has no C compiler. Root owns final Git, clean export, hosted playtest, returning
+offline profile and claim release. The original published game is unchanged.

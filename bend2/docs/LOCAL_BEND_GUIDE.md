@@ -428,8 +428,9 @@ Bend release:
   parameter in `Spec.legal_range` left a symbolic call stuck at that parameter,
   making exact enumeration refinement practical without changing runtime meaning
   or weakening the law. Earlier timeout/stack failures were retained.
-- **Use one browser facade import.** `App.bend` collects the core and rendering
-  APIs. It avoids repeatedly compiling overlapping books through concurrent Bun
+- **Use one browser facade import.** The initial `App.bend` facade collected core
+  and rendering APIs; the current `Application.bend` owns the complete portable
+  application. This avoids repeatedly compiling overlapping books through concurrent Bun
   module loads. `tools/loader.ts` also normalizes backslashes before the pinned
   loader resolves relative imports; this is a local Windows adapter, not a
   modification to the upstream compiler.
@@ -446,3 +447,43 @@ Bend release:
 The current law and proof receipts are linked from `../README.md`. JavaScript
 runtime measurements and rendered browser checks do not establish native CPU,
 CUDA or Metal speed.
+
+## Whole-application lessons from the second sprint
+
+The full UI now uses Bend images and a project-authored bitmap font, with generic
+browser IO. The graphical `Native.bend` Base-effects entry point checks as source,
+but its full C emitter exceeded a bounded local run. A smaller `NativeCLI.bend`
+entry point uses Base `IO.args` and `File` to provide a browser-independent ASCII
+game through the same v2 rules and record codec. Read `PORTABLE_APPLICATION.md`,
+`NATIVE.md`, and `NATIVE_CLI.md` for the distinct boundaries.
+
+- Browser recursion limits differ from Bun's. A 21,760-element non-tail move scan
+  overflowed; even 5,440-element leaves failed Chrome. A balanced tree with
+  680-element leaves preserves the complete ID range and avoids that stack depth.
+- Alignment matters to immutable image composition: placing a 512-square image
+  on large power-of-two boundaries allows direct subtree reuse. An offset of
+  `(24,96)` forced much more work than `(0,128)`. This changes placement, not pixels.
+- Inspect generated code after an equivalent Boolean rewrite. In the pinned
+  compiler, one nested `Bool.and` rectangle test allocated trampolines while the
+  equivalent disjunction of boundary violations lowered to direct JavaScript.
+  Preserve pixel comparisons when making this kind of optimization.
+- Source checking does not prove browser presentation. The first whole-screen
+  render exposed an embedding-depth defect missed by small uniform-image tests;
+  dense translated images and inspected screenshots were added.
+- JSON schema limits do not bound replay work. Parse within a size bound, then
+  validate a bounded number of commands per update, keeping the previous accepted
+  state until the entire candidate succeeds. A Move/Undo loop is a useful
+  adversarial case because its visible board history stays small.
+- A closed law can accidentally depend on an implementation-owned expectation.
+  The v2 completeness law instead refers to a separately authored normative
+  `RuleContracts.expected` and `RuleContracts.legal`. Changing the implementation
+  to reject every action must fail the law, not silently shrink its premise.
+- Native IO contracts need source inspection. The pinned audio effect consumes
+  interleaved stereo samples through a bounded ring; it is not interchangeable
+  with a browser's mono AudioBuffer. File and audio handles remain affine even
+  though application state and pixels are ordinary immutable data.
+- A C emission check is separate from source checking and actual native binary
+  execution. The full graphical book grew past a 600-second bounded emitter run
+  on this host. The smaller text client is a practical export target, but a C
+  source file alone cannot validate a supported OS, terminal, audio device or
+  native CPU performance.

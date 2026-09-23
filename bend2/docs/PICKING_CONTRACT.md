@@ -53,7 +53,7 @@ and multi-point interior masks remain open at oblique and minimum-tilt views.
 At shallow angles a neighboring platform's side wall can cover part of an edge.
 These are finite runtime checks, not universal geometry proofs.
 
-`tests/browser-camera.mjs` exercises real top-down and reversed-board moves,
+The historical `tests/historical/browser-camera.mjs` exercises real top-down and reversed-board moves,
 Shift into a visible gap, undo, rapid rotation input, orbit dragging without a
 move, persisted camera settings, guarded wheel zoom and mobile controls. A
 deliberately delayed real pick response checks that rotating cannot cancel a

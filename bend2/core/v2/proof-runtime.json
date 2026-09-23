@@ -1,0 +1,24 @@
+{
+  "schema": "rift-bend-v2-proof-runtime/1",
+  "runtime": {
+    "name": "Node.js",
+    "version": "v24.12.0",
+    "executable": "C:\\Program Files\\nodejs\\node.exe",
+    "sha256": "2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "worker": {
+    "stackSizeMb": 64,
+    "execArgv": [
+      "--no-warnings"
+    ]
+  },
+  "checker": {
+    "source": "pinned bend2/bend.ts book_load + book_valid",
+    "ownership": "pinned bend2/comp.ts book_owned(SYNTH)",
+    "verdict": "zero open holes; pinned CLI unsafe/foreign dependency algorithm rooted at every non-Base imported declaration (stricter than CLI own-file roots)",
+    "pathAdapter": "existing BEND-WINDOWS-PATH-1 forward-slash normalization"
+  },
+  "scope": "Proof checking only. Browser/native generation retains pinned Bun; frozen TOOLCHAIN.json unchanged."
+}

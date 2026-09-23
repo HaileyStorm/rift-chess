@@ -1,9 +1,10 @@
 import Base
 import ../core/Model.bend as Model
-import ./Pixel.bend as Pixel
+import ../lib/graphics/pixels/Pixel.bend as Pixel
 import ./Sprites.bend as Sprites
 import ./Camera.bend as Camera
-import ./Quad.bend as Quad
+import ../lib/graphics/Quad.bend as Quad
+import ./FastGround.bend as FastGround
 
 type Frame is Data:
   Frame{position: Model.Position, previous: Model.Position, selected: U32,
@@ -245,16 +246,35 @@ def piece(show: Bool, code: U32, x: U32, y: U32, +selected: Bool, hovered: Bool,
       Sprites.outlined(Bool.or(selected, hovered), code, x, y,
         Bool.pick(U32, selected, 8388607, 13743871), image)
 
+# Avoid strict evaluation of invisible sprites and completed animation sources.
+def piece_at.ready(settled: Bool, +square: U32, code: U32, +action: U32, +progress: U32,
+  selected: Bool, hovered: Bool, +camera: Camera.Basis, image: Image) -> Image:
+  match settled:
+    case True{}:
+      piece(True{}, code, Camera.center_x(square, camera), Camera.center_y(square, camera), selected, hovered, image)
+    case False{}:
+      piece(True{}, code, moving_x(square, action, progress, camera), moving_y(square, action, progress, camera), selected, hovered, image)
+
+def piece_at(show: Bool, square: U32, code: U32, action: U32, +progress: U32,
+  selected: Bool, hovered: Bool, camera: Camera.Basis, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}: piece_at.ready(U32.is_eq(progress, 16), square, code, action, progress, selected, hovered, camera, image)
+
+def dying_at(show: Bool, +square: U32, code: U32, progress: U32, +camera: Camera.Basis, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}: Sprites.dying(True{}, code, Camera.center_x(square, camera), Camera.center_y(square, camera), progress, image)
+
 def pieces(order: List<&2, U32>, +board: List<&2, U32>, +action: U32, +progress: U32,
   +selected: U32, +hovered: U32, +victim: U32, +victim_code: U32, +camera: Camera.Basis, image: Image) -> Image:
   match order:
     case Nil{}: image
     case +square <> rest:
       +code = Model.board_get(board, square)
-      +a = Sprites.dying(Bool.and(U32.is_eq(victim, square), U32.is_lt(progress, 16)),
-        victim_code, Camera.center_x(square, camera), Camera.center_y(square, camera), progress, image)
-      +b = piece(Model.occupied(code), code, moving_x(square, action, progress, camera), moving_y(square, action, progress, camera),
-        U32.is_eq(selected, square), U32.is_eq(hovered, square), a)
+      +a = dying_at(Bool.and(U32.is_eq(victim, square), U32.is_lt(progress, 16)), square, victim_code, progress, camera, image)
+      +b = piece_at(Model.occupied(code), square, code, action, progress,
+        U32.is_eq(selected, square), U32.is_eq(hovered, square), camera, a)
       pieces(rest, board, action, progress, selected, hovered, victim, victim_code, camera, b)
 
 def impact.show(show: Bool, +square: U32, +progress: U32, +camera: Camera.Basis, image: Image) -> Image:
@@ -335,3 +355,27 @@ def view_on(background: Image, +frame: Frame) -> Image:
 
 def view(frame: Frame) -> Image:
   view_on(background(), frame)
+
+# Interactive camera frames use a single inverse-projection pass. Settled frames
+# retain full-resolution platform walls; sprites and feedback keep their detail.
+def motion_ground.ready(settled: Bool, background: Image, +frame: Frame) -> Image:
+  match settled:
+    case False{}: ground_on(background, frame)
+    case True{}:
+      match frame:
+        case Frame{position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme, view}:
+          FastGround.draw(background, Model.pos_holes(position), theme, Camera.basis(view))
+
+def motion_ground(background: Image, +frame: Frame) -> Image:
+  match frame:
+    case Frame{position, previous, selected, hovered, targets, tile, tileTargets, lastAction, progress, theme, view}:
+      motion_ground.ready(U32.is_ge(progress, 16), background, frame)
+
+def render_on(moving: Bool, background: Image, +frame: Frame) -> Image:
+  match moving:
+    case False{}: pieces_on(feedback_on(ground_on(background, frame), frame), frame)
+    case True{}: pieces_on(feedback_on(motion_ground(background, frame), frame), frame)
+
+def render(moving: Bool, frame: Frame) -> Image:
+  render_on(moving, background(), frame)
+

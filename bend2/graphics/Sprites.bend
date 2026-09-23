@@ -1,6 +1,7 @@
 import Base
 import ../core/Model.bend as Model
-import ./Pixel.bend as Pixel
+import ../lib/graphics/pixels/Pixel.bend as Pixel
+import ../lib/graphics/RectRaster.bend as RectRaster
 
 # Hand-authored twelve by eighteen pixel silhouettes, displayed at 2x.
 # Each pixel is a two-bit palette index; transparent pixels remain pick-through.
@@ -36,18 +37,15 @@ def alpha(+code: U32, +x: U32, +y: U32) -> Bool:
   alpha.inside(Bool.and(Model.occupied(code), Bool.and(U32.is_lt(x, 24),
     U32.is_lt(y, 36))), code, x, y)
 
-def color(+code: U32, index: U32, +y: U32) -> U32:
-  match index:
-    case 0:
-      0
-    case 1:
-      1053991
-    case 2:
-      Bool.pick(U32, Model.is_white(code), 12233101, 5326703)
-    case _:
-      Bool.pick(U32, U32.is_ge(y, 26), 15386241,
-        Bool.pick(U32, Model.is_white(code), 16773836, 12034274))
+def color(+code: U32, +index: U32, +y: U32) -> U32:
+  Bool.pick(U32, U32.is_zero(index), 0,
+    Bool.pick(U32, U32.is_eq(index, 1), 1053991,
+      Bool.pick(U32, U32.is_eq(index, 2), Bool.pick(U32, Model.is_white(code), 12233101, 5326703),
+        Bool.pick(U32, U32.is_ge(y, 26), 15386241,
+          Bool.pick(U32, Model.is_white(code), 16773836, 12034274)))))
 
+# The frozen run compositor remains the independent pixel oracle and is used
+# for captured-piece fragmentation. Normal sprites use the reusable rasterizer.
 def run_rect(visible: Bool, +left: U32, +top: U32, +start: U32, +end: U32,
   shade: U32, image: Image) -> Image:
   match visible:
@@ -78,8 +76,50 @@ def draw.rows(words: List<&2, U32>, +y: U32, +code: U32, +left: U32, +top: U32, 
       draw.rows(rest, U32.add(y, 2), code, left, top, tint,
         draw.row(12n, word, 0, 0, 0, code, left, U32.add(top, y), y, tint, image))
 
+def fast.run_rect(visible: Bool, +left: U32, +top: U32, start: U32, end: U32, height: U32, code: U32, index: U32, y: U32, +tint: U32, image: Image) -> Image:
+  match visible:
+    case False{}: image
+    case True{}:
+      +x = U32.add(left, U32.mul(start, 2))
+      +right = U32.add(left, U32.mul(end, 2))
+      +bottom = U32.add(top, height)
+      RectRaster.fill(9n, 512, x, top, right, bottom, Bool.pick(U32, U32.is_zero(tint), color(code, index, y), tint), image)
+
+def fast.row(n: Nat, +word: U32, +x: U32, +start: U32, +previous: U32,
+  +code: U32, +left: U32, +top: U32, +y: U32, +height: U32, +tint: U32, image: Image) -> Image:
+  match n:
+    case 0n:
+      fast.run_rect(U32.is_ne(previous, 0), left, top, start, x, height, code, previous, y, tint, image)
+    case 1n+p:
+      +index = U32.and(word, 3)
+      +change = U32.is_ne(index, previous)
+      +next = fast.run_rect(Bool.and(change, U32.is_ne(previous, 0)), left, top, start, x, height,
+        code, previous, y, tint, image)
+      fast.row(p, U32.div(word, 4), U32.add(x, 1), Bool.pick(U32, change, x, start),
+        index, code, left, top, y, height, tint, next)
+
+def fast.flush(show: Bool, word: U32, +start: U32, end: U32, code: U32, left: U32, top: U32, tint: U32, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}:
+      fast.row(12n, word, 0, 0, 0, code, left, U32.add(top, start), start, U32.sub(end, start), tint, image)
+
+# Merge equal adjacent bitmap rows, with a mandatory split at the gold-base
+# palette boundary. This preserves every original pixel at odd/even positions.
+def fast.groups(words: List<&2, U32>, +y: U32, +start: U32, +previous: U32,
+  +code: U32, +left: U32, +top: U32, +tint: U32, image: Image) -> Image:
+  match words:
+    case Nil{}: fast.flush(True{}, previous, start, y, code, left, top, tint, image)
+    case +word <> rest:
+      +change = Bool.or(U32.is_ne(word, previous), U32.is_eq(y, 26))
+      +next = fast.flush(change, previous, start, y, code, left, top, tint, image)
+      fast.groups(rest, U32.add(y, 2), Bool.pick(U32, change, y, start), word, code, left, top, tint, next)
+
+def fast.rows(words: List<&2, U32>, y: U32, code: U32, left: U32, top: U32, tint: U32, image: Image) -> Image:
+  fast.groups(words, y, 0, 0, code, left, top, tint, image)
+
 def draw(+code: U32, center: U32, floor: U32, image: Image) -> Image:
-  draw.rows(rows(Model.piece_type(code)), 0, code, U32.sub(center, 12), U32.sub(floor, 32), 0, image)
+  fast.rows(rows(Model.piece_type(code)), 0, code, U32.sub(center, 12), U32.sub(floor, 32), 0, image)
 
 def pixel.inside(inside: Bool, +code: U32, x: U32, +y: U32) -> U32:
   match inside:
@@ -126,3 +166,4 @@ def dying(show: Bool, +code: U32, center: U32, floor: U32, progress: U32, image:
       image
     case True{}:
       dying.rows(rows(Model.piece_type(code)), 0, code, center, floor, progress, image)
+

@@ -11,5 +11,6 @@ were informed by the pinned examples, as catalogued in docs/SOURCE_CATALOG.md.
 Project-specific modifications and implementations are recorded in this Git
 branch. The pinned upstream checkout itself is unchanged.
 
-This experiment includes no downloaded image or sound assets. Sprites are
-project-authored pixel silhouettes; sounds are synthesized through Web Audio.
+This experiment includes no downloaded image or sound assets. Sprites and
+bitmap fonts are project-authored; sounds are synthesized in Bend and presented
+through Web Audio in browsers or the pinned Base Audio effect in native exports.

@@ -1,5 +1,6 @@
 import Base
 import ../core/Model.bend as Model
+import ../lib/graphics/Ortho.bend as Ortho
 
 # A view is the small, serializable camera control surface.  Basis caches the
 # trigonometric values used by both the renderer and input path so they cannot
@@ -20,7 +21,7 @@ def normalize(view: View) -> View:
       View{U32.mod(yaw, 360), U32.clamp(pitch, 35, 90), U32.clamp(zoom, 75, 115)}
 
 def radians(degrees: U32) -> F32:
-  F32.mul(U32.to_f32(degrees), F32.div(F32.pi(), 180.0))
+  Ortho.radians(U32.to_f32(degrees))
 
 def basis.normalized(normalized: View) -> Basis:
   match normalized:
@@ -44,22 +45,20 @@ def project_x(basis: Basis, file: F32, row: F32) -> F32:
     case Basis{+cos_yaw, +sin_yaw, sin_pitch, cos_pitch, +scale, cx, cy}:
       +df = F32.sub(file, 3.5)
       +dr = F32.sub(row, 3.5)
-      +horizontal = F32.sub(F32.mul(cos_yaw, df), F32.mul(sin_yaw, dr))
-      F32.add(cx, F32.mul(scale, horizontal))
+      Ortho.project_x(cos_yaw, sin_yaw, scale, cx, df, dr)
 
 def project_y(basis: Basis, file: F32, row: F32) -> F32:
   match basis:
     case Basis{cos_yaw, sin_yaw, sin_pitch, cos_pitch, scale, cx, cy}:
       +df = F32.sub(file, 3.5)
       +dr = F32.sub(row, 3.5)
-      +vertical = F32.add(F32.mul(sin_yaw, df), F32.mul(cos_yaw, dr))
-      F32.add(cy, F32.mul(F32.mul(scale, sin_pitch), vertical))
+      Ortho.project_y(cos_yaw, sin_yaw, sin_pitch, scale, cy, df, dr)
 
 def displayed_row(square: U32) -> U32:
   U32.sub(7, Model.rank_of(square))
 
 def pixel(a: F32) -> U32:
-  F32.to_u32(F32.max(F32.round(a), 0.0))
+  Ortho.pixel(a)
 
 def center_x(+square: U32, basis: Basis) -> U32:
   pixel(project_x(basis, U32.to_f32(Model.file_of(square)),
@@ -70,10 +69,10 @@ def center_y(+square: U32, basis: Basis) -> U32:
     U32.to_f32(displayed_row(square))))
 
 def inverse_file(cos_yaw: F32, sin_yaw: F32, dx: F32, dy: F32) -> F32:
-  F32.add(3.5, F32.add(F32.mul(cos_yaw, dx), F32.mul(sin_yaw, dy)))
+  F32.add(3.5, Ortho.inverse_x(cos_yaw, sin_yaw, dx, dy))
 
 def inverse_row(cos_yaw: F32, sin_yaw: F32, dx: F32, dy: F32) -> F32:
-  F32.add(3.5, F32.add(F32.mul(F32.neg(sin_yaw), dx), F32.mul(cos_yaw, dy)))
+  F32.add(3.5, Ortho.inverse_y(cos_yaw, sin_yaw, dx, dy))
 
 def square_at(+x: U32, +y: U32, basis: Basis) -> U32:
   match basis:
