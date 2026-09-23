@@ -44,8 +44,14 @@ u=act(s,6);assert.equal(P.snapshot(u.state).meta.revision,0);assert.ok(!array(u.
 u=drain(event(s,{$:'FileText',text:JSON.stringify({...record,commands:[{$:'MoveCommand',expected:9,action:ids[0]}]})}));assert.equal(P.snapshot(u.state).meta.recovery,true,'replay rejects stale expected revision');
 s=act(act(s,2).state,29).state;assert.equal(P.snapshot(s).meta.recovery,false,'explicit new match clears recovery');
 // Revision-bound picking prevents stale displayed-view clicks from entering a newer game.
-let stale=event(s,{$:'SquareInput',square:12,expected:99});assert.equal(stale.redraw,0);assert.equal(P.selected(stale.state),P.selected(s));
+let stale=event(s,{$:'SquareInput',square:12,expected:99});assert.equal(P.selected(stale.state),12,'a stale press may still select');
+stale=event(stale.state,{$:'SquareInput',square:12,expected:99});assert.equal(P.selected(stale.state),12,'a stale press never toggles');
+stale=event(stale.state,{$:'SquareInput',square:28,expected:99});assert.equal(P.snapshot(stale.state).meta.revision,0,'a stale press never commits');assert.equal(P.staged(stale.state),false);assert.equal(P.selected(stale.state),64);
 let exact=event(s,{$:'SquareInput',square:12,expected:0});assert.equal(P.selected(exact.state),12);
+// A press queued behind a staged move applies to the board after that move.
+let queued=event(exact.state,{$:'SquareInput',square:28,expected:0});assert.equal(P.staged(queued.state),true);
+queued=event(queued.state,{$:'SquareInput',square:52,expected:0});
+assert.equal(P.snapshot(queued.state).meta.revision,1,'the staged move commits first');assert.equal(P.selected(queued.state),52,'the queued press selects on the new board');
 // Human Black starts with a scheduled bot move; a camera action cannot add a journal entry.
 let bot=act(act(act(P.start('','',1024,768).state,2).state,32).state,29);
 assert.ok(bot.after>0);assert.equal(P.mode(bot.state),2);

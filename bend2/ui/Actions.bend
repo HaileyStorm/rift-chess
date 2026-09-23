@@ -129,6 +129,16 @@ def board_allowed(ok: Bool, +deferred: Bool, +s: S.State, +square: U32) -> S.Upd
 def board(+deferred: Bool, +s: S.State, +square: U32) -> S.Update:
   board_allowed(Bool.and(S.selectable(s), Bool.and(U32.is_lt(square, 64), U32.is_zero(menu_id(s)))), deferred, s, square)
 
+def stale_allowed(ok: Bool, +s: S.State, +square: U32) -> S.Update:
+  match ok:
+    case False{}: S.unchanged(s)
+    case True{}: S.redrawn(S.pressed(select_square(s, square), square, False{}))
+
+# A press aimed at an older frame (the board changed while it was queued) may
+# still pick up a piece or tile, but never commits or toggles.
+def stale_press(+s: S.State, +square: U32) -> S.Update:
+  stale_allowed(Bool.and(S.selectable(s), Bool.and(U32.is_lt(square, 64), U32.is_zero(menu_id(s)))), s, square)
+
 def release_drop(found: Bool, +s: S.State, +id: U32) -> S.Update:
   match found:
     case True{}: destination(s, id)

@@ -180,10 +180,29 @@ def tick(replay: Bool, +s: S.State, +ms: U32) -> S.Update:
     case True{}: C.replay_tick(S.replay_state(s), s)
     case False{}: tick_offer(S.bot_offer(s), s, ms)
 
+def merge(u: S.Update, before: List<&2, Types.Effect>, old_redraw: U32) -> S.Update:
+  match u:
+    case S.Update{s, effects, redraw, after}: S.Update{s, List.append(&2, Types.Effect, before, effects), U32.max(old_redraw, redraw), after}
+
 def square_input(fresh: Bool, +s: S.State, +square: U32) -> S.Update:
   match fresh:
     case True{}: A.board(True{}, s, square)
+    case False{}: A.stale_press(s, square)
+
+def commit_staged(ready: Bool, +s: S.State) -> S.Update:
+  match ready:
+    case True{}: A.request_move(S.set_intent(s, 21760), S.intent(s))
     case False{}: S.unchanged(s)
+
+def square_after(u: S.Update, +square: U32, +expected: U32) -> S.Update:
+  match u:
+    case S.Update{+s, effects, redraw, after}:
+      merge(square_input(U32.is_eq(expected, Types.meta_revision(S.meta(s))), s, square), effects, redraw)
+
+# A press that arrives while a chosen move waits for its tick commits that
+# move first, so the press applies to the board the player will see next.
+def square_press(+s: S.State, +square: U32, +expected: U32) -> S.Update:
+  square_after(commit_staged(Bool.and(S.staged(s), Bool.not(S.moving(s))), s), square, expected)
 
 def input(e: Types.Input, +s: S.State) -> S.Update:
   match e:
@@ -193,15 +212,11 @@ def input(e: Types.Input, +s: S.State) -> S.Update:
     case Types.Wheel{x, y, delta}: C.camera(s, wheel_view(S.view(s), delta), 1)
     case Types.KeyInput{code, down, alt, ctrl, shift}: key(down, code, s, alt, ctrl)
     case Types.Activate{id}: A.activate(id, s)
-    case Types.SquareInput{square, expected}: square_input(U32.is_eq(expected, Types.meta_revision(S.meta(s))), s, square)
+    case Types.SquareInput{square, expected}: square_press(s, square, expected)
     case Types.Tick{ms}: tick(S.replaying(s), s, ms)
     case Types.Resize{w, h}: S.redrawn(S.set_height(S.set_width(s, w), h))
     case Types.FileText{+text}: C.load_record(Codec.decode(text), s, text, True{})
     case Types.PortError{kind}: C.port_error(kind, s)
-
-def merge(u: S.Update, before: List<&2, Types.Effect>, old_redraw: U32) -> S.Update:
-  match u:
-    case S.Update{s, effects, redraw, after}: S.Update{s, List.append(&2, Types.Effect, before, effects), U32.max(old_redraw, redraw), after}
 
 def is_tick(e: Types.Input) -> Bool:
   match e:
