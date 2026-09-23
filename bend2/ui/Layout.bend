@@ -43,10 +43,14 @@ def grid_columns(mobile: Bool) -> U32:
 def grid_gap(mobile: Bool) -> U32:
   Bool.pick(U32, mobile, 4, 8)
 
+# Buttons sit inside the pane frame, clear of its border.
+def grid_inset() -> U32:
+  8
+
 def grid_width(+mobile: Bool) -> U32:
   +columns = grid_columns(mobile)
   +gaps = U32.mul(U32.sub(columns, 1), grid_gap(mobile))
-  U32.div(U32.sub(pane_width(mobile), gaps), columns)
+  U32.div(U32.sub(U32.sub(pane_width(mobile), U32.mul(2, grid_inset())), gaps), columns)
 
 def grid_height(mobile: Bool) -> U32:
   Bool.pick(U32, mobile, 48, 32)
@@ -63,7 +67,7 @@ def grid_rect(+mobile: Bool, +ordinal: U32, offset: U32) -> Types.Rect:
   +columns = grid_columns(mobile)
   +column = U32.mod(ordinal, columns)
   +row = U32.div(ordinal, columns)
-  +x = U32.add(pane_x(mobile), U32.mul(column, U32.add(button, gap)))
+  +x = U32.add(U32.add(pane_x(mobile), grid_inset()), U32.mul(column, U32.add(button, gap)))
   +y = U32.add(U32.add(pane_y(mobile), offset), U32.mul(row, grid_step(mobile)))
   Types.Rect{x, y, button, grid_height(mobile)}
 

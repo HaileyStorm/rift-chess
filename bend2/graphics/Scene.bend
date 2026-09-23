@@ -405,11 +405,12 @@ def ground_marked(background: Image, position: Model.Position, theme: U32, +view
 # selected tile and its holes, the selected piece, then destination markers.
 def feedback_on(base: Image, frame: Frame) -> Image:
   match frame:
-    case Frame{position, previous, +selected, +hovered, targets, +tile, tileTargets, +lastAction, +progress, theme, view, shifts, +check}:
+    case Frame{+position, previous, +selected, +hovered, targets, +tile, tileTargets, +lastAction, +progress, theme, view, shifts, +check}:
       +camera = Camera.basis(view)
       +a = recent(U32.is_eq(progress, 16), Model.decode(lastAction), camera, base)
       +b = double_rim(U32.is_lt(check, 64), check, 16731983, camera, a)
-      +c = rim(Bool.and(U32.is_lt(hovered, 64), U32.is_ne(hovered, selected)), hovered, 11073279, camera, b)
+      +over_hole = U32.is_ne(U32.and(Model.pos_holes(position), Model.macro_mask(Model.macro_of(hovered))), 0)
+      +c = rim(Bool.and(Bool.and(U32.is_lt(hovered, 64), U32.is_ne(hovered, selected)), Bool.not(over_hole)), hovered, 11073279, camera, b)
       +d = hole_rims(tileTargets, camera, c)
       +e = strong_marks(shifts, tile, camera, tile_rim(U32.is_lt(tile, 16), tile, 16767113, camera, d))
       +f = double_rim(U32.is_lt(selected, 64), selected, 16767113, camera, e)

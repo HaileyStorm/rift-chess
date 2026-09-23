@@ -254,7 +254,7 @@ def write_lines(lines: List<&2, String>, +x: U32, +y: U32, +limit: U32, +color: 
   match lines:
     case Nil{}: Written{y, image}
     case h <> t:
-      write_lines(t, x, U32.add(y, 16), limit, color, text_if(U32.is_le(U32.add(y, 14), limit), h, x, y, color, image))
+      write_lines(t, x, U32.add(y, 18), limit, color, text_if(U32.is_le(U32.add(y, 14), limit), h, x, y, color, image))
 
 def spaced(w: Written) -> Written:
   match w:
@@ -296,7 +296,7 @@ def history_lines(entries: List<&2, String>, +index: U32, +start: U32, +count: U
     case Nil{}: image
     case h <> t:
       +row = U32.sub(index, start)
-      +line_y = U32.add(y, U32.mul(row, 16))
+      +line_y = U32.add(y, U32.mul(row, 20))
       +show = Bool.and(Bool.and(U32.is_ge(index, start), U32.is_lt(row, count)), U32.is_le(U32.add(line_y, 14), limit))
       history_lines(t, U32.add(index, 1), start, count, x, y, limit, history_line(show, index, h, x, line_y, muted(), image))
 
@@ -366,7 +366,7 @@ def note_lines(+snapshot: Types.Snapshot) -> List<&2, String>:
   Bool.pick(List<&2, String>, String.is_empty(note), [], Font.wrap(String.to_upper(note), U32.sub(text_width(mobile(snapshot)), 4), 2))
 
 def note_height(+count: U32) -> U32:
-  Bool.pick(U32, U32.is_zero(count), 0, U32.add(U32.mul(U32.min(count, 4), 16), 12))
+  Bool.pick(U32, U32.is_zero(count), 0, U32.add(U32.mul(U32.min(count, 4), 18), 10))
 
 def note_frame(show: Bool, +mobile: Bool, +top: U32, +height: U32, image: Image) -> Image:
   match show:
