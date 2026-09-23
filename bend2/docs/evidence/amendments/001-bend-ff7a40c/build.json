@@ -1,0 +1,31 @@
+{
+  "schema": "rift-bend-browser/2",
+  "builtAt": "2026-09-23T06:36:09.813Z",
+  "version": "393b72283975d6018b1d",
+  "sourceRevision": "8d77553368e8fa30414aa1f5c237f38d3348d2e2",
+  "sourceDirty": true,
+  "draft": true,
+  "application": "Bend-owned rules, UI, bitmap text, input policy, codec, replay, animation and PCM synthesis; browser IO transport only",
+  "semanticSha256": null,
+  "parentSemanticSha256": null,
+  "pixelSemanticSha256": null,
+  "graphicsManifestSha256": "ec8f6baf045ded755f6d40e8e42f3222f2c74dc7df620683188635e73514c5b1",
+  "toolchain": {
+    "bendVersion": "2.0.25",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "files": {
+    "index.html": "95a1e89e88485a69830d75e7b9525013b38e60ca9cdefea37f29cdaffb50973b",
+    "host-fxzhbk56.js": "1727daa143653c63877cc4621c56bb5fac1e6704139b217b6a9ae62b0fcf7b8d",
+    "worker-xhar5trq.js": "c946a222b0b786afcc079d4fc2c33360c5e7f30b2529f67302a1dde69557a2d6",
+    "style-9a40f5a0fb94.css": "9a40f5a0fb9426a8eb706c61c7e26cb5d2d268af1201270d161549ec61745666",
+    "THIRD_PARTY_NOTICES.txt": "2fb868ac154db75bc658d3ef160fa5b5dba8278a664110c4ae14689b66f464b8",
+    "Bend-Apache-2.0.txt": "78418ed3cfa4c3f320f827a96ed83349ef9e1af6dc4430b256a0ba2037c42615",
+    "sw.js": "77cffcbbea18b1104215b9d64bed6fb8b347bfab2561f480f8bba14eddf1da6c"
+  }
+}

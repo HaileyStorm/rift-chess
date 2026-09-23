@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { root, digest, verifyFreeze } from './freeze.mjs';
+import { matchesFrozen } from './amendments.mjs';
 
 const destination=path.join(root,'bend2/laws/semantic-v2.json');
 export const requiredProofs=fs.readdirSync(path.join(root,'bend2/core/v2')).filter(n=>n==='PROOF.bend'||n.endsWith('Proof.bend')||n==='Facade.bend').sort();
@@ -33,7 +34,7 @@ export function verifyV2() {
   const bytes=fs.readFileSync(destination), value=JSON.parse(bytes);
   if(value.schema!=='rift-bend-semantic/2'||value.parentSha256!==verifyFreeze().sha256)throw new Error('Invalid v2 semantic lineage');
   for(const file of requiredV2Inputs())if(!value.files[file])throw new Error(`V2 manifest omits ${file}`);
-  unchanged(value.files);
+  for(const [file,hash]of Object.entries(value.files))if(!matchesFrozen(file,hash))throw new Error(`V2 verification is stale: ${file}`);
   for(const [file,hash]of Object.entries(value.evidence))if(digest(fs.readFileSync(path.join(root,file)))!==hash)throw new Error(`V2 evidence changed: ${file}`);
   return {manifest:value,sha256:digest(bytes)};
 }

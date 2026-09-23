@@ -3,11 +3,20 @@
   "version": 1,
   "compiler": {
     "bendVersion": "2.0.25",
-    "bendCommit": "a49524265bdfa5753a4bf38e25f0574a705dd868",
+    "bendCommit": "ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b",
     "toolchain": "bend2/TOOLCHAIN.json",
-    "toolchainSha256": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+    "toolchainSha256": "8832b35e791298a9474a6b33ed611d69a3f9cc675f3289feb91d8d99c88214bf",
     "bunVersion": "1.4.2"
   },
+  "compilerHistory": [
+    {
+      "bendVersion": "2.0.25",
+      "bendCommit": "a49524265bdfa5753a4bf38e25f0574a705dd868",
+      "toolchainSha256": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+      "bunVersion": "1.4.2",
+      "replacedBy": "bend2/laws/amendments/001-bend-ff7a40c.json"
+    }
+  ],
   "copies": {
     "bend2/lib/graphics/pixels/Pixel.bend": {
       "original": "bend2/graphics/Pixel.bend",

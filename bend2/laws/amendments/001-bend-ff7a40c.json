@@ -1,0 +1,65 @@
+{
+  "schema": "rift-bend-amendment/1",
+  "sequence": 1,
+  "parentSha256": null,
+  "createdAt": "2026-09-23T07:00:19.260Z",
+  "kind": "toolchain",
+  "semanticMeaning": "unchanged",
+  "rationale": "Move the Bend compiler pin from a49524265bdfa5753a4bf38e25f0574a705dd868 to upstream main ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b (both Bend 2.0.25, Bun 1.4.2 unchanged). Upstream changed a README link, EFFECTS.md prose for io_node/io_wait_on, and one compiler line that resets the probe list for each book compiled in one process (bendlang/bend#976), which this project's loader does. Frozen manifests stay byte-identical; freeze.mjs and freeze-v2.mjs resolve their recorded hashes through this reviewed amendment chain. Every v1, v2, mutation, library and browser-build gate passed under the new pin before this amendment was recorded; no law, proof, implementation, fixture or reference byte changed.",
+  "toolchain": {
+    "bendVersion": "2.0.25",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "records": {
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/laws/pixels-v1.json": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "bend2/laws/proof-v1.json": "7dc690646fb84b66ffbc525fd1ee2d3ddc0908679b45cc34fa2572e2737b18d6",
+    "bend2/laws/semantic-v2.json": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "substitutions": {
+    "bend2/TOOLCHAIN.json": {
+      "from": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+      "to": "8832b35e791298a9474a6b33ed611d69a3f9cc675f3289feb91d8d99c88214bf",
+      "records": [
+        "semantic-v1",
+        "pixels-v1",
+        "semantic-v2"
+      ],
+      "reason": "bendCommit moved to ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b; repository, version, Bun version, runtime package and telemetry setting unchanged."
+    },
+    "bend2/tools/freeze-v2.mjs": {
+      "from": "6c9f04a1b2d00cdf1d42099f5dad50bdd71d1e0cd27c4ea573db39ee9ee0cc8e",
+      "to": "ede59552c6c89022936ddc648500ef48717a3858acd75404cfb52611be37f444",
+      "records": [
+        "semantic-v2"
+      ],
+      "reason": "verifyV2 compares each frozen file hash after resolving it through the amendment chain (matchesFrozen); evidence checks and the create path stay exact."
+    },
+    "bend2/tools/freeze.mjs": {
+      "from": "9e16987715c075e8dd854f33e9de8631aad2aa3688ab46b93e2a2ccc4f8027b1",
+      "to": "1338c2677bdc5aaac045ee3e7045d180e2388ac732e2ac620b93889e8b84555f",
+      "records": [
+        "semantic-v2"
+      ],
+      "reason": "verifyFreeze compares each recorded hash after resolving it through the amendment chain (matchesFrozen); create path and all other checks unchanged."
+    }
+  },
+  "preserved": {},
+  "evidence": {
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/v1.json": "8150a33d3261d8c5069709198622c5788d1db0a77a725a938a02e437e5ec8179",
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/v2.json": "790926a61d2c1d37687ae6a262748ac2d452baa847ff79a851e09b60f5886cdf",
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/mutations.json": "c7607ed409a8ac7237513fc26b7268716476f549b2e4c72a1abd1a8936271c35",
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/library.json": "a579a4b46b20e7656302d543a55013b9cac22ea99fce170ce92217f11d3daaba",
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/build.json": "31d2b248f0315180c21c519f5bdf0dd4b900ad8978b06d7a3c680d148c4b417e",
+    "bend2/docs/evidence/amendments/001-bend-ff7a40c/review.md": "49656d39f37abcaf02ff2c46a5a921dfd8b20d104a070da6da479f28c194cfc2"
+  },
+  "tools": {
+    "bend2/tools/amendments.mjs": "fde126541451c483f922920744fc7fbe35d9c0103fee466b166c8c4ab2c75c6e",
+    "bend2/tools/amend.mjs": "e6b095784e48c9de1ef08bf5277da363419b32926f8df6dd7c1b9dcc2cf8f240"
+  }
+}

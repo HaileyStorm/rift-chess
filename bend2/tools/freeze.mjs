@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { matchesFrozen } from './amendments.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const digest = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
@@ -28,7 +29,7 @@ export function verifyFreeze(kind = 'core') {
     throw new Error('Normative file list changed. A reviewed new law version is required.');
   }
   for (const [name, hash] of Object.entries(manifest.files)) {
-    if (digest(fs.readFileSync(path.join(root, name))) !== hash) throw new Error(`Frozen law dependency changed: ${name}`);
+    if (!matchesFrozen(name, hash)) throw new Error(`Frozen law dependency changed: ${name}`);
   }
   return { manifest, sha256: digest(bytes) };
 }
