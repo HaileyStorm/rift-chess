@@ -1,6 +1,9 @@
 # One Bend application, two IO adapters
 
-`Application.bend` and `ui/Program.bend` own the game. Menus, responsive layout,
+`Application.bend` and the `ui/` controller own the game: `State` (records,
+guards, legal refresh), `Records` (persistence, labels), `Commands` (journal
+commands, replay, match start), `Actions` (controls and board activation) and the
+`Program` facade (snapshot and input dispatch). Menus, responsive layout,
 bitmap text, hit testing, selection, camera policy, animation, opponent choices,
 command validation, JSON records, incremental replay, preferences and synthesized
 audio samples are Bend source. `View.bend` paints the entire screen as an immutable
@@ -31,8 +34,23 @@ Static scenery, UI chrome and settled board ground are cached in Bend. Dragging
 uses a cheaper ground pass, and aligned image placement reuses large subtrees.
 Returning to rest restores full ground detail. The Front/Overhead indication is
 invalidated when its state changes. A click on the selected piece or platform
-clears the selection. Missing platforms contribute no filled geometry, including
-when a possible Shift destination is outlined.
+clears the selection; so does a click on a hole, an opponent piece or a platform
+with no legal Shift. Dragging a selected piece onto a legal destination moves it.
+A chosen move is staged: the next frame shows it at once and the following tick
+commits it, and a press queued behind it applies to the board after the move.
+Selection stays available during animations. Missing platforms contribute no
+filled geometry, including when a possible Shift destination is outlined.
+
+Rules §10 presentation: legal destination overlays (TARGETS, including the pane's
+destination buttons) are off by default; Shift source indicators (SHIFTS) are on.
+Both are persisted preferences that never change the available actions. Check,
+turn and the selection are always drawn, and the selection is also announced in
+the accessible status text. The host scales the fixed pixel surface to the
+viewport, and Bend picks the desktop or mobile layout by the larger fit scale.
+
+The chrome and the board are rendered as two independent branches of one parallel
+`let` in `Application.render_parts`; the opponent's search and the legal-action
+refresh are marked `!` for native execution.
 
 `Native.bend` connects the graphical application to the pinned Base Window,
 Audio and File effects, but its complete C emission exceeded the bounded local

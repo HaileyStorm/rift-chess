@@ -28,8 +28,9 @@ and row must each lie in `[-0.5,7.5)`. Outside the board or image returns sentin
 Pieces remain upright sprites. Opaque pixels take priority over the floor;
 transparent pixels pass through. Both painting and picking traverse ascending
 rounded foot height, breaking ties by ascending square ID. The last opaque
-sprite wins. A nearer piece can therefore cover another piece's base; coordinate
-buttons still provide access to covered legal destinations.
+sprite wins. A nearer piece can therefore cover another piece's base; with
+TARGETS on, coordinate buttons provide access to covered legal destinations, and
+keyboard focus (arrows, then Enter) reaches every square in either setting.
 
 A missing platform contributes no top, wall, bottom slab or center symbol.
 The existing background remains visible through its footprint. Hover and Shift

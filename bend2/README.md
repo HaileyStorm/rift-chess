@@ -118,32 +118,40 @@ upstream checkout is never patched and no Bend publishing service is used.
 
 ## Play and controls
 
-Click a piece, then a highlighted square or its coordinate button. Empty
-platforms select themselves for a Shift; a selected piece also offers **Shift
-its platform** when legal. No Piece/Tile mode switch is required. Click the
-visible body of a piece: nearer sprites can physically cover the floor behind
-them at lower viewing angles. Coordinate buttons also reach covered destinations.
+Click one of your pieces, then its destination square, or drag the piece there.
+Legal destination markers and coordinate buttons appear when **TARGETS** is on in
+**SETTINGS** (off by default, as in the original game). Platforms that can Shift
+carry arrow indicators toward their hole (**SHIFTS**, on by default). Click an
+empty square of such a platform, then the hole; to Shift a platform carrying your
+piece, select the piece and press **SHIFT**. No Piece/Tile mode switch is
+required. Click the visible body of a piece: nearer sprites can physically cover
+the floor behind them at lower viewing angles; keyboard focus reaches every
+square, and with TARGETS on coordinate buttons reach covered destinations.
 
-Use **Front**, **Overhead**, rotation, tilt and zoom in the play panel to choose
-your view. Right-drag or Alt-drag rotates and tilts; click the board to focus it
-before scrolling to zoom. The view is remembered separately from your game.
-Missing platforms are open gaps, including while highlighted for a Shift.
+Use **FRONT**, **OVERHEAD**, **LEFT**/**RIGHT**, **UP**/**DOWN**, **ZOOM+**/
+**ZOOM-** and **RESET** in the play panel to choose your view. Right-drag or
+Alt-drag rotates and tilts; click the board to focus it before scrolling to zoom.
+The view is remembered separately from your game. Missing platforms are open
+gaps, including while highlighted for a Shift.
 
-Clicking the selected piece or platform again clears it. The menu contains table
-lighting, sound, imports/exports and a short rules guide.
+Clicking the selected piece or platform again, **CLEAR**, or clicking a hole or an
+opponent piece clears the selection. **HISTORY** pages through the recorded
+actions. **SETTINGS** holds table lighting (**ASTRAL**/**WARM**), sound and volume,
+the overlay toggles, and **EXPORT**/**IMPORT**; **HELP** has a short rules guide.
 New matches support hotseat or a local opponent, either human color, layouts B/C
 and the original quiet-draw policies. Arrows/Enter select cells; Escape clears
 selection and U undoes an action. After undo in a bot game the opponent pauses,
-so another undo can restore your own move; **Resume opponent** resumes it.
+so another undo can restore your own move; **RESUME** resumes it.
 
-Hotseat Undo first requests the other player's agreement. **Agree** commits the
-rewind; **Cancel** keeps the match unchanged. Local play relies on the people at
+Hotseat **UNDO** first requests the other player's agreement. **AGREE** commits
+the rewind; **CLOSE** keeps the match unchanged. Local play relies on the people at
 the shared device to honor the displayed roles; this is not network identity or
 multiplayer authentication.
 
-In hotseat, **Offer draw** and **Resign** let either player choose White or Black,
+In hotseat, **DRAW** and **RESIGN** let either player choose White or Black,
 even when it is the other player's turn. In a bot match, those actions belong to
-the human color. The opposite side may accept or decline an outstanding offer.
+the human color. The opposite side may **ACCEPT** or **DECLINE** an outstanding
+offer; the local opponent declines draw offers, and a notice says so.
 
 The record format `rift-bend-record/1` stores layout, draw policy and accepted
 commands, including undo and draw/resignation commands. Loading reconstructs a
