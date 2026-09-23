@@ -150,4 +150,33 @@ separate evidence. Two bounded 600-second full graphical C-emitter attempts did
 not produce C. The smaller text CLI emitted C under the pinned Bun compiler;
 the source-bound export manifest and platform execution evidence are recorded in
 `NATIVE_CLI.md`. C emission does not certify a linked native binary or graphics/
-audio device behavior. Hosted playtesting and publication are separate checks.
+audio device behavior.
+
+## Whole Bend release
+
+The separate [Bend game](https://haileystorm.github.io/rift-chess-bend2/) now
+serves build `393b72283975d6018b1d` from clean source commit
+`1a6d7d9c32dad19612327ac3eb3f1fd54a18ca07`. Pages commit
+`4061647e997ac34dec01ae8db965cbcfd1a44433` contains only static output,
+retained older hashed assets, a source pointer and the content-addressed CLI C.
+
+- [Publication receipt](evidence/whole-app-v2/publication.json): all eight
+  build assets, the C file and both original-game baseline assets returned HTTP
+  200 with exact SHA-256 matches. The original release bytes remain unchanged.
+- [Hosted browser receipt](evidence/whole-app-v2/hosted-browser.json): all 17
+  rendered scenario groups pass, with no page errors, including actual PCM Web
+  Audio starts, mobile controls and a cold offline move.
+- [Returning-profile receipt](evidence/whole-app-v2/upgrade.json): a saved match
+  from build `8106a3f0fed5f9274f95` survives the upgrade, real Undo, a cold
+  offline reload and a fresh New Match. The test waits for the new app's bounded
+  history replay before invoking Undo.
+- [Inspected selection](evidence/whole-app-v2/selected.png),
+  [off-turn chooser](evidence/whole-app-v2/actor-chooser.png), and
+  [mobile destinations](evidence/whole-app-v2/mobile.png) are actual hosted
+  frames, not mockups.
+- [CLI C manifest](evidence/whole-app-v2/native-cli-export.json) binds the
+  frozen law, compiler, complete Bend source closure and exported C SHA-256.
+
+The original Three.js release and its checkout remain unchanged. Supported-host
+CLI binary execution, native GUI C emission, native CPU/GPU performance and owner
+visual acceptance are outside this evidence.

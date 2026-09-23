@@ -23,7 +23,9 @@ await page.addInitScript(()=>{
 const saved=()=>page.evaluate(()=>localStorage.getItem('rift-bend-lab/save-v1'));
 async function ready(){await page.waitForFunction(()=>window.__fault||window.__shown&&document.querySelector('canvas')?.getAttribute('aria-busy')==='false',null,{timeout:90000});assert.equal(await page.evaluate(()=>window.__fault),undefined);}
 async function control(id){
-  const button=page.locator(`[data-control="${id}"]`);assert.equal(await button.isDisabled(),false);
+  const button=page.locator(`[data-control="${id}"]`);
+  assert.equal(await button.isDisabled(),false,
+    `control ${id} disabled: ${JSON.stringify(await page.evaluate(()=>({revision:window.__shown?.revision,menu:window.__shown?.menu,label:document.querySelector('canvas')?.getAttribute('aria-label')})),(_,v)=>typeof v==='bigint'?v.toString():v)}`);
   const r=JSON.parse(await button.getAttribute('data-rect'));
   const box=await page.locator('canvas').boundingBox();const size=await page.locator('canvas').evaluate(c=>({width:c.width,height:c.height}));
   await page.mouse.click(box.x+(r.x+r.width/2)*box.width/size.width,box.y+(r.y+r.height/2)*box.height/size.height);
@@ -45,6 +47,8 @@ try{
     const build=await page.evaluate(async()=>await(await fetch(`./build.json?upgrade=${Date.now()}`)).json());
     assert.equal(build.schema,'rift-bend-browser/2');assert.notEqual(build.version,before.build);
     const oldCount=JSON.parse(before.saved).commands.length;
+    await page.waitForFunction(n=>window.__shown?.revision===n&&
+      !document.querySelector('canvas')?.getAttribute('aria-label')?.includes('Validating record'),oldCount,{timeout:90000});
     await control(3);await page.waitForFunction(n=>JSON.parse(localStorage.getItem('rift-bend-lab/save-v1')).commands.length===n,oldCount+1);
     const restored=await saved();
     await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded'});await ready();

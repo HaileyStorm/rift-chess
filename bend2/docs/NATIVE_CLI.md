@@ -82,3 +82,12 @@ The pinned Base JavaScript File/IO effect implementation assumes POSIX
 Windows fails before a game can run. The Windows source checker and C emitter
 remain useful independent evidence; a supported-host binary run has its own
 acceptance step.
+
+The clean release export from source `1a6d7d9c32dad19612327ac3eb3f1fd54a18ca07`
+is [available as C](https://haileystorm.github.io/rift-chess-bend2/rift-chess-native-cli-8fbb6fa79899.c)
+(2,182,904 bytes; SHA-256
+`8fbb6fa79899c1a31771ac62113d50cc3f3c99caa765a2ea658cf9ef201b4747`).
+Its [source and compiler manifest](evidence/whole-app-v2/native-cli-export.json)
+binds 18 inputs and the frozen v2 law hash. The Pages download matched that C
+hash after deployment. WSL Ubuntu on the development laptop had no C compiler;
+no native binary or file-effect playthrough was produced there.

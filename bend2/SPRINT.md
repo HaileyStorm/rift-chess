@@ -44,7 +44,7 @@ semantic diff, independent review, and a preserved old version. Fix implementati
 or proofs first. Never weaken a law merely because a proof is difficult. The
 amendment gate is part of the build, not just an instruction in prose.
 
-## Status
+## Historical checkpoint: initial hybrid preview
 
 Documentation, rules, proofs and pixel library complete. Core and pixel semantic
 v1 manifests are frozen; all 13 core/11 pixel laws, six negative mutations,
@@ -62,22 +62,17 @@ The requested sprint is complete; receipts and limitations are in
 `docs/VERIFICATION.md`. The original 1.2.1 deployment is unchanged.
 No native Bend CPU/GPU benchmark or owner visual acceptance is claimed.
 
-## Active follow-up: complete portable Bend application
+## Historical request: complete portable Bend application
 
 The completed release above is historical evidence for the initial hybrid host.
-The owner's expanded acceptance request is now active: move all application UI,
+The owner's expanded acceptance request was to move all application UI,
 font rendering, input policy, audio synthesis and persistence codec into Bend;
-retain only generic browser IO transport; export the same application through
+retain only generic browser IO transport; attempt the same application through
 native Bend Window/Audio/File effects; repair drag responsiveness/direction and
 selection toggling. Keep reusable graphics and their laws/proofs in `lib/graphics`.
 
-The new independent v2 rule contracts cover both colors, ordinary chess and Rift
-special rules, with structural legality, reachable play and coherent history
-distinguished explicitly. Original frozen v1 files remain immutable provenance.
-Current gates include closed per-rule/match laws, both-color differential cases,
-library pixel checks and pure application tests. Final law freeze/review,
-integrated browser playtesting, native export, deployment and source handoff are
-still in progress; earlier completion statements do not cover this expansion.
+The final outcome and its exact native GUI limit are recorded under “Whole Bend
+application release” below. Original frozen v1 files remain immutable provenance.
 
 ## Retained material and boundaries
 
@@ -107,10 +102,10 @@ clean build, and an old offline profile survives an explicit refresh, a resumed
 move and a cold-offline Undo. Source and deployment are pushed; this follow-up is
 complete. Existing open tabs should be refreshed to load the new controls.
 
-## Whole Bend application release checkpoint
+## Whole Bend application release
 
 The camera release above is historical. The expanded whole-application sprint
-remains active until the clean source/C export and hosted publication checks.
+is published separately at https://haileystorm.github.io/rift-chess-bend2/.
 The browser UI, bitmap text, input policy, replay, PCM and game are now Bend;
 the reusable graphics package and its own Laws/Proofs are separated and frozen.
 The final v2 semantic manifest closes 134 named laws, including independent
@@ -131,5 +126,7 @@ two bounded 600-second C emitter attempts. A separate text Bend CLI over the
 same v2 kernel and record codec emits browser-independent C. Its pure command
 tests pass; native binary execution is not claimed. The pinned JS Base File/IO
 effects require POSIX libc and cannot run on this Windows host; available WSL
-has no C compiler. Root owns final Git, clean export, hosted playtest, returning
-offline profile and claim release. The original published game is unchanged.
+has no C compiler. The clean browser build, source-bound C export, exact live
+hashes, all 17 hosted scenario groups and a returning old-profile offline
+upgrade pass. The source branch and Pages repository are pushed; receipts are
+in `docs/evidence/whole-app-v2/`. The original published game is unchanged.

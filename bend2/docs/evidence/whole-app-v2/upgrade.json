@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-23T04:43:14.953Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "beforeVersion": "8106a3f0fed5f9274f95",
+  "afterVersion": "393b72283975d6018b1d",
+  "checks": [
+    "Exact old saved record survives upgrade",
+    "Real canvas Undo accepts the resumed history",
+    "Cold offline reload preserves Undo and accepts New Match"
+  ],
+  "errors": []
+}

@@ -1,0 +1,231 @@
+{
+  "at": "2026-09-23T04:41:10.835Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "checks": [
+    "Real canvas second click deselects the same piece",
+    "Real canvas click on another square of selected platform deselects it",
+    "Hotseat Undo requests the other player agreement; Cancel is inert and Agree commits Undo",
+    "Rendered white/black knight moves and Undo persist accepted commands",
+    "Bend menus render and real canvas controls work; save survives reload",
+    "Oversized input preserves game; long valid Move/Undo replay shows progress and New Match cancels immediately",
+    "A second Import replaces pending validation through the actual file chooser",
+    "Imported legal play reaches rendered capture and explicit knight underpromotion",
+    "Rendered actor choices allow off-turn Black offer and resignation with White acceptance",
+    "Draw, resignation and Undo restore correct terminal/nonterminal state",
+    "Human Black starts with a Bend bot move; Undo pause persists and Resume works",
+    "Rendered empty-platform Shift changes topology and persists",
+    "Bend-generated finite bounded PCM reaches actual Web Audio playback",
+    "Malformed import and saved record preserved until explicit new match",
+    "Transient storage read failure preserves unseen save; preference read failure keeps match and visible fallback warning",
+    "Cold offline reload and real canvas move succeed",
+    "Reachable mobile queen position exposes every destination through bounded MOVES panel and accepts a chosen move"
+  ],
+  "errors": [],
+  "captures": [
+    "01-desktop",
+    "02-selected-knight",
+    "03-both-sides-moved",
+    "20-undo-request",
+    "04-dragged",
+    "05-settings",
+    "06-warm-settings",
+    "07-help",
+    "08-new-match",
+    "16-oversize-preserved",
+    "17-validating",
+    "11-capture",
+    "12-promotion",
+    "21-actor-chooser",
+    "13-shift",
+    "14-recovery",
+    "15-offline",
+    "09-mobile",
+    "10-mobile-settings",
+    "18-mobile-queen",
+    "19-mobile-all-moves"
+  ],
+  "metrics": {
+    "drag": {
+      "frames": 30,
+      "medianMs": 13,
+      "p95Ms": 29.899999976158142,
+      "view": {
+        "$": "View",
+        "yaw": 320,
+        "pitch": 77,
+        "zoom": 100
+      },
+      "medianReplyMs": 15.300000011920929,
+      "p95ReplyMs": 32.30000001192093,
+      "samples": [
+        {
+          "renderMs": 33.69999998807907,
+          "portMs": 2.199999988079071,
+          "replyLatencyMs": 36.40000003576279
+        },
+        {
+          "renderMs": 23.80000001192093,
+          "portMs": 2.699999988079071,
+          "replyLatencyMs": 27
+        },
+        {
+          "renderMs": 24,
+          "portMs": 2.200000047683716,
+          "replyLatencyMs": 26.69999998807907
+        },
+        {
+          "renderMs": 15.300000011920929,
+          "portMs": 1.699999988079071,
+          "replyLatencyMs": 17.30000001192093
+        },
+        {
+          "renderMs": 14.699999988079071,
+          "portMs": 2.399999976158142,
+          "replyLatencyMs": 17.5
+        },
+        {
+          "renderMs": 16.400000035762787,
+          "portMs": 4,
+          "replyLatencyMs": 20.69999998807907
+        },
+        {
+          "renderMs": 17.5,
+          "portMs": 2,
+          "replyLatencyMs": 20
+        },
+        {
+          "renderMs": 29.899999976158142,
+          "portMs": 1.699999988079071,
+          "replyLatencyMs": 32.30000001192093
+        },
+        {
+          "renderMs": 18.900000035762787,
+          "portMs": 1.5,
+          "replyLatencyMs": 20.80000001192093
+        },
+        {
+          "renderMs": 22.599999964237213,
+          "portMs": 2.200000047683716,
+          "replyLatencyMs": 25.400000035762787
+        },
+        {
+          "renderMs": 7.699999988079071,
+          "portMs": 1.300000011920929,
+          "replyLatencyMs": 9.5
+        },
+        {
+          "renderMs": 6.400000035762787,
+          "portMs": 1.5999999642372131,
+          "replyLatencyMs": 8.300000011920929
+        },
+        {
+          "renderMs": 7.299999952316284,
+          "portMs": 2.400000035762787,
+          "replyLatencyMs": 10.300000011920929
+        },
+        {
+          "renderMs": 11.199999988079071,
+          "portMs": 2.5,
+          "replyLatencyMs": 14.399999976158142
+        },
+        {
+          "renderMs": 17.5,
+          "portMs": 1.600000023841858,
+          "replyLatencyMs": 19.600000023841858
+        },
+        {
+          "renderMs": 21,
+          "portMs": 4.100000023841858,
+          "replyLatencyMs": 26.900000035762787
+        },
+        {
+          "renderMs": 13,
+          "portMs": 1.699999988079071,
+          "replyLatencyMs": 15.300000011920929
+        },
+        {
+          "renderMs": 8.100000023841858,
+          "portMs": 1.5999999642372131,
+          "replyLatencyMs": 10.099999964237213
+        },
+        {
+          "renderMs": 8.099999964237213,
+          "portMs": 1.4000000357627869,
+          "replyLatencyMs": 9.800000011920929
+        },
+        {
+          "renderMs": 8.899999976158142,
+          "portMs": 2.700000047683716,
+          "replyLatencyMs": 12.100000023841858
+        },
+        {
+          "renderMs": 6.300000011920929,
+          "portMs": 1.899999976158142,
+          "replyLatencyMs": 8.600000023841858
+        },
+        {
+          "renderMs": 20,
+          "portMs": 2.800000011920929,
+          "replyLatencyMs": 23.19999998807907
+        },
+        {
+          "renderMs": 8,
+          "portMs": 1.5999999642372131,
+          "replyLatencyMs": 10.100000023841858
+        },
+        {
+          "renderMs": 9.600000023841858,
+          "portMs": 1.5,
+          "replyLatencyMs": 11.5
+        },
+        {
+          "renderMs": 11,
+          "portMs": 2,
+          "replyLatencyMs": 13.300000011920929
+        },
+        {
+          "renderMs": 6.399999976158142,
+          "portMs": 1.800000011920929,
+          "replyLatencyMs": 8.699999988079071
+        },
+        {
+          "renderMs": 12.100000023841858,
+          "portMs": 1.600000023841858,
+          "replyLatencyMs": 14.300000011920929
+        },
+        {
+          "renderMs": 12.899999976158142,
+          "portMs": 1.7000000476837158,
+          "replyLatencyMs": 15.100000023841858
+        },
+        {
+          "renderMs": 13.899999976158142,
+          "portMs": 2,
+          "replyLatencyMs": 16.80000001192093
+        },
+        {
+          "renderMs": 9.899999976158142,
+          "portMs": 1.5,
+          "replyLatencyMs": 11.800000011920929
+        }
+      ],
+      "scope": "Whole browser app camera-motion replies, excluding initial hover and settled release; renderMs is Bend computation, replyLatencyMs includes pixel transport"
+    },
+    "audio": {
+      "sounds": [
+        {
+          "samples": 4200,
+          "peak": 0.24824850261211395,
+          "finite": true
+        },
+        {
+          "samples": 4200,
+          "peak": 0.24870839715003967,
+          "finite": true
+        }
+      ],
+      "starts": 2
+    }
+  },
+  "ok": true
+}
