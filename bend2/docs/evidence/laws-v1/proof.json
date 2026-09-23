@@ -1,0 +1,169 @@
+{
+  "schema": "rift-bend-proof/1",
+  "at": "2026-09-22T11:59:59.726Z",
+  "draft": true,
+  "semanticSha256": null,
+  "toolchain": {
+    "bendVersion": "2.0.25",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "a49524265bdfa5753a4bf38e25f0574a705dd868",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "files": {
+    "bend2/core/AI.bend": "03aeffcf00cfb4eed652a148b2539c4629d95d955ea65fe9be70eda13e90a590",
+    "bend2/core/Enumeration.bend": "6f0da28cc0a0823cf30ec6fa7b0f8145fedd998a8924ced264ac12285fe62fc2",
+    "bend2/core/Geometry.bend": "21a778ad5efd1be7ecfd087bb1bda0d91ed9be305fe918d7c8e2ce7022beab55",
+    "bend2/core/Kernel.bend": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+    "bend2/core/LAWS.bend": "dad9565874807f464099d17c56f6f0fa7040ffa78c0a2c3d9473e5a9e2625fd4",
+    "bend2/core/MatchSpec.bend": "d58b8e8df57c3c09ba4a0f017fe24007c4e6733f89c5ddd11a15e897a23df4b8",
+    "bend2/core/Model.bend": "126b9cea13fb3a772d7a43557b08a7ec97541124646ab054ccd062fa7b54c328",
+    "bend2/core/PROOF.bend": "f0864382a0167dd27119571cdfc88e7513e23965d14b0aae68f7c1dbf70e4a8a",
+    "bend2/core/ProofKit.bend": "c806ecb6de5ad59f107bc032ad2a59d18e608247cbdc1a694480739a6c2b845e",
+    "bend2/core/Spec.bend": "707d74f20affc74f2d8ae5505f8a0f48e60a3bd1ff731be8d64b8cb73dd0dd51",
+    "bend2/core/Transitions.bend": "017b42039a904bcc826fc9f8ab657898013e0a1798860115d73f39f785bcfcd9"
+  },
+  "positive": {
+    "exit": 0,
+    "clean": true,
+    "diagnostic": "checked",
+    "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+    "error": null
+  },
+  "negatives": [
+    {
+      "name": "unfilled-law",
+      "targetLaw": "step_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "PROOF.bend",
+      "beforeSha256": "2ff1bfb45fa73c106536861e2fdf37702fccb69d3a21f9ada15947d02d9ebc1a",
+      "afterSha256": "127f7c65016a7b61ef729c12a7d9e4a2850bf1633c92428f9081d8a362a3117a",
+      "replacement": "",
+      "expectedDiagnostic": "unfilled-law",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "unfilled-law",
+      "outputSha256": "1b746dbdc1cad664f0910ad30cd2e091549434196b8da027365ab527bffcc26e",
+      "error": null,
+      "rejected": true
+    },
+    {
+      "name": "reject-everything",
+      "targetLaw": "step_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "Kernel.bend",
+      "beforeSha256": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+      "afterSha256": "e5eb4c7db9f51ca4f951a01020cc3d6ba0554a2e3541cdae7e2ef655bf4c6912",
+      "replacement": "decide(False{}, p, id)",
+      "expectedDiagnostic": "type-equality",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "type-equality",
+      "outputSha256": "a4feeca8be43c2cd3326bd20191e1fb92211c26dff353b7ed1e7d39dcf7ce11b",
+      "error": null,
+      "rejected": true
+    },
+    {
+      "name": "match-bypass",
+      "targetLaw": "match_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "Kernel.bend",
+      "beforeSha256": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+      "afterSha256": "5169c104e24bf8030ed23dac03269956549e98aac50e151791f0ef86f5a7bee5",
+      "replacement": "Match.Accepted{Match.apply_enabled(m, c)}",
+      "expectedDiagnostic": "type-equality",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "type-equality",
+      "outputSha256": "277efc0ba48d97206c517f10bcbd378003ac33dc963c29140d86de6a042de4e8",
+      "error": null,
+      "rejected": true
+    },
+    {
+      "name": "omit-chunk",
+      "targetLaw": "enumeration_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "Kernel.bend",
+      "beforeSha256": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+      "afterSha256": "2b659f20d96331bcbed2640e5463201422493d9565a20cb62d3ee547a44a05d7",
+      "replacement": "List.append(&2, U32, b, List.append(&2, U32, c, d))",
+      "expectedDiagnostic": "type-equality",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "type-equality",
+      "outputSha256": "958ed5cd4311923d4c2defd5be47ee846498283024c91b6be6ea19a3d9b2d001",
+      "error": null,
+      "rejected": true
+    },
+    {
+      "name": "duplicate-chunk",
+      "targetLaw": "enumeration_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "Kernel.bend",
+      "beforeSha256": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+      "afterSha256": "f690072fac1ac37ad1ca368a3107c56dedd1d5459194485d4d41f0d171e082e3",
+      "replacement": "List.append(&2, U32, a, List.append(&2, U32, b, List.append(&2, U32, c, Spec.legal_range(5440n, 10880, p))))",
+      "expectedDiagnostic": "type-equality",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "type-equality",
+      "outputSha256": "3eecc5066130bcbcf4c0f6e446cb2b3328846eff662474ac1ec2cf72f24125cd",
+      "error": null,
+      "rejected": true
+    },
+    {
+      "name": "reorder-chunks",
+      "targetLaw": "enumeration_refines",
+      "control": {
+        "exit": 0,
+        "clean": true,
+        "diagnostic": "checked",
+        "outputSha256": "3155557f2fa6b6fe55b661347e56893dc0b52fa1977b6800a8d26dbff1d3db84",
+        "error": null
+      },
+      "file": "Kernel.bend",
+      "beforeSha256": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+      "afterSha256": "7a1981a8c69c1adbf6c0b57e0654f5eb17b767e0c5495cad43bc0a6c8264adb0",
+      "replacement": "List.append(&2, U32, b, List.append(&2, U32, a, List.append(&2, U32, c, d)))",
+      "expectedDiagnostic": "type-equality",
+      "exit": 1,
+      "clean": false,
+      "diagnostic": "type-equality",
+      "outputSha256": "e6a1ef74d4a90a53086d9b141976c6743c475fe19ec6a77506a0a055ea1ba77e",
+      "error": null,
+      "rejected": true
+    }
+  ]
+}

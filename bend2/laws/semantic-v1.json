@@ -1,0 +1,19 @@
+{
+  "schema": "rift-bend-semantic/1",
+  "version": 1,
+  "frozenAt": "2026-09-22T12:03:17.276Z",
+  "readinessSha256": "914843bef17ed7c12d34fb22f4c0b254737b7380493a60faf49a5f1bfce12403",
+  "files": {
+    "bend2/TOOLCHAIN.json": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+    "bend2/core/Model.bend": "126b9cea13fb3a772d7a43557b08a7ec97541124646ab054ccd062fa7b54c328",
+    "bend2/core/Geometry.bend": "21a778ad5efd1be7ecfd087bb1bda0d91ed9be305fe918d7c8e2ce7022beab55",
+    "bend2/core/Transitions.bend": "017b42039a904bcc826fc9f8ab657898013e0a1798860115d73f39f785bcfcd9",
+    "bend2/core/Enumeration.bend": "6f0da28cc0a0823cf30ec6fa7b0f8145fedd998a8924ced264ac12285fe62fc2",
+    "bend2/core/Spec.bend": "707d74f20affc74f2d8ae5505f8a0f48e60a3bd1ff731be8d64b8cb73dd0dd51",
+    "bend2/core/MatchSpec.bend": "d58b8e8df57c3c09ba4a0f017fe24007c4e6733f89c5ddd11a15e897a23df4b8",
+    "bend2/core/ProofKit.bend": "c806ecb6de5ad59f107bc032ad2a59d18e608247cbdc1a694480739a6c2b845e",
+    "bend2/core/LAWS.bend": "dad9565874807f464099d17c56f6f0fa7040ffa78c0a2c3d9473e5a9e2625fd4",
+    "bend2/docs/LAWS_V1.md": "997687d9c9e8ce7aade3e69252e10b867ab2bfdb86e6e2d5583c21fabaa0d79e",
+    "bend2/docs/LAW_CHANGE_POLICY.md": "1be32efb916589e5a5fe7f383510c75797e45d5fccd0d7dbb2fb7cff234b8e09"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "rift-bend-publication/1",
+  "at": "2026-09-22T15:14:43.927Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "sourceRevision": "a0599ba00e6243f9d4ba4386e2ff8abcbbaa7bf4",
+  "pagesRevision": "3388c9cebe738736c9404c7e75740da340ff189b",
+  "version": "8106a3f0fed5f9274f95",
+  "sourceDirty": false,
+  "draft": false,
+  "buildSha256": "a71e7de4d277754e90d86e2e2663c6af9f2e700fb44a79bcc14e8c747b0f28aa",
+  "assets": [
+    {
+      "file": "index.html",
+      "sha256": "8a85f605679eaa1e4163c94d15c9c649956d64875d897796393a3cd02cbc1891",
+      "status": 200
+    },
+    {
+      "file": "main-txjs3938.js",
+      "sha256": "66e6708c813068e253aef609f33a4d02158b5ac4caa5e14705d705c7f9fc6cba",
+      "status": 200
+    },
+    {
+      "file": "worker-0anet5y4.js",
+      "sha256": "3ceda03c1cf879018b1b1a2a78c4fc227e5a8b8b15e19bd33bbf78268bbbfda7",
+      "status": 200
+    },
+    {
+      "file": "style-a608983de8e0.css",
+      "sha256": "a608983de8e00f7ca035b99a677ace65a2a61fbd3272e59a9282f4160b3c4320",
+      "status": 200
+    },
+    {
+      "file": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "f8e644145331fe4a6f850d796c6c9a2d3bb1f5616d5ea2d4162bf55accd98ed9",
+      "status": 200
+    },
+    {
+      "file": "Bend-Apache-2.0.txt",
+      "sha256": "78418ed3cfa4c3f320f827a96ed83349ef9e1af6dc4430b256a0ba2037c42615",
+      "status": 200
+    },
+    {
+      "file": "sw.js",
+      "sha256": "8136923dd8d86a8cd4f93b725732d4e51e1cb6e2fe2fee973dc3377a88e7ad20",
+      "status": 200
+    }
+  ],
+  "originalUnchanged": [
+    {
+      "file": "index.html",
+      "sha256": "05275c202778bebcb85333734a0a5e9c1884204d32d3a3dc86408261f68a125f",
+      "status": 200
+    },
+    {
+      "file": "precache.json",
+      "sha256": "395bf8be7d007bba6d70b562d3a36f3a612b01b2ee25ef8acd3c44e6baac2f3d",
+      "status": 200
+    }
+  ]
+}

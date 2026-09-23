@@ -1,0 +1,89 @@
+{
+  "schema": "rift-bend-library-graphics/1",
+  "version": 1,
+  "compiler": {
+    "bendVersion": "2.0.25",
+    "bendCommit": "a49524265bdfa5753a4bf38e25f0574a705dd868",
+    "toolchain": "bend2/TOOLCHAIN.json",
+    "toolchainSha256": "55d1545d75475d7c35c93ecd14a4b0aa9007a54e93fb1a6177b985bd5d202fc2",
+    "bunVersion": "1.4.2"
+  },
+  "copies": {
+    "bend2/lib/graphics/pixels/Pixel.bend": {
+      "original": "bend2/graphics/Pixel.bend",
+      "activeCopySha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3",
+      "originalSourceSha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+    },
+    "bend2/lib/graphics/pixels/LAWS.bend": {
+      "original": "bend2/graphics/LAWS.bend",
+      "activeCopySha256": "4b7b6f6046c985facf4937c9b6deab3071e14fa79f5beca256ea5b4228ff89d3",
+      "originalSourceSha256": "4b7b6f6046c985facf4937c9b6deab3071e14fa79f5beca256ea5b4228ff89d3"
+    },
+    "bend2/lib/graphics/pixels/PROOF.bend": {
+      "original": "bend2/graphics/PROOF.bend",
+      "activeCopySha256": "8e4d60373335777f0241a212d66ec109e65ca37d741dda1cfe21640c680cd7da",
+      "originalSourceSha256": "8e4d60373335777f0241a212d66ec109e65ca37d741dda1cfe21640c680cd7da"
+    },
+    "bend2/lib/graphics/pixels/LAWS.md": {
+      "original": "bend2/docs/GRAPHICS_LAWS_V1.md",
+      "activeCopySha256": "82e4d983bfcd4b4364b640956372d04d48c0d61f641e161adb057aea9710a309",
+      "originalSourceSha256": "82e4d983bfcd4b4364b640956372d04d48c0d61f641e161adb057aea9710a309"
+    }
+  },
+  "sourceFreeze": {
+    "version": 1,
+    "at": "2026-09-22T21:47:14.064Z",
+    "files": {
+      "bend2/lib/graphics/Canvas.bend": "16a734cd616a3ab70be5677fad2c9c90e566aa6a34dcedeef25ee438bc1338b0",
+      "bend2/lib/graphics/Font.bend": "b90c75721099c70debd156964f583df0f4ecca0afb490fbc7c78d6826f1a9085",
+      "bend2/lib/graphics/LAWS.md": "4d81bd021d56dda33e395a4e570e164358c9759e2e25434e85a9d2ba0c59c0c2",
+      "bend2/lib/graphics/Ortho.bend": "31611f7ec3d2d904c216a35e27e3249f5598637c119578196db3fc24cf2c89b7",
+      "bend2/lib/graphics/Quad.bend": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12",
+      "bend2/lib/graphics/README.md": "e5a6d9bbd69dde7994fa0b1a907973afb8c83c8748f298b698a6c98955d5ed65",
+      "bend2/lib/graphics/RectRaster.bend": "caf31209a656f4e6566297c88ccaeaa27ec7bfbd1e2a4ae76377ad4c0ccfae0e",
+      "bend2/lib/graphics/contracts/LAWS.bend": "00d4a516c51917258e804441477793a541cc7a5e69315cbddec4b9107053625b",
+      "bend2/lib/graphics/contracts/PROOF.bend": "18aa4a20b235348cd00be255e7037760ac8a28441bfb7f6945b3d854c810bed1",
+      "bend2/lib/graphics/examples/TypeSheet.bend": "51e85af2312027e196a4e0a959afe81c894a233771a820316dbd678381c4febf",
+      "bend2/lib/graphics/pixels/LAWS.bend": "4b7b6f6046c985facf4937c9b6deab3071e14fa79f5beca256ea5b4228ff89d3",
+      "bend2/lib/graphics/pixels/LAWS.md": "82e4d983bfcd4b4364b640956372d04d48c0d61f641e161adb057aea9710a309",
+      "bend2/lib/graphics/pixels/PROOF.bend": "8e4d60373335777f0241a212d66ec109e65ca37d741dda1cfe21640c680cd7da",
+      "bend2/lib/graphics/pixels/Pixel.bend": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3",
+      "bend2/lib/graphics/tests/font.ts": "d399bc3a4d7240b404c1545ff7df55fe40c2014762bda470e8fb40a1577b2d4e",
+      "bend2/lib/graphics/tests/raster.ts": "42931781b51857262584eac83de1377c20a088e70ed4458e0e91dc9c7227be0d"
+    },
+    "checks": [
+      {
+        "args": [
+          "bend2/tools/bend.mjs",
+          "bend2/lib/graphics/pixels/PROOF.bend",
+          "--check-only"
+        ],
+        "outputSha256": "b3e458e36ba257b5d999d2671ca86539eb2ccd37dd4f1295dc54abbdf0cb7304"
+      },
+      {
+        "args": [
+          "bend2/tools/bend.mjs",
+          "bend2/lib/graphics/contracts/PROOF.bend",
+          "--check-only"
+        ],
+        "outputSha256": "b3e458e36ba257b5d999d2671ca86539eb2ccd37dd4f1295dc54abbdf0cb7304"
+      },
+      {
+        "args": [
+          "bend2/tools/bend.mjs",
+          "--run",
+          "bend2/lib/graphics/tests/font.ts"
+        ],
+        "outputSha256": "6a553e0f111c608f83dfa21f61b9ad7df61b6396b3c1248ac9aee36c0b9a2475"
+      },
+      {
+        "args": [
+          "bend2/tools/bend.mjs",
+          "--run",
+          "bend2/lib/graphics/tests/raster.ts"
+        ],
+        "outputSha256": "0637ffc4d6c64edf9ee3aa6d0dc68dcf4d13f05273337a70599b1e8fd95d6056"
+      }
+    ]
+  }
+}
