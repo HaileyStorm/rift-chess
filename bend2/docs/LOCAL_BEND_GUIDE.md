@@ -1,299 +1,500 @@
 # Local Bend 2 guide for Rift Chess
 
-This is a source-grounded guide for the local Bend checkout used by this
-project. It describes Bend 2.0.25 at commit
-`a49524265bdfa5753a4bf38e25f0574a705dd868` (the local source is
-`.artifacts/toolchains/bend`). The pinned upstream is
-`https://github.com/bendlang/bend/tree/a49524265bdfa5753a4bf38e25f0574a705dd868`.
+This guide describes the Bend compiler this project is pinned to and how this
+repository uses it. It is written for the next implementation worker: every
+claim is either read from the pinned source (cited by file) or was checked by a
+probe under `.artifacts/probes/` on this Windows machine.
 
-The guide was read from the pinned source, including `guide/GUIDE.md`,
-`guide/EFFECTS.md`, `guide/SHADERS.md`, `bend2/base.bend`, `bend2/main.ts`,
-`bend2/bend.ts`, `bend2/comp.ts`, and the demos listed in
-`SOURCE_CATALOG.md`. The examples below are read-derived unless the root task's
-reported command evidence says otherwise; this guide does not claim a native,
-GPU, browser, or release run.
+| Item | Value |
+| --- | --- |
+| Bend version | 2.0.25 (`bend version`) |
+| Pinned commit | `ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b` ([source](https://github.com/bendlang/bend/tree/ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b)) |
+| Previous pin | `a49524265bdfa5753a4bf38e25f0574a705dd868`, replaced by amendment `bend2/laws/amendments/001-bend-ff7a40c.json` |
+| Local checkout | `.artifacts/toolchains/bend` (git-ignored, must be clean at the pin) |
+| Bun | 1.4.2, `@oven/bun-windows-x64@1.4.2` in `.artifacts/toolchains/runtime` |
+| Authority for the pin | `bend2/TOOLCHAIN.json` |
+| Repository | `C:\Users\Haile\OneDrive\Documents\ChatGPT\Rift Chess`, the Bend 2 port lives in `bend2/` |
+
+Source files read for this guide: `guide/GUIDE.md`, `guide/EFFECTS.md`,
+`guide/SHADERS.md`, `bend2/base.bend`, `bend2/main.ts`, `bend2/bend.ts`,
+`bend2/comp.ts`, `CHANGELOG.md`, `WONTFIX.txt`, and the demos, tests and
+benches listed in `SOURCE_CATALOG.md`. No CUDA, Metal or GPU code was built or
+run for this guide (GPU use on this machine needs a coordinator lease, and the
+upstream compiler has no Windows native target).
 
 ## What Bend 2 is
 
 Bend combines a dependent type checker, affine resource use, proofs written as
 ordinary definitions, and fork/join parallel calls. Its syntax looks Pythonic,
-but evaluation is pure unless a value has an `IO` type. The compiler emits one
-C source file for CPU and optional Metal or CUDA device code, or a sequential
-JavaScript target. The checker is the authority for the typed source term; the
-generated C, GPU program, JavaScript runtime, foreign code, and browser host are
+but evaluation is pure unless a value has an `IO` type. The compiler emits one C
+file (CPU plus optional Metal or CUDA device code) or a single-threaded
+JavaScript program. The checker is the authority for the typed source term; the
+generated C, GPU program, JavaScript runtime, foreign code and browser host are
 separate trust boundaries.
 
-Bend 1/HVM programs do not carry over. The current implementation is young and
-the upstream README says the compiler is mostly AI-written, not fully audited,
-and that the Lean formalization can disagree with `bend2/bend.ts`. Treat this
-checkout as pinned research material until the project owner accepts native and
-browser evidence.
+Bend 1/HVM programs do not carry over. The upstream README says the compiler is
+mostly AI-written, not fully audited, and that the Lean formalization can
+disagree with `bend2/bend.ts`. Treat the pin as research material whose
+behavior is established by this project's own gates.
 
-The upstream layout is useful when navigating the vendored copy:
+Upstream layout, for navigating the checkout:
 
 ```text
-bend2/bend.ts   parser, theory, checker
-bend2/comp.ts   C/Metal/CUDA/JS compiler and runtimes
-bend2/main.ts   CLI and Bun/Node .bend loader
-bend2/base.bend prelude and standard library
-bend2/effs/    C and JS effect implementations
-guide/          GUIDE.md, EFFECTS.md, SHADERS.md; demos/ complete examples
-tests/          checker/compiler tests; #| lines are expected output
-gates/          repository, test, performance, and ping gates; paper/ theory
+bend2/bend.ts    parser, theory, checker
+bend2/comp.ts    C/Metal/CUDA/JS compiler and runtimes
+bend2/main.ts    CLI and Bun/Node .bend loader
+bend2/base.bend  prelude and standard library
+bend2/effs/      C and JS twins of every Base effect
+guide/           GUIDE.md, EFFECTS.md, SHADERS.md
+demos/ bench/    complete programs and the benchmarks behind the README charts
+tests/           checker/compiler tests; #| lines are expected output
+gates/           upstream repository gates (not run by this project)
 ```
 
-## A local first pass
+## Running the compiler here
 
-Do not install or update a toolchain as part of this guide. If the local source
-is intentionally exercised later, run the checked-in CLI through Bun from the
-repository root. The source CLI identifies itself as `2.0.25`.
+Always go through the project wrapper from the repository root. It refuses to
+run unless the checkout's HEAD equals `bend2/TOOLCHAIN.json`, the checkout has
+no tracked modifications, and Bun reports the pinned version. It sets
+`BEND_NO_TELEMETRY=1` for the child, turns every `.bend`/`.html` argument and
+every `-o` target into an absolute forward-slash path, runs the CLI with the
+compiler directory as its working directory, and applies a timeout
+(`BEND_TIMEOUT_MS`, default 120 s, or 300 s for `--run`).
 
 ```powershell
-# PowerShell: opt out of the CLI's once-per-day version-check request.
-$env:BEND_NO_TELEMETRY = "1"
-bun .artifacts/toolchains/bend/bend2/main.ts version
-bun .artifacts/toolchains/bend/bend2/main.ts guide
-bun .artifacts/toolchains/bend/bend2/main.ts guide effects
-bun .artifacts/toolchains/bend/bend2/main.ts guide shaders
-bun .artifacts/toolchains/bend/bend2/main.ts base --types
+$env:BEND_NO_TELEMETRY = "1"   # also stops the CLI's once-a-day version check
+node bend2/tools/bend.mjs version
+node bend2/tools/bend.mjs guide            # also: guide effects, guide shaders
+node bend2/tools/bend.mjs base --types     # or: base Map, base List
+node bend2/tools/bend.mjs path/to/file.bend --check-only
+node bend2/tools/bend.mjs --run path/to/script.ts   # Bun + tools/loader.ts, cwd = repo root
 ```
 
-Use a small progression for a new module:
+What each CLI form does (from `bend2/main.ts`):
 
 ```text
-bend file.bend --check-only       parse and check imports, do not run main
-bend file.bend                    check, then run main (IO is compiled)
-bend file.bend --checkup          check each direct import in isolation
-bend file.bend -o file.js         emit sequential JavaScript
-bend file.bend -o file.c          emit C source only
-bend file.bend -o file            compile a native binary
-bend page.html -o dist            browser-bundle a page importing .bend
+bend f.bend --check-only    parse and check f and its imports; never runs main
+bend f.bend                 check; then a pure main is normalized by the checker
+                            and printed (e.g. "14", "6n"); an IO main runs
+                            in-process on the JS runtime under Bun (not native);
+                            no main: only the check report
+bend f.bend --checkup       check and run each "import X as A" file on its own
+                            (Base preloaded); takes no -o
+bend f.bend -o out.js|.cjs  emit single-threaded JavaScript
+bend f.bend -o out.c        emit C source only
+bend f.bend -o out          build a native binary (needs clang, see below)
+bend page.html -o dir       bundle a page that imports .bend through Bun.build
+bend f.bend -- a b          everything after -- is returned by IO.args
 ```
 
-`--` ends Bend's options; later values are returned by `IO.args`. A native binary
-accepts `--threads N`, `--gpu on|off|4GB`, and `--help`. A program containing
-`!` creates a sidecar `.gpu`; native builds need clang 14+, and device builds
-need clang 19+ (Apple clang 17 is the documented exception).
+A pure `main` is evaluated by the checker's normalizer (`term_snf`), which is
+far slower than compiled code; use it for small results only. To time real
+code, emit JS or give `main` an `IO` type.
 
-For an ordinary proof gate, keep a human-owned `LAWS.bend` beside an
-AI-authored `PROOF.bend`, then run:
+Native binaries: the CLI picks the first adequate compiler among `$CC`, `clang`
+and `clang-NN` on PATH: clang 14+ for a CPU build, clang 19+ (Apple clang 17)
+when the program has a `!` and a GPU toolchain exists (macOS, or CUDA headers).
+The GPU program is then built by running the binary with `--gpu-build`, and it
+lives in a sidecar `.gpu` file beside the binary. The binary accepts
+`--threads N` (N ≥ 1, default: the CPU count), `--gpu on|off|<n>GB|<n>MB`
+(`--gpu on` fails when no device is found), `--help`, and `--`. The emitted JS
+accepts and ignores `--threads` and `--gpu`. There is no Windows native target
+upstream ("No Windows (WSL works)"); on this machine the C output is a source
+artifact only (see `NATIVE_CLI.md`).
 
-```text
-bend PROOF.bend
-```
+### Messages you will see
 
-The proof file must import the laws file. A successful closed proof prints
-`All terms check.`; an open law, false proof, missing import, or checker error
-fails. This is a source gate, not release, device, or owner-acceptance evidence.
+All of these were produced by probes against the pin.
 
-The upstream test harness is not a general unit-test framework. Tests are Bend
-files under `tests/<namespace>/`; expected output is taken from their `#|`
-lines. `gates/test.ts` checks, interprets, emits/runs JS, and emits/runs C when
-the test has the required twins. `gates/_run.ts` runs the four gates with a
-30-second cap. Running those gates is a separate decision because it can build,
-run device code, use cluster workers, or contact a local hub.
+| Situation | Output |
+| --- | --- |
+| Clean check | `All terms check.` |
+| Clean, but unsafe/foreign code reachable | `All terms check, but N def(s) rely on unsafe or foreign code:` then the list |
+| A law with no proof, or `?TODO` | `Error: 1 TODO found.` / `The code is incomplete, and not a valid proof yet.` |
+| Affine variable used twice | `- expected : xs` / `- observed : xs (consumed more than once)` |
+| Non-decreasing recursion | `- expected : a decreasing self-call (arguments are read left to right: each passed unchanged until one shrinks)` |
+| Match on a computed value | `a parameter or field scrutinee (a match cannot scrutinize a computed value: give it its own def)` |
+| `let` before a match on a parameter | `a match on a parameter or field (this name is a def or a consumed binder: give the value its own def)` |
+| Use before definition, or mutual recursion | `- expected : a defined name` / `- observed : <name>` |
+| `+x` on a non-Data type | `- expected : Data` / `- observed : Type` |
+| Wrong type | `- expected : U32` / `- observed : Nat` with a `Context:` of the bound names |
+| Destructuring in a parallel let | `a name (a parallel or typed let binds names; destructure in its body)` |
+| `!` on a local or closure | `- expected : a named def before ! (only f!(..) offloads)` |
+| Checker/normalizer recursion too deep | `Error: the machine stack overflowed (a deep recursion, or a literal too large to expand)` |
 
-Root reports portable Bun `@oven/bun-windows-x64@1.4.2` with
-`BEND_NO_TELEMETRY=1`: both proof files passed `--check-only` with `All terms
-check.`, while `pure_par_sum/LAWS.bend` alone failed with `ERROR1TODO`. An IO
-run from the project directory hit Windows `lstat cwd/effs`; from upstream
-`bend2` it produced `2147450880`. Keep that compiler folder as cwd and pass
-absolute inputs. This is interpreter evidence, not native/GPU benchmark proof.
+Every error is followed by a `Location:` excerpt with `>|` marking the line.
+Messages are terse (the README says so); when one looks wrong, the cause is
+usually one line earlier: a missing parallel-let value swallows the next line,
+and a parenthesized expression after a call is parsed as more arguments.
 
 ## Syntax and data model
 
-Top-level declarations use a small grammar:
+A complete, checked example (`.artifacts/probes/guide/ok.bend`):
 
 ```python
 import Base
-import ./math.bend as M
+
 type Shape is Data:
   Circle{r: U32}
+
 def area(x: Shape) -> U32:
   match x:
     case Circle{+r}:
       (r * r : U32)
-law area_nonnegative:
-  for x: Shape
-  {U32.is_ge(area(x), 0) == True{} : Bool}
+
+law area_circle:
+  for r: U32
+  {area(Circle{r}) == (r * r : U32) : U32}
+
+def area_circle(r):
+  {==}
+
+def main() -> U32:
+  (2 + 3 * 4 : U32)
 ```
 
-`type` declares constructors, `def` declares a function, and `law` declares a
-claim whose body is a type. Constructors are written `Name{fields}`. Modules
-are files; an import alias is local to the importing file. Dots in names such as
-`U32.add` are names, not namespaces that require a module import.
+It checks, and running it prints `14`.
 
-The checker performs little inference. Add a type annotation when an operator
-or literal is ambiguous, for example `{3 : U32}`. Parenthesized operators use
-the type before the final colon: `(a + b * c : U32)` means
-`U32.add(a, U32.mul(b, c))`. `==` inside `{a == b : T}` is a proof type;
-runtime value equality is `T.is_eq(a, b)`.
+- **Declarations.** `type` declares constructors (one per line), `def` a
+  function, `law` a claim whose last line is a type. A definition must appear
+  before any use: referring to a later name fails with "a defined name". This is
+  also why mutual recursion is impossible.
+- **Filling a law.** The proof is a `def` with the law's name and bare
+  parameter names, with no types and no return type: `def area_circle(r):`. The
+  law supplies the signature. Writing `def area_circle(r: U32) -> ...` for a
+  declared law is a parse error. A law imported through an alias is filled as
+  `def Laws.name(...)`.
+- **Modules.** `import ./file.bend as M` makes its defs `M.x`; aliases are local
+  to the importing file. Dots in Base names such as `U32.add` are part of the
+  name.
+- **Operators.** Inside `(expr : T)`, `+ - * / %` call `T.add` through `T.mod`
+  with the usual precedence (`(2 + 3 * 4 : U32)` is 14), `.&. .|. .^.` are the
+  bit operations, `<< >>` shift by a `Nat`, and `< <= > >=` are `T.is_lt` and
+  friends. Without `: T` the operators belong to `Nat`. `&&`, `||` work on
+  `Bool`, `++` on `String`. Operators need spaces on both sides. `==` exists only
+  as a type, `{a == b : T}`; runtime equality is `T.is_eq(a, b)`.
+- **Literals.** `42` is `U32`, `1.5` is `F32`, `3n` is `Nat`, `'c'` is `Char`,
+  `"s"` is `String`. A `Nat` literal past `256n` becomes `U32.to_nat(n)`, up to
+  `4294967295n`.
+- **Collections.** Lists are `[]`, `[a, b]`, `h <> t`; tuples `(a, b)`; arrays
+  `[v : T*n]` (n slots) or `[v : T^d]` (2^d slots), read `a[i]`, write
+  `a[i] <- v`.
+- **No `if`.** Match on `True{}`/`False{}`, or use `Bool.pick`, which evaluates
+  both arguments.
+- **Annotations.** The checker infers little. Annotate literals and operator
+  chains, `{3 : U32}`, and pass Base's quantity and type arguments explicitly:
+  `List.length(&1, U32, xs)`, `List.append(&2, U32, a, b)`. Print a signature
+  with `bend base List` instead of guessing.
 
-Lists are `[]`, `[a, b]`, and `h <> t`; tuples are `(a, b)`; constructor
-patterns can nest. Arrays use `[value : T*n]` for a power-of-two number of
-slots or `[value : T^depth]` for `2^depth` slots. Strings are linked lists of
-`Char`, so large text processing is not a cheap primitive.
+### Matching and recursion
 
-There is no `if` syntax. Match on `True{}` and `False{}`. A `match` scrutinizes
-a parameter or a field bound by a pattern, never a computed expression such as
-`match f(x):`. Bind the computed value in a helper definition and match on the
-helper's parameter. Match order follows binder order; the source guide warns
-that a `let` before a match can prevent matching the intended parameter.
+- A `match` scrutinizes a parameter or a variable bound by a pattern, never a
+  computed value (`match f(x):` is rejected). A `let` may not come before a
+  match on a parameter. To match on a computed value, pass it to a helper def.
+- `match a b:` matches several values; patterns nest; `_` is a wildcard.
+  Scrutinees follow binder order.
+- `Nat` patterns: `0n`, `1n+p` (p is the predecessor), `2n+p`, and `1n++p`,
+  which is `1n+p` with a reusable binder `+p`. `+name` in any pattern rebinds
+  the field as reusable, which requires a `Data` type.
+- `U32` literal cases work, but lower bit by bit: the JS target can rebuild a
+  32-bit word on each residual branch (see the lessons below).
+- Termination: every live self-call must shrink an argument, read left to
+  right, each earlier argument passed unchanged. Put the shrinking parameter
+  first. Use a decreasing `Nat` fuel parameter for loops that do not shrink a
+  structure. `@unsafe def` skips the check and leaves the proof boundary.
+- No mutual recursion: fold both cases into one def with a selector parameter.
 
-Recursion is the normal loop form. A recursive call must consume a structurally
-smaller field, and the shrinking parameter should be placed first. Tail calls
-compile to loops. Mutual recursion is disallowed. Use a decreasing `Nat` fuel
-argument for event loops, or combine mutually recursive cases into one
-definition with a selector. `@unsafe def` disables the termination check and
-therefore leaves the proof boundary.
+## Types, quantities and kinds
 
-## Quantities, ownership, and copying
-
-Bend is affine by default: a live variable is consumed at most once, and an
-unused affine value may be dropped. Quantities explain intent:
+Bend is affine by default: a live variable is used at most once, and an unused
+one may be dropped.
 
 ```text
--x  erased; available only in types and proofs, removed at runtime
- x  affine; the default, at most one live use
-+x  reusable; requires the value's type to be Data
-~x  template argument; syntax substituted at compile time
+-x  erased: available in types and proofs, removed at runtime
+ x  affine: the default, at most one live use
++x  reusable: may be used many times; its type must be Data
+~x  template argument: closed syntax substituted per instance
 ```
 
-`Data` values may be copied. `Type` values have one owner. `Type` is shorthand
-for `Kind(&1)` and `Data` for `Kind(&2)`; `&0`, `&1`, and `&2` are quantities,
-and `a <&> b` takes the smaller quantity. A datatype can be parameterized by a
-quantity and a kind, so a list of reusable data and a list of affine closures
-have different types.
+`Type` is `Kind(&1)` (one owner) and `Data` is `Kind(&2)` (copyable).
+Quantities are `&0`, `&1`, `&2`; `a <&> b` is their minimum. Datatypes can be
+parameterized by a quantity: `type List<a, -A: Kind(a)> is Kind(a)`. So
+`List<U32>` means `List<&1, U32>`, which is a `Type`, and `+List<U32>` means
+`List<&2, U32>`, which is `Data`. To share a list, write both the binder and the
+type as reusable: `def f(+xs: +List<U32>)`. `type T is Data:` declares a
+copyable type; `is Type` keeps it affine.
 
-Closures are values but remain affine: even a closure that captures only `Data`
-can be called once. Top-level definitions can be called repeatedly. Templates
-are closed syntax arguments, declared before the template that calls them; each
-distinct template argument set gets its own compiled instance and the template
-body pays no closure allocation. A template argument cannot mention the caller's
-local variable.
+Dependent forms: `@x:A -> B` (dependent function), `@-x:A -> B` (erased
+dependent), `&x:A -> B` (dependent pair), `A | B` (sum), `A & B` (pair),
+`{a != b : T}` (disequality).
 
-Arrays are `Type` and have one owner. A read returns the array beside the value,
-and a write returns the rewritten array, preserving ownership. The `a[i]` sugar
-assumes `Array<U32>`; use `Array.get`, `Array.set`, or `Array.swap` for other
-types. Indices wrap by the array size. `Array.clone` is the explicit copy for
-`Data` elements. `Array.fork`, `Array.join`, and atomic operations are marked
-`@unsafe` or backed by open effect-like laws in `base.bend`; do not use them in a
-rules core without an owner-approved design.
+Closures are values and remain affine: even a closure that captures only `Data`
+is called at most once, and `+g: A -> B` is rejected (functions are never
+`Data`). Top-level defs can be called any number of times. Templates (`~g`) are
+the alternative: each distinct template argument set is compiled as its own
+instance, with no closure allocation. Template arguments are closed and must be
+declared before the template that calls them. The browser loader does not
+export templates.
 
-The compiler may borrow a boxed value when a definition only matches or passes
-it to a borrowing function, but this is an implementation decision. Inspect
-emitted C when performance or aliasing matters: `term_peek` is a borrow, while
-`term_keep`, `ctr_take`, and `rfc_seal` indicate counts. In the shader reference,
-an unnecessary `+` or a second consumer can turn a cheap borrow into repeated
-reference-count work.
+Arrays are `Type`, with one owner. A read returns the array beside the value,
+and a write returns the rewritten array. The `a[i]` sugar assumes
+`Array<U32>`; use `Array.get`, `Array.set` or `Array.swap` otherwise. Indices
+wrap by the array size. `Array.clone` copies `Data` elements. `Array.fork` and
+`Array.join` are `@unsafe`, and `Array.atomic.*` are declared laws with compiler
+implementations. Do not use any of them in a rules core without an
+owner-approved design.
 
-## Parallel calls and runtime shape
-
-A parallel let has one value per name, for example `a b = f(x) g(y)`. The
-compiler forks the calls and joins their results. It promises independence and
-expects roughly balanced work; purity and affine use make independence easy,
-but uneven branches waste the scheduler.
-
-`f!(x)` marks the call and nested bangs for GPU execution in a native build.
-Without a GPU, bangs run on the CPU pool. JavaScript ignores bangs and is
-sequential. There is one GPU per program, one event loop, and no automatic
-multi-machine execution. Shared `+` values cost atomics; scene data should be
-partitioned into short lists rather than read through a shared counted tree.
-
-The pinned shader guide's practical shape is a single fork tree ending in flat
-loops: build/cull a scene on the host, hand each tile a short candidate list,
-and let each lane walk that list. It advises roughly `4^7` leaves for a 16,384
-lane device cube, but that is a benchmark heuristic from the M4 reference, not
-a Rift Chess requirement. Read `guide/SHADERS.md` before choosing a parallel
-renderer.
+The compiler may borrow a boxed value when a def only matches it or passes it to
+a borrowing function. This is an implementation choice, visible in the emitted
+C: `term_peek` is a borrow, while `term_keep`, `ctr_take` and `rfc_seal` mean
+reference counting. An unnecessary `+`, or a second consumer, can turn a free
+borrow into counting work (atomics when the value is shared across threads).
 
 ## Base data and number semantics
 
-`bend2/base.bend` is the standard library and the source of truth for these
-constructors and helper names.
+`bend2/base.bend` is the source of truth; print slices with `bend base <Name>`.
 
-| Type | Meaning in the pinned source |
+| Type | Behavior at the pin |
 | --- | --- |
-| `Nat` | Peano `Zero`/`Succ`; `Nat.sub` saturates at zero; `Nat.divmod(a, 0n)` returns `(0n, a)`. |
-| `U32` | 32-bit unsigned word; add/sub/mul and bit operations wrap; `U32.div(a, 0)` is `0`, `U32.mod(a, 0)` is `a`. |
-| `Bool` | `False{}` and `True{}`; use `Bool.and`, `Bool.or`, `Bool.not`, and pattern matching. |
-| `Cmp` | `LT{}`, `EQ{}`, `GT{}`; convert with `Cmp.is_lt/is_eq/is_gt/is_le/is_ge`. |
-| `F32` | 32-bit float operations and foreign math; no `F64`; values are not computationally proof-reducible. |
-| `Char`/`String` | A `Char` wraps a `U32`; a `String` is a linked list of chars. |
-| `Maybe`/`Result` | `None`/`Some`, and `Fail`/`Done`; both support `do` notation. |
-| `List`/`Map`/`Set` | Affine or reusable according to their element kind; `Map` is string-keyed and returns the map beside lookups. |
-| `Image`/`Event` | Pure `Pix`/`Qua` image trees and `Key`, `Mouse`, `Move`, `Close` events. |
+| `Nat` | Peano `Zero`/`Succ`. `Nat.sub` saturates at zero. `Nat.divmod(a, 0n)` is `(0n, a)`. In JS it is a checked `BigInt`. |
+| `U32` | Wrapping add, sub, mul and bit operations. `U32.div(a, 0)` is `0`; `U32.mod(a, 0)` is `a`. `U32.shl`/`U32.shr` shift by 1; `U32.shln`/`U32.shrn` take a `Nat` count. In JS a number (`>>> 0`, `Math.imul`). |
+| `Bool` | `False{}`/`True{}`; `Bool.and`, `Bool.or`, `Bool.not`, `Bool.pick`. A JS boolean. |
+| `Cmp` | `LT{}`, `EQ{}`, `GT{}`; `Cmp.is_lt/is_eq/is_gt/is_le/is_ge`. |
+| `F32` | 32-bit float; its operations are declared laws (axioms), not proofs. No `F64`. A JS number. |
+| `Char`/`String` | Source-level lists of code points. In JS a `Char` is a one-code-point string and a `String` is a JS string. |
+| `Maybe`/`Result` | `None`/`Some` and `Fail`/`Done`; both work with `do`. |
+| `List`/`Map`/`Set` | Affine or reusable by their quantity. `Map` is string-keyed and returns the map beside lookups. `List.sort` is a merge sort; `List.foldr` is not tail-recursive. |
+| `Array` | A power-of-two `ALeaf`/`ANode` tree in source; a real JS array in JS. |
+| `Image`/`Event` | `Pix{color}`/`Qua{tl,tr,bl,br}` quadtrees; `Key`, `Mouse`, `Move`, `Close` events. |
 
-`Nat` literals use the `n` suffix. The parser represents an ordinary numeric
-literal as `U32`; a `Nat` literal is `3n`. The guide notes that a `Nat` literal
-past `256n` is represented through `U32.to_nat`, up to `4294967295n`, so use
-explicit construction and tests for larger or generated naturals.
+F32 identities, rounding, NaN behavior and cross-target bit equality are not
+proved. Keep F32 out of deterministic rules state and convert at a deliberate
+boundary; `F32.to_u32` and `F32.to_nat` are runtime conversions.
 
-F32 operations in `base.bend` are laws with no ordinary proof body. That makes
-them useful for rendering but does not prove floating-point identities,
-rounding, NaN behavior, or cross-target bit-for-bit equality. Keep F32 out of
-deterministic rules state; convert at a deliberate boundary. `F32.to_u32` and
-`F32.to_nat` are runtime conversions, not exact mathematical coercions.
+## Laws, proofs and the trust boundary
 
-The standard library's naming pattern is predictable: `Nat.add`, `U32.mul`,
-`F32.sin`, `T.is_eq`, `T.show`, `T.read`, and `T.to_nat`/`T.from_nat`. Print a
-focused slice with `bend base Map` or `bend base --types` instead of guessing a
-helper's exact affine signature.
-
-## Laws, proofs, and the trust boundary
-
-Keep specifications and implementations separate:
+Keep specifications and implementations apart:
 
 ```text
-LAWS.bend   human-owned claims; import the code and state required behavior
-PROOF.bend  implementation/proof file; import LAWS.bend and fill every law
+LAWS.bend   human-owned claims; imports the code and states required behavior
+PROOF.bend  implementation-side proofs; imports ./LAWS.bend and fills every law
 ```
 
-The paired definition has the law's name (a namespaced import can fill it as
-`Laws.name`). A proposition is a type; a proof is a definition returning that
-type. Equality is `{a == b : T}`, reflexivity is `{==}`, and `%e : P` rewrites a
-goal using an equality proof `e`. Pattern matching supplies case analysis and a
-recursive call supplies the induction hypothesis. `exs x: T` in a law asks for
-a witness and its proof. `?name` prints a goal; `?TODO` leaves an open hole and
-must never be accepted as a closed gate.
+The CLI treats a file named `PROOF.bend` specially: it must import
+`./LAWS.bend`. Law syntax:
 
-The source checker uses two modes. Live code must satisfy affine use and
-well-founded recursion. Types, erased arguments, and equations are checked in
-the dead mode; dead code may diverge or inhabit `Empty`, but dead evidence is
-never promoted to live evidence. This deliberate wall permits the current
-one-universe theory (`Type : Type`), negative recursive types, and no positivity
-check. It does not make arbitrary dead terms executable proofs.
+```python
+law name:
+  for x: A              # a parameter; also for -x (erased), for +x (reusable)
+  for y: B where P(y)   # y becomes the pair (y, proof of P(y))
+  exs z: C              # a witness the proof must return
+  {lhs == rhs : T}      # the claim
+```
 
-`@unsafe` definitions skip termination checking. A foreign definition has its
-type checked, but its imported C or JS body is a host promise; the checker does
-not verify that body. The CLI propagates this information and prints a warning
-like `All terms check, but ... relies on unsafe or foreign code` when a checked
-definition depends on either. A plain `All terms check.` therefore means the
-source terms closed, not that foreign code, generated C/Metal/CUDA/JS, the
-browser, or a remote peer is honest.
+Proof tools: `{==}` is reflexivity (it holds when both sides normalize to the
+same term), `%e : P` rewrites the goal with the equality proof `e` and
+continues on the next line, `%e@E : P; e2` is the named form, pattern matching
+gives case analysis, and a recursive call is the induction hypothesis (it must
+descend like any recursion). `?name` prints the goal at that point; `?TODO`
+leaves it open and makes the check fail. `demos/pure_par_sum/PROOF.bend` is a
+compact worked example of induction with rewrites.
 
-The same boundary applies to effects and F32 axioms. Laws can constrain pure
-state transitions and codecs, but they do not prove OS behavior, network
-delivery, GPU scheduling, compiler correctness, human input, or WebGL output.
-Retain an independent reference and differential tests when a game core is
-ported.
+The checker has two modes. Live code must be affine and well-founded. Types,
+erased arguments and equations are checked in the dead mode, where terms may
+diverge or inhabit `Empty`, but dead evidence is never promoted to live
+evidence. This wall is what permits `Type : Type`, negative recursive types and
+no positivity check; it does not make arbitrary dead terms proofs.
+
+What a green check means: `All terms check.` says the source terms closed. It
+does not say that foreign C/JS bodies, generated C/Metal/CUDA/JS, the browser,
+an OS effect or a remote peer behave. `@unsafe` defs, foreign effects and F32
+axioms are reported by the "rely on unsafe or foreign code" warning. Laws can
+constrain pure transitions and codecs; keep an independent reference and
+differential tests beside them.
+
+Proof cost is real. The checker normalizes terms to compare them, so a large
+definition used inside a law can exhaust time or the Bun stack. This project
+runs its aggregate v2 proof under a pinned Node 24.12 worker with a 64 MiB stack
+(`bend2/core/v2/node-check.mjs`), because Bun hit its stack limit on the
+Canonical and RangeBridge proofs.
+
+## Parallelism
+
+This is the most important section for new work. Write code in parallel shape
+by default, even though the shipped game runs on JavaScript today. A balanced
+fork tree costs nothing extra on JS, is shallower than a linear recursion, and
+is exactly what the native CPU pool and the GPU need.
+
+### The two constructs
+
+**Parallel let.** `a b c = f(x) g(y) h(z)` binds n names to n values in one
+statement. The names must be plain names on the same line as `=`; the values may
+continue on following lines, as in the upstream shaders:
+
+```python
+tl tr bl br = scene(e, x, y, cam) scene(e, x1, y, cam)
+  scene(e, x, y1, cam) scene(e, x1, y1, cam)
+Qua{tl, tr, bl, br}
+```
+
+How it is checked (`bend.ts`, "check-let"):
+- Each value is checked in the outer scope, so no value can see a sibling's
+  name ("a defined name" error).
+- Uses add up across siblings, so passing the same affine variable to two
+  values fails with "consumed more than once". Share through a `+` binder of a
+  `Data` type; split affine data (lists, arrays, handles) before the fork.
+- Termination still applies to every branch.
+- A parallel let is not allowed inside a `do` block (the error message is the
+  misleading "a name ..."). Put the fork in a pure helper def.
+- A local bound by a parallel let cannot be matched directly; pass it to a def.
+
+**The bang.** `f!(x)` marks a call to a named top-level def. The checker gives
+it no meaning (typing is identical to `f(x)`); it only affects native code. On
+a native build it hands that call, and every parallel call inside it, to the
+GPU, or to the CPU pool when there is no GPU or `--gpu off`. `!` is rejected on
+locals and closures ("only f!(..) offloads"), and `f! (x)` is a parse error.
+
+### How it lowers (`comp.ts`)
+
+- A parallel let **forks only if every live value is a call** to a def (or a
+  closure apply). If any value is a literal, constructor, intrinsic such as
+  `U32.add(f(x), 1)` or other expression, the whole let is silently rebuilt as a
+  chain of ordinary lets, and the def is marked fork-free. Dead binders are
+  dropped first. Precompute arguments in separate lets and make every fork
+  value a plain call.
+- On C, a fork allocates one join task plus one task per call under
+  `if (!seq)`, and falls back to plain stack calls when running sequentially.
+  The host pool grows the task frontier breadth-first to 16,384 tasks, then each
+  ring drains its subtree with `seq = true`, so everything below the frontier is
+  sequential. Tasks are never moved (no work stealing): unbalanced trees leave
+  cores idle.
+- A def is **flat** (compiled to a tight native loop) when it has no parallel
+  let, no bang, no closure apply, no non-flat call and no non-tail self call.
+  Flat leaves are the goal on the device, where each lane has a 2,048-word
+  stack.
+- A `!` on a value inside a parallel let is dropped. A bang acts on a single
+  call (a tail call or a let with one value), and it is honored only on the
+  host's solo path: a bang reached after host forks in the same evaluation runs
+  on the CPU pool. Put the bang at the root of the tree:
+  `r = render!(depth, scene)`, with the forks inside `render`.
+- The C backend refuses a fork segment or join over 255 words ("an arity over
+  255"); keep fork results narrow, or return a constructor.
+- Arrays cannot be passed down a fork tree safely; build lists or quadtrees and
+  assemble at the join.
+- **JavaScript:** a parallel let becomes sequential `const` bindings, left then
+  right; `f!(x)` emits byte-identical JS to `f(x)`; tail calls become `run_jump`
+  trampolines (one `{$:"$JMP"}` object per iteration); non-tail calls are
+  native JS recursion. `--threads` and `--gpu` do nothing.
+
+### What this means on JavaScript (measured)
+
+Probe `.artifacts/probes/parallel/t_*.bend`, Bun 1.4.2, a machine loaded by
+proof gates, 7 interleaved runs, whole-process medians. Compare the rows with
+each other, not with other machines:
+
+| Shape (2^20 leaves, same result) | Median |
+| --- | ---: |
+| Balanced tree, parallel let | 424 ms |
+| Balanced tree, parallel let with `!` | 493 ms (same JS; noise) |
+| Balanced tree, sequential lets | 511 ms (same JS; noise) |
+| Tail-recursive list build and fold | 796 ms |
+
+On JS, parallel shape has no cost, and the tree beat the tail-recursive list
+loop, which allocates a trampoline object and a `BigInt` per step. Stack depth
+matters more: non-tail recursion overflowed at about 32,000 levels in Bun (about
+29,000 with a parallel let per level), and Chrome is far lower (this project saw
+a 5,440-deep leaf fail). A balanced tree of depth log2(n) removes that limit.
+The browser build runs Bend in one Web Worker, so JS parallel shape gives no
+speedup; the benefit is depth, the native path, and future targets.
+
+### Idioms
+
+- **Balanced range split.** Index leaves by depth and offset, and make leaves
+  chunks rather than single items:
+
+  ```python
+  def fold(+d: Nat, +i: U32) -> Acc:
+    match d:
+      case 0n:
+        chunk(64n, i)                      # a flat loop over 64 items
+      case 1n+p:
+        a b = fold(p, i) fold(p, U32.add(i, U32.shln(64, p)))
+        merge(a, b)
+  ```
+
+  `bench/runtime/mandelbrot/main.bend` (`hfold`) is the upstream model; the v2
+  kernel's `legal_tree.body` (21,760 action IDs, depth 5, 32 leaves of 680) is
+  this project's.
+- **Quadtree images.** Recurse on `Image` quadrants with a four-way parallel
+  let, returning `Pix` early for uniform tiles; `demos/app_ray_tracer_3d`
+  (`Fly.scene`) and Base `Image.free` do this.
+- **Scene data per tile.** Cull on the host, hand each tile a short candidate
+  list, and let each leaf walk that list. Avoid one shared counted scene tree
+  read by every lane.
+- **Rows and sprites.** Split row ranges or sprite lists in halves; join by
+  appending lists or composing `Qua` nodes.
+- **Move generation and evaluation.** Split the ID range (as `legal_tree`
+  does), or fork per candidate subtree in a search; combine with a pure,
+  associative merge (append, min/max, sum).
+- **Granularity.** Upstream advises about 4^7 leaves per bang on a 16,384-lane
+  device, one per lane, with flat leaf loops. It is a benchmark heuristic, not a
+  requirement; on the CPU pool, a few hundred to a few thousand leaves suffice.
+
+### Anti-patterns
+
+- A non-call value in a parallel let (serializes silently).
+- Unbalanced splits: head/tail recursion written as a fork, or halves of very
+  different cost.
+- One fork per pixel or per item: fork overhead dominates.
+- A bang inside a fork, inside a `do` continuation (the callee then owns and
+  re-reads the data), or on a tiny call.
+- Sharing large `+` structures across every lane, or pushing an `Array` down
+  the tree.
+- Stateful folds that thread one accumulator through every item: they cannot
+  fork. Restructure as a tree reduction with an associative merge.
+
+### Checklist for converting sequential code
+
+1. Find the loop's independent unit (item, ID range, row, tile, subtree).
+2. Replace a linear recursion with a depth-indexed split: `(depth, offset)` or
+   halves of a list or quadtree.
+3. Choose leaf size so there are hundreds to thousands of leaves and each leaf
+   is a flat loop.
+4. Make every parallel-let value a plain def call; precompute arguments above
+   it.
+5. Make shared inputs `+` and `Data` (or pass per-branch slices); keep affine
+   handles out of the fork.
+6. Merge results with an associative, pure function (append, `Qua`, sum,
+   min/max). Prove or test that the tree equals the sequential version;
+   `demos/pure_par_sum` proves exactly this by induction.
+7. Put a single `f!(...)` at the root, only where a native build is planned.
+8. Check the emitted C (`-o x.c`) for the join (`task_node`) and the emitted JS
+   for the recursion depth; run the existing pixel and conformance gates.
+
+### The serial contract
+
+Parallel shape applies to pure computation only. In this project, input
+ordering, state transitions (one accepted command at a time), host buffer
+writes and presentation remain serial. Never alias an `Array` across branches
+or write a shared mutable pixel buffer; produce immutable images or lists and
+let the host copy them after the join.
 
 ## Effects and FFI
 
-`IO(A)` is a pure description of an effectful computation. A `do` block uses
-`M.bind` for `x : T <- action`, `M.pure` for `return value`, and a typed `=` for
-a pure local binding. The same notation works for `IO`, `Maybe`, `Result`, or a
-custom pair of `bind`/`pure` definitions.
+`IO(A)` is a pure description of an effectful computation. A `do` block
+desugars onto `M.bind`/`M.pure`: `x : T <- action` binds, `x : T = v` is a pure
+let, a bare term is a `Unit` step, `return v` ends. The same notation works for
+`IO`, `Maybe`, `Result` or any module with `bind`/`pure`.
 
-Built-in effect families in the pinned Base include printing, environment and
-arguments, time/sleep/randomness, spawn/channels, files, TCP, UDP, windows,
-audio, and the `App` loop. Handles (`File`, `Socket`, `Listener`, `Window`,
-`Audio`) are opaque affine values. Every operation hands a handle back beside
-its result; a program cannot forge or reuse one. `IO.fork` starts a computation
-and returns a channel; `IO.join` receives and closes it. The event loop
-interleaves pure work and parks on sleep, sockets, or channels.
+Base effect families: printing, environment and arguments, time, sleep and
+randomness, spawn and channels (`IO.fork` returns a channel, `IO.join` receives
+and closes it), files, TCP, UDP, windows, audio, and the `App` loop. Handles
+(`File`, `Socket`, `Listener`, `Window`, `Audio`) are opaque affine values:
+every operation returns the handle beside its result, so it cannot be forged or
+reused. The event loop interleaves pure work and parks on sleep, sockets or
+channels.
 
-An effect definition has `IO(R)` type and imports one C and one JS twin:
+An effect is a def of type `IO(R)` with one C and one JS twin:
 
 ```python
 def Clock.now() -> IO(U32):
@@ -301,189 +502,262 @@ def Clock.now() -> IO(U32):
   import "./clock.js"
 ```
 
-The host name is lowercase with dots changed to underscores (`clock_now`). The
-C side is spliced after the runtime and registers an effect with runtime
-helpers; the JS side returns plain JS values and uses `io_done`, `io_fail`, or
-`io_tup` for results. Blocking effects use the runtime's work or wait helpers.
-`guide/EFFECTS.md` calls these internals version-specific and gives no ABI
-promise: rebuild and review foreign effects whenever the compiler pin changes.
+The host function name is the def name lowercased with dots turned into
+underscores (`clock_now`). The JS side returns plain JS values, or `io_done`,
+`io_fail`, `io_tup`. The C side is spliced after the runtime and uses its
+helpers; at this pin `EFFECTS.md` documents `io_node(e, CID_K, a, b)` for a
+two-field constructor and `io_wait_on(w, fd, POLLIN, deadline, more)`, where the
+deadline is `0` or an absolute `io_tick()` value. These names are
+version-specific with no ABI promise: re-read `EFFECTS.md` and rebuild foreign
+effects whenever the pin changes.
 
-The current Base has no TLS, HTTP, JSON, or regex library. Those can be foreign
-extensions, but that extends the trust boundary and is not a proof of protocol
-semantics. Do not add an effect to the rules core merely to avoid an explicit
-host adapter.
+JavaScript effects on this machine: `IO.print` works (the probe printed
+through the wrapper). `Window.open` always fails with "Window.open: no display
+(build a native binary ...)". `Audio.open` returns a silent device drained by the
+clock. The Base File and other libc-backed effects load `libc.so.6` or
+`libSystem` through `bun:ffi`, so they fail on Windows before a program runs.
+Base has no TLS, HTTP, JSON or regex library; a foreign extension would widen
+the trust boundary.
 
-## Browser integration and pixel graphics
+## Browser integration and interop
 
-`bend2/main.ts` is both CLI and loader. A Bun page can `import Game from
-"../main.bend"`; the loader compiles the imported Bend module and exposes every
-filled non-Base, non-IO definition. Constructors cross as
-`{$: "Name", field: value}`, `Nat` crosses as `BigInt`, `Bool` as a JS boolean,
-and arrays cross without a copy. Copy an array in the host before retaining it
-if a Bend call may rewrite it.
+`bend2/main.ts` is also a Bun loader: `import Game from "./main.bend"` compiles
+the module. The loader exports every definition that is filled, not from Base,
+not IO, not a template and not foreign. Each export is a curried JS function of
+the **live** arguments only; erased (`-x`) parameters are omitted, and partial
+application is allowed.
 
-`bend page.html -o dist` calls `Bun.build` with a browser target and the Bend
-loader plugin. This is a static bundle path and fits a browser-first host, but
-the JS target is sequential and the README says it has no graphics or audio
-backend. A browser page therefore owns Canvas/WebGL/WebAudio and calls pure
-Bend functions, or translates a Bend `Image`/scene description into host draw
-commands. Do not assume `Window.open` or `Audio.open` becomes a browser API.
+Values crossing the boundary:
 
-The pure graphics model is small and useful for experiments:
+| Bend | JavaScript |
+| --- | --- |
+| constructors | `{$: "Name", field: value}` (lists: `Con{head, tail}`/`Nil`) |
+| `Nat` | `BigInt` |
+| `U32`, `F32` | number |
+| `Bool` | boolean |
+| `Char`, `String` | string |
+| `Array` | JS array (not copied) |
+| closures | JS functions |
 
-```python
-def view(s: State) -> State & Image:
-  (s, Pix{0})
+Copy an array on the host before retaining it if a Bend call may rewrite it.
+Define a canonical codec for anything persisted; do not JSON-stringify runtime
+objects without a schema.
 
-def tick(events: List<Event>, s: State) -> IO(Maybe<State>):
-  IO.pure(Maybe<State>, Some{s})
-```
+This project does not use the upstream loader directly. `bend2/tools/loader.ts`
+wraps it with a local Windows path adapter (tagged `BEND-WINDOWS-PATH-1`) that
+normalizes backslashes before relative imports resolve. It is still needed at
+ff7a40c, and must be rechecked on every pin change. Run Bun scripts with
+`node bend2/tools/bend.mjs --run script.ts`. The browser build is
+`node bend2/tools/bend.mjs --run bend2/tools/build.ts`, which bundles
+`Application.bend` into a worker and writes `bend2/dist` (git-ignored). The page
+owns Canvas, WebAudio, storage and input. Do not expect `Window.open` or
+`Audio.open` to become browser APIs.
 
-`Image` is a quadtree: `Pix{color}` is a uniform square and `Qua{tl, tr, bl,
-br}` subdivides it. `App.run` opens a native window, calls `view`, presents a
-frame, collects events, and calls `tick`; `None{}` exits. Since state is affine,
-`view` returns the state beside the image. The 2D demos use cell-uniform tests
-to stop recursion early; the 3D demos build camera/scene data and then recurse
-over image tiles.
+The pure graphics model: `Image` is a quadtree, `Pix{color}` a uniform square
+and `Qua{tl, tr, bl, br}` a subdivision. `App.run` opens a native window, calls
+`view` (which returns the affine state beside the image), presents, collects
+events and calls `tick`; `None{}` exits. `demos/app_win_is_bug_2d/web` shows the
+browser boundary: its UI imports `../main.bend`, sends every move through
+`Game.replay`, and draws the returned state on Canvas.
 
-`demos/app_win_is_bug_2d/web` shows the browser boundary precisely: its JS UI
-imports `../main.bend`, asks Bend for `grid`, sends every move through
-`Game.replay`, and renders the returned state on Canvas. The page's `bunfig.toml`
-preloads `bend2/main.ts`. The browser never reimplements the rules, but Canvas
-animation and input remain JavaScript responsibilities.
+## Performance pitfalls
 
-## A practical workflow for a future rules core
+- **Strict arguments.** Every argument is evaluated, including both branches
+  given to `Bool.pick`. Classify outside, inside and partial cases before
+  making recursive calls; return untouched subtrees directly.
+- **JS strings.** Matching `SCon` on a JS string slices it, so walking a
+  `String` character by character is quadratic. Keep large text as lists of
+  `U32`, or process it on the host.
+- **JS arrays.** Matching `ANode` on an array slices both halves (a copy per
+  level). Use `Array.get`/`Array.set`, not structural matching, on hot paths.
+- **JS tail loops** allocate a trampoline object per iteration, and `Nat`
+  arithmetic is `BigInt`. Prefer `U32` counters and tree-shaped reductions in
+  hot code.
+- **JS recursion depth.** Non-tail recursion overflows at about 30,000 levels in
+  Bun and far fewer in Chrome; `List.foldr` and naive list maps are non-tail.
+- **U32 patterns** can rebuild a 32-bit word on each residual branch in JS.
+- **Equivalent Boolean forms lower differently.** One nested `Bool.and` test
+  allocated trampolines where an equivalent disjunction lowered to direct JS.
+  Inspect the emitted code (`-o x.js`) before and after optimizing.
+- **Pure `main` runs in the checker's normalizer**, which is slow; do not time
+  code that way.
+- **Proof normalization** unfolds definitions; keep large predicates behind
+  helper defs whose parameters stop unfolding, and use guard lemmas.
+- **Native:** shared `+` values cost reference counts or atomics per read; big
+  fork results can exceed the 255-word arity limit.
 
-1. Pin the Bend source commit and record the compiler version in the source
-   catalog. Keep `LAWS.bend` immutable to the implementation agent.
-2. Start with a pure `Data` state and pure transitions. Use `Nat`/`U32` for
-   deterministic rules; keep F32, IO handles, arrays, and host objects at the
-   boundary.
-3. Write small laws for constructor preservation, rejected actions, replay,
-   and serialization. Add a proof definition for every law before adding a
-   feature.
-4. Check `PROOF.bend`, then run differential cases against the existing
-   reference. A checker result does not replace reference or hostile-input
-   tests.
-5. Expose only pure functions to the browser loader. Define a canonical codec
-   for `Nat` (`BigInt`) and constructors; do not JSON-stringify runtime objects
-   without a schema.
-6. Add rendering as a separate host adapter or as a pure `Image` experiment.
-   Measure browser startup, bundle bytes, transition time, and frame cost on
-   every target before choosing a rewrite.
-7. For native experiments, inspect emitted C and `.gpu` artifacts, keep the
-   source hash beside measurements, and report CPU, GPU, browser, packaging,
-   and owner-acceptance evidence separately.
+## Known compiler bugs and limits at this pin
 
-## Gotchas worth checking before blaming the compiler
+- **Windows paths** (`BEND-WINDOWS-PATH-1`): the upstream loader resolves
+  relative imports as POSIX paths; `bend2/tools/loader.ts` normalizes them.
+  Local adapter, not an upstream patch.
+- **No Windows native target**; JS libc effects (File and friends) fail on
+  Windows; JS `Window.open` always fails and JS audio is silent.
+- **Full graphical C emission** for `Native.bend` did not finish within 600 s
+  (about 3.1 GiB) on this host; the text CLI (`NativeCLI.bend`) emits C in a
+  bounded run. See `NATIVE.md`, `NATIVE_CLI.md`.
+- **Arity:** a C fork segment or join over 255 words is refused.
+- **JS continuation passing for non-tail calls** is listed as not implemented
+  (`WONTFIX.txt`); deep non-tail folds overflow the host stack.
+- **Bun stack** is too small for some proofs; use the Node proof runner.
+- **Parse traps:** a missing parallel-let value swallows the next line; a
+  parenthesized value after a call is glued on as arguments (wrap it in braces,
+  `{(x + 7 : U32) : U32}`); a parallel let inside `do` reports a misleading
+  error; forward references report "a defined name".
+- **Fixed at ff7a40c:** a second book compiled in the same process reused a stale
+  probe list (bendlang/bend#976). This project's loader compiles several books
+  per Bun process, so the fix applies here.
 
-- `+` is a type/ownership promise, not a borrow annotation. Extra sharing can
-  add reference counts or atomics.
-- `==` is an equality type, not a boolean operator. Use `T.is_eq` for a value.
-- `U32` arithmetic wraps. `Nat.sub` saturates. Division by zero has explicit
-  Base behavior and must be included in laws if it matters.
-- F32 laws are axioms/foreign operations; do not claim exact proofs over them.
-- `Array` reads and writes return the array. Losing the returned array loses the
-  owner in the source program.
-- JS ignores `!`; a native GPU result cannot be inferred from a browser run.
-- Native `!` builds a sidecar `.gpu`; moving only the binary is incomplete.
-- A browser bundle does not provide a native Window, Audio, CUDA, or Metal path.
-- Effects use compiler-private C/JS ABI names; pin and rebuild together.
-- `@unsafe`, imported foreigns, open `?TODO`s, and untested generated code all
-  weaken the evidence behind a source proof.
-- `bend` may perform a daily version check unless `BEND_NO_TELEMETRY=1` is set;
-  local reproducibility should set it explicitly.
-- The upstream README says there is no Windows native target; WSL is the
-  documented route. A browser bundle in a Windows desktop shell is a distinct
-  option, not a native Bend Windows build.
-- Keep laws, proofs, compiler pins, generated output, and rendered captures
-  tied to exact commits. A local green check is not a release claim.
+## Changes since a495242 that matter here
 
-## Lessons from this actual adaptation
+Both pins are Bend 2.0.25. Upstream made three commits between them:
 
-The project now has a checked rules kernel and immutable pixel library. These
-are practical observations from this pinned version, not promises about a newer
-Bend release:
+1. `ad424af` "A second book compiled in one process starts from a fresh probe
+   list" (#976): one line, `PROBES.length = 1`, in `comp.ts` `carb_book`. It
+   removes cross-compilation state leakage when one process compiles several
+   modules (our browser build and Bun test scripts).
+2. `ff7a40c` "The effects guide calls io_node and io_wait_on as the runtime
+   declares them" (#947): documentation only. `io_node` takes no trailing `0`,
+   and `io_wait_on` takes a deadline argument. No project effect is written in
+   C, so nothing here changed.
+3. `db06f02`: a README link to a community language server (diagnostics and
+   hover; not used here).
 
-- **Check small slices early.** Record fields need destructuring or explicit
-  getters. A computed scrutinee needs a helper parameter. A pair produced by a
-  computation cannot simply be destructured in the middle of a recursive body;
-  a small Data constructor with getters can keep recursion structurally clear.
-- **Helpers do not permit mutual recursion.** A recursive loop cannot call a
-  helper that calls the loop back. Put the Boolean branch flag in the recursive
-  function's parameters, then match it before making the smaller call.
-- **Strict arguments matter for pixels.** Computing all four child images before
-  `Bool.pick(outside, old, children)` still performs the work. Classify outside,
-  inside and partial nodes before recursive calls. Untouched subtrees should
-  return directly. The same lesson applies to cheap legality rejection before
-  candidate validation.
-- **Inspect emitted JavaScript when optimizing.** A U32 pattern's residual
-  branch can reconstruct a 32-bit Word on every iteration. A structural list
-  traversal with a separate Boolean zero flag retained numeric indices and
-  avoided that allocation hotspot. Do not assume a shorter Bend expression is
-  faster after lowering.
-- **A proof can be true but expensive to normalize.** The pinned comparator
-  unfolds weak heads before comparing them. Generic Boolean guard lemmas reduced
-  repeated expansion of large predicates. Explicitly matching a Position
-  parameter in `Spec.legal_range` left a symbolic call stuck at that parameter,
-  making exact enumeration refinement practical without changing runtime meaning
-  or weakening the law. Earlier timeout/stack failures were retained.
-- **Use one browser facade import.** The initial `App.bend` facade collected core
-  and rendering APIs; the current `Application.bend` owns the complete portable
-  application. This avoids repeatedly compiling overlapping books through concurrent Bun
-  module loads. `tools/loader.ts` also normalizes backslashes before the pinned
-  loader resolves relative imports; this is a local Windows adapter, not a
-  modification to the upstream compiler.
-- **Guard proofs and chess correctness are different evidence.** A proof that
-  accepted results pass `valid` and `post` does not establish that those
-  predicates capture every intended rule. Independent review caught missing
-  fresh-pawn attacks and EP-counter validation; complete reference lists and
-  successor comparisons prevented those mistakes from being frozen.
-- **The browser still needs play-testing.** A typed host can contain a wrong DOM
-  selector, cancel a click with a later hover, retain an animation's old frame or
-  misdecode an Undo record. The host serializes input, tags worker sessions and
-  treats its own storage/animation checks as separate from the Bend source laws.
+`bend.ts`, `base.bend`, `main.ts` and the effect twins are byte-identical
+between the pins. Every project gate passed again under ff7a40c (see
+`../README.md` and the amendment record).
+
+## Updating the Bend toolchain
+
+Do this regularly (upstream moves quickly), and always as its own commit.
+
+1. **Fetch and read.**
+
+   ```powershell
+   $old = (Get-Content bend2/TOOLCHAIN.json | ConvertFrom-Json).bendCommit
+   git -C .artifacts/toolchains/bend fetch origin
+   git -C .artifacts/toolchains/bend log --oneline "$old..origin/main"
+   git -C .artifacts/toolchains/bend diff --stat "$old" origin/main
+   ```
+
+   Read `CHANGELOG.md` and the diffs of `bend2/bend.ts`, `comp.ts`, `main.ts`,
+   `base.bend`, `effs/` and the three guides. Note anything that affects the
+   loader's Windows adapter, effect ABIs, exports, or proof normalization.
+2. **Pin.** `git -C .artifacts/toolchains/bend checkout main` and
+   `git -C .artifacts/toolchains/bend pull --ff-only`; the tree must stay clean.
+   Update `bendCommit` (and `bendVersion`) in `bend2/TOOLCHAIN.json`. If Bun
+   must change, install only the official `@oven/bun-windows-x64@<version>`
+   package into `.artifacts/toolchains/runtime` and update `bunVersion` and
+   `bunWindowsPackage`. Update the compiler block of
+   `bend2/lib/graphics/VERIFICATION.json`, adding the old pin to
+   `compilerHistory`.
+3. **Re-verify in draft mode** (the manifests still record the old bytes):
+
+   ```powershell
+   node bend2/tools/verify.mjs --draft                    # v1 readiness receipt
+   node bend2/core/v2/check.mjs                           # v2 aggregate proof + conformance
+   node bend2/tools/mutate-v2.mjs                         # six mutation controls
+   cmd /c "node bend2\tools\verify-library.mjs --check > library.json"
+   node bend2/tools/bend.mjs --run bend2/tools/build.ts --draft   # bend2/dist/build.json
+   node bend2/tools/amend.mjs                             # lists the drifted frozen files
+   ```
+
+   Receipts must be UTF-8 without a byte-order mark. Windows PowerShell 5's
+   `>` writes UTF-16 and `Out-File -Encoding utf8` adds a byte-order mark, so
+   redirect through `cmd /c` as shown; `amend.mjs` rejects either encoding.
+
+   If anything fails, fix the implementation or proofs; never weaken a law. A
+   change to any `.bend`, fixture, reference, test or evidence byte cannot be
+   amended and needs a new semantic version under `LAW_CHANGE_POLICY.md`. If a
+   break is severe, stop and record a minimal repro.
+4. **Review.** An independent reviewer checks the diff and receipts and writes
+   `review.md` containing `Review disposition: accepted` and one line per
+   receipt: `v1 SHA256: <hex>`, `v2 SHA256: <hex>`, `mutations SHA256: <hex>`,
+   `library SHA256: <hex>`, `build SHA256: <hex>`.
+5. **Record the amendment.** Write a spec with `slug`, `kind`, `rationale` and a
+   `files` map giving a reason for each drifted file, then:
+
+   ```powershell
+   node bend2/tools/amend.mjs --create --spec spec.json --v1 v1.json --v2 v2.json `
+     --mutations mutations.json --library library.json --build build.json --review review.md
+   ```
+
+   It refuses unless the spec lists exactly the drifted files, all of them
+   substitutable (`bend2/TOOLCHAIN.json`, `bend2/tools/*.mjs|ts`,
+   `bend2/docs/*.md`), every receipt passed on current bytes and the review
+   binds them. It copies the evidence to
+   `bend2/docs/evidence/amendments/NNN-slug/` and writes
+   `bend2/laws/amendments/NNN-slug.json`, chained to the previous amendment by
+   hash. Frozen manifests are never rewritten.
+6. **Verify for real:** `node bend2/tools/amend.mjs`, `node bend2/tools/freeze.mjs`,
+   `node bend2/tools/freeze.mjs --graphics`, `node bend2/tools/freeze-v2.mjs`,
+   `node bend2/tools/verify.mjs`, a non-draft build, and the root `npm test`
+   and `npx tsc --noEmit`.
+7. **Update docs:** this guide's header and "Changes since" section,
+   `SOURCE_CATALOG.md` links, and the README.
+
+A frozen English document (such as `LAWS_V2.md`) is amended the same way, with a
+byte-identical preserved copy of the old text listed under `preserved` in the
+spec.
+
+## A practical workflow for new Bend code here
+
+1. Keep `LAWS.bend` files human-owned and immutable to the implementation
+   worker.
+2. Start with pure `Data` state and pure transitions. Use `Nat`/`U32` for rules;
+   keep F32, IO handles, arrays and host objects at the boundary.
+3. Write small laws for preservation, rejected actions, replay and
+   serialization, and fill each law before adding features.
+4. Check (`--check-only`), then run differential cases against the reference. A
+   checker result does not replace reference or hostile-input tests.
+5. Write computation in parallel shape (see above), and merge with pure
+   functions.
+6. Expose only pure functions to the browser, through `Application.bend`.
+7. Measure JS startup, bundle size, transition time and frame cost; report CPU,
+   GPU, browser and owner-acceptance evidence separately.
+
+## Lessons from this adaptation
+
+Observations from this project at the pinned compiler, not promises about later
+Bend releases:
+
+- **Check small slices early.** Record fields need destructuring or getters; a
+  computed scrutinee needs a helper parameter; a pair from a computation is best
+  wrapped in a small `Data` constructor with getters inside recursive bodies.
+- **No mutual recursion through helpers.** Put the branch flag in the recursive
+  def's parameters and match it before the smaller call.
+- **Strict arguments matter for pixels.** Computing all four child images
+  before `Bool.pick(outside, old, children)` still does the work.
+- **Inspect emitted JavaScript when optimizing.** A U32 pattern's residual branch
+  rebuilt a Word each iteration; a structural list traversal with a Boolean
+  zero flag avoided the allocation.
+- **A proof can be true but expensive to normalize.** Generic Boolean guard
+  lemmas avoided repeated unfolding; matching the Position parameter in
+  `legal_range` stopped symbolic unfolding without changing runtime meaning.
+- **Use one browser facade import** (`Application.bend`) to avoid compiling
+  overlapping books concurrently.
+- **Guard proofs and chess correctness are different evidence.** Independent
+  review caught missing fresh-pawn attacks and EP-counter validation; reference
+  lists and successor comparisons prevented freezing them.
+- **The browser still needs play-testing**: typed hosts can mis-select, cancel,
+  retain stale frames or misdecode records.
+- **Balanced trees beat browser stacks.** A 21,760-deep move scan overflowed,
+  and even 5,440-element leaves failed in Chrome; 32 leaves of 680 preserve the
+  complete ID range.
+- **Alignment matters for image reuse.** Placing a 512-square image on large
+  power-of-two boundaries allowed direct subtree reuse: an offset of `(24,96)`
+  forced far more work than `(0,128)`.
+- **Source checking does not prove presentation.** The first whole-screen render
+  exposed an embedding-depth defect missed by small uniform tests.
+- **Bound replay work, not just JSON size.** Validate a bounded number of
+  commands per update and keep the previous state until the candidate succeeds.
+- **Laws must not depend on implementation-owned expectations.** The v2 laws
+  refer to separately authored `RuleContracts.expected`/`legal`, so a kernel
+  that rejects everything fails them (a mutation control checks this).
+- **Native IO contracts need source inspection.** The native audio effect takes
+  interleaved stereo through a bounded ring, unlike a browser mono buffer.
+- **C emission, source checking and native execution are separate evidence.**
 
 The current law and proof receipts are linked from `../README.md`. JavaScript
-runtime measurements and rendered browser checks do not establish native CPU,
-CUDA or Metal speed.
-
-## Whole-application lessons from the second sprint
-
-The full UI now uses Bend images and a project-authored bitmap font, with generic
-browser IO. The graphical `Native.bend` Base-effects entry point checks as source,
-but its full C emitter exceeded a bounded local run. A smaller `NativeCLI.bend`
-entry point uses Base `IO.args` and `File` to provide a browser-independent ASCII
-game through the same v2 rules and record codec. Read `PORTABLE_APPLICATION.md`,
-`NATIVE.md`, and `NATIVE_CLI.md` for the distinct boundaries.
-
-- Browser recursion limits differ from Bun's. A 21,760-element non-tail move scan
-  overflowed; even 5,440-element leaves failed Chrome. A balanced tree with
-  680-element leaves preserves the complete ID range and avoids that stack depth.
-- Alignment matters to immutable image composition: placing a 512-square image
-  on large power-of-two boundaries allows direct subtree reuse. An offset of
-  `(24,96)` forced much more work than `(0,128)`. This changes placement, not pixels.
-- Inspect generated code after an equivalent Boolean rewrite. In the pinned
-  compiler, one nested `Bool.and` rectangle test allocated trampolines while the
-  equivalent disjunction of boundary violations lowered to direct JavaScript.
-  Preserve pixel comparisons when making this kind of optimization.
-- Source checking does not prove browser presentation. The first whole-screen
-  render exposed an embedding-depth defect missed by small uniform-image tests;
-  dense translated images and inspected screenshots were added.
-- JSON schema limits do not bound replay work. Parse within a size bound, then
-  validate a bounded number of commands per update, keeping the previous accepted
-  state until the entire candidate succeeds. A Move/Undo loop is a useful
-  adversarial case because its visible board history stays small.
-- A closed law can accidentally depend on an implementation-owned expectation.
-  The v2 completeness law instead refers to a separately authored normative
-  `RuleContracts.expected` and `RuleContracts.legal`. Changing the implementation
-  to reject every action must fail the law, not silently shrink its premise.
-- Native IO contracts need source inspection. The pinned audio effect consumes
-  interleaved stereo samples through a bounded ring; it is not interchangeable
-  with a browser's mono AudioBuffer. File and audio handles remain affine even
-  though application state and pixels are ordinary immutable data.
-- A C emission check is separate from source checking and actual native binary
-  execution. The full graphical book grew past a 600-second bounded emitter run
-  on this host. The smaller text client is a practical export target, but a C
-  source file alone cannot validate a supported OS, terminal, audio device or
-  native CPU performance.
+measurements and rendered browser checks do not establish native CPU, CUDA or
+Metal speed.

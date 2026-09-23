@@ -50,21 +50,46 @@ The frozen manifest and independent review receipts are in
 
 ## Build and verify
 
-The compiler is pinned in `TOOLCHAIN.json`. The local layout expects the upstream
-checkout at `.artifacts/toolchains/bend`, at the exact recorded commit, and a
-portable Bun 1.4.2. `BUN_BIN` can point to that runtime. The Windows development
-setup uses the official `@oven/bun-windows-x64@1.4.2` package in the ignored
+This experiment lives in the main Rift Chess checkout, beside the original
+TypeScript game (branch `codex/visual-overhaul`). The compiler is pinned in
+`TOOLCHAIN.json` (Bend 2.0.25 at `ff7a40c`). The local layout expects the
+upstream checkout at `.artifacts/toolchains/bend`, at the exact recorded commit
+with no tracked changes, and a portable Bun 1.4.2. `BUN_BIN` can point to that
+runtime. The Windows development setup uses the official
+`@oven/bun-windows-x64@1.4.2` package in the ignored
 `.artifacts/toolchains/runtime` directory. Browser players need neither tool.
+On a fresh checkout:
+
+```powershell
+git clone https://github.com/bendlang/bend .artifacts/toolchains/bend
+git -C .artifacts/toolchains/bend checkout ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b
+npm install --prefix .artifacts/toolchains/runtime @oven/bun-windows-x64@1.4.2
+```
 
 Run these from the **repository root**, not from `bend2/`:
 
 ```text
+node bend2/tools/amend.mjs
+node bend2/tools/freeze-v2.mjs
 node bend2/tools/verify.mjs
 node bend2/core/v2/check.mjs
+node bend2/tools/mutate-v2.mjs
 node bend2/tools/verify-library.mjs --check
 node bend2/tools/bend.mjs --run bend2/tools/build.ts
 node bend2/tools/serve.mjs 4184
 ```
+
+`amend.mjs` verifies the reviewed amendment chain in `laws/amendments/`. Frozen
+manifests are never rewritten; a compiler pin move, a change to a frozen tool
+under `tools/` or a prose correction to a frozen document (other than the change
+policy) is recorded there with its own receipts and
+review, and the freeze checks resolve recorded hashes through it. Amendment 001
+moved the compiler from `a495242` to `ff7a40c`; amendment 002 is revision 2.1
+of `docs/LAWS_V2.md` (the 2.0 text is preserved in `docs/history/`). Law,
+proof, implementation, fixture and reference bytes cannot be amended; they need
+a new semantic version under the change policy. To move the compiler, follow
+"Updating the Bend toolchain" in the local guide. The root `npm test` excludes
+`bend2/**` and `.artifacts/**`.
 
 The preview is then `http://127.0.0.1:4184/`. The browser distribution is
 `bend2/dist/`. Its scripts and stylesheet have content-based names, and its own

@@ -1,12 +1,15 @@
 # Isolated Bend2 experiment
 
-The user-authorized scope is the full sprint in `bend2/SPRINT.md`. Preserve the
-published TypeScript application outside `bend2/`; do not switch this branch into
-the release checkout. Root controls integration and all Git mutations.
+The user-authorized scope is the full sprint in `bend2/SPRINT.md`. The Bend2
+experiment now lives in this main checkout beside the published TypeScript
+application; keep that application working and outside `bend2/`. Root controls
+integration and all Git mutations.
 
 Read `bend2/docs/LOCAL_BEND_GUIDE.md` before Bend implementation. Upstream compiler
-source under `.artifacts/toolchains/bend` is pinned and read-only. Set
-`BEND_NO_TELEMETRY=1` and use the local wrapper. No upstream publishing commands.
+source under `.artifacts/toolchains/bend` is pinned; never patch it. Move the pin
+only through the guide's "Updating the Bend toolchain" procedure (a reviewed
+amendment). Set `BEND_NO_TELEMETRY=1` and use the local wrapper. No upstream
+publishing commands.
 
 Laws and normative dependencies become immutable once frozen. Changes require the
 documented amendment procedure; never weaken them to make a proof or build pass.
