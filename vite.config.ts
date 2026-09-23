@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   base: './',
   build: {
@@ -10,4 +10,5 @@ export default defineConfig({
     },
   },
   server: { port: 5173, strictPort: true },
+  test: { exclude: [...configDefaults.exclude, '.artifacts/**', 'bend2/**'] },
 });
