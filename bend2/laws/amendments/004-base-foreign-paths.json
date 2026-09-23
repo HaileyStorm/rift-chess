@@ -1,0 +1,55 @@
+{
+  "schema": "rift-bend-amendment/1",
+  "sequence": 4,
+  "parentSha256": "60f35231b1a9678259fedf26ccb0fc9d449d4fd271017651869128b25e75cbd2",
+  "createdAt": "2026-09-23T23:01:50.207Z",
+  "kind": "tooling",
+  "semanticMeaning": "unchanged",
+  "rationale": "Bend 2.0.26 leaves Base effect twin paths as ./effs/*.js and ./effs/*.c in tld.i. The pinned JS emitter realpaths these from the process working directory, but this project's --run wrapper uses the repository root. The existing Windows loader therefore fails to compile a Bend module that imports those Base effects. Amend the frozen loader adapter to resolve only pinned Base foreign twins against the compiler effects directory. The mutation receipt generator previously omitted loader.ts despite its presence in the frozen v2 manifest; include the complete frozen v2 input set in its snapshot before creating a tool amendment. The six controls and their rejection logic do not change. Project foreign imports, rule definitions, proofs, fixture bytes, compiler source and game semantics remain unchanged. The bounded collision/missing-file regression and the full proof, mutation, library, draft-build and rendered checks accompany this tool-only amendment.",
+  "toolchain": {
+    "bendVersion": "2.0.26",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "records": {
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/laws/pixels-v1.json": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "bend2/laws/proof-v1.json": "7dc690646fb84b66ffbc525fd1ee2d3ddc0908679b45cc34fa2572e2737b18d6",
+    "bend2/laws/semantic-v2.json": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "substitutions": {
+    "bend2/tools/loader.ts": {
+      "from": "2cbb312b5384021b3057d718300dc578337831c5aec7235c6c9cff35015851f2",
+      "to": "478081ea8be6e4c55948ddec523cc17cd39a006a47926bab5653d6cabd88fe93",
+      "records": [
+        "semantic-v2"
+      ],
+      "reason": "Inline a bounded Base-only foreign-twin path rewrite before JS emission; leave project foreign imports untouched and fail if a pinned Base effect is missing. No law or game semantics changed."
+    },
+    "bend2/tools/mutate-v2.mjs": {
+      "from": "21334c2a9c19250250863e448de52668333fee9176266858e2e4aefe5bdeb5e4",
+      "to": "f3a68ab87b3649f356ef7d0699709b4ef9a8564a070d59d1fc1fe329db0fced4",
+      "records": [
+        "semantic-v2"
+      ],
+      "reason": "Snapshot every file named in the frozen v2 manifest as well as the proof-source closure so a loader amendment is bound by the six mutation controls. Rejection logic and laws are unchanged."
+    }
+  },
+  "preserved": {},
+  "evidence": {
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/v1.json": "3eda1736f2f72aa67f218748ae9bd4d3d8080aa54952ee27393d455838faa532",
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/v2.json": "6c0c42c22eadad6075f590d6e96292232124d009351683bbe7f1bc4abc453e5b",
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/mutations.json": "f1efac82d9fa610f15d88e623c2538e14535e9baa08425dd73e6281f58df774a",
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/library.json": "67df3f4821b7e087b09a05e503e19334728c018ec7c9ad14f78b37f02b98e4ad",
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/build.json": "55b7e15754bf6c430e7107437b912372ece3b479b686e5e76862d936a41814fd",
+    "bend2/docs/evidence/amendments/004-base-foreign-paths/review.md": "a8ca30b59346f15359dc929a7103d52dd888b8161604ae2e7331bdc8f5faa36a"
+  },
+  "tools": {
+    "bend2/tools/amendments.mjs": "fde126541451c483f922920744fc7fbe35d9c0103fee466b166c8c4ab2c75c6e",
+    "bend2/tools/amend.mjs": "e6b095784e48c9de1ef08bf5277da363419b32926f8df6dd7c1b9dcc2cf8f240"
+  }
+}

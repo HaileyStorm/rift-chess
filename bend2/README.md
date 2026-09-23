@@ -27,6 +27,8 @@ record codec; it emits C through the pinned compiler.
   [graphical native experiment](docs/NATIVE.md): distinct source and acceptance evidence.
 - [Application and IO boundary](docs/PORTABLE_APPLICATION.md): which code runs in
   Bend, browser/native adapter responsibilities, and interruption-safe replay.
+- [Stage-two local evidence](docs/evidence/stage2-local/receipt.json): migrated
+  controller, real canvas/reference playtest and measured performance limits.
 - [Law change policy](docs/LAW_CHANGE_POLICY.md): preserve the initial contract;
   fix implementation or proofs before considering a semantic amendment.
 - [Frozen semantics](laws/semantic-v1.json), [pixel contract](laws/pixels-v1.json)

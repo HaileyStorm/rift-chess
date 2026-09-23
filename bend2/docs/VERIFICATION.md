@@ -180,3 +180,33 @@ retained older hashed assets, a source pointer and the content-addressed CLI C.
 The original Three.js release and its checkout remain unchanged. Supported-host
 CLI binary execution, native GUI C emission, native CPU/GPU performance and owner
 visual acceptance are outside this evidence.
+
+## Stage-two migration in the main checkout
+
+The Bend adaptation is now under `bend2/` on `codex/visual-overhaul`, beside the
+working original TypeScript application. The controller is split into Bend
+`State`, `Records`, `Commands`, `Actions` and `Program`; browser code remains an
+IO/pixel/audio adapter. Amendments 001–003 document the earlier pin and English
+law corrections. [Amendment 004](../laws/amendments/004-base-foreign-paths.json)
+binds a Base-only foreign-effect path fix in the frozen loader and strengthens
+mutation receipt coverage to the complete v2 frozen input set. Its five
+[reviewed receipts](evidence/amendments/004-base-foreign-paths/) passed without
+editing a law, proof, rules implementation, fixture or upstream compiler.
+
+The [local stage-two receipt](evidence/stage2-local/receipt.json) binds the full
+ignored Playwright summary: 18 rendered scenarios and 787 checks passed with
+zero recorded defects, including both bot colors, checkmates, castling, en
+passant, underpromotion, platform Shifts, draw endings, Undo, import/recovery,
+offline play, keyboard/camera interaction, mobile menus and viewport resizing.
+The test replays committed records on the TypeScript reference and saves whole,
+regional and detail captures. The inspected [selection](evidence/stage2-local/selected.png)
+and [mobile move panel](evidence/stage2-local/mobile.png) are actual local frames.
+The normal semantic freeze, v1 proof/conformance suite, v2 aggregate proof and
+finite conformance, six positive/negative mutations, graphics-library checks,
+non-draft browser build, root 62 tests and root TypeScript check passed.
+
+This is local source and rendered-browser evidence, not yet a hosted stage-two
+release. The tested asset version is `361b9895746876a71757`. Move-tick p95 was
+608 ms; bot reply medians were 721 ms (White) and 542 ms (Black) on this host.
+These are availability and responsiveness limits to revisit before claiming
+native parallel performance or broad-device acceptance.

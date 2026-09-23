@@ -6,9 +6,10 @@ library, playable game, testing and iteration. Do not replace the released game
 until this experiment proves itself. The owner waived prior approval of the initial
 laws while asleep; this does not authorize quietly weakening them later.
 
-The existing game is published as 1.2.1. This checkout is `codex/bend2-adaptation`,
-based on that release. All experiment files belong under `bend2/`. The existing
-application and reference remain comparison inputs, not alternative runtime code.
+The existing game is published as 1.2.1. The Bend adaptation was migrated from
+`codex/bend2-adaptation` into the main checkout on `codex/visual-overhaul` under
+`bend2/`. The existing application and reference remain comparison inputs, not
+alternative runtime code for the Bend game.
 
 ## Sequence and completion requirements
 
@@ -130,3 +131,25 @@ has no C compiler. The clean browser build, source-bound C export, exact live
 hashes, all 17 hosted scenario groups and a returning old-profile offline
 upgrade pass. The source branch and Pages repository are pushed; receipts are
 in `docs/evidence/whole-app-v2/`. The original published game is unchanged.
+
+## Stage-two main-checkout checkpoint
+
+The migrated controller is split into Bend `State`, `Records`, `Commands`,
+`Actions` and the `Program` facade. The local stage-two matrix uses real Chrome
+canvas input, compares committed records and positions with the independent
+TypeScript reference, and captures whole frames, regions and detail crops. All
+18 scenarios and 787 checks passed on the Bend 2.0.26 browser asset version
+`361b9895746876a71757`, with zero recorded defects; the
+[`stage2-local` receipt](docs/evidence/stage2-local/receipt.json) preserves the
+full ignored-run hash and representative inspected frames.
+
+Amendment 004 records a narrow Base foreign-effect path adapter in the frozen
+loader and expands the mutation receipt to bind every frozen v2 input. It was
+independently reviewed after v1/v2 proofs, six positive/negative mutation
+controls, the graphics-library checks and a draft build passed. The non-draft
+freeze and browser build then passed without changing any rule law or proof.
+
+This is a local rendered checkpoint, separate from the previous hosted build.
+Measured p95 post-move tick work was 608 ms; local bot reply medians were about
+721 ms for White and 542 ms for Black. Native parallel performance, broader
+device coverage and owner visual acceptance remain unverified.

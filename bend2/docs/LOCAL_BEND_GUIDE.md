@@ -545,9 +545,12 @@ objects without a schema.
 
 This project does not use the upstream loader directly. `bend2/tools/loader.ts`
 wraps it with a local Windows path adapter (tagged `BEND-WINDOWS-PATH-1`) that
-normalizes backslashes before relative imports resolve. It is still needed at
-6a77e12 (imports still resolve through `path.posix`), and must be rechecked on
-every pin change. Run Bun scripts with
+normalizes backslashes before relative imports resolve, and relocates only
+pinned Base foreign `tld.i` paths (`./effs/*.js`, `./effs/*.c`) to the compiler's
+effect directory so `js_lib` can realpath them when `--run` keeps cwd at the
+repository root. It is still needed at 6a77e12 (imports still resolve through
+`path.posix`; foreign twins remain relative), and must be rechecked on every
+pin change. Run Bun scripts with
 `node bend2/tools/bend.mjs --run script.ts`. The browser build is
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts`, which bundles
 `Application.bend` into a worker and writes `bend2/dist` (git-ignored). The page
@@ -590,8 +593,11 @@ browser boundary: its UI imports `../main.bend`, sends every move through
 ## Known compiler bugs and limits at this pin
 
 - **Windows paths** (`BEND-WINDOWS-PATH-1`): the upstream loader resolves
-  relative imports as POSIX paths; `bend2/tools/loader.ts` normalizes them.
-  Local adapter, not an upstream patch.
+  relative imports as POSIX paths; `js_lib` realpaths foreign `tld.i` twins
+  from cwd. `bend2/tools/loader.ts` normalizes import slashes and resolves only
+  pinned Base `./effs/*` imports against the compiler's effect directory.
+  Local adapter, not an upstream patch. Its frozen loader bytes and complete
+  mutation-input binding are recorded in tool-only amendment 004.
 - **No Windows native target**; JS libc effects (File and friends) fail on
   Windows; JS `Window.open` always fails and JS audio is silent.
 - **Full graphical C emission** for `Native.bend` did not finish within 600 s

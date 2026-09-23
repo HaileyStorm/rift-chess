@@ -1,0 +1,41 @@
+{
+  "schema": "rift-bend-stage2-local/1",
+  "at": "2026-09-23T22:17:49.182Z",
+  "scope": "Local Chrome rendered canvas playtest, Bend 2.0.26 browser build; no hosted/native/GPU/owner acceptance",
+  "sourceAtTest": "7b5ce7dceacaabc2643642fde4e7567641793122",
+  "sourceDirtyAtTest": true,
+  "buildVersion": "361b9895746876a71757",
+  "semanticSha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+  "fullSummarySha256": "242b3169e7b2e949bb9f4089526232b13c278db0bcbf2d604d3f5bb0f4bd0cfd",
+  "scenarioCount": 18,
+  "checkCount": 787.0,
+  "defectCount": 0,
+  "scenarios": [
+    "desktop-start",
+    "defaults",
+    "selection",
+    "hotseat-black-mates",
+    "hotseat-white-mates",
+    "castle-en-passant",
+    "promotion",
+    "shift",
+    "draws",
+    "bot-white",
+    "bot-black",
+    "undo",
+    "camera",
+    "menus",
+    "persistence",
+    "mobile",
+    "resize",
+    "perf"
+  ],
+  "performance": {
+    "hoverMedianMs": 11.6,
+    "selectMedianMs": 27.1,
+    "moveTickP95Ms": 608.1,
+    "orbitMedianMs": 24.6,
+    "botWhiteReplyMedianMs": 721.1000000238419,
+    "botBlackReplyMedianMs": 541.9000000953674
+  }
+}

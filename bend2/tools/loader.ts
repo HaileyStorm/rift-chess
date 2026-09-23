@@ -1,7 +1,8 @@
 // BEND-WINDOWS-PATH-1: bounded adapter for the pinned compiler, which splits
 // imported file paths on '/'. Never patch the upstream checkout. Recheck/remove
 // this adapter when changing the compiler pin; the ordinary CLI wrapper applies
-// the same normalization. No compiler semantics or ownership checks are changed.
+// the same normalization. The Base foreign-path rewrite below is bound by the
+// reviewed amendment chain because this loader belongs to the v2 proof inputs.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,12 +10,34 @@ import * as Bend from '../../.artifacts/toolchains/bend/bend2/bend.ts';
 import * as Comp from '../../.artifacts/toolchains/bend/bend2/comp.ts';
 import type { BunPlugin } from 'bun';
 
+// 2.0.26 stores Base effects as relative `./effs/*.js`/`*.c` imports. Its JS
+// emitter realpaths them from cwd, while `--run` keeps cwd at the project root.
+// Only the pinned Base definitions (b=true) may be relocated; project foreign
+// imports retain their own paths, even when a basename matches a Base effect.
+export function resolveBaseForeignImports(book: Bend.Book): void {
+  const effects = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
+    '../../.artifacts/toolchains/bend/bend2/effs');
+  for (const def of Object.values(book.tlds)) {
+    if (def.$ !== 'Def' || def.b !== true || !def.i) continue;
+    def.i = def.i.map((spec) => {
+      const name = /^\.\/effs\/([A-Za-z0-9_-]+\.(?:c|js))$/.exec(spec)?.[1];
+      if (!name) return spec;
+      const file = path.join(effects, name);
+      if (!fs.statSync(file, { throwIfNoEntry: false })?.isFile()) {
+        throw new Error(`Pinned Base effect is missing: ${spec}`);
+      }
+      return file.replaceAll('\\', '/');
+    });
+  }
+}
+
 export async function compileModule(input: string): Promise<string> {
   const file = path.resolve(input).replaceAll('\\', '/');
   const book = Bend.book_nil();
   const seen = new Map<string, string | null>();
   try {
     await Bend.book_load(book, file, '', seen);
+    resolveBaseForeignImports(book);
     const laws = path.join(path.dirname(file), 'LAWS.bend');
     if (path.basename(file) === 'PROOF.bend' && fs.existsSync(laws) && !seen.has(fs.realpathSync(laws))) {
       throw new Error('PROOF.bend must import ./LAWS.bend');

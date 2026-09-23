@@ -5,7 +5,11 @@ import {root,digest} from './freeze.mjs';
 import {requiredV2Inputs} from './freeze-v2.mjs';
 const out=path.join(root,'.artifacts/bend2/v2-mutations',new Date().toISOString().replace(/[:.]/g,'-'));
 fs.mkdirSync(out,{recursive:true});
-const hashes=Object.fromEntries(requiredV2Inputs().map(file=>[file,digest(fs.readFileSync(path.join(root,file)))]));
+// A mutation receipt must bind every frozen v2 input, including non-Bend
+// checker/loader tools that the narrower proof-source closure does not discover.
+const frozen=JSON.parse(fs.readFileSync(path.join(root,'bend2/laws/semantic-v2.json')));
+const inputs=[...new Set([...requiredV2Inputs(),...Object.keys(frozen.files)])].sort();
+const hashes=Object.fromEntries(inputs.map(file=>[file,digest(fs.readFileSync(path.join(root,file)))]));
 const results=[];
 function check(file,log) {
   const r=spawnSync(process.execPath,['bend2/core/v2/node-check.mjs',file],{cwd:root,env:{...process.env,BEND_TIMEOUT_MS:'600000'},encoding:'utf8',timeout:610000,maxBuffer:4e6});
