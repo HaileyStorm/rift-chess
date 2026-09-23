@@ -137,7 +137,10 @@ async function scenario(name, viewport, body) {
       await page.waitForFunction(id => window.__reply?.id > id, id, { timeout: 90000 });
       await t.ready();
     },
-    async open(storage = {}) {
+    // Most scenarios drive moves through the destination list, which is shown
+    // only with TARGETS on; `defaults` covers the off-by-default presentation.
+    async open(storage = {}, { targets = true } = {}) {
+      if (targets) storage = { [PREFS]: '{"showMoves":true}', ...storage };
       if (Object.keys(storage).length) await page.addInitScript(values => {
         if (sessionStorage.getItem('playtest-seeded')) return;
         sessionStorage.setItem('playtest-seeded', '1');
@@ -216,9 +219,21 @@ async function scenario(name, viewport, body) {
       t.check(text.startsWith(`Rift Chess. ${state}.`), `Status text matches reference (${context})`, `${text} vs ${state}`);
       return game;
     },
+    /** Stored overlay preferences, with the documented defaults for missing or unreadable ones. */
+    async overlays() {
+      return page.evaluate(key => {
+        let p = {}; try { p = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch {}
+        return { moves: p.showMoves === true, shifts: p.showShifts !== false };
+      }, PREFS);
+    },
     async play(id, { via = 'canvas', piece = 16 } = {}) {
       const a = decode(id), before = await t.commands(), group = Math.floor(id / 5);
-      const offered = async () => (await t.controls()).find(c => c.id >= 1000 && Math.floor((c.id - 1000) / 5) === group);
+      const overlays = await t.overlays(), listed = a.shift ? overlays.shifts : overlays.moves;
+      if (!listed && via === 'control') throw new ScriptError(`${label(id)} via control needs TARGETS on`);
+      const source = a.shift ? `Selected tile ${'ABCD'[a.from % 4]}${Math.floor(a.from / 4) + 1}.` : `Selected ${sqName(a.from)}.`;
+      const offered = async () => listed
+        ? (await t.controls()).find(c => c.id >= 1000 && Math.floor((c.id - 1000) / 5) === group)
+        : ((await t.summary()).includes(source) ? { id: 1000 + id } : undefined);
       const shown = await t.shown(), board = t.boardCodes(shown);
       const side = shown.position.side === true || shown.position.side?.$ === 'True';
       const own = code => code !== 0 && (side ? code < 8 : code >= 8);
@@ -239,7 +254,11 @@ async function scenario(name, viewport, body) {
       else {
         const target = a.shift ? macroSquares(a.to)[0] : a.to;
         await t.clickSquare(target, 0);
-        if (!a.promo && await t.commands() === before) { t.defect('major', `Destination click did not commit ${label(id)}`); await t.control(control.id); }
+        if (!a.promo && await t.commands() === before) {
+          t.defect('major', `Destination click did not commit ${label(id)}`);
+          if (!listed) throw new ScriptError(`no fallback control for ${label(id)} with overlays off`);
+          await t.control(control.id);
+        }
       }
       if (a.promo) {
         t.check((await t.shown()).menu === 4, `Promotion chooser opens for ${label(id)}`);
@@ -363,6 +382,46 @@ await scenario('desktop-start', DESKTOP, async t => {
   await t.shot('layout-c', { squares: [sq('e3'), sq('f6'), sq('d4'), sq('g5')] });
 });
 
+// Rules §10 defaults: destination overlays off, Shift indicators on, selection always shown.
+await scenario('defaults', DESKTOP, async t => {
+  await t.open({}, { targets: false });
+  const board = () => t.page.evaluate(() => { const c = document.querySelector('canvas'), o = document.createElement('canvas');
+    o.width = 512; o.height = 512; o.getContext('2d').drawImage(c, 0, 128, 512, 512, 0, 0, 512, 512); return o.toDataURL(); });
+  await t.shot('start', { squares: [sq('c3'), sq('a3'), sq('e3'), sq('c5')] });
+  await t.clickSquare(sq('g1'), 16);
+  const listed = (await t.controls()).filter(c => c.id >= 1000 || c.id === 47);
+  t.check(listed.length === 0, 'TARGETS off: the pane lists no destinations', listed.map(c => c.label).join(','));
+  t.check((await t.summary()).includes('Selected g1.'), 'The selection is announced with TARGETS off', await t.summary());
+  await t.shot('selected-targets-off', { squares: [sq('g1'), sq('f3'), sq('h3')] });
+  await t.play(mv('g1', 'f3')); await t.play(mv('b8', 'c6'));
+  await t.clickSquare(sq('e4'));
+  t.check((await t.summary()).includes('Selected tile C2.'), 'An empty platform with a legal Shift is selectable');
+  await t.shot('tile-targets-off', { squares: [sq('e3'), sq('c3')] });
+  await t.control(4);
+  await t.control(1); await t.shot('settings-overlays', { controls: [53, 54] });
+  const toggles = (await t.controls()).filter(c => c.id === 53 || c.id === 54).map(c => [c.id, c.active]);
+  t.check(JSON.stringify(toggles) === '[[53,false],[54,true]]', 'TARGETS starts off and SHIFTS on', JSON.stringify(toggles));
+  await t.control(53); await t.control(28);
+  await t.clickSquare(sq('f3'), 16);
+  t.check(await t.has(1000 + mv('f3', 'e5')), 'TARGETS on lists destinations');
+  await t.shot('selected-targets-on', { squares: [sq('f3'), sq('e5'), sq('g5'), sq('d4')] });
+  await t.control(4);
+  const marked = await board();
+  await t.control(1); await t.control(54); await t.control(28);
+  t.check(marked !== await board(), 'SHIFTS off removes the Shift indicators from the board');
+  await t.shot('shifts-off', { squares: [sq('c3'), sq('a3'), sq('e3'), sq('c5')] });
+  const prefs = JSON.parse(await t.page.evaluate(k => localStorage.getItem(k), PREFS));
+  t.check(prefs.showMoves === true && prefs.showShifts === false, 'Overlay preferences persist', JSON.stringify(prefs));
+  await t.page.reload({ waitUntil: 'networkidle' }); await t.ready();
+  await t.control(1);
+  const reloaded = (await t.controls()).filter(c => c.id === 53 || c.id === 54).map(c => [c.id, c.active]);
+  t.check(JSON.stringify(reloaded) === '[[53,true],[54,false]]', 'Overlay preferences survive reload', JSON.stringify(reloaded));
+  await t.control(54); await t.control(53); await t.control(28);
+  await t.control(55); await t.shot('history', {});
+  t.check((await t.shown()).menu === 10 && !(await t.has(45)) && !(await t.has(46)), 'Short history has one page');
+  await t.control(28);
+});
+
 await scenario('selection', DESKTOP, async t => {
   await t.open();
   await t.hover(sq('e2'), 16); await t.shot('hover-e2', { squares: [sq('e2')] });
@@ -381,10 +440,13 @@ await scenario('selection', DESKTOP, async t => {
   const hole = await t.shown();
   t.check(!(await t.has(4)), 'Clicking an empty hole with nothing selected does not select the hole', `menu ${hole.menu}`, 'minor');
   await t.shot('hole-click', { squares: [sq('c4')] });
+  await t.clickSquare(sq('g4'));
+  t.check(!(await t.has(4)), 'Clicking an empty platform with no legal Shift selects nothing');
+  await t.clickSquare(sq('e7'), 16);
+  t.check(!(await t.has(4)), 'Clicking an opponent piece selects nothing');
   await t.control(4).catch(() => {});
-  await t.clickSquare(sq('e2'), 16); await t.control(5);
-  const shiftTargets = (await t.controls()).filter(c => c.id >= 1000);
-  t.check(shiftTargets.length === 0, 'SHIFT on the king platform offers no Shift destinations', JSON.stringify(shiftTargets.map(c => c.label)));
+  await t.clickSquare(sq('e2'), 16);
+  t.check(!(await t.has(5)), 'SHIFT is disabled when the selected piece\'s platform has no legal Shift');
   await t.shot('shift-on-king-tile', { controls: [5, 4] });
   await t.page.keyboard.press('Escape'); await t.ready();
   t.check(!(await t.has(4)), 'Escape clears the selection');
@@ -525,6 +587,12 @@ await scenario('draws', DESKTOP, async t => {
   await t.play(quiet.at(-1));
   await t.shot('prompt-policy-past-100', {});
   t.check(!(await t.verify('prompt at 100'))?.outcome(), 'Prompt policy keeps playing past 100 quiet actions');
+  await t.control(55);
+  t.check((await t.has(45)) && !(await t.has(46)), 'A long history opens at its last page');
+  await t.shot('history-last-page', {});
+  await t.control(45); t.check(await t.has(46), 'PREV pages back and enables NEXT');
+  await t.shot('history-previous-page', {});
+  await t.control(28);
   // Hotseat agreement, decline, resignation.
   await t.control(2); await t.control(30); await t.control(33); await t.control(35); await t.control(29); await t.count(0);
   await t.play(mv('e2', 'e4'));

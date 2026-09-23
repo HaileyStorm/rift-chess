@@ -4,6 +4,7 @@
 import Base
 import ../core/Model.bend as Model
 import ../graphics/Camera.bend as Camera
+import ../graphics/Scene.bend as Scene
 import ./Types.bend as Types
 
 def width(mobile: Bool) -> U32:
@@ -77,9 +78,22 @@ def square_name(+square: U32) -> String:
   String.append(Char.show(Char.from_u32(U32.add(97, Model.file_of(square)))),
     U32.show(U32.add(Model.rank_of(square), 1)))
 
+# Tile positions A1..D4 (rules §1): the letter is the macro file.
 def tile_name(+tile: U32) -> String:
-  String.append(square_name(Model.square_in_macro(tile, 0)),
-    String.append("-", square_name(Model.square_in_macro(tile, 3))))
+  String.append(Char.show(Char.from_u32(U32.add(65, U32.mod(tile, 4)))),
+    U32.show(U32.add(U32.div(tile, 4), 1)))
+
+# "Can Shift" means at least one fully legal destination (rules §3).
+def shift_source(ids: List<&2, U32>, +macro: U32) -> Bool:
+  match ids:
+    case Nil{}:
+      False{}
+    case +h <> t:
+      Bool.or(Bool.and(U32.is_ge(h, 20480), U32.is_eq(Model.action_from(Model.decode_shift(h)), macro)),
+        shift_source(t, macro))
+
+def history_last_page(+count: U32) -> U32:
+  U32.div(U32.sub(U32.max(count, 1), 1), 10)
 
 def destination_group(id: U32) -> U32:
   U32.div(id, 5)
@@ -103,7 +117,7 @@ def action_label(action: Model.Action, selected: U32, tile: U32) -> String:
     case Model.MoveAction{from, to, promotion}:
       square_name(to)
     case Model.ShiftAction{from, to, promotion}:
-      String.append("S ", tile_name(to))
+      String.append("TO ", tile_name(to))
 
 def action_for.decoded(decoded: Maybe<Model.Action>) -> Model.Action:
   match decoded:
@@ -125,23 +139,31 @@ def human_turn.for(+mode: U32, +turn: Bool) -> Bool:
 def human_turn(meta: Types.Meta, preferences: Types.Preferences) -> Bool:
   human_turn.for(Types.preferences_mode(preferences), Types.meta_turn(meta))
 
-def destination_enabled(+snapshot: Types.Snapshot) -> Bool:
+def live(+snapshot: Types.Snapshot) -> Bool:
   +meta = Types.snapshot_meta(snapshot)
-  +preferences = Types.snapshot_preferences(snapshot)
-  +is_live = Bool.and(Bool.and(U32.is_zero(Types.meta_outcome(meta)),
-      Bool.not(Types.meta_recovery(meta))),
-    Bool.not(Bool.or(Types.snapshot_moving(snapshot), Types.snapshot_checking(snapshot))))
-  Bool.and(is_live, human_turn(meta, preferences))
+  +busy = Bool.or(Types.snapshot_staged(snapshot),
+    Bool.or(Types.snapshot_moving(snapshot), Types.snapshot_checking(snapshot)))
+  Bool.and(Bool.and(U32.is_zero(Types.meta_outcome(meta)),
+      Bool.not(Types.meta_recovery(meta))), Bool.not(busy))
 
-def destination_controls.one(keep: Bool, action: Model.Action, +id: U32,
-  +selected: U32, +tile: U32, +ordinal: U32, +mobile: Bool,
-  +offset: U32, +snapshot: Types.Snapshot) -> List<&2, Types.Control>:
-  match keep:
-    case False{}:
+def destination_enabled(+snapshot: Types.Snapshot) -> Bool:
+  Bool.and(live(snapshot), human_turn(Types.snapshot_meta(snapshot), Types.snapshot_preferences(snapshot)))
+
+# Destination buttons follow the overlay preferences (rules §10); the board
+# itself accepts every legal action either way.
+def offered.go(ids: List<&2, U32>, +moves: Bool, +shifts: Bool) -> List<&2, U32>:
+  match ids:
+    case Nil{}:
       Nil{}
-    case True{}:
-      [Types.Control{U32.add(1000, id), action_label(action, selected, tile),
-        grid_rect(mobile, ordinal, offset), destination_enabled(snapshot), False{}}]
+    case +h <> t:
+      +keep = Bool.pick(Bool, U32.is_lt(h, 20480), moves, shifts)
+      +rest = offered.go(t, moves, shifts)
+      Bool.pick(List<&2, U32>, keep, h <> rest, rest)
+
+def offered(+snapshot: Types.Snapshot) -> List<&2, U32>:
+  +preferences = Types.snapshot_preferences(snapshot)
+  offered.go(Types.snapshot_legal(snapshot), Types.preferences_showMoves(preferences),
+    Types.preferences_showShifts(preferences))
 
 def destination_controls.prepend(keep: Bool, action: Model.Action, +id: U32,
   +selected: U32, +tile: U32, +ordinal: U32, +mobile: Bool,
@@ -171,8 +193,8 @@ def destination_count.go(ids: List<&2, U32>, +selected: U32, +tile: U32,
 
 def destination_count(+snapshot: Types.Snapshot) -> U32:
   +frame = Types.snapshot_frame(snapshot)
-  destination_count.go(Types.snapshot_legal(snapshot), Types.frame_selected(frame),
-    Types.frame_tile(frame), Nil{}, 0)
+  destination_count.go(offered(snapshot), Scene.frame_selected(frame),
+    Scene.frame_tile(frame), Nil{}, 0)
 
 def destination_overflow.for(+mobile: Bool, +count: U32) -> Bool:
   U32.is_gt(count, Bool.pick(U32, mobile, 6, 12))
@@ -202,18 +224,12 @@ def destination_controls.go(ids: List<&2, U32>, +selected: U32, +tile: U32,
 def destination_controls.at(+snapshot: Types.Snapshot, +offset: U32,
   +ordinal: U32) -> List<&2, Types.Control>:
   +frame = Types.snapshot_frame(snapshot)
-  destination_controls.go(Types.snapshot_legal(snapshot), Types.frame_selected(frame),
-    Types.frame_tile(frame), Nil{}, ordinal, Types.snapshot_mobile(snapshot),
+  destination_controls.go(offered(snapshot), Scene.frame_selected(frame),
+    Scene.frame_tile(frame), Nil{}, ordinal, Types.snapshot_mobile(snapshot),
     offset, snapshot)
 
 def destination_controls(+snapshot: Types.Snapshot) -> List<&2, Types.Control>:
   destination_controls.at(snapshot, grid_offset(Types.snapshot_mobile(snapshot)), 0)
-
-def live(+snapshot: Types.Snapshot) -> Bool:
-  +meta = Types.snapshot_meta(snapshot)
-  Bool.and(Bool.and(U32.is_zero(Types.meta_outcome(meta)),
-      Bool.not(Types.meta_recovery(meta))),
-    Bool.not(Bool.or(Types.snapshot_moving(snapshot), Types.snapshot_checking(snapshot))))
 
 def mode(snapshot: Types.Snapshot) -> U32:
   Types.preferences_mode(Types.snapshot_preferences(snapshot))
@@ -272,19 +288,22 @@ def label(+id: U32) -> String:
     case 50: "BLACK"
     case 51: "WHITE"
     case 52: "BLACK"
+    case 53: "TARGETS"
+    case 54: "SHIFTS"
+    case 55: "HISTORY"
     case _: "ACTION"
 
 def enabled_for(+id: U32, +meta: Types.Meta, is_live: Bool,
-  can_play: Bool, has_selection: Bool, piece_selected: Bool, history: Bool,
-  not_moving: Bool, dynamic: Bool, can_control: Bool, white_actor: Bool,
-  black_actor: Bool, can_confirm_resign: Bool) -> Bool:
+  can_play: Bool, has_selection: Bool, can_shift: Bool, can_prev: Bool,
+  can_next: Bool, not_moving: Bool, dynamic: Bool, can_control: Bool,
+  white_actor: Bool, black_actor: Bool, can_confirm_resign: Bool) -> Bool:
   match id:
     case 1: True{}
     case 2: True{}
     case 27: True{}
     case 3: Bool.and(not_moving, Bool.and(Bool.not(Types.meta_recovery(meta)), Types.meta_canUndo(meta)))
     case 4: Bool.and(can_play, has_selection)
-    case 5: Bool.and(can_play, piece_selected)
+    case 5: Bool.and(can_play, can_shift)
     case 6: Bool.and(can_control, U32.is_zero(Types.meta_offer(meta)))
     case 7: can_control
     case 8: Bool.and(can_play, U32.is_ne(Types.meta_offer(meta), 0))
@@ -323,14 +342,17 @@ def enabled_for(+id: U32, +meta: Types.Meta, is_live: Bool,
     case 42: can_confirm_resign
     case 43: Types.meta_recovery(meta)
     case 44: True{}
-    case 45: history
-    case 46: history
+    case 45: can_prev
+    case 46: can_next
     case 47: is_live
     case 48: False{}
     case 49: Bool.and(can_control, white_actor)
     case 50: Bool.and(can_control, black_actor)
     case 51: Bool.and(can_control, white_actor)
     case 52: Bool.and(can_control, black_actor)
+    case 53: True{}
+    case 54: True{}
+    case 55: True{}
     case _: Bool.and(dynamic, can_play)
 
 def resign_actor_allowed(+page: U32, white_actor: Bool, black_actor: Bool) -> Bool:
@@ -356,21 +378,23 @@ def enabled(+id: U32, +snapshot: Types.Snapshot, dynamic: Bool) -> Bool:
   +is_live = live(snapshot)
   +can_play = Bool.and(is_live, human_turn(meta, preferences))
   +frame = Types.snapshot_frame(snapshot)
-  +has_selection = Bool.or(U32.is_lt(Types.frame_selected(frame), 64),
-    U32.is_lt(Types.frame_tile(frame), 16))
-  +piece_selected = U32.is_lt(Types.frame_selected(frame), 64)
-  +history = Bool.not(List.is_empty(&2, String, Types.snapshot_history(snapshot)))
+  +selected = Scene.frame_selected(frame)
+  +has_selection = Bool.or(U32.is_lt(selected, 64), U32.is_lt(Scene.frame_tile(frame), 16))
+  +can_shift = Bool.and(U32.is_lt(selected, 64),
+    shift_source(Types.snapshot_legal(snapshot), Model.macro_of(selected)))
   +not_moving = Bool.not(Bool.or(Types.snapshot_moving(snapshot), Types.snapshot_checking(snapshot)))
   +mode = Types.preferences_mode(preferences)
   +can_control = Bool.and(Bool.and(is_live, not_moving), U32.is_lt(Types.meta_revision(meta), 20000))
   +white_actor = Bool.or(U32.is_zero(mode), U32.is_eq(mode, 1))
   +black_actor = Bool.or(U32.is_zero(mode), U32.is_eq(mode, 2))
   +panels = Types.snapshot_panels(snapshot)
+  +page = Types.panels_page(panels)
+  +last_page = history_last_page(U32.from_nat(List.length(&2, String, Types.snapshot_history(snapshot))))
   +can_confirm_resign = Bool.and(Bool.and(can_control, U32.is_eq(Types.panels_menu(panels), 5)),
-    resign_actor_allowed(Types.panels_page(panels), white_actor, black_actor))
-  +base = enabled_for(id, meta, is_live, can_play, has_selection, piece_selected,
-    history, not_moving, dynamic, can_control, white_actor, black_actor,
-    can_confirm_resign)
+    resign_actor_allowed(page, white_actor, black_actor))
+  +base = enabled_for(id, meta, is_live, can_play, has_selection, can_shift,
+    U32.is_gt(page, 0), U32.is_lt(page, last_page), not_moving, dynamic,
+    can_control, white_actor, black_actor, can_confirm_resign)
   Bool.pick(Bool, U32.is_eq(id, 48), undo_agree_enabled(snapshot), base)
 
 def is_front_view(view: Camera.View) -> Bool:
@@ -399,6 +423,8 @@ def active_for(+id: U32, +preferences: Types.Preferences, +panels: Types.Panels,
     case 37: U32.is_eq(Types.panels_draftPolicy(panels), 2)
     case 51: Bool.and(U32.is_eq(Types.panels_menu(panels), 5), U32.is_eq(Types.panels_page(panels), 1))
     case 52: Bool.and(U32.is_eq(Types.panels_menu(panels), 5), U32.is_eq(Types.panels_page(panels), 2))
+    case 53: Types.preferences_showMoves(preferences)
+    case 54: Types.preferences_showShifts(preferences)
     case 11: is_front_view(view)
     case 12: is_overhead_view(view)
     case _: False{}
@@ -406,7 +432,7 @@ def active_for(+id: U32, +preferences: Types.Preferences, +panels: Types.Panels,
 def active(+id: U32, +snapshot: Types.Snapshot) -> Bool:
   +preferences = Types.snapshot_preferences(snapshot)
   +panels = Types.snapshot_panels(snapshot)
-  +view = Types.frame_view(Types.snapshot_frame(snapshot))
+  +view = Scene.frame_view(Types.snapshot_frame(snapshot))
   active_for(id, preferences, panels, view)
 
 def control(+id: U32, bounds: Types.Rect, +snapshot: Types.Snapshot,
@@ -427,7 +453,7 @@ def top_controls(+snapshot: Types.Snapshot) -> List<&2, Types.Control>:
   top_controls.go([1, 2, 27], 0, mobile, snapshot)
 
 def play_ids() -> List<&2, U32>:
-  [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 45, 46]
+  [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 55]
 
 def play_ids.for(+mobile: Bool, +has_destinations: Bool) -> List<&2, U32>:
   match mobile has_destinations:
@@ -446,13 +472,14 @@ def play_ids.overflow(+mobile: Bool) -> List<&2, U32>:
 def menu_ids(menu: U32, mode: U32) -> List<&2, U32>:
   match menu:
     case 1: [28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
-    case 2: [28, 22, 23, 24, 25, 26, 20, 21]
+    case 2: [28, 22, 23, 24, 25, 26, 53, 54, 20, 21]
     case 3: [28, 44]
     case 4: [28, 38, 39, 40, 41]
     case 5: Bool.pick(List<&2, U32>, U32.is_zero(mode), [51, 52, 42, 28], [42, 28])
     case 6: [28, 43, 44]
     case 9: Bool.pick(List<&2, U32>, U32.is_zero(mode), [49, 50, 28], [])
     case 8: [28, 48]
+    case 10: [28, 45, 46]
     case _: []
 
 def static_controls.go(+ids: List<&2, U32>, +ordinal: U32, +offset: U32,

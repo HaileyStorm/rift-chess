@@ -245,7 +245,10 @@ try {
   await control(1); await capture('10-mobile-settings');
   if(process.env.BEND_EXTENDED==='1') {
     const queenRecord={...fixtureRecord(0),commands:[3980,15560,1155,15885].map((action,expected)=>({$:'MoveCommand',expected,action}))};
-    await upload(queenRecord);await count(4);await square(7,4,true);
+    await upload(queenRecord);await count(4);
+    // Destination overlays and their pane list are off by default (rules §10).
+    if(await page.evaluate(()=>window.__shown.menu)!==2) await control(1);
+    await control(53);await control(28);await square(7,4,true);
     assert.ok(await page.locator('[data-control="47"]').isEnabled());await capture('18-mobile-queen');
     await control(47);assert.equal(await page.evaluate(()=>window.__shown.menu),7);
     const moveControls=await page.locator('[data-control]').evaluateAll(nodes=>nodes.filter(n=>Number(n.dataset.control)>=1000).map(n=>({id:Number(n.dataset.control),rect:JSON.parse(n.dataset.rect)})));

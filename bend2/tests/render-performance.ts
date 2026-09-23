@@ -4,7 +4,7 @@ const nil = {$:'Nil'};
 const board = Array.from({length:64}, (_, i) => i < 16 ? (i < 8 ? [4,2,3,5,6,3,2,4][i] : 7) : i >= 48 ? (i < 56 ? 15 : [12,10,11,13,14,11,10,12][i-56]) : 0).reduceRight((tail,head)=>({$:'Con',head,tail}),nil);
 const position = {$:'Pos',board,holes:(1<<6)|(1<<10),side:true,rights:15,ep:64,epPawn:64,quiet:0n,full:1n};
 const background = Scene.background();
-const frames = Array.from({length:36},(_,i)=>({$:'Frame',position,previous:position,selected:64,hovered:64,targets:nil,tile:16,tileTargets:nil,lastAction:21760,progress:16,theme:i%2,view:{$:'View',yaw:i*10,pitch:[35,65,90][i%3],zoom:[75,100,115][Math.floor(i/3)%3]}}));
+const frames = Array.from({length:36},(_,i)=>({$:'Frame',position,previous:position,selected:64,hovered:64,targets:nil,tile:16,tileTargets:nil,lastAction:21760,progress:16,theme:i%2,shifts:nil,check:64,view:{$:'View',yaw:i*10,pitch:[35,65,90][i%3],zoom:[75,100,115][Math.floor(i/3)%3]}}));
 function sample(image:any,x:number,y:number):number { for(let half=256;image.$==='Qua';half/=2){const right=x>=half,bottom=y>=half;image=image[bottom?(right?'br':'bl'):(right?'tr':'tl')];if(right)x-=half;if(bottom)y-=half;}return image.color; }
 function center(square:number,v:any){const yaw=v.yaw*Math.PI/180,pitch=v.pitch*Math.PI/180,c=Math.cos(yaw),s=Math.sin(yaw),scale=45/(Math.abs(c)+Math.abs(s))*v.zoom/100,f=square%8-3.5,r=7-Math.floor(square/8)-3.5;return [Math.round(256+scale*(c*f-s*r)),Math.round(274+scale*Math.sin(pitch)*(s*f+c*r))];}
 let checks=0;

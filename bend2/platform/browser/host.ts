@@ -8,7 +8,7 @@ const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
 let ports: Ports;
 let presentation: unknown;
-let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0;
+let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0, slow = 0;
 type Queued = { input: any; presentation: unknown };
 const queue: Queued[] = [];
 function send(input: any): void {
@@ -25,7 +25,14 @@ function pump(): void {
   while (queue.length && queue[0].presentation === shown) events.push(queue.shift()!.input);
   busy = true;
   canvas.setAttribute('aria-busy', 'true');
+  slow = window.setTimeout(() => { canvas.dataset.slow = 'true'; }, 150);
   worker.postMessage({ kind: 'events', id: ++sequence, events, presentation: shown });
+}
+// Scale the fixed-size pixel surface to the largest size that fits the window.
+function fit(): void {
+  const scale = Math.min(innerWidth / canvas.width, innerHeight / canvas.height);
+  canvas.style.width = `${Math.floor(canvas.width * scale)}px`;
+  canvas.style.height = `${Math.floor(canvas.height * scale)}px`;
 }
 function tick(after: number): void {
   clearTimeout(timer);
@@ -60,9 +67,12 @@ worker.addEventListener('message', event => {
     return;
   }
   busy = false;
+  clearTimeout(slow); delete canvas.dataset.slow;
   if (message.kind === 'fault') { status.textContent = `Bend runtime error: ${message.message}`; status.classList.remove('sr-only'); return; }
   if (message.image) {
-    canvas.width = message.width; canvas.height = message.height;
+    if (canvas.width !== message.width || canvas.height !== message.height) {
+      canvas.width = message.width; canvas.height = message.height; fit();
+    }
     context.putImageData(new ImageData(new Uint8ClampedArray(message.image), message.width, message.height), 0, 0);
     presentation = message.presentation;
     canvas.setAttribute('aria-label', message.summary);
@@ -103,5 +113,6 @@ for (const [name, down] of [['keydown', true], ['keyup', false]] as const) canva
   ports?.unlock(); send({ $: 'KeyInput', code: event.keyCode, down, alt: event.altKey, ctrl: event.ctrlKey || event.metaKey, shift: event.shiftKey });
   if ([13, 27, 32, 37, 38, 39, 40].includes(event.keyCode)) event.preventDefault();
 });
-window.addEventListener('resize', () => send({ $: 'Resize', width: innerWidth, height: innerHeight }));
+window.addEventListener('resize', () => { fit(); send({ $: 'Resize', width: innerWidth, height: innerHeight }); });
+fit();
 if ('serviceWorker' in navigator) void navigator.serviceWorker.register('./sw.js');

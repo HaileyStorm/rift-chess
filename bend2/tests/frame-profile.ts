@@ -4,8 +4,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import A from '../Application.bend';
-import P from '../ui/Program.bend';
+import P from './program';
 import V from '../ui/View.bend';
+import Layout from '../ui/Layout.bend';
 import S from '../graphics/Scene.bend';
 import C from '../ui/Codec.bend';
 
@@ -27,6 +28,7 @@ const centre = (square: number, lift = 16) => ({
   x: Math.round(256 + 45 * (square % 8 - 3.5)),
   y: Math.round(128 + 274 + 45 * Math.sin(65 * Math.PI / 180) * (3.5 - Math.floor(square / 8)) - lift) });
 const down = (square: number) => ({ $: 'PointerDown', ...centre(square), button: 0, alt: false });
+const up = (square: number) => ({ $: 'PointerUp', ...centre(square), button: 0 });
 
 const boot = A.boot('', '', 1024, 768);
 const start = boot.session;
@@ -37,7 +39,8 @@ const selectedState = selected.program;
 const snap = P.snapshot(selectedState);
 const background = S.background();
 const board = S.render_on(false, background, snap.frame);
-const chrome = V.chrome(snap);
+const controls = Layout.controls(snap);
+const chrome = V.chrome(snap, controls);
 const notes = list([{ $: 'Note', frequency: 440, duration: 90, wave: 0, gain: 0.15, delay: 0 },
   { $: 'Note', frequency: 660, duration: 110, wave: 0, gain: 0.09, delay: 65 }]);
 const fixtures = JSON.parse(fs.readFileSync('bend2/tests/fixtures/playtest-records.json', 'utf8'));
@@ -53,10 +56,11 @@ const cases: Record<string, [() => unknown, number]> = {
   boot: [() => A.boot('', '', 1024, 768), 8],
   hoverFrame: [() => A.dispatch(list([{ $: 'PointerMove', ...centre(12) }]), start), 20],
   selectFrame: [() => A.dispatch(list([down(6)]), start), 20],
-  deselectFrame: [() => A.dispatch(list([down(6)]), selected), 20],
+  // A press on the current selection defers its toggle to the release.
+  deselectFrame: [() => A.dispatch(list([down(6), up(6)]), selected), 20],
   orbitFrame: [() => A.dispatch(list([{ $: 'PointerMove', x: 260 + (orbitStep++ % 40) * 3, y: 404 }]), orbiting), 30],
   menuFrame: [() => A.dispatch(list([{ $: 'Activate', id: 1 }]), start), 20],
-  chrome: [() => V.chrome(snap), 20],
+  chrome: [() => V.chrome(snap, controls), 20],
   boardSettled: [() => S.render_on(false, background, snap.frame), 20],
   boardMotion: [() => S.render_on(true, background, snap.frame), 20],
   compose: [() => V.compose(snap, board, chrome), 20],

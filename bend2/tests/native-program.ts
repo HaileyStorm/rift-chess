@@ -1,19 +1,23 @@
 import assert from 'node:assert/strict';
-import P from '../ui/Program.bend';
+import P from './program';
 import Layout from '../ui/Layout.bend';
 const list=(xs:any[])=>xs.reduceRight((tail,head)=>({$: 'Con',head,tail}),{$:'Nil'});
 const array=(xs:any)=>{const out=[];while(xs.$==='Con'){out.push(xs.head);xs=xs.tail;}return out;};
 const event=(s:any,...es:any[])=>P.update(list(es),s);
+const click=(s:any,square:number)=>P.board(false,s,square);
 const act=(s:any,id:number)=>event(s,{$:'Activate',id});
 const tick=(s:any,ms=240)=>event(s,{$:'Tick',ms});
 const drain=(u:any)=>{let remaining=100;while(P.replaying(u.state)){assert.ok(remaining-->0,'bounded fixture replay completes');u=tick(u.state,16);}return u;};
 let u=P.start('','',1024,768), s=u.state;
 assert.equal(P.snapshot(s).meta.revision,0);
 assert.equal(P.snapshot(s).frame.progress,16);
-u=P.click_square(s,12);s=u.state;assert.equal(P.snapshot(s).frame.selected,12);
-s=P.click_square(s,12).state;assert.equal(P.snapshot(s).frame.selected,64,'second piece click deselects');
-s=P.click_square(s,16).state;assert.equal(P.snapshot(s).frame.tile,4);
-s=P.click_square(s,17).state;assert.equal(P.snapshot(s).frame.tile,16,'same macro deselects from another square');
+u=click(s,12);s=u.state;assert.equal(P.snapshot(s).frame.selected,12);
+s=click(s,12).state;assert.equal(P.snapshot(s).frame.selected,64,'second piece click deselects');
+s=click(s,16).state;assert.equal(P.snapshot(s).frame.tile,4);
+s=click(s,17).state;assert.equal(P.snapshot(s).frame.tile,16,'same macro deselects from another square');
+s=click(s,22).state;assert.equal(P.snapshot(s).frame.tile,16,'an empty tile with no legal Shift is not selectable');
+s=click(s,42).state;assert.equal(P.snapshot(s).frame.tile,16,'a hole square is not selectable');assert.equal(P.snapshot(s).frame.selected,64);
+s=click(s,52).state;assert.equal(P.snapshot(s).frame.selected,64,'an enemy piece is not selectable');
 const original=P.record_text(s);
 s=event(s,{$:'PointerDown',x:250,y:250,button:2,alt:false},{$:'PointerMove',x:290,y:290},{$:'PointerUp',x:290,y:290,button:2}).state;
 assert.equal(P.view(s).yaw,338,'drag right decreases yaw');assert.equal(P.view(s).pitch,75,'drag down increases pitch');
@@ -63,7 +67,7 @@ let promotion=P.start('','',1024,768).state;const promotionBoard=Array(64).fill(
 const promotionPosition={...P.pos(promotion),board:list(promotionBoard),rights:0,ep:64,epPawn:64,quiet:0n,full:1n};
 promotion=P.refreshed(promotion,{...P.game(promotion),initial:promotionPosition,state:promotionPosition,actions:list([]),states:list([promotionPosition]),keys:list([])});
 const promotionIds=array(P.legal(promotion)).filter((id:any)=>id<20480&&Math.floor(id/320)===49&&Math.floor(id/5)%64===57);assert.equal(promotionIds.length,4);
-promotion=P.destination(promotion,promotionIds[0]).state;assert.equal(P.snapshot(promotion).panels.menu,4);assert.equal(P.snapshot(promotion).meta.revision,0);promotion=act(promotion,41).state;assert.equal(P.snapshot(promotion).meta.revision,1);assert.equal(array(P.pos(promotion).board)[57],2,'knight promotion accepted by kernel');
+promotion=P.destination(promotion,promotionIds[0]).state;assert.equal(P.snapshot(promotion).panels.menu,4);assert.equal(P.snapshot(promotion).meta.revision,0);promotion=act(promotion,41).state;assert.equal(P.snapshot(promotion).meta.revision,0,'the chosen promotion is staged before its commit');assert.equal(P.snapshot(promotion).staged,true);assert.equal(P.snapshot(promotion).panels.menu,0);assert.deepEqual(array(P.snapshot(promotion).frame.targets),[57],'the staged frame marks only its destination');promotion=tick(promotion,16).state;assert.equal(P.snapshot(promotion).meta.revision,1);assert.equal(array(P.pos(promotion).board)[57],2,'knight promotion accepted by kernel');
 console.log('native-program: selection toggles, drag direction, camera journal inertness, accepted move/undo/replay, animation, preference restoration, and invalid record preservation passed (finite sequential JS tests)');
 
 // Move/Undo cycles amplify replay cost without growing the visible board history.

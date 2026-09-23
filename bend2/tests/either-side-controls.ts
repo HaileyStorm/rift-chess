@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import P from '../ui/Program.bend';
+import P from './program';
 import Layout from '../ui/Layout.bend';
 
 const list=(xs:any[])=>xs.reduceRight((tail,head)=>({$:'Con',head,tail}),{$:'Nil'});

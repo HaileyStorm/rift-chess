@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import P from '../ui/Program.bend';
+import P from './program';
 const list=(xs:any[])=>xs.reduceRight((tail,head)=>({$:'Con',head,tail}),{$:'Nil'});
 const array=(xs:any)=>{const out=[];while(xs.$==='Con'){out.push(xs.head);xs=xs.tail;}return out;};
 const event=(s:any,...es:any[])=>P.update(list(es),s);
@@ -48,5 +48,5 @@ for(const code of [72,77,78,83,85]){
 const rotated=event(initial,{$:'KeyInput',code:39,down:true,alt:true,ctrl:false,shift:false});
 assert.notEqual(P.view(rotated.state).yaw,P.view(initial).yaw,'Alt+arrow still controls camera');
 const drag=event(initial,{$:'PointerDown',x:200,y:200,button:0,alt:true});
-assert.equal(P.drag(drag.state),true,'Alt+drag still orbits');
+assert.equal(P.orbiting(drag.state),true,'Alt+drag still orbits');
 console.log('quiet-reminder: episode flags, accepted quiet100 prompt, per-side suppression/reset, replay reconstruction, Alt shortcut guards passed');
