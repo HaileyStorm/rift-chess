@@ -7,9 +7,9 @@ probe under `.artifacts/probes/` on this Windows machine.
 
 | Item | Value |
 | --- | --- |
-| Bend version | 2.0.25 (`bend version`) |
-| Pinned commit | `ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b` ([source](https://github.com/bendlang/bend/tree/ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b)) |
-| Previous pin | `a49524265bdfa5753a4bf38e25f0574a705dd868`, replaced by amendment `bend2/laws/amendments/001-bend-ff7a40c.json` |
+| Bend version | 2.0.26 (`bend version`) |
+| Pinned commit | `6a77e1246c351055cb15031267a7c76c87036cbc` ([source](https://github.com/bendlang/bend/tree/6a77e1246c351055cb15031267a7c76c87036cbc)) |
+| Previous pins | `ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b` (2.0.25), replaced by amendment `bend2/laws/amendments/003-bend-6a77e12.json`; `a49524265bdfa5753a4bf38e25f0574a705dd868` (2.0.25), replaced by amendment `001-bend-ff7a40c.json` |
 | Local checkout | `.artifacts/toolchains/bend` (git-ignored, must be clean at the pin) |
 | Bun | 1.4.2, `@oven/bun-windows-x64@1.4.2` in `.artifacts/toolchains/runtime` |
 | Authority for the pin | `bend2/TOOLCHAIN.json` |
@@ -546,7 +546,8 @@ objects without a schema.
 This project does not use the upstream loader directly. `bend2/tools/loader.ts`
 wraps it with a local Windows path adapter (tagged `BEND-WINDOWS-PATH-1`) that
 normalizes backslashes before relative imports resolve. It is still needed at
-ff7a40c, and must be rechecked on every pin change. Run Bun scripts with
+6a77e12 (imports still resolve through `path.posix`), and must be rechecked on
+every pin change. Run Bun scripts with
 `node bend2/tools/bend.mjs --run script.ts`. The browser build is
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts`, which bundles
 `Application.bend` into a worker and writes `bend2/dist` (git-ignored). The page
@@ -608,7 +609,27 @@ browser boundary: its UI imports `../main.bend`, sends every move through
   probe list (bendlang/bend#976). This project's loader compiles several books
   per Bun process, so the fix applies here.
 
-## Changes since a495242 that matter here
+## Changes since ff7a40c that matter here
+
+Bend 2.0.26 (`6a77e12`) follows 2.0.25 by five commits:
+
+1. `2665926`: `comp.ts` sheds about 2.8k tokens with the same output. The
+   channel runtime moves into `effs/chan.c` and `effs/chan.js` beside the
+   `Chan.*` defs in `base.bend`, and both match emitters share one table.
+   Emitted C and JS are stated byte-identical except for channel programs;
+   this project uses no channels, and the browser build's content version
+   (`361b9895746876a71757`) was the same before and after the pin.
+2. `f7dc536`, `f52f033` (#996): packages get names on the hub.
+   `import <name>@<version>/file.bend as P` resolves a name once and caches the
+   hash under `~/.bend/lib/names`; `--publish <name>@<version>`, `bend link` and
+   `bend login` are new CLI commands. This project imports no hub packages and
+   never runs publishing commands.
+3. `df5c499`, `6a77e12`: README and flake version text.
+
+Bun stays 1.4.2. Every project gate passed again under 6a77e12 (amendment
+`003-bend-6a77e12`).
+
+## Changes from a495242 to ff7a40c
 
 Both pins are Bend 2.0.25. Upstream made three commits between them:
 

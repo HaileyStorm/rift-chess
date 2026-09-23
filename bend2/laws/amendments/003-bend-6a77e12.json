@@ -1,0 +1,49 @@
+{
+  "schema": "rift-bend-amendment/1",
+  "sequence": 3,
+  "parentSha256": "d7aa4735e6cc7591e23e4d1428703206edaaa5ee1867527f7cd95963d8f6a846",
+  "createdAt": "2026-09-23T18:37:01.022Z",
+  "kind": "toolchain",
+  "semanticMeaning": "unchanged",
+  "rationale": "Move the Bend compiler pin from ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b (Bend 2.0.25) to upstream main 6a77e1246c351055cb15031267a7c76c87036cbc (Bend 2.0.26); Bun 1.4.2 unchanged. Upstream added hub package names (import name@version, --publish name@version, bend link, bend login), which this project does not use and whose publishing commands it does not run; moved the channel runtime into effs/chan.c and effs/chan.js (this project uses no channels); and reduced comp.ts with output stated byte-identical except channel programs. The non-draft browser build before the pin and the draft build after it produce the same content version 361b9895746876a71757. Frozen manifests stay byte-identical; every v1, v2, mutation, library and browser-build gate passed under the new pin before this amendment was recorded; no law, proof, implementation, fixture or reference byte changed.",
+  "toolchain": {
+    "bendVersion": "2.0.26",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "records": {
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/laws/pixels-v1.json": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "bend2/laws/proof-v1.json": "7dc690646fb84b66ffbc525fd1ee2d3ddc0908679b45cc34fa2572e2737b18d6",
+    "bend2/laws/semantic-v2.json": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "substitutions": {
+    "bend2/TOOLCHAIN.json": {
+      "from": "8832b35e791298a9474a6b33ed611d69a3f9cc675f3289feb91d8d99c88214bf",
+      "to": "7d7e5005b273c3737ee7f0585b82b8354f59149aa63e903e9a63cb127d775e10",
+      "records": [
+        "semantic-v1",
+        "pixels-v1",
+        "semantic-v2"
+      ],
+      "reason": "bendVersion moved to 2.0.26 and bendCommit to 6a77e1246c351055cb15031267a7c76c87036cbc; repository, Bun version, runtime package, telemetry setting and target unchanged."
+    }
+  },
+  "preserved": {},
+  "evidence": {
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/v1.json": "8551511084cba4b1770f5bbebe5a5807cf4ad2f557eb3cb613ba044aac5a4a19",
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/v2.json": "392d4a20af5459f34ca49aa6ab2e6d394c87db6acbae9264ca3c0486330fbb70",
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/mutations.json": "a1ed214c391b72e70a2fba45b8ee5e8e2b53d9859f2512dd70c7c82b93c561e5",
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/library.json": "67df3f4821b7e087b09a05e503e19334728c018ec7c9ad14f78b37f02b98e4ad",
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/build.json": "80e34a4eba7203af318887f4411c57839a79fb74ed0eefc69f846a6501a244ed",
+    "bend2/docs/evidence/amendments/003-bend-6a77e12/review.md": "d64a928832fd3a4de7634b2c44e98c2d2cc8de0e36310e4a3a9c0279b3009f2d"
+  },
+  "tools": {
+    "bend2/tools/amendments.mjs": "fde126541451c483f922920744fc7fbe35d9c0103fee466b166c8c4ab2c75c6e",
+    "bend2/tools/amend.mjs": "e6b095784e48c9de1ef08bf5277da363419b32926f8df6dd7c1b9dcc2cf8f240"
+  }
+}
