@@ -6,6 +6,17 @@ frequency in hertz, duration and delay in milliseconds, wave `0` for sine,
 returns a bounded `List<&2,F32>` at the caller's rate; it owns no device and
 has no browser or UI imports.
 
+Each active tone now fades in over roughly its first sixteenth and fades out
+over roughly its last quarter (in sample counts). Both end samples are zero;
+inactive/delayed notes skip waveform work, and the selected wave alone is
+computed. The public `Tone` shape and four waveform IDs are unchanged. The
+focused `bend2/tests/audio-envelope.ts` gate checks all waveforms, silence at
+boundaries and before a delay, finite amplitudes and clipping. Local warm-JS
+4200-sample comparisons varied: one 11-pair run measured 5.72 ms versus
+6.53 ms before the change, while another under shared load measured 14.06 ms
+versus 13.69 ms. This does not establish a speedup, subjective sound quality,
+or native/audio-device timing.
+
 The native adapter is responsible for device ownership and transport. Base's
 native audio effect consumes interleaved stereo float samples and has a finite
 ring. `Native.bend` duplicates each mono sample into left/right channels,

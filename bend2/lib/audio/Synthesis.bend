@@ -45,14 +45,14 @@ def saw(+phase_value: F32) -> F32:
   F32.sub(F32.mul(2.0, cycle), 1.0)
 
 def wave(+kind: U32, +phase_value: F32) -> F32:
-  +sine = F32.sin(phase_value)
-  +tri = triangle(phase_value)
-  +ramp = saw(phase_value)
-  Bool.pick(F32, U32.is_eq(kind, 0), sine,
-    Bool.pick(F32, U32.is_eq(kind, 1), tri,
-      Bool.pick(F32, U32.is_eq(kind, 2), ramp,
-        Bool.pick(F32, U32.is_eq(kind, 3),
-          Bool.pick(F32, F32.is_ge(sine, 0.0), 1.0, (0.0 - 1.0 : F32)), sine))))
+  match kind:
+    case 0: F32.sin(phase_value)
+    case 1: triangle(phase_value)
+    case 2: saw(phase_value)
+    case 3:
+      Bool.pick(F32, F32.is_ge(F32.sin(phase_value), 0.0),
+        1.0, (0.0 - 1.0 : F32))
+    case _: F32.sin(phase_value)
 
 def tone_start(tone: Tone, rate: U32) -> U32:
   U32.div(U32.mul(tone_delay(tone), rate), 1000)
@@ -70,15 +70,27 @@ def max_end(tones: List<&2, Tone>, +current: U32) -> U32:
     case tone <> rest:
       max_end(rest, U32.max(current, tone_end(tone)))
 
-def tone_sample(active: Bool, +tone: Tone, local: U32, rate: U32) -> F32:
-  Bool.pick(F32, active,
-    F32.mul(tone_gain(tone), wave(tone_wave(tone), phase(tone, local, rate))), 0.0)
+def edge_gain(+local: U32, +length: U32) -> F32:
+  +attack = U32.max(1, U32.div(length, 16))
+  +release = U32.max(1, U32.div(length, 4))
+  +fade_in = F32.min(1.0, F32.div(U32.to_f32(local), U32.to_f32(attack)))
+  +fade_out = F32.min(1.0, F32.div(U32.to_f32(U32.sub(U32.sub(length, 1), local)), U32.to_f32(release)))
+  F32.min(fade_in, fade_out)
+
+def tone_sample(active: Bool, +tone: Tone, sample: U32, start: U32,
+  length: U32, rate: U32) -> F32:
+  match active:
+    case False{}: 0.0
+    case True{}:
+      +local = U32.sub(sample, start)
+      F32.mul(F32.mul(tone_gain(tone), edge_gain(local, length)),
+        wave(tone_wave(tone), phase(tone, local, rate)))
 
 def sample_tone(+tone: Tone, +sample: U32, +rate: U32) -> F32:
   +start = tone_start(tone, rate)
   +length = tone_length(tone, rate)
   +inside = Bool.and(U32.is_ge(sample, start), U32.is_lt(sample, U32.add(start, length)))
-  tone_sample(inside, tone, U32.sub(sample, start), rate)
+  tone_sample(inside, tone, sample, start, length, rate)
 
 def mix_tones(+tones: List<&2, Tone>, +sample: U32, +rate: U32, +sum: F32) -> F32:
   match tones:
