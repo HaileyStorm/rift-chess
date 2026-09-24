@@ -33,5 +33,21 @@ assert.ok(delayed.slice(0, 240).every(sample => sample === 0), 'delay stays sile
 assert.ok(delayed.slice(240).some(sample => sample !== 0));
 const mixed = array(api.samples(list([note(1, 0, 0.9), note(1, 0, 0.9)]), 8000));
 assert.ok(mixed.every(sample => Number.isFinite(sample) && Math.abs(sample) <= 1));
+assert.equal(api.rate_or_default(0), 48000);
+assert.equal(api.rate_or_default(8000), 8000);
+assert.equal(api.rate_or_default(96000), 96000);
+assert.equal(api.rate_or_default(96001), 48000);
+assert.equal(api.rate_or_default(4_294_967_295), 48000);
+assert.equal(api.tone_end({ ...note(0), duration: 4_294_967_295, delay: 4_294_967_295 }), 1000,
+  'large duration and delay saturate before addition instead of wrapping');
+assert.equal(api.tone_start({ ...note(0), delay: 4_294_967_295 }, 96000), 96000,
+  'start multiplication is bounded even at maximum admitted output rate');
+assert.equal(api.tone_length({ ...note(0), duration: 4_294_967_295 }, 96000), 96000);
+const clippedDuration = array(api.samples(list([{ ...note(0), duration: 1001 }]), 8000));
+assert.equal(clippedDuration.length, 8000, 'sound-effect rendering is capped at one second');
+assert.equal(clippedDuration.at(-1), 0, 'truncated tone still releases at its last sample');
+const farFuture = array(api.samples(list([{ ...note(0), delay: 4_294_967_295 }]), 8000));
+assert.equal(farFuture.length, 8000);
+assert.ok(farFuture.every(sample => sample === 0), 'an out-of-range delayed note stays silent');
 console.log(JSON.stringify({ ok: true, waveforms: 4, sampleComparisons: 4 * 800 + 1040 + 800,
-  coverage: 'attack/release silence, delayed voice, all four waves, finite amplitude and mix clipping' }));
+  coverage: 'attack/release silence, delayed voice, all four waves, finite amplitude, mix clipping and arithmetic/output bounds' }));

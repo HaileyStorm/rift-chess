@@ -27,7 +27,15 @@ def tone_delay(tone: Tone) -> U32:
     case Tone{_, _, _, _, delay}: delay
 
 def rate_or_default(+rate: U32) -> U32:
-  Bool.pick(U32, U32.is_ne(rate, 0), rate, 48000)
+  Bool.pick(U32, Bool.and(U32.is_ge(rate, 8000), U32.is_le(rate, 96000)), rate, 48000)
+
+# Sound effects are short. Bound all arithmetic before multiplying U32
+# milliseconds by sample rate and before constructing a potentially huge list.
+def max_millis() -> U32:
+  1000
+
+def bounded_millis(millis: U32) -> U32:
+  U32.min(millis, max_millis())
 
 def two_pi() -> F32:
   F32.mul(2.0, F32.pi())
@@ -55,13 +63,14 @@ def wave(+kind: U32, +phase_value: F32) -> F32:
     case _: F32.sin(phase_value)
 
 def tone_start(tone: Tone, rate: U32) -> U32:
-  U32.div(U32.mul(tone_delay(tone), rate), 1000)
+  U32.div(U32.mul(bounded_millis(tone_delay(tone)), rate), 1000)
 
 def tone_length(tone: Tone, rate: U32) -> U32:
-  U32.div(U32.mul(tone_duration(tone), rate), 1000)
+  U32.div(U32.mul(bounded_millis(tone_duration(tone)), rate), 1000)
 
 def tone_end(+tone: Tone) -> U32:
-  U32.add(tone_delay(tone), tone_duration(tone))
+  U32.min(max_millis(), U32.add(bounded_millis(tone_delay(tone)),
+    bounded_millis(tone_duration(tone))))
 
 def max_end(tones: List<&2, Tone>, +current: U32) -> U32:
   match tones:

@@ -6,6 +6,13 @@ frequency in hertz, duration and delay in milliseconds, wave `0` for sine,
 returns a bounded `List<&2,F32>` at the caller's rate; it owns no device and
 has no browser or UI imports.
 
+`samples` admits rates from 8,000 through 96,000 Hz; other values use 48,000
+Hz. It renders at most 1,000 ms, so at most 96,000 mono samples. Tone delays
+and durations saturate before U32 multiplication/addition; a note delayed
+beyond that horizon produces silence. These limits make the output bound real
+even for malformed input. Callers who need long music should stream separate
+bounded buffers, rather than accumulating an unbounded Bend list.
+
 Each active tone now fades in over roughly its first sixteenth and fades out
 over roughly its last quarter (in sample counts). Both end samples are zero;
 inactive/delayed notes skip waveform work, and the selected wave alone is
