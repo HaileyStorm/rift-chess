@@ -66,9 +66,17 @@ assert.equal(NativeCLI.answer_side(offered), true, 'only the opposite hotseat si
 const accept = { $: 'AcceptCommand', expected: 3n, side: true };
 const agreed = accepted(Rules.command(offered, accept), 'the opposite side can accept');
 assert.equal(Rules.outcome(agreed).value.$, 'Agreed', 'draw agreement is terminal');
+assert.deepEqual(NativeCLI.available_ids(agreed), { $: 'Nil' },
+  'terminal agreement has no playable match actions');
+assert.doesNotMatch(NativeCLI.render_moves(store(agreed, true)), /^\[\d+\]/m,
+  'drawn match never advertises position-level moves as playable');
 
 const resigned = accepted(Rules.command(Rules.start(true, { $: 'Prompt' }),
   { $: 'ResignCommand', expected: 0n, side: false }), 'Black can resign off-turn');
 assert.equal(Rules.outcome(resigned).value.$, 'BlackResignedOutcome', 'off-turn resignation is recorded');
+assert.deepEqual(NativeCLI.available_ids(resigned), { $: 'Nil' },
+  'terminal resignation has no playable match actions');
+assert.doesNotMatch(NativeCLI.render_moves(store(resigned, true)), /^\[\d+\]/m,
+  'resigned match never advertises position-level moves as playable');
 
 console.log('native-cli: two layouts, three policies, empty holes, legal move/shift/promotion labels, both-side commands, replay/Undo, offer/accept, and resignation passed');

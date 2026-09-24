@@ -10,9 +10,10 @@ record codec and audio synthesis are written in Bend 2. The browser adapter only
 transports events and explicit IO effects, copies Bend pixels to Canvas and Bend
 PCM samples to Web Audio, and mirrors Bend controls for assistive technology.
 `Native.bend` expresses the same pixel application with Base Window, Audio and
-File effects, but its full C emission exceeded the bounded local run. The smaller
-`NativeCLI.bend` is a browser-independent text game over the same Bend rules and
-record codec; it emits C through the pinned compiler.
+File effects, but its 2.0.27 C emission hit the compiler's generated arity
+limit; a graphical native binary is not yet built. The smaller `NativeCLI.bend`
+is a browser-independent text game over the same Bend rules and record codec.
+It now emits C, builds as a WSL Linux ELF, and has a real file-backed playthrough.
 
 ## Start here
 
@@ -25,6 +26,8 @@ record codec; it emits C through the pinned compiler.
   [laws and proof limits](lib/graphics/LAWS.md).
 - [Browser-independent CLI export](docs/NATIVE_CLI.md) and
   [graphical native experiment](docs/NATIVE.md): distinct source and acceptance evidence.
+- [2.0.27 native CLI receipt](docs/evidence/native-cli-linux-2-0-27/receipt.json):
+  Clang-linked Linux ELF and six-sequence match through agreed draw.
 - [Application and IO boundary](docs/PORTABLE_APPLICATION.md): which code runs in
   Bend, browser/native adapter responsibilities, and interruption-safe replay.
 - [Stage-two local evidence](docs/evidence/stage2-local/receipt.json): migrated

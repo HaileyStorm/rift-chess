@@ -163,3 +163,28 @@ Measured p95 post-move tick work was 608 ms locally and 668 ms hosted; local
 bot reply medians were about 721 ms for White and 542 ms for Black. Native
 binary execution, parallel performance, broader-device coverage and owner
 visual acceptance remain unverified.
+
+## Current checkpoint: Bend 2.0.27, native CLI and graphics v2 overhaul
+
+The paragraphs above are historical checkpoints. Amendment 005 updates the
+reviewed compiler pin to Bend 2.0.27 without altering frozen chess semantics;
+v1/v2 proofs, conformance, six mutation controls, graphics v1 verification and
+the non-draft browser build passed. The reusable graphics **v2** library is a
+separate draft under `lib/graphics/v2/`; its own Laws/Proofs and finite tests
+must pass review before it replaces the current presentation. Its first scenes
+are not the requested WOW quality, and full-frame warm construction remains
+too slow, although cached hover/selection updates have measured interactive
+times. The huge Bend UI/UX overhaul and automatic detail integration are still
+in progress, not an accepted release.
+
+The [2.0.27 native CLI receipt](docs/evidence/native-cli-linux-2-0-27/receipt.json)
+records actual x86-64 Linux ELF compilation in WSL and a file-backed match
+through both-color moves, Undo and agreed draw; terminal `moves` lists no IDs.
+This satisfies a browser-independent Bend CPU/File/IO binary checkpoint, not
+native graphical acceptance. The full `Native.bend` C emission instead failed
+with `an arity over 255` after checking source; a disposable compiler diagnostic
+is isolating the generated limit before a source-only fix is attempted. The
+browser transport now defaults to measured raw pixel transfer, and accepted
+position-preserving commands reuse legal IDs without changing the frozen
+kernel. Both changes passed focused real-browser/differential checks; broader
+visual/performance acceptance and publication remain ahead.

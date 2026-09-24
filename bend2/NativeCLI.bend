@@ -565,11 +565,21 @@ def render(store: Store) -> String:
 def help_text() -> String:
   "Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help\nEach invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.\n"
 
+# Position-level legal IDs can still exist after the match has ended by
+# agreement or resignation. Only the complete match boundary may advertise an
+# action as playable.
+def available_ids_result(outcome: Maybe<&1, Match.Outcome>, +game: Match.Match) -> List<&2, U32>:
+  match outcome:
+    case Some{_}: []
+    case None{}: Rules.legal_ids(position(game))
+
+def available_ids(+game: Match.Match) -> List<&2, U32>:
+  available_ids_result(Rules.outcome(game), game)
+
 def render_moves(+store: Store) -> String:
   match store:
     case Store{+game, layout, policy, commands, sequence, active}:
-      +pos = position(game)
-      +ids = Rules.legal_ids(pos)
+      +ids = available_ids(game)
       String.append(render(store), String.append("\nLEGAL ACTIONS (use the bracketed ID):\n",
         String.append(legal_text(ids),
           String.append("\n", help_text()))))
@@ -657,7 +667,7 @@ def move_legal(+store: Store, +id: U32, legal: Bool) -> IO(Unit):
 def move_typed_ready(+store: Store, +id: U32, shift: Bool) -> IO(Unit):
   match store:
     case Store{+game, layout, policy, commands, sequence, active}:
-      move_legal(store, id, id_in_list(Rules.legal_ids(position(game)), id))
+      move_legal(store, id, id_in_list(available_ids(game), id))
 
 def move_typed(+store: Store, +id: U32, shift: Bool,
   correct_kind: Bool) -> IO(Unit):

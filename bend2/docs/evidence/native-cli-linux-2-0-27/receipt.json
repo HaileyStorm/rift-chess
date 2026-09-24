@@ -1,0 +1,37 @@
+{
+  "schema": "rift-bend-native-cli-linux/1",
+  "date": "2026-09-24",
+  "scope": "WSL Ubuntu x86-64 CPU binary with real Base IO.args and File effects; ASCII UI only",
+  "sourceRevisionAtExport": "19bd9ce3cb1b187db265ae95ff4704b17922fa82",
+  "sourceDirtyAtExport": true,
+  "sourceDirtyExplanation": "The NativeCLI display fix and an unrelated draft graphics v2 tree were uncommitted; the export manifest hashes the exact 18 input files. This receipt binds those bytes, not a clean-tree release.",
+  "compiler": {
+    "bendVersion": "2.0.27",
+    "bendCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
+    "bunVersion": "1.4.2",
+    "cExportManifestSha256": "c7dc8ae0a21560c69afaba2cef4f4839217349fd901d5caa9844209a2f4a5fb4",
+    "cSourceSha256": "00b490dbeb580ed3ca4c367465013903540c2b17f7628d2d734162e265fee1ad",
+    "cBytes": 2182571,
+    "nativeCompiler": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "linkCommand": "clang-18 -std=c11 -O2 rift-chess-native-cli.c -lpthread -lm -o rift-chess-native-cli",
+    "binarySha256": "3dddb982bbda4073166d1610f93dd28a88b476e097b68f6171c2e746e766829d",
+    "binaryFormat": "ELF 64-bit LSB PIE x86-64, dynamically linked"
+  },
+  "frozenSemanticV2Sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+  "playthrough": {
+    "workingDirectory": "isolated new directory with two rotating save slots",
+    "acceptedCommands": ["new B prompt", "move 3980", "move 16820", "undo confirm", "offer white", "accept"],
+    "terminalQuery": "moves",
+    "outcome": "Draw by agreement",
+    "terminalListedActionCount": 0,
+    "finalSequence": 6,
+    "transcript": "playthrough.txt",
+    "transcriptSha256": "26c214eee2eae88e63993772f8c6340cc726d8e5f23d24f5f07831adc9682124",
+    "transcriptFormat": "Exact fixed-width native ASCII output; trailing board-row spaces are preserved byte-for-byte and are expected in git whitespace diagnostics.",
+    "slotA": "slot-a.json",
+    "slotASha256": "e2263e2c8ec48e86defe0ee3a655ea207d20f084108124305776e4e62f0af3d4",
+    "slotB": "slot-b.json",
+    "slotBSha256": "a0edb389bb12e483b91330cda3ee23026db42a2f999fb12bef2e22fde1da28df"
+  },
+  "limits": "No Windows-native binary, native graphical Window/Audio run, native CPU parallel benchmark, GPU test, packaged release or owner visual acceptance is established."
+}

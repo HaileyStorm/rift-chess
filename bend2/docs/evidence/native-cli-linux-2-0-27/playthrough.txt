@@ -1,0 +1,223 @@
+> new B prompt
+RIFT CHESS | Layout B | Draws prompt | White to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## .. .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  P  P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Game in progress
+
+LEGAL ACTIONS (use the bracketed ID):
+[400] b1-a3
+[2025] g1-f3
+[2035] g1-h3
+[2640] a2-a3
+[2680] a2-a4
+[2965] b2-b3
+[3005] b2-b4
+[3940] e2-e3
+[3980] e2-e4
+[4265] f2-f3
+[4305] f2-f4
+[4590] g2-g3
+[4630] g2-g4
+[4915] h2-h3
+[4955] h2-h4
+[20825] SHIFT tile 5-6
+[20985] SHIFT tile 7-6
+[21165] SHIFT tile 9-10
+[21325] SHIFT tile 11-10
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> move 3980
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Game in progress
+
+LEGAL ACTIONS (use the bracketed ID):
+[15520] a7-a5
+[15560] a7-a6
+[15845] b7-b5
+[15885] b7-b6
+[16820] e7-e5
+[16860] e7-e6
+[17145] f7-f5
+[17185] f7-f6
+[17470] g7-g5
+[17510] g7-g6
+[17795] h7-h5
+[17835] h7-h6
+[18440] b8-a6
+[20065] g8-f6
+[20075] g8-h6
+[20825] SHIFT tile 5-6
+[21165] SHIFT tile 9-10
+[21325] SHIFT tile 11-10
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> move 16820
+RIFT CHESS | Layout B | Draws prompt | White to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  .. p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## p  .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Game in progress
+
+LEGAL ACTIONS (use the bracketed ID):
+[400] b1-a3
+[1020] d1-e2
+[1065] d1-f3
+[1110] d1-g4
+[1155] d1-h5
+[1340] e1-e2
+[1660] f1-e2
+[1980] g1-e2
+[2025] g1-f3
+[2035] g1-h3
+[2640] a2-a3
+[2680] a2-a4
+[2965] b2-b3
+[3005] b2-b4
+[4265] f2-f3
+[4305] f2-f4
+[4590] g2-g3
+[4630] g2-g4
+[4915] h2-h3
+[4955] h2-h4
+[20825] SHIFT tile 5-6
+[20985] SHIFT tile 7-6
+[21165] SHIFT tile 9-10
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> undo confirm
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Game in progress
+
+LEGAL ACTIONS (use the bracketed ID):
+[15520] a7-a5
+[15560] a7-a6
+[15845] b7-b5
+[15885] b7-b6
+[16820] e7-e5
+[16860] e7-e6
+[17145] f7-f5
+[17185] f7-f6
+[17470] g7-g5
+[17510] g7-g6
+[17795] h7-h5
+[17835] h7-h6
+[18440] b8-a6
+[20065] g8-f6
+[20075] g8-h6
+[20825] SHIFT tile 5-6
+[21165] SHIFT tile 9-10
+[21325] SHIFT tile 11-10
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> offer white
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Draw offered by White
+Game in progress
+
+LEGAL ACTIONS (use the bracketed ID):
+[15520] a7-a5
+[15560] a7-a6
+[15845] b7-b5
+[15885] b7-b6
+[16820] e7-e5
+[16860] e7-e6
+[17145] f7-f5
+[17185] f7-f6
+[17470] g7-g5
+[17510] g7-g6
+[17795] h7-h5
+[17835] h7-h6
+[18440] b8-a6
+[20065] g8-f6
+[20075] g8-h6
+[20825] SHIFT tile 5-6
+[21165] SHIFT tile 9-10
+[21325] SHIFT tile 11-10
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> accept
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Draw by agreement
+
+LEGAL ACTIONS (use the bracketed ID):
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+> moves
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Draw by agreement
+
+LEGAL ACTIONS (use the bracketed ID):
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+

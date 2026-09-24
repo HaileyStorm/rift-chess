@@ -99,8 +99,10 @@ lives in a sidecar `.gpu` file beside the binary. The binary accepts
 `--threads N` (N ≥ 1, default: the CPU count), `--gpu on|off|<n>GB|<n>MB`
 (`--gpu on` fails when no device is found), `--help`, and `--`. The emitted JS
 accepts and ignores `--threads` and `--gpu`. There is no Windows native target
-upstream ("No Windows (WSL works)"); on this machine the C output is a source
-artifact only (see `NATIVE_CLI.md`).
+upstream ("No Windows (WSL works)"). On this laptop, WSL Ubuntu with Clang 18
+built and ran the 2.0.27 browser-independent CLI from pinned C; see
+[`NATIVE_CLI.md`](NATIVE_CLI.md) and its Linux receipt. That proves the CLI's
+actual CPU/File/IO path, not the graphical Window/Audio path or GPU speed.
 
 ### Messages you will see
 
@@ -813,6 +815,11 @@ Bend releases:
 - **Native IO contracts need source inspection.** The native audio effect takes
   interleaved stereo through a bounded ring, unlike a browser mono buffer.
 - **C emission, source checking and native execution are separate evidence.**
+  The 2.0.27 CLI emitted and ran as a WSL ELF with rotating file snapshots;
+  the larger graphical `Native.bend` emitter instead hit a generated
+  `an arity over 255` limit with no C output. Inspect the compiler table/segment
+  construction in a disposable diagnostic copy, then rerun an input-bound fix
+  on the clean pin; never present a checker pass as a native GUI binary.
 - **A green checker or browser suite is not a frame budget.** Stage-two hosted
   post-move ticks reached 668 ms at p95 and bot replies took hundreds of
   milliseconds. Profile source lowering, legal refresh, rendering and pixel

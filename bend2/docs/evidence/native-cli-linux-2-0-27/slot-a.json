@@ -1,0 +1,1 @@
+{"schema":"rift-bend-cli-store/1","sequence":5,"record":"{\"schema\":\"rift-bend-record/1\",\"layout\":\"B\",\"policy\":0,\"commands\":[{\"$\":\"MoveCommand\",\"expected\":0,\"action\":3980},{\"$\":\"MoveCommand\",\"expected\":1,\"action\":16820},{\"$\":\"UndoCommand\",\"expected\":2},{\"$\":\"OfferCommand\",\"expected\":3,\"side\":true}]}"}

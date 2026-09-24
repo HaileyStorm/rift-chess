@@ -6,8 +6,8 @@ native command-line arguments through Base `IO.args`, uses Base `File` for
 records, and has no browser, DOM, Canvas, JavaScript game logic or server.
 It is an ASCII interface; the complete Bend pixel UI remains in the browser
 application. The graphical `Native.bend` source uses Base Window/Audio/File,
-but its C emitter exceeded a bounded 600-second, roughly 3.1 GiB run on this
-Windows host. That failed attempt remains evidence, not a native GUI release.
+but its 2.0.27 WSL C emitter encountered `an arity over 255` without C output.
+That failed attempt remains evidence, not a native GUI release.
 
 From the repository root, the pinned Bun compiler checks and exports the CLI C
 source with source hashes and the frozen v1/v2 and graphics manifests:
@@ -20,14 +20,14 @@ The command prints its timestamped `.artifacts/bend2/native-cli/` directory.
 Inside are `rift-chess-native-cli.c`, `manifest.json`, SHA-256 checksums and
 the exact source-check/emission logs. Keep the manifest, `TOOLCHAIN.json`,
 `THIRD_PARTY_NOTICES.txt` and Bend Apache-2.0 license beside the C artifact.
-Emitted C is browser-independent; it is **not** a built or executed binary on
-this Windows machine. The pinned upstream Bend toolchain does not support a
-Windows native target. On a supported host with the required system headers,
-the upstream CPU link shape is:
+Emitted C is browser-independent. The pinned upstream Bend toolchain does not
+support a Windows-native target. The 2.0.27 CLI was built and executed as an
+x86-64 Linux ELF in WSL Ubuntu on this laptop, using Clang 18.1.3 and this CPU
+link shape:
 
 ```sh
-# Linux, clang 14+
-clang -std=c11 -O3 rift-chess-native-cli.c -lpthread -lm -o rift-chess-native-cli
+# Linux, clang 18 as tested (upstream supports clang 14+)
+clang-18 -std=c11 -O2 rift-chess-native-cli.c -lpthread -lm -o rift-chess-native-cli
 
 # macOS, Apple clang
 clang -x objective-c -fobjc-arc -fmodules -std=c11 -O3 \
@@ -70,18 +70,27 @@ In shared-device hotseat play, `undo confirm` represents both players' consent;
 it does not authenticate remote people. There is no network multiplayer or
 trusted-server assumption in the rules boundary.
 
+The verified [Linux native receipt](evidence/native-cli-linux-2-0-27/receipt.json)
+binds the 18 exact Bend/tool inputs, C SHA-256, linked ELF hash, two rotating
+snapshots and a real six-sequence playthrough. It exercised both colors' moves,
+Undo, a White draw offer and Black acceptance. The final `moves` output says
+**Draw by agreement** and lists no actions. The export was marked dirty because
+this CLI display fix and unrelated graphics v2 drafts were present; the manifest
+binds their exact input bytes. This is local WSL execution, not a packaged
+release or a native graphical game.
+
 This CLI does not open a native Audio device; the browser game synthesizes and
 plays its Bend-generated sounds, while the experimental graphical Native source
-has separate Base Audio code. Source checks, a C source export and simulated
-host runs are separate from a Linux/macOS binary launch, CPU/GPU speed and
-owner visual acceptance. The browser game's rendered playtest covers its pixel
-presentation; this CLI does not claim a native graphical renderer.
+has separate Base Audio code. Source checks, a C source export and this actual
+Linux CPU launch are separate from a graphical binary, native CPU/GPU speed
+benchmarks and owner visual acceptance. The browser game's rendered playtest
+covers its pixel presentation; this CLI does not claim a native graphical renderer.
 
 The pinned Base JavaScript File/IO effect implementation assumes POSIX
 `libc.so.6`, so invoking this CLI's File effects through the JS target on
 Windows fails before a game can run. The Windows source checker and C emitter
-remain useful independent evidence; a supported-host binary run has its own
-acceptance step.
+remain useful independent evidence; the supported-host CPU binary run above is
+a separate, completed acceptance step for the CLI only.
 
 The earlier 2.0.25 export from source `1a6d7d9c32dad19612327ac3eb3f1fd54a18ca07`
 remains [available as C](https://haileystorm.github.io/rift-chess-bend2/rift-chess-native-cli-8fbb6fa79899.c)
@@ -99,4 +108,5 @@ The stage-two Bend 2.0.26 export from clean source
 `8b18ec876c91d2ac0794055ef1a44160a5eb9f91597f8fa3b81c0cdb26203e7b`).
 Its [manifest](evidence/stage2-hosted/native-cli-export.json) binds the same
 source and v2 law hash as the hosted browser build, and the live file matched
-that C hash. Supported-host binary execution is still unverified.
+that C hash. This older export was not executed at that checkpoint; the newer
+2.0.27 CLI receipt above records actual WSL binary execution.
