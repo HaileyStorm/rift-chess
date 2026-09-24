@@ -1,0 +1,31 @@
+{
+  "schema": "rift-bend-art-assets/1",
+  "assets": {
+    "observatory-astral": {
+      "source": "source/observatory-astral.png",
+      "sourceSha256": "ba6337724f03e5dc5cd98d1b869f4e3fac26af9e3a41cf9b8214f791f2fe30ef",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "runtime": "runtime/observatory-astral.rga",
+      "runtimeSha256": "9d4701ca52957506ec58466fa7d63b49a8f6338bd257f5e8f9b69f76b67067bb",
+      "runtimeBytes": 786437,
+      "depth": 9,
+      "derivedBy": "Pillow RGB conversion and 512x512 Lanczos resampling; RGA1 exact RGB packaging"
+    },
+    "observatory-stone": {
+      "source": "source/observatory-stone.png",
+      "sourceSha256": "9323ff9c062010ef81526818c45948335deb51134ffd1143c2bf0407fbc9598c",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "runtime": "runtime/observatory-stone.rga",
+      "runtimeSha256": "0c782ce0f07fa8387ee1a3baba37fda20c46d2cc3febf285e8a104ea5c0e734f",
+      "runtimeBytes": 786437,
+      "depth": 9,
+      "derivedBy": "Pillow RGB conversion and 512x512 Lanczos resampling; RGA1 exact RGB packaging"
+    }
+  }
+}
