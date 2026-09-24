@@ -19,6 +19,8 @@ five emitted PCM envelopes, finite amplitude, mute/cap and priority, and
 `node bend2/tools/bend.mjs --run bend2/tests/native-gui-arity.ts` to verify an
 actual accepted capture and quiet move select distinct cues. These checks
 establish source and finite JS behavior, not speaker quality or native-device
-latency. The controller cache and browser preview must be re-emitted after
-the independent graphics Pro handoff, then listened to through the rendered
-game before a release claim.
+latency. A source-bound controller cache was independently re-emitted after
+the cue change; `node bend2/tests/controller-sound.mjs` stages and commits an
+actual e2-e4 input and renders its Bend-authored PCM (3,192 samples at 24 kHz,
+8.8 ms first local run). The full browser preview still awaits graphics Pro
+integration and audible rendered-game review before a release claim.
