@@ -1,0 +1,238 @@
+diff --git a/bend2/bend.ts b/bend2/bend.ts
+index e3a3595..8fde0b0 100644
+--- a/bend2/bend.ts
++++ b/bend2/bend.ts
+@@ -1052,7 +1052,10 @@ async function name_hash(book: Book, nv: string, spn?: Span): Promise<string> {
+   return got;
+ }
+ 
+-export async function book_load(book: Book, file: string, ns: string, seen: Map<string, string | null>, spn?: Span): Promise<number> {
++export async function book_load(book: Book, file: string, ns: string, seen: Map<string, string | null>, spn?: Span, localOnly = false): Promise<number> {
++  if (localOnly && file.replaceAll("\\", "/").startsWith(BEND_LIB.replaceAll("\\", "/") + "/")) {
++    throw new Error("--explain-layout accepts local files only; packages are disabled");
++  }
+   if (file.startsWith(BEND_LIB + "/") && !fs.existsSync(file)) {
+     const pkg = file.slice(BEND_LIB.length + 1).split("/")[0];
+     const man = await hub_get(book, pkg + "/manifest", pkg.slice(2), spn);
+@@ -1095,12 +1098,17 @@ export async function book_load(book: Book, file: string, ns: string, seen: Map<
+         throw Err(book, ctx_nil(), "an import ('import Base', or 'import <path> as <Name>')", "'" + line + "'", sp);
+       }
+       if (h[2] === undefined) {
+-        await book_load(book, BASE_BEND, "", seen, sp);
++        await book_load(book, BASE_BEND, "", seen, sp, localOnly);
+       } else {
+         let rel = path.posix.normalize(h[1]);
+         if (!rel.endsWith(".bend")) {
+           throw Err(book, ctx_nil(), "an import of a .bend file", "'" + h[1] + "'", sp);
+         }
++        if (localOnly && (path.posix.isAbsolute(rel) || path.win32.isAbsolute(h[1])
++          || h[1].includes("\\")
++          || /^([^/]*@[^/]*)\//.test(rel) || /^0x[0-9a-f]+\//.test(rel))) {
++          throw new Error("--explain-layout accepts local relative imports only; absolute paths and packages are disabled");
++        }
+         const nv = rel.match(/^([^/]*@[^/]*)\//);
+         if (nv !== null) {
+           rel = await name_hash(book, nv[1], sp) + rel.slice(nv[1].length);
+@@ -1116,7 +1124,7 @@ export async function book_load(book: Book, file: string, ns: string, seen: Map<
+           sub = rel;
+         }
+         al[h[2]] = sub.replace(/\.bend$/, "");
+-        await book_load(book, at, al[h[2]], seen, sp);
++        await book_load(book, at, al[h[2]], seen, sp, localOnly);
+       }
+       lines[i] = "";
+       continue;
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index 937bebd..ba5b1ea 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -1039,6 +1039,12 @@ function lay_box(lay: Lay): boolean {
+   return lay.arms === null && lay.ks[0] === "box";
+ }
+ 
++// A read-only view of the same layouts used by the native emitter. A boxed
++// field is one pointer word; this does not count the heap node it points to.
++function lay_report(lay: Lay): { words: number; kinds: Kind[]; boxed: boolean } {
++  return { words: lay.ks.length, kinds: [...lay.ks], boxed: lay_box(lay) };
++}
++
+ function lay_arm(lay: Lay, k: Name): Arm {
+   return lay.arms!.find((a) => a.k === k)!;
+ }
+@@ -1513,6 +1519,61 @@ function done_defs(cb: Carb, live = done_live): [Name, Def][] {
+     .filter((p) => live(p[1]));
+ }
+ 
++// Typed structural report. It never invokes the emitter or executes main.
++// A traversed site may be dead or disappear when the emitter folds a constant.
++export function explain_layout(book: Bend.Book, names: Name[]): string {
++  const own = [...new Set(names)].filter((k) => book.tlds[k] !== undefined
++    && book.tlds[k].b !== true);
++  const cb = carb_book(book, own);
++  const declarations = own.map((k) => {
++    const tld = cb.book.tlds[k];
++    if (tld.$ === "ADT") {
++      const constructors = tld.c.map((c) => {
++        const node = lay_node(cb.book, c.k);
++        return { name: c.k, node: lay_report(node),
++          fields: node.arms![0].fs.map((f) => ({ offset: f.at,
++            layout: lay_report(f.lay) })) };
++      });
++      return { kind: "type", name: k, parameters: tld.n,
++        value: tld.n === 0 ? lay_report(lay_of(cb.book, Bend.ADT(k, [])))
++          : null, constructors };
++    }
++    const sig = sig_def(cb, k);
++    const sites: ({ kind: "parallel-let"; calls: string[];
++      branches: number; resultWords: number[]; totalResultWords: number }
++      | { kind: "bang-call"; callee: string;
++        argumentWords: number[]; resultWords: number })[] = [];
++    if (done_live(tld)) {
++      term_any(cb, tld.h as HTerm, (s) => {
++        if (s.$ === "Let") {
++          const live = let_live(cb, s);
++          const calls = s.v.filter((_, i) => live[i]).map((v) =>
++            call_kind(cb, v)?.k ?? null);
++          if (calls.length > 1 && calls.every((c) => c !== null)) {
++            const named = calls as string[];
++            const resultWords = named.map((c) => sig_def(cb, c).ret.ks.length);
++            sites.push({ kind: "parallel-let", calls: named,
++              branches: named.length, resultWords,
++              totalResultWords: resultWords.reduce((a, b) => a + b, 0) });
++          }
++        } else if (s.$ === "Ref" && s.b) {
++          const sig = sig_def(cb, s.k);
++          sites.push({ kind: "bang-call", callee: s.k,
++            argumentWords: sig.lays.map((l) => l.ks.length),
++            resultWords: sig.ret.ks.length });
++        }
++        return false;
++      });
++    }
++    return { kind: "def", name: k, parameters: sig.live.map((d, i) => ({
++      name: d[1], layout: lay_report(sig.lays[i]) })),
++      result: lay_report(sig.ret), sites };
++  });
++  return JSON.stringify({ schema: "bend-layout-v1", target: "native-C",
++    note: "Typed structural sites and compiler interface widths; not emitted task counts or runtime cost. Some sites may be dead or folded. Generic constructor nodes use symbolic field types.",
++    declarations }, null, 2) + "\n";
++}
++
+ // Cid
+ // ===
+ 
+diff --git a/bend2/main.ts b/bend2/main.ts
+index 3589680..9152a67 100755
+--- a/bend2/main.ts
++++ b/bend2/main.ts
+@@ -37,6 +37,8 @@ usage:
+   bend <file.bend> [args]       check the file, then run main with args
+   bend <file.bend> -o <out>     build a binary; <out>.c emits C, <out>.js JS
+   bend <file.bend> --check-only check the file and its imports; run nothing
++  bend <file.bend> --explain-layout
++                                check, then print native layout/fork JSON; run nothing
+   bend <file.bend> --publish    publish the file and its imports to the hub
+   bend <file.bend> --publish <name>@<version>
+                                 publish, then name it (needs login)
+@@ -106,6 +108,7 @@ const PLUGIN: BunPlugin = {
+ // version check, so the check never delays the command's own work.
+ async function cli(): Promise<void> {
+   const args = process.argv.slice(2);
++  let explained = false;
+   if (args[0] === "version" && args.length === 1) {
+     return cli_say(1, "bend " + VERSION + "\n");
+   }
+@@ -130,9 +133,11 @@ async function cli(): Promise<void> {
+   } else if (args[0] === "base" && args.length <= 2) {
+     cli_base(args[1]);
+   } else {
+-    await cli_file(args);
++    await cli_file(args, () => { explained = true; });
++  }
++  if (!explained) {
++    await check();
+   }
+-  await check();
+ }
+ 
+ // cli_guide prints guide/<NAME>.md: the guide, or a named extra.
+@@ -208,11 +213,12 @@ function ver_newer(ver: string): boolean {
+ }
+ 
+ // cli_file checks, runs, builds, publishes or bundles a file
+-async function cli_file(args: string[]): Promise<void> {
++async function cli_file(args: string[], onExplain: () => void): Promise<void> {
+   const outs: string[] = [];
+   const argv: string[] = [];
+   let file: string | undefined;
+   let only = false;
++  let explain = false;
+   let checkup = false;
+   let publish = false;
+   let named: string | undefined;
+@@ -222,6 +228,8 @@ async function cli_file(args: string[]): Promise<void> {
+       return cli_say(1, HELP);
+     } else if (a === "--check-only") {
+       only = true;
++    } else if (a === "--explain-layout") {
++      explain = true;
+     } else if (a === "--checkup") {
+       checkup = true;
+     } else if (a === "--publish") {
+@@ -249,7 +257,7 @@ async function cli_file(args: string[]): Promise<void> {
+     process.exit(1);
+   }
+   if (file.endsWith(".html")) {
+-    if (outs.length !== 1 || only || checkup || publish) {
++    if (outs.length !== 1 || only || explain || checkup || publish) {
+       cli_fail("a page bundles with -o <dir>");
+     }
+     return cli_bundle(file, outs[0]);
+@@ -260,13 +268,19 @@ async function cli_file(args: string[]): Promise<void> {
+   if (only && (outs.length !== 0 || checkup)) {
+     cli_fail("--check-only takes no other option");
+   }
+-  if (argv.length !== 0 && (outs.length !== 0 || only || checkup || publish)) {
++  if (explain && (outs.length !== 0 || only || checkup || publish)) {
++    cli_fail("--explain-layout takes no other option");
++  }
++  if (argv.length !== 0 && (outs.length !== 0 || only || explain || checkup || publish)) {
+     cli_fail("arguments go to a run: bend <file.bend> [args]");
+   }
+   if (checkup && outs.length !== 0) {
+     cli_fail("--checkup takes no -o: a binary holds one main, so build each"
+       + " import alone");
+   }
++  if (explain) {
++    onExplain();
++  }
+   try {
+     if (publish) {
+       return await cli_publish(file, named);
+@@ -277,6 +291,11 @@ async function cli_file(args: string[]): Promise<void> {
+     if (only) {
+       return cli_report(...await book_read(file), 1);
+     }
++    if (explain) {
++      const [book, n0] = await book_read(file, undefined, new Map(), true);
++      cli_report(book, n0, 2);
++      return cli_say(1, Comp.explain_layout(book, book.order));
++    }
+     const seen = new Map<string, string | null>();
+     const [book, n0] = await book_read(file, undefined, seen);
+     if (outs.length !== 0 || book_main(book) !== null) {
+@@ -758,12 +777,12 @@ function cli_fail(msg: string): never {
+ // ====
+ 
+ async function book_read(file: string, base?: Bend.Book,
+-  seen = new Map<string, string | null>()): Promise<[Bend.Book, number]> {
++  seen = new Map<string, string | null>(), localOnly = false): Promise<[Bend.Book, number]> {
+   const book = base === undefined ? Bend.book_nil() : book_seed(base);
+   if (base !== undefined) {
+     seen.set(BASE, "");
+   }
+-  const n0 = await Bend.book_load(book, file, "", seen);
++  const n0 = await Bend.book_load(book, file, "", seen, undefined, localOnly);
+   const laws = path.join(path.dirname(file), "LAWS.bend");
+   if (path.basename(file) === "PROOF.bend" && fs.existsSync(laws)
+     && !seen.has(fs.realpathSync(laws))) {

@@ -1,0 +1,52 @@
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index 937bebd..e725a8f 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -29,6 +29,10 @@ type Dst = Val | null;
+ type Seg = {
+   fid: string;
+   def: Name;
++  origin?: Name;
++  // Diagnostic-only source layout; never used to generate successful C.
++  layout?: { captures: { name: Name; words: number }[];
++    binder: { name: Name; words: number } };
+   ret: Lay;
+   lines: string[];
+   params: string[];
+@@ -1615,6 +1619,12 @@ function seg_open(fl: File, name: string, ret: Lay, frame: Seg["frame"],
+   const ts = ks.map(() => name_local(fl, k));
+   const seg = seg_new(name, ret, [...news, ...ts],
+     [...live.flatMap(([, b]) => b.val.lay.ks), ...ks], frame);
++  seg.origin = fl.def;
++  if (seg.params.length > WIDE) {
++    seg.layout = { captures: live.map(([p, b]) =>
++      ({ name: p.k, words: b.val.ws.length })),
++      binder: { name: k, words: ks.length } };
++  }
+   fl.segs.push(seg);
+   Object.assign(fl, { seg, spares: [], tab: 2, uses: new Map() });
+   olds.forEach((w, i) => {
+@@ -2947,8 +2957,21 @@ function compile_tables(fl: File, entries: Seg[]): string[] {
+     defs.push(...ms.map((m, i) => `#define ${m} ${i}`));
+   }
+   for (const [nm, vals] of tabs) {
+-    if (vals.some((v) => v > 255)) {
+-      die("an arity over 255");
++    const index = vals.findIndex((v) => v > WIDE);
++    if (index >= 0) {
++      const seg = nm.startsWith("FID_") ? entries[index] : undefined;
++      const cid = nm.startsWith("CID_") ? [...fl.cids.keys()][index]
++        : undefined;
++      const layout = seg?.layout;
++      die(`native C layout exceeds ${WIDE}-word cap: ${nm}[${index}]`
++        + `=${vals[index]}, owner=${JSON.stringify(seg?.origin ?? seg?.def
++          ?? cid ?? "unknown")}`
++        + (seg ? `, segment=${seg.fid}` : "")
++        + (layout ? `, captures=${layout.captures.length} [${
++          layout.captures.map((c) => `${JSON.stringify(c.name)}:${c.words}`)
++            .join(", ")}] (${layout.captures.reduce((n, c) => n + c.words,
++              0)} words), return binder=${JSON.stringify(layout.binder.name)}`
++          + ` (${layout.binder.words} words)` : ""));
+     }
+     defs.push(`CONSTV u8 ${nm}[] = { ${vals.join(", ")} };`);
+   }

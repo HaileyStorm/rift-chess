@@ -1,0 +1,247 @@
+{
+  "schema": "rift-bend-optional-stack/1",
+  "date": "2026-09-24",
+  "baseCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
+  "orderedPatches": [
+    {
+      "file": "001-arity/0001-arity-diagnostics.patch",
+      "sha256": "DC5D01754F933D4568538C8CD3BDA046F584F0CDA2F1B196D254E05CFE2D92DA"
+    },
+    {
+      "file": "002-layout/0002-explain-layout.patch",
+      "sha256": "42B2F463107BCC3279EFCF2D1927E61917CFC210C155EC42D9E92CDCC2E5C2F5"
+    },
+    {
+      "file": "003-join-boxing/0003-join-capture-boxing.patch",
+      "sha256": "9295DF173A1D1580002C64BB17AD8E0A1ADCFC54A56895366CABAA3BD0DFFE68"
+    }
+  ],
+  "stackedSources": {
+    "bend2/bend.ts": "B49DA491247CE3CBFD919B9A043F050AF391D1CB6C274551F571E9C73A3DE1E3",
+    "bend2/comp.ts": "6F9B98BCFE00443AACC91E4E1024A30C5720522F746A656E824CA2085CEB2884",
+    "bend2/main.ts": "4563DB66ED2243506320C5E04D56FA840C568D5C07BC7DB601D6199641CC8CB8"
+  },
+  "toolchain": "Bun 1.4.2, Windows host; WSL Ubuntu Linux x86_64 clang-18 18.1.3 (1ubuntu1)",
+  "nativeBuild": "/usr/bin/clang-18 -std=c11 -O2 <emitted.c> -lpthread -lm -o <elf>",
+  "pinnedUpstreamTrackedClean": true,
+  "fixtureResults": [
+    {
+      "fixture": "capture-255-only.bend",
+      "sourceSha256": "27F412880038670586B344856E2FB5702619A568F713F54321C82F76B6F99030",
+      "jsSha256": "DC391764CEFF12B5C442EE0B435F807ECC9BB0F3483D5641D1CCF7895DC72423",
+      "cSha256": "CB9762192497493AC726137D44234BDB4852BBE5DD3DB6E7249CF384640A192F",
+      "elfSha256": "39772BCE5542BFF7586FA99BB3A57265C06D38B41A2AA1E87CBFF3B037DADCA9",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "7n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "7n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "7n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "capture-boundary.bend",
+      "sourceSha256": "17F51CC8CEE7DC24230279380C6FDC9AFB2D000096278C41F1721C24948FEFCC",
+      "jsSha256": "F1548E354E71093FBAB622A5BA958D564AED1C1479B51D8C567C3E3BA3204698",
+      "cSha256": "75EC26CE7641815EA92F2C7CAC8FD5A94BA8BA626AD704BA5EE64B30B923A418",
+      "elfSha256": "D2A7C66CE8ADAF01B2CD9D6F931BEA090757B5F30500C5A053D7E83AF025C27D",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "18n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "18n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "18n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "wide-captures.bend",
+      "sourceSha256": "B3C6113B01D12D18E47217A5D1C4DC82B21ECA68AC63B4421DAC526461769717",
+      "jsSha256": "6070ED6A71474CA9A7BD4E1971B56176D7D6F01DE974DC7685942695F1C99FF8",
+      "cSha256": "A841727FA6FDBBDD1C2AB34C2FF859BE5617D5BA86563F2AE84E3BC409993F2D",
+      "elfSha256": "0C8B557A25FB4375EE1F66FF1BE5B663ECE04D4C3DFC833443CA737E693BE643",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "36n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "36n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "36n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "shared-boxed-captures.bend",
+      "sourceSha256": "CBA5B346064B1577B376A11F1A94E5A6139B6575A439013E9CB0B865FB3F92A2",
+      "jsSha256": "19BC45AC328811045043B1104A28D515569D530778CA36A1AFC14A0665E01628",
+      "cSha256": "5CFBFB9B1E39B2A63D550248572ED1BF9E8FAB94E1F00996241AA817BCB8D716",
+      "elfSha256": "2949CE92DC2B0DF628DF0B2F1E03B1C961D793A0E8045CA09A1A1EBB047D3F6F",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "shared-dynamic-captures.bend",
+      "sourceSha256": "71A237E3346D5B01BCE4AA123261426B4D4B7275E67BC633D8EC2BF30330358A",
+      "jsSha256": "D014F32C93D1ADFA0CE6F7AF6B05BC30FD3DD276DDCB83A7684E4AD2B1DE266C",
+      "cSha256": "BD196A85711935D587A50C71D250ADE80AD41E0E0EF100CF9D2939CC33543690",
+      "elfSha256": "890109E4348CBF6C31EE16865DA33087AC464A01DF8E0E39B8AFC08A3327BDBA",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "wide-returns-residual.bend",
+      "sourceSha256": "3CA250D22C5F3E8B35B47B156CEBBFFFBF13BCC685E5E6DE0D9CDADE10B7ACE5",
+      "jsSha256": "D099A6D0F89FC9C93CEB4A73393FFD2EB619F33836665BE76C1464F578A6DDB5",
+      "cSha256": null,
+      "elfSha256": null,
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "6n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "rejected",
+        "exitCode": 1,
+        "diagnostic": "native C layout exceeds 255-word cap: FID_ARITY_T[6]=384, owner=\"three\", segment=FID_THREE_J11, captures=3 [\"a\":128, \"b\":128, \"c\":128] (384 words), return binder=\"\" (0 words)",
+        "outputAbsent": true
+      },
+      "nativeThreads1": null,
+      "nativeThreads4": null
+    },
+    {
+      "fixture": "dead-frame-slots.bend",
+      "sourceSha256": "3C02EE19495F61220FA38CB30F0426B4A010FE2B91C5403E335D4565F3DCA372",
+      "jsSha256": "48F3C0151F79A2C6666091C8949560E793DCF73E4CFF837A499E0207BCDF8B76",
+      "cSha256": "5C3CE81E0AE2732A0A972BC97676C0A469BC78BC9BEDE1B4167DF92647375EBE",
+      "elfSha256": "D06B145D3D8F6C6540532FB21DA5630EE54FAE0DF3096B848F22A2A9C6F614FF",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "11n\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "11n\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "11n\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "shared-dynamic-read.bend",
+      "sourceSha256": "07EE2F07FABBF8FAC2B366D1D585CC01D80F8D94EDA784A7D3A1A421CF097606",
+      "jsSha256": "72B1D51422F15A6A4A3F67224A8F5FB15C7C0FBF086D2F17C5CF0B75D1ED82D8",
+      "cSha256": "4FDDF17685720830C616DC838F96CFBB42652D28EAD251B72DC771A3AC7270DE",
+      "elfSha256": "637E5CDDDD7B39B15CDAAE20FBF88C12B087F7F862ED86A804AD5326D9A70415",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "31owned2owned\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "31owned2owned\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "31owned2owned\n",
+        "exitCode": 0
+      }
+    },
+    {
+      "fixture": "borrowed-across-cut.bend",
+      "sourceSha256": "9F9F3B529B6D27B1C4841A3F490560650E84D20959A28EF9DB69E9E2AE2ACA2D",
+      "jsSha256": "1690810D92F9332C2534A52201A96E750416A3EE56BC84539F87BD669153A887",
+      "cSha256": "0B0FDA6EB336378CDF4780738C098C27A93A1027BBE4827EE4E984A3221F5BE5",
+      "elfSha256": "492C180BE54B47C94538D5CAE700C6B33D1CD61A390C43DF5DD4C87A806A6949",
+      "checkOnly": "passed",
+      "js": {
+        "stdout": "91owned2owned\n",
+        "exitCode": 0
+      },
+      "c": {
+        "result": "emitted"
+      },
+      "nativeThreads1": {
+        "stdout": "91owned2owned\n",
+        "exitCode": 0
+      },
+      "nativeThreads4": {
+        "stdout": "91owned2owned\n",
+        "exitCode": 0
+      }
+    }
+  ],
+  "fullNative": {
+    "input": "bend2/Native.bend",
+    "inputSha256Before": "0E7CA0B26D5450D8F405077121B4B3AC14BC802E5950440DA31FE6679872D913",
+    "inputSha256After": "0E7CA0B26D5450D8F405077121B4B3AC14BC802E5950440DA31FE6679872D913",
+    "timeLimitMs": 480000,
+    "elapsedMs": 481726,
+    "status": null,
+    "signal": "SIGTERM",
+    "errorCode": "ETIMEDOUT",
+    "sourceCheck": "completed; 40 defs rely on unsafe or foreign code",
+    "cOutput": null,
+    "ignoredProbeReceipt": ".artifacts/bend2/toolchain-patches/stack-optional-final/results/full-native-emission.json"
+  },
+  "scope": "finite source checks, JS execution, native Linux CPU 1/4-thread output equality; no GPU, graphical binary, full release, or proof of affine ownership"
+}

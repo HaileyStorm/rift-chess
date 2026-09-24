@@ -1,0 +1,98 @@
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index 937bebd..658b168 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -2554,6 +2554,34 @@ function emit_body(fl: File, tm: HTerm, ty0: HTerm | null,
+   }
+ }
+ 
++// Move wide live values through a continuation as one owned constructor word.
++// The source binding retains its type; val_to unpacks it at its next use. This
++// only compresses captured values, never a callee's raw return ABI.
++function box_join_captures(fl: File, live: [Probe, Bind][], returns: number):
++  [Probe, Bind][] {
++  let words = returns + live.reduce((n, [, b]) => n + b.val.ws.length, 0);
++  if (words <= WIDE) {
++    return live;
++  }
++  const out = [...live];
++  const order = [...out.keys()].sort((a, b) =>
++    out[b][1].val.ws.length - out[a][1].val.ws.length);
++  for (const i of order) {
++    const [p, b] = out[i];
++    if (words <= WIDE) {
++      break;
++    }
++    if (b.val.ws.length <= 1) {
++      break;
++    }
++    const boxed = val_hold(fl, val_to(fl, b.val, BOX), "join");
++    words -= b.val.ws.length - 1;
++    out[i] = [p, { ...b, val: boxed }];
++    fl.uses.set(p, out[i][1]);
++  }
++  return out;
++}
++
+ // A fork: in parallel a join task and a kid per call (a cut's continuation
+ // is a task); in sequence one frame read by every step, the last jumping
+ // into the joiner. Both paths hold the same values, so open one joiner.
+@@ -2563,6 +2591,7 @@ function emit_fork(fl: File, x: HLet, ers: HTerm[]): void {
+   const fork = calls.length > 1;
+   const name = seg_name(fl, "j");
+   let hold: Probe[] = [];
++  const holdLays = new Map<Probe, Lay>();
+   if (fork) {
+     spare_flush(fl);
+     fl.seg.fork = true;
+@@ -2572,9 +2601,11 @@ function emit_fork(fl: File, x: HLet, ers: HTerm[]): void {
+         fl.rest = [...x.v.filter((_, i) => i !== j), o.b];
+         return emit_args(fl, c, false, true);
+       });
+-      const live = [...fl.uses].filter(([p, b]) =>
+-        !val_brw(fl, b.val) || rest_use(fl, [o.b], p) > 0);
++      const live = box_join_captures(fl, [...fl.uses].filter(([p, b]) =>
++        !val_brw(fl, b.val) || rest_use(fl, [o.b], p) > 0),
++      calls.reduce((n, c) => n + sig_def(fl, c.k).ret.ks.length, 0));
+       hold = live.map(([p]) => p);
++      live.forEach(([p, b]) => holdLays.set(p, b.val.lay));
+       const caps = live.flatMap(([, b]) => b.val.ws);
+       spare_flush(fl);
+       const jn = emit_task(fl, seg_fid(name), calls.length, caps);
+@@ -2600,8 +2631,13 @@ function emit_fork(fl: File, x: HLet, ers: HTerm[]): void {
+   calls.forEach((c, i) => {
+     fl.rest = [chain[i]];
+     const cargs = emit_args(fl, c);
+-    const vs = i === 0 ? [...fl.uses]
+-      : [[o.ps[i - 1], fl.uses.get(o.ps[i - 1]) as Bind] as [Probe, Bind]];
++    // A dead capture can still occupy the stack until the final pop. Only
++    // surviving bindings become parameters of the next continuation.
++    const heldWords = [...fl.uses].filter(([p]) => pos.has(p))
++      .reduce((n, [, b]) => n + b.val.ws.length, 0);
++    const vs = box_join_captures(fl, i === 0 ? [...fl.uses]
++      : [[o.ps[i - 1], fl.uses.get(o.ps[i - 1]) as Bind] as [Probe, Bind]],
++    heldWords + sig_def(fl, c.k).ret.ks.length);
+     const kn = seg_name(fl, "k");
+     spare_flush(fl);
+     const ws = vs.flatMap(([p, b]) =>
+@@ -2625,6 +2661,20 @@ function emit_fork(fl: File, x: HLet, ers: HTerm[]): void {
+       ty_ann(x.v[i]) ?? die("an unannotated let"));
+   });
+   if (fork) {
++    // The sequential path may have boxed a different set of captures while
++    // crossing individual cuts. Restore the parallel joiner's exact layout.
++    const target = new Map<Probe, Lay>([
++      ...holdLays,
++      ...o.ps.map((p, i): [Probe, Lay] =>
++        [p, sig_def(fl, calls[i].k).ret]),
++    ]);
++    for (const [p, b] of fl.uses) {
++      const lay = target.get(p);
++      if (lay !== undefined && !lay_eq(b.val.lay, lay)) {
++        fl.uses.set(p, { ...b,
++          val: val_hold(fl, val_to(fl, b.val, lay), "join") });
++      }
++    }
+     const live = [...fl.uses];
+     if (live.map(([p]) => p.i).join() !== [...hold, ...o.ps].map((p) => p.i)
+       .join()) {

@@ -1,0 +1,46 @@
+{
+  "evidenceClass": "isolated local compiler source checks and C/JS generation",
+  "pinnedCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
+  "pinnedCompTsSha256": "b00c5db995efd9698208b9b3c14f6a454fab3a10dca7bb85e962e2fb82bba25c",
+  "patchedCompTsSha256": "670d704ed4b06a18b1d11533ef6a0b60fd9e526d8678103408ca3440c09be0da",
+  "patchSha256": "dc5d01754f933d4568538c8cd3bda046f584f0cda2f1b196d254e05cfe2d92da",
+  "testScriptSha256": "475e63a2845c1d01e22c94e413780cde13d90b3f95fdd7bc9782f34fcf01469b",
+  "sourceChecks": "all four fixtures pass on pinned and patched compiler",
+  "fixtures": {
+    "wide-record": {
+      "sourceSha256": "3a09d33cb227fcea18b5633a5d931efa024ac51d9145b0b0d8bfc304b3b525e2",
+      "jsSha256Both": "f2e94494ef310c7809621167fe0ad2321ac7653ef78fc3de99d9395f38e0a673",
+      "cSha256Both": "4922c4605ca725183b016752af6aee57d9b2db7b9226d1248499d52cbf6e8be1"
+    },
+    "join-255": {
+      "sourceSha256": "e74bddacc1a4ab02b65c54dffce0975a9197df56a18e45203a77a7b201e41453",
+      "jsSha256Both": "20a8c915b954aa25f83fff7ca56a201a74f72ecfb7ad462a4ac8e2faa60dd02a",
+      "cSha256Both": "51265c3eaa58522d4c49193213d720bfe5dc55243dcf45a3f037279d695e9971"
+    },
+    "join-256": {
+      "sourceSha256": "dd0860a03b4602a3ecfbf7ca66b34a6ff74288cc05f0249549f82f01e8119e6a",
+      "jsSha256Both": "299afb17e8ce879b6d18f045680399ce19df8f4010e42fa056fd864e028875ec",
+      "pinnedC": "rejected: an arity over 255",
+      "patchedC": "native C layout exceeds 255-word cap: FID_ARITY_T[4]=256, owner=\"join\", segment=FID_MAIN_K10, captures=3 [\"a\":125, \"b\":125, \"x\":5] (255 words), return binder=\"y\" (1 words)",
+      "failedCArtifact": false
+    },
+    "constructor-256": {
+      "sourceSha256": "331ee262ecad2ec808148a863d19094ed367a9651eaf45d2c631916eb1d08215",
+      "jsSha256Both": "944e15f9762045c9421ad21c83ee90c29e819f1dd8a50a27ed71626c22dcde30",
+      "pinnedC": "rejected: an arity over 255",
+      "patchedC": "native C layout exceeds 255-word cap: CID_ARITY_T[13]=256, owner=\"Huge\"",
+      "failedCArtifact": false
+    }
+  },
+  "patchCheck": "git apply --check against clean pinned tree and reverse --check against patched isolated tree passed",
+  "nativeCpuFixture": {
+    "environment": "WSL Ubuntu, clang-18 -O0 -pthread -lm, source copied to isolated ext4 directory",
+    "path": "/tmp/rift-arity-001.TDogFF",
+    "inputCSha256Both": "51265c3eaa58522d4c49193213d720bfe5dc55243dcf45a3f037279d695e9971",
+    "exitBoth": 0,
+    "captureMethod": "Bash command substitution strips trailing stdout newlines; raw process stdout bytes were not hashed",
+    "capturedOutputBoth": "1",
+    "capturedOutputSha256Both": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  "limits": "Native execution is a tiny pure CPU fixture only. No full graphical Native emission, GPU test, or device acceptance is claimed."
+}

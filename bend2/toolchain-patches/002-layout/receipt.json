@@ -1,0 +1,12 @@
+{
+  "pin": "d37909174ebd664338ae3194799a9e0899dedd51",
+  "bun": "1.4.2",
+  "patchSha256": "42b2f463107bcc3279efcf2d1927e61917cfc210c155ec42d9e92cdcc2e5c2f5",
+  "test": "node bend2/toolchain-patches/002-layout/test.mjs",
+  "result": "passed",
+  "jsSha256Both": "d41fdfffe4cfddad012a7c00e1075ffe4486f4c95ca1aeb056c6050bf592924a",
+  "cSha256Both": "98ada1c6e87bd6b4d2318e26274006c3ee049884f7ac6be8bebbee7b704c7657",
+  "cleanPinApplyCheck": "passed",
+  "patchedReverseApplyCheck": "passed",
+  "claim": "source/checker/report regression, nested local-only import and Bend-cache isolation, parsed-mode telemetry behavior, path-independent imported names, static interface widths and exact JS/C emission equality; Bun transpiler cache observed; no native runtime speed or GPU claim"
+}
