@@ -33,6 +33,17 @@ def command_action(c: Match.Command) -> U32:
     case Match.MoveCommand{_, id}: id
     case _: 21760
 
+# These are the only accepted commands that preserve the match position. Keep
+# the fallback on the full refresh: Undo and Move can change it, while New and
+# Import enter through their own full-refresh paths below.
+def refreshed_command(c: Match.Command, +s: S.State, +g: Match.Match) -> S.State:
+  match c:
+    case Match.OfferCommand{_, _}: S.refreshed_same_position(s, g)
+    case Match.AcceptCommand{_, _}: S.refreshed_same_position(s, g)
+    case Match.DeclineCommand{_, _}: S.refreshed_same_position(s, g)
+    case Match.ResignCommand{_, _}: S.refreshed_same_position(s, g)
+    case _: S.refreshed(s, g)
+
 def quiet_reminder(+s: S.State) -> S.State:
   +due = Bool.and(U32.is_eq(Types.preferences_policy(S.prefs(s)), 0), Bool.and(Nat.is_ge(Model.pos_quiet(S.pos(s)), 100n), Bool.and(U32.is_eq(S.outcome_code(s), 0), Bool.not(S.reminder_seen(S.reminded(s), Model.pos_side(S.pos(s)))))))
   +next = S.set_reminded(s, S.reminder_match(S.reminded(s), S.game(s)))
@@ -43,7 +54,7 @@ def command_result(r: Match.StepResult, +s: S.State, +c: Match.Command) -> S.Upd
     case Match.Rejected{_}: S.result(S.notice(s, "That command is unavailable."), [], 2)
     case Match.Accepted{g}:
       +id = command_action(c)
-      +recorded = S.set_history(S.set_journal(S.clear(S.menu(S.refreshed(s, g), 0)), List.append(&2, Match.Command, S.journal(s), [c])), List.append(&2, String, S.history(s), [R.command_label(c)]))
+      +recorded = S.set_history(S.set_journal(S.clear(S.menu(refreshed_command(c, s, g), 0)), List.append(&2, Match.Command, S.journal(s), [c])), List.append(&2, String, S.history(s), [R.command_label(c)]))
       +next = S.set_elapsed(S.set_last(S.set_previous(recorded, S.pos(s)), id), Bool.pick(U32, U32.is_lt(id, 21760), 1, 240))
       +audible = Bool.or(U32.is_lt(id, 21760), Bool.not(U32.is_eq(S.outcome_code(next), 0)))
       S.result(quiet_reminder(next), List.append(&2, Types.Effect, stored(next), Bool.pick(List<&2, Types.Effect>, audible, sound_effect(s, next, id), [])), 2)

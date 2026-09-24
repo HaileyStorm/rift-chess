@@ -304,15 +304,28 @@ def offer_code(o: Match.DrawOffer) -> U32:
     case Match.NoOffer{}: 0
     case Match.Offered{side}: Bool.pick(U32, side, 1, 2)
 
-# The kernel enumeration is the heaviest pure call in a transition and is a
-# balanced fork tree; the bang offloads it natively and is inert on JavaScript.
+def refreshed.with_ids(+s: State, +g: Match.Match, +ids: List<&2, U32>) -> State:
+  match g:
+    case Match.Match{initial, +p, actions, states, keys, rev, pol, offer, forced}:
+      +end = end_code(forced, p, keys, pol, ids)
+      +m = meta(s)
+      set_meta(set_legal(set_pos(set_game(s, g), p), Bool.pick(List<&2, U32>, U32.is_eq(end, 0), ids, [])), Types.Meta{U32.from_nat(rev), Model.pos_side(p), Spec.in_check(p, Model.pos_side(p)), end, offer_code(offer), Bool.not(List.is_empty(&2, U32, actions)), Types.meta_botPaused(m), Types.meta_recovery(m)})
+
+# The full refresh is required whenever the position may have changed. The
+# balanced ID enumeration is inert on JavaScript and can offload natively.
 def refreshed(+s: State, +g: Match.Match) -> State:
   match g:
     case Match.Match{initial, +p, actions, states, keys, rev, pol, offer, forced}:
       +ids = Kernel.legal_ids!(p)
-      +end = end_code(forced, p, keys, pol, ids)
-      +m = meta(s)
-      set_meta(set_legal(set_pos(set_game(s, g), p), Bool.pick(List<&2, U32>, U32.is_eq(end, 0), ids, [])), Types.Meta{U32.from_nat(rev), Model.pos_side(p), Spec.in_check(p, Model.pos_side(p)), end, offer_code(offer), Bool.not(List.is_empty(&2, U32, actions)), Types.meta_botPaused(m), Types.meta_recovery(m)})
+      refreshed.with_ids(s, g, ids)
+
+# Caller contract: only use after an accepted Offer/Accept/Decline/Resign.
+# MatchKernel preserves the position, action history and repetition keys for
+# those commands, so the state's legal cache is still the answer for `p`.
+# Outcome, offer, revision and all presentation metadata are still recomputed
+# from the accepted Match; terminal states still clear the cached legal IDs.
+def refreshed_same_position(+s: State, +g: Match.Match) -> State:
+  refreshed.with_ids(s, g, legal(s))
 
 def revision(s: State) -> Nat:
   U32.to_nat(Types.meta_revision(meta(s)))
