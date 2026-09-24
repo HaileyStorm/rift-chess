@@ -35,5 +35,15 @@ assert.ok(pcm.length > 2000 && pcm.length < 24000);
 assert.equal(pcm[0], 0);
 assert.equal(pcm.at(-1), 0);
 assert.ok(pcm.every(sample => Number.isFinite(sample) && Math.abs(sample) <= 1));
+for (let i = 0; i < 4; i++) assert.equal(array(api.audio_samples(sounds[0].notes, 24000)).length, pcm.length);
+const measurements = [];
+for (let i = 0; i < 11; i++) {
+  const start = performance.now();
+  const rendered = array(api.audio_samples(sounds[0].notes, 24000));
+  measurements.push(performance.now() - start);
+  assert.equal(rendered.length, pcm.length);
+}
+const medianMs = measurements.sort((a, b) => a - b)[5];
 console.log(JSON.stringify({ ok: true, acceptedMove: 'e2-e4', notes: notes.length,
-  samples: pcm.length, firstRenderMs: Math.round(sampleMs * 100) / 100 }));
+  samples: pcm.length, firstRenderMs: Math.round(sampleMs * 100) / 100,
+  warmMedianMs: Math.round(medianMs * 100) / 100 }));

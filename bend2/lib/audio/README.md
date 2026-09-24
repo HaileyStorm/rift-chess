@@ -24,6 +24,17 @@ boundaries and before a delay, finite amplitudes and clipping. Local warm-JS
 versus 13.69 ms. This does not establish a speedup, subjective sound quality,
 or native/audio-device timing.
 
+The current sampler prepares each voice's bounded start and length once per
+cue, then uses those immutable descriptors in the sample loop. The prior
+`samples_go` loop is retained temporarily as a reference for exact PCM
+differential checks and warm-JS comparison; remove it after the new path has
+browser/native playback evidence. Five finite waveform/delay/mix cases match
+sample for sample. Two alternating 11-pair, four-warmup runs on a 4,080-sample
+three-voice capture cue measured reference/prepared medians of 32.96/24.35 ms
+and 11.77/8.63 ms, respectively. These local generated-JS timings suggest
+about a 26% loop-cost reduction; they do not predict speaker latency or native
+parallel/GPU speed.
+
 The native adapter is responsible for device ownership and transport. Base's
 native audio effect consumes interleaved stereo float samples and has a finite
 ring. `Native.bend` duplicates each mono sample into left/right channels,

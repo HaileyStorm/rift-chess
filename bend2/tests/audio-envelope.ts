@@ -49,5 +49,16 @@ assert.equal(clippedDuration.at(-1), 0, 'truncated tone still releases at its la
 const farFuture = array(api.samples(list([{ ...note(0), delay: 4_294_967_295 }]), 8000));
 assert.equal(farFuture.length, 8000);
 assert.ok(farFuture.every(sample => sample === 0), 'an out-of-range delayed note stays silent');
+for (const notes of [
+  [note(0)], [note(1, 20)], [note(2, 0, 0.7)], [note(3, 40)],
+  [note(0, 0, 0.6), note(1, 35, 0.4)],
+]) {
+  const rate = 8000;
+  const count = Math.min(1000, Math.max(...notes.map(n => n.delay + n.duration))) * rate / 1000;
+  const original = array(api.samples_go(BigInt(count), 0, rate, list(notes), list([])));
+  const prepared = array(api.samples(list(notes), rate));
+  assert.deepEqual(prepared, original,
+    'prepared voices retain exact prior PCM across waveforms, delays and mixes');
+}
 console.log(JSON.stringify({ ok: true, waveforms: 4, sampleComparisons: 4 * 800 + 1040 + 800,
   coverage: 'attack/release silence, delayed voice, all four waves, finite amplitude, mix clipping and arithmetic/output bounds' }));
