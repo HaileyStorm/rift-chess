@@ -1,3 +1,8 @@
+> **2026-09-24 portable improvement review (DRAFT):** source changes are
+> review-ready, not toolchain/device-validated. Read [USAGE_ALPHA.md](USAGE_ALPHA.md),
+> [DRAFT_CHANGE_PROPOSAL.md](DRAFT_CHANGE_PROPOSAL.md) and the root `REVIEW.md`.
+> Existing AtlasText, RGA1, core law meanings, grid8 and frozen v1 are retained.
+
 # Graphics v2 — draft integration library
 
 This is a reusable pure Bend image-tree package. Its public primitives are

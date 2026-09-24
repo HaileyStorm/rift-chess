@@ -1,3 +1,9 @@
+> **Portable review addendum (2026-09-24):** the original document below is
+> retained as checkpoint history. Current changes and 12 UNCHECKED candidate
+> extension witnesses are described in [DRAFT_CHANGE_PROPOSAL.md](DRAFT_CHANGE_PROPOSAL.md).
+> No pinned Bend, native, GPU or browser verification was performed for this
+> changed source closure. See the root `REVIEW.md` and `review/` receipts.
+
 # Graphics v2 contract proposal — DRAFT, not frozen
 
 This document is a proposal for review. It is not a manifest, accepted law

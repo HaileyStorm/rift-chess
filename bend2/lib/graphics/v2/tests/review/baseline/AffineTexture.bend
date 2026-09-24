@@ -77,32 +77,6 @@ def can_fill(inside: Bool, +basis: Basis, +x: U32, +y: U32,
     case False{}: False{}
     case True{}: one_texel(basis, x, y, size, source_size)
 
-# A leaf ignores the fill flag. Do not compute its inside test and four
-# UV corners in a strict backend merely to discard them in tree(0n,...).
-def fill_test(depth: Nat, +size: U32, +x: U32, +y: U32,
-  +q: Quad.Shape, +basis: Basis, +source_size: U32) -> Bool:
-  match depth:
-    case 0n: False{}
-    case 1n+rest:
-      can_fill(Facet.inside_pixels(q, U32.to_f32(x), U32.to_f32(y), size),
-        basis, x, y, size, source_size)
-
-# Coverage zero is also decided before doing a source Image lookup.
-def leaf_case(empty: Bool, count: U32, +basis: Basis, +x: U32, +y: U32,
-  +source: Image, +source_depth: Nat, +source_size: U32,
-  opacity: U32, image: Image) -> Image:
-  match empty:
-    case True{}: image
-    case False{}:
-      Shapes.paint_leaf(count, opacity,
-        color_at(basis, x, y, source, source_depth, source_size), image)
-
-def leaf(+count: U32, basis: Basis, x: U32, y: U32,
-  source: Image, source_depth: Nat, source_size: U32,
-  opacity: U32, image: Image) -> Image:
-  leaf_case(U32.is_zero(count), count, basis, x, y, source,
-    source_depth, source_size, opacity, image)
-
 def tree(+depth: Nat, +size: U32, outside: Bool, fill: Bool,
   +x: U32, +y: U32, +q: Quad.Shape, +basis: Basis,
   +source: Image, +source_depth: Nat, +source_size: U32,
@@ -110,8 +84,8 @@ def tree(+depth: Nat, +size: U32, outside: Bool, fill: Bool,
   match depth outside fill:
     case 0n True{} _: image
     case 0n False{} _:
-      leaf(Facet.coverage(q, U32.to_f32(x), U32.to_f32(y)),
-        basis, x, y, source, source_depth, source_size, opacity, image)
+      Shapes.paint_leaf(Facet.coverage(q, U32.to_f32(x), U32.to_f32(y)),
+        opacity, color_at(basis, x, y, source, source_depth, source_size), image)
     case 1n+rest True{} _: image
     case 1n+rest False{} True{}:
       Shapes.full_disk(depth, opacity,
@@ -124,19 +98,23 @@ def tree(+depth: Nat, +size: U32, outside: Bool, fill: Bool,
           +yy = U32.add(y, half)
           a b c d = tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(x), U32.to_f32(y), half),
-              fill_test(rest, half, x, y, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(x), U32.to_f32(y), half),
+                basis, x, y, half, source_size),
               x, y, q, basis, source, source_depth, source_size, opacity, Pix{background})
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(xx), U32.to_f32(y), half),
-              fill_test(rest, half, xx, y, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(xx), U32.to_f32(y), half),
+                basis, xx, y, half, source_size),
               xx, y, q, basis, source, source_depth, source_size, opacity, Pix{background})
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(x), U32.to_f32(yy), half),
-              fill_test(rest, half, x, yy, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(x), U32.to_f32(yy), half),
+                basis, x, yy, half, source_size),
               x, yy, q, basis, source, source_depth, source_size, opacity, Pix{background})
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(xx), U32.to_f32(yy), half),
-              fill_test(rest, half, xx, yy, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(xx), U32.to_f32(yy), half),
+                basis, xx, yy, half, source_size),
               xx, yy, q, basis, source, source_depth, source_size, opacity, Pix{background})
           Qua{a, b, c, d}
         case Qua{tl, tr, bl, br}:
@@ -145,19 +123,23 @@ def tree(+depth: Nat, +size: U32, outside: Bool, fill: Bool,
           +yy = U32.add(y, half)
           a b c d = tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(x), U32.to_f32(y), half),
-              fill_test(rest, half, x, y, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(x), U32.to_f32(y), half),
+                basis, x, y, half, source_size),
               x, y, q, basis, source, source_depth, source_size, opacity, tl)
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(xx), U32.to_f32(y), half),
-              fill_test(rest, half, xx, y, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(xx), U32.to_f32(y), half),
+                basis, xx, y, half, source_size),
               xx, y, q, basis, source, source_depth, source_size, opacity, tr)
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(x), U32.to_f32(yy), half),
-              fill_test(rest, half, x, yy, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(x), U32.to_f32(yy), half),
+                basis, x, yy, half, source_size),
               x, yy, q, basis, source, source_depth, source_size, opacity, bl)
             tree(rest, half,
               Facet.outside_pixels(q, U32.to_f32(xx), U32.to_f32(yy), half),
-              fill_test(rest, half, xx, yy, q, basis, source_size),
+              can_fill(Facet.inside_pixels(q, U32.to_f32(xx), U32.to_f32(yy), half),
+                basis, xx, yy, half, source_size),
               xx, yy, q, basis, source, source_depth, source_size, opacity, br)
           Qua{a, b, c, d}
 
@@ -169,7 +151,8 @@ def draw_valid(valid: Bool, +depth: Nat, +size: U32, +q: Quad.Shape,
     case True{}:
       tree(depth, size,
         Facet.outside_pixels(q, 0.0, 0.0, size),
-        fill_test(depth, size, 0, 0, q, basis, source_size),
+        can_fill(Facet.inside_pixels(q, 0.0, 0.0, size),
+          basis, 0, 0, size, source_size),
         0, 0, q, basis, source, source_depth, source_size, opacity, image)
 
 # Division/inverse work is reachable only with a nondegenerate basis.

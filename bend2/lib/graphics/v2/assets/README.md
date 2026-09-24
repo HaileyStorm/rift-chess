@@ -1,3 +1,7 @@
+> **Additive DRAFT:** [RGA2.md](RGA2.md) describes the new, separate
+> straight-alpha codec and offline PNG/crop/mip tool. Everything below still
+> describes RGA1; RGA1 source and formal contracts are unchanged.
+
 # Raw Graphics Asset codec
 
 `RGA1` is a small, generic **Raw Graphics Asset** format. It carries opaque
