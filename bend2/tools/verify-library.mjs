@@ -133,9 +133,14 @@ function verifyRequiredFiles() {
 }
 
 function librarySources(dir = absolute(libraryRoot)) {
-  return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()
-    ? librarySources(path.join(dir,entry.name))
-    : /\.(bend|md|ts)$/.test(entry.name) ? [path.relative(root,path.join(dir,entry.name)).replaceAll('\\','/')] : []).sort();
+  return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{
+    // The immutable v1 source set ends at this namespace boundary. New major
+    // versions own separate manifests and checks; they never extend v1's hash.
+    if (dir === absolute(libraryRoot) && entry.isDirectory() && entry.name === 'v2') return [];
+    return entry.isDirectory()
+      ? librarySources(path.join(dir,entry.name))
+      : /\.(bend|md|ts)$/.test(entry.name) ? [path.relative(root,path.join(dir,entry.name)).replaceAll('\\','/')] : [];
+  }).sort();
 }
 
 function sourceHashes() {

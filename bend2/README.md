@@ -56,7 +56,7 @@ The frozen manifest and independent review receipts are in
 
 This experiment lives in the main Rift Chess checkout, beside the original
 TypeScript game (branch `codex/visual-overhaul`). The compiler is pinned in
-`TOOLCHAIN.json` (Bend 2.0.26 at `6a77e12`). The local layout expects the
+`TOOLCHAIN.json` (Bend 2.0.27 at `d379091`). The local layout expects the
 upstream checkout at `.artifacts/toolchains/bend`, at the exact recorded commit
 with no tracked changes, and a portable Bun 1.4.2. `BUN_BIN` can point to that
 runtime. The Windows development setup uses the official
@@ -66,7 +66,7 @@ On a fresh checkout:
 
 ```powershell
 git clone https://github.com/bendlang/bend .artifacts/toolchains/bend
-git -C .artifacts/toolchains/bend checkout 6a77e1246c351055cb15031267a7c76c87036cbc
+git -C .artifacts/toolchains/bend checkout d37909174ebd664338ae3194799a9e0899dedd51
 npm install --prefix .artifacts/toolchains/runtime @oven/bun-windows-x64@1.4.2
 ```
 
@@ -90,7 +90,8 @@ policy) is recorded there with its own receipts and
 review, and the freeze checks resolve recorded hashes through it. Amendment 001
 moved the compiler from `a495242` to `ff7a40c`; amendment 002 is revision 2.1
 of `docs/LAWS_V2.md` (the 2.0 text is preserved in `docs/history/`); amendment
-003 moved the compiler to `6a77e12` (Bend 2.0.26). Law,
+003 moved the compiler to `6a77e12` (Bend 2.0.26); amendment 005 moves it to
+`d379091` (Bend 2.0.27). Law,
 proof, implementation, fixture and reference bytes cannot be amended; they need
 a new semantic version under the change policy. To move the compiler, follow
 "Updating the Bend toolchain" in the local guide. The root `npm test` excludes

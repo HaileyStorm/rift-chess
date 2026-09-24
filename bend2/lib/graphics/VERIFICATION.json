@@ -2,10 +2,10 @@
   "schema": "rift-bend-library-graphics/1",
   "version": 1,
   "compiler": {
-    "bendVersion": "2.0.26",
-    "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+    "bendVersion": "2.0.27",
+    "bendCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
     "toolchain": "bend2/TOOLCHAIN.json",
-    "toolchainSha256": "7d7e5005b273c3737ee7f0585b82b8354f59149aa63e903e9a63cb127d775e10",
+    "toolchainSha256": "17419db1617fece38c72dba9136463a313db43bf2c61f657334d9fdce0ae51a6",
     "bunVersion": "1.4.2"
   },
   "compilerHistory": [
@@ -22,6 +22,13 @@
       "toolchainSha256": "8832b35e791298a9474a6b33ed611d69a3f9cc675f3289feb91d8d99c88214bf",
       "bunVersion": "1.4.2",
       "replacedBy": "bend2/laws/amendments/003-bend-6a77e12.json"
+    },
+    {
+      "bendVersion": "2.0.26",
+      "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+      "toolchainSha256": "7d7e5005b273c3737ee7f0585b82b8354f59149aa63e903e9a63cb127d775e10",
+      "bunVersion": "1.4.2",
+      "replacedBy": "bend2/laws/amendments/005-bend-2-0-27.json"
     }
   ],
   "copies": {

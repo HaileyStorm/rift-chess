@@ -1,0 +1,266 @@
+{
+  "schema": "rift-v2-staged-check/1",
+  "at": "2026-09-24T00-09-20-809Z",
+  "passed": true,
+  "unchanged": true,
+  "hashes": {
+    "bend2/core/v2/AdjudicationContracts.bend": "9ca08a7652ff4ef830af9f66e551027c84cc251298ec667c2025487c6a4f2806",
+    "bend2/core/v2/AdjudicationLaws.bend": "a8c729d3dfc8dce9eecf425771ac6e2bd4e1ce22e28211413d094d8851fc7f6a",
+    "bend2/core/v2/AdjudicationProof.bend": "f6f8310f104ea4b233e72b7f2de3649cda9282ba3b882dbcf6e868188f9189de",
+    "bend2/core/v2/ArithmeticLaws.bend": "a9f354a5cb5cadbf2a883117fcb1daf9047f5a1527f4d4c25242125b3afc56f4",
+    "bend2/core/v2/ArithmeticProof.bend": "149f4a311b6da1ef8e45a2eb2b62626f5d24804ba4091f3e15ee422ee18602a8",
+    "bend2/core/v2/BoardSpec.bend": "2cd196c0ac88a8469011aa8abbd412e6bde37a71cf0588ffb45d40ea2c3df0c5",
+    "bend2/core/v2/BoundsLaws.bend": "95cd1f127eb75afb7c8167642fdd2a8155600f485aa7c12d7eb87e6025228793",
+    "bend2/core/v2/BoundsProof.bend": "cb33e8c1d96bb231f24d6da682246997ccc0246e2c0ae09a5fc58950bf5158d9",
+    "bend2/core/v2/CanonicalLaws.bend": "6650d4a8fa87c83e7c89c89309d563f6ac4807b7d116816a51a8f9e8d68b4461",
+    "bend2/core/v2/CanonicalProof.bend": "ce5844bfe26277e42d77a792effd362dac7a5fc8df886e27b10e5e9405910480",
+    "bend2/core/v2/CHECK.bend": "e6718d4a1784b5b45c06974f23660c9b117f7723e55bc19d809434dee7ba2b76",
+    "bend2/core/v2/check.mjs": "f6970087b3fad6424db712350dd5aac9f9b76e38be1c6de53271ba0bb2b78d89",
+    "bend2/core/v2/conformance.ts": "c2f11ad47df8994f92cd6e81ebbf1defe717d21307b0fa68761997c52751362d",
+    "bend2/core/v2/Domains.bend": "3f07f863230f7b6abfe5ab2003843ee7731a7121fa940a70a57ac2eff7306104",
+    "bend2/core/v2/DomainsLaws.bend": "2d08ea1607dddb7022306512c33698d3fb149f5b40dc803462e25264718b2c23",
+    "bend2/core/v2/DomainsProof.bend": "497bb4567613d56470326b0fa8161fb7965c20c1ab5e4dfc2873d0f7877ebc62",
+    "bend2/core/v2/enumeration-check.ts": "66b1915b33e5cb9bfd44ecc9781fb99845f9cfb9e9314558394f5dc33f5ac583",
+    "bend2/core/v2/EnumerationLaws.bend": "4be39ecde5c10d2c25bd456e4e43c1736d3ac7cd216c0edab81b9f58fb832a9f",
+    "bend2/core/v2/EnumerationProof.bend": "8d9f14e5e9851fddf398c5ad0ce2ba71f299b7dd5fbf2d393ca4591132a47c9b",
+    "bend2/core/v2/Facade.bend": "af0008a2a18159b99515c945cd3064dac07d250f04f76c4c6eeb142854848dbe",
+    "bend2/core/v2/FilterLaws.bend": "1009da80c01b45a1897334e2c4564452d8e5ff6579a0b9a0ac8a47c94b60b32a",
+    "bend2/core/v2/FilterProof.bend": "fd14c67d646a5adc9056fffe947dea25f471c124d82c843b9b760ce32dc54a0e",
+    "bend2/core/v2/History.bend": "29a7a1319ffae2179b2f511738237b856ea262c8f637b7a5c0ff028e506b5a1b",
+    "bend2/core/v2/HistoryLaws.bend": "a640f2a48bfe73a029808a06e08d9d638a97394087e5d50295216a9f20e62952",
+    "bend2/core/v2/HistoryProof.bend": "2296ac2e6b30876b92525b2214c7965a5be64cd6e36ca18e07b4d278c968b632",
+    "bend2/core/v2/Iteration.bend": "867bb0afd5b74ec78ff1907fe4f2e495e6680c37eaa1c38ed860b4ef84c3607e",
+    "bend2/core/v2/LAWS.bend": "764e41877e6abe05cebede54121b6c697e4146296563b1596f06b77dda06031f",
+    "bend2/core/v2/MatchControlContracts.bend": "5bde58565e21b38a48a6e129a55ed5dbddfe4042e8cfaebb54d99e44d90268c3",
+    "bend2/core/v2/MatchControlLaws.bend": "3fb42616ecfd1a0ddc5d51e4ac608e9bed9acd24c76e4778fb33fd0a71f79325",
+    "bend2/core/v2/MatchControlProof.bend": "18493dc6237fa91efc1e5a79cc38d1094e96da5dc2e72717271e02a2fcf67a8e",
+    "bend2/core/v2/MatchKernel.bend": "2b1b67236b11c87dbf6309362d9e5225572ad1dd8e23ae277a3f07f17f34888e",
+    "bend2/core/v2/MatchLaws.bend": "21b6b992b7bc6a6068cebff967050ec717884532e95c2ec80afef09bade8ae98",
+    "bend2/core/v2/MatchProof.bend": "ad9b48283569f689dd1feb79481ea6b315a2791fc5d2c96a6d29f3619a2003db",
+    "bend2/core/v2/node-check.mjs": "cd440769cfbe23d264b692f88644191a4eaf4377aff824fe4fda26c09608c148",
+    "bend2/core/v2/NoWrapLaws.bend": "ed38b2f4b9979fd4ec63d346bdfdd80a4d995387f90775bf2d9dd7b38b3a013a",
+    "bend2/core/v2/NoWrapProof.bend": "8cbbee50989a2d2d3f681802558e8efbe759e5775f86410863b1697199d86016",
+    "bend2/core/v2/OrderingLaws.bend": "c4618d67667836792073d16a47c69aeef89f94b9f44392405ee09339465d97d8",
+    "bend2/core/v2/OrderingProof.bend": "8296db784f0593a8802b1df8b252850c2bd59904a3022290c844d670d5f1d095",
+    "bend2/core/v2/proof-runtime.json": "45e3de051fdc3b3e2260d2a2af4036234c39354c284c7b6d94f30e75a7413cbf",
+    "bend2/core/v2/PROOF.bend": "eb37c9010f234081f7abd69eb2f776984692efab6eb6326bc063a28d462bf1b9",
+    "bend2/core/v2/RangeBridgeLaws.bend": "1d4a997a316e523188844a081a8f6d53be160414360debb5bd7691da42fb92a6",
+    "bend2/core/v2/RangeBridgeProof.bend": "14bb62101d866ce2d0f6a25b13e2118c9ae8bc6cb93aa5001197c6e9d570e4ed",
+    "bend2/core/v2/RangeCompositionLaws.bend": "afa9162abc276b1e2411bdbae07a49ce5508beff34a66102533a15e2ce710b90",
+    "bend2/core/v2/RangeCompositionProof.bend": "f503cd40ec9c2086bf16a4cf64abde62774e4cc0325b93c0430ca790015a02de",
+    "bend2/core/v2/Reflection.bend": "1456356e86451f5a6a8339c4fef2fdeaec78f3dd3502318f261ad820fa5d3d3a",
+    "bend2/core/v2/ReflectionLaws.bend": "f372c91bc34c7d228e3de0b6aba2c6b255d7d7c5bc4ef1a602dd85eb93fee70c",
+    "bend2/core/v2/ReflectionProof.bend": "17bb7f261fa0b830157b783b0fa140606159eb9683ac4b98018db65ef89179b6",
+    "bend2/core/v2/RoundtripLaws.bend": "3a4d15413af034b42378c08a8128adb6be38c9b65bdedb637968cd51ae3787fd",
+    "bend2/core/v2/RoundtripProof.bend": "eef813bbf06132dbad6c0129bbfaade4c103229d95b37ee028e72ae138e3528e",
+    "bend2/core/v2/RuleContracts.bend": "5044e30b9ccaa8aada0d50475ec7b5879819b3be3a82add60bce03e3f9b4283f",
+    "bend2/core/v2/RuleKernel.bend": "5b9edfd94f28093260d18038d7c977c8093e49c999709df4b2b0f465e011f22e",
+    "bend2/core/v2/WordNatLaws.bend": "4ba57edf2f661611aef44aa538f74f1354fe4832f3733fa86d79d33d222eadad",
+    "bend2/core/v2/WordNatProof.bend": "96a8cf3727a65e12f42bd2c87b87d6ac90387181360797443a48f0cd3a2f6dc1",
+    "bend2/core/AI.bend": "64f2a10970abd9e9bffb044fbd537e02615ef3594cd74aa56a155985df358aff",
+    "bend2/core/Enumeration.bend": "6f0da28cc0a0823cf30ec6fa7b0f8145fedd998a8924ced264ac12285fe62fc2",
+    "bend2/core/Geometry.bend": "21a778ad5efd1be7ecfd087bb1bda0d91ed9be305fe918d7c8e2ce7022beab55",
+    "bend2/core/Kernel.bend": "36a628ec0cf572c55355127d39985f76f6b301a2443838b5aa14350e901cbb81",
+    "bend2/core/LAWS.bend": "dad9565874807f464099d17c56f6f0fa7040ffa78c0a2c3d9473e5a9e2625fd4",
+    "bend2/core/MatchSpec.bend": "d58b8e8df57c3c09ba4a0f017fe24007c4e6733f89c5ddd11a15e897a23df4b8",
+    "bend2/core/Model.bend": "126b9cea13fb3a772d7a43557b08a7ec97541124646ab054ccd062fa7b54c328",
+    "bend2/core/PROOF.bend": "f0864382a0167dd27119571cdfc88e7513e23965d14b0aae68f7c1dbf70e4a8a",
+    "bend2/core/ProofKit.bend": "c806ecb6de5ad59f107bc032ad2a59d18e608247cbdc1a694480739a6c2b845e",
+    "bend2/core/Spec.bend": "707d74f20affc74f2d8ae5505f8a0f48e60a3bd1ff731be8d64b8cb73dd0dd51",
+    "bend2/core/Transitions.bend": "017b42039a904bcc826fc9f8ab657898013e0a1798860115d73f39f785bcfcd9",
+    "docs/01_RULES.md": "12d94daeeed344b52bc358ea00f26448730f98657650f3f7061077dee543df86",
+    "reference/README.md": "9f1d4189b3bcc7379fa1528bc58a3c8754e7b655352aac101cdcfae73ae693b3",
+    "reference/rift_core.py": "14840702f0c8b4d93d5ba3ca2283a0696df189aff106474d4e1af5e7d6f75758",
+    "reference/sliding_chess_sim.py": "b14ded5f2f4ef0f9cc8a66a41db8d915ae64e6d2687b7ec16fea1faba9904c49",
+    "reference/rift_cli.py": "7f159b6b969848e21e8b5f52d77372bc87344b373d46a89dea7a7256feedecc2",
+    "reference/verify_package.py": "0b24f30b32f1c284f37ab8dfa19b94a3d9980dbf1b5ab8d92d466f6854e85c83",
+    "bend2/docs/LAWS_V2.md": "64043d00de9003ed75aff98d264c2c95ef32e8e46d1f3db307b351c72493df82",
+    "bend2/docs/RULE_LAW_AUDIT.md": "b24d279fe7c9adf815d94a66542ab7ae78e148ea110629bd4819ee4ffc7a3631",
+    "bend2/docs/LAW_CHANGE_POLICY.md": "1be32efb916589e5a5fe7f383510c75797e45d5fccd0d7dbb2fb7cff234b8e09",
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/TOOLCHAIN.json": "17419db1617fece38c72dba9136463a313db43bf2c61f657334d9fdce0ae51a6",
+    "fixtures/conformance.json": "93b71f1625d011ae5b411dd4b69d51bf5360e04340c565b1d12a3491ab7675d6",
+    "bend2/tests/interop.ts": "bfdf19b053b7792eda06cfd84665da31085e83d9c7c6659ec4109dc8930213bf",
+    "src/engine/position.ts": "4e34476fb11ff587b1241498e518b1c9ac511987c67a0fd37711ce474e929bb5",
+    "src/engine/types.ts": "151d026982cd8fdde7086f754e3ecaec3a4ba8243c199c9854dd47ccbdf37628",
+    "src/match/game.ts": "b264228e7af116dc37d94c2dc90f3b9a6f70179622f4bc5c7ebd0cb0cf2096fc",
+    "package.json": "f17569574754ac8f9d95ea8943f211f7cbe8ae086fb116208742bd3cd5629c1e",
+    "package-lock.json": "959250ea9c924bc433019e9803bda64db3c47b1c89e6fcdcd33e9d4d6d41bddd",
+    "bend2/tools/bend.mjs": "74971c35a350a1e107fd96723c44c25e1ecb7f3da747e447e66de8085788ca30",
+    "bend2/tools/loader.ts": "478081ea8be6e4c55948ddec523cc17cd39a006a47926bab5653d6cabd88fe93",
+    "bend2/tools/freeze-v2.mjs": "ede59552c6c89022936ddc648500ef48717a3858acd75404cfb52611be37f444",
+    "bend2/tools/mutate-v2.mjs": "f3a68ab87b3649f356ef7d0699709b4ef9a8564a070d59d1fc1fe329db0fced4",
+    "bend2/tools/freeze.mjs": "1338c2677bdc5aaac045ee3e7045d180e2388ac732e2ac620b93889e8b84555f"
+  },
+  "results": [
+    {
+      "file": "CHECK.bend",
+      "modules": [
+        "AdjudicationProof.bend",
+        "ArithmeticProof.bend",
+        "BoundsProof.bend",
+        "CanonicalProof.bend",
+        "DomainsProof.bend",
+        "EnumerationProof.bend",
+        "Facade.bend",
+        "FilterProof.bend",
+        "HistoryProof.bend",
+        "MatchControlProof.bend",
+        "MatchProof.bend",
+        "NoWrapProof.bend",
+        "OrderingProof.bend",
+        "PROOF.bend",
+        "RangeBridgeProof.bend",
+        "RangeCompositionProof.bend",
+        "ReflectionProof.bend",
+        "RoundtripProof.bend",
+        "WordNatProof.bend"
+      ],
+      "declarations": [
+        "AdjudicationLaws.bend",
+        "ArithmeticLaws.bend",
+        "BoundsLaws.bend",
+        "CanonicalLaws.bend",
+        "DomainsLaws.bend",
+        "EnumerationLaws.bend",
+        "FilterLaws.bend",
+        "HistoryLaws.bend",
+        "LAWS.bend",
+        "MatchControlLaws.bend",
+        "MatchLaws.bend",
+        "NoWrapLaws.bend",
+        "OrderingLaws.bend",
+        "RangeBridgeLaws.bend",
+        "RangeCompositionLaws.bend",
+        "ReflectionLaws.bend",
+        "RoundtripLaws.bend",
+        "WordNatLaws.bend"
+      ],
+      "ok": true,
+      "exit": 0,
+      "error": null
+    },
+    {
+      "file": "conformance.ts",
+      "ok": true,
+      "exit": 0,
+      "error": null
+    }
+  ],
+  "requiredLaws": [
+    [
+      "LAWS.bend",
+      "acceptance_complete"
+    ],
+    [
+      "LAWS.bend",
+      "exact_independent_rules"
+    ],
+    [
+      "DomainsLaws.bend",
+      "reachable_admissible"
+    ],
+    [
+      "CanonicalLaws.bend",
+      "canonical_member_sound"
+    ],
+    [
+      "CanonicalLaws.bend",
+      "canonical_member_complete"
+    ],
+    [
+      "OrderingLaws.bend",
+      "canonical_ascending"
+    ],
+    [
+      "OrderingLaws.bend",
+      "canonical_unique"
+    ],
+    [
+      "AdjudicationLaws.bend",
+      "full_outcome_exact"
+    ],
+    [
+      "AdjudicationLaws.bend",
+      "actual_live_exact"
+    ],
+    [
+      "AdjudicationLaws.bend",
+      "actual_outcome_exact"
+    ],
+    [
+      "AdjudicationLaws.bend",
+      "canonical_repetition_key_exact"
+    ],
+    [
+      "AdjudicationLaws.bend",
+      "only_bare_kings_material"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "undo_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "offer_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "accept_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "decline_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "resign_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "accepted_move_exact_match"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "move_step"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "make_match_exact"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "from_position_exact"
+    ],
+    [
+      "MatchControlLaws.bend",
+      "start_exact"
+    ]
+  ],
+  "missingRequired": [],
+  "proofRuntime": {
+    "schema": "rift-bend-v2-proof-runtime/1",
+    "runtime": {
+      "name": "Node.js",
+      "version": "v24.12.0",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "sha256": "2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8",
+      "platform": "win32",
+      "arch": "x64"
+    },
+    "worker": {
+      "stackSizeMb": 64,
+      "execArgv": [
+        "--no-warnings"
+      ]
+    },
+    "checker": {
+      "source": "pinned bend2/bend.ts book_load + book_valid",
+      "ownership": "pinned bend2/comp.ts book_owned(SYNTH)",
+      "verdict": "zero open holes; pinned CLI unsafe/foreign dependency algorithm rooted at every non-Base imported declaration (stricter than CLI own-file roots)",
+      "pathAdapter": "existing BEND-WINDOWS-PATH-1 forward-slash normalization"
+    },
+    "scope": "Proof checking only. Browser/native generation retains pinned Bun; frozen TOOLCHAIN.json unchanged."
+  },
+  "scope": "Universal v2 source laws relative to the independent formal contracts, plus finite oracle conformance; semantic freeze, browser/native acceptance and independent English/Geometry validation are separate"
+}

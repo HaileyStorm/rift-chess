@@ -1,7 +1,7 @@
 {
-  "bendVersion": "2.0.26",
+  "bendVersion": "2.0.27",
   "bendRepository": "https://github.com/bendlang/bend",
-  "bendCommit": "6a77e1246c351055cb15031267a7c76c87036cbc",
+  "bendCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
   "bunVersion": "1.4.2",
   "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
   "telemetry": "BEND_NO_TELEMETRY=1",

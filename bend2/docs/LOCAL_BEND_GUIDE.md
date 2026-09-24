@@ -7,9 +7,9 @@ probe under `.artifacts/probes/` on this Windows machine.
 
 | Item | Value |
 | --- | --- |
-| Bend version | 2.0.26 (`bend version`) |
-| Pinned commit | `6a77e1246c351055cb15031267a7c76c87036cbc` ([source](https://github.com/bendlang/bend/tree/6a77e1246c351055cb15031267a7c76c87036cbc)) |
-| Previous pins | `ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b` (2.0.25), replaced by amendment `bend2/laws/amendments/003-bend-6a77e12.json`; `a49524265bdfa5753a4bf38e25f0574a705dd868` (2.0.25), replaced by amendment `001-bend-ff7a40c.json` |
+| Bend version | 2.0.27 (`bend version`) |
+| Pinned commit | `d37909174ebd664338ae3194799a9e0899dedd51` ([source](https://github.com/bendlang/bend/tree/d37909174ebd664338ae3194799a9e0899dedd51)) |
+| Previous pins | `6a77e1246c351055cb15031267a7c76c87036cbc` (2.0.26), reviewed amendment 005; `ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b` (2.0.25), amendment 003; `a49524265bdfa5753a4bf38e25f0574a705dd868` (2.0.25), amendment 001 |
 | Local checkout | `.artifacts/toolchains/bend` (git-ignored, must be clean at the pin) |
 | Bun | 1.4.2, `@oven/bun-windows-x64@1.4.2` in `.artifacts/toolchains/runtime` |
 | Authority for the pin | `bend2/TOOLCHAIN.json` |
@@ -548,7 +548,7 @@ wraps it with a local Windows path adapter (tagged `BEND-WINDOWS-PATH-1`) that
 normalizes backslashes before relative imports resolve, and relocates only
 pinned Base foreign `tld.i` paths (`./effs/*.js`, `./effs/*.c`) to the compiler's
 effect directory so `js_lib` can realpath them when `--run` keeps cwd at the
-repository root. It is still needed at 6a77e12 (imports still resolve through
+repository root. It remains needed at d379091 (imports still resolve through
 `path.posix`; foreign twins remain relative), and must be rechecked on every
 pin change. Run Bun scripts with
 `node bend2/tools/bend.mjs --run script.ts`. The browser build is
@@ -610,12 +610,32 @@ browser boundary: its UI imports `../main.bend`, sends every move through
 - **Parse traps:** a missing parallel-let value swallows the next line; a
   parenthesized value after a call is glued on as arguments (wrap it in braces,
   `{(x + 7 : U32) : U32}`); a parallel let inside `do` reports a misleading
-  error; forward references report "a defined name".
+  error. Safe forward calls to unfilled defs remain rejected; datatype names
+  may now be declared before their bodies and refer to one another.
 - **Fixed at ff7a40c:** a second book compiled in the same process reused a stale
   probe list (bendlang/bend#976). This project's loader compiles several books
   per Bun process, so the fix applies here.
 
-## Changes since ff7a40c that matter here
+## Changes from 6a77e12 to d379091 (2.0.27)
+
+The checker now declares datatypes up front, so datatype names can refer to one
+another and a type-level def may appear above its datatype. Safe live calls to
+later defs and safe mutual recursion still fail; `@unsafe def` may call ahead,
+and `def f?(...)` is its unsafe spelling. Never use this to discharge a law:
+unsafe/foreign dependencies remain outside the pure proof claim. Base's `Word`,
+`Pair`, and `IO` declarations were rearranged but keep their interfaces. The C
+and JavaScript compiler emitter (`comp.ts`) and effect twins are unchanged.
+
+The bundled Bend executable no longer loads a project's `bunfig.toml` or
+`.env` before checking it. Our development wrapper invokes `bun bend2/main.ts`
+from the pinned checkout, which does **not** inherit that bundled-executable
+hardening. Keep its cwd in the reviewed compiler tree for source checks and
+never use an untrusted project's Bun configuration. We do not use BendHub; the
+new publishing license/terms behavior and `User-Agent: bend/2.0.27` are
+documented for completeness, not exercised here. See the pinned CHANGELOG and
+the reviewed toolchain amendment for exact evidence.
+
+## Changes from ff7a40c to 6a77e12
 
 Bend 2.0.26 (`6a77e12`) follows 2.0.25 by five commits:
 
@@ -763,6 +783,13 @@ Bend releases:
   `legal_range` stopped symbolic unfolding without changing runtime meaning.
 - **Use one browser facade import** (`Application.bend`) to avoid compiling
   overlapping books concurrently.
+- **Keep the entire visible app in Bend when that is the goal.** Here Bend owns
+  menus, bitmap fonts, selection and camera policy, record validation and PCM
+  synthesis. Browser TypeScript transports typed events, immutable pixels,
+  storage/files and sound to devices; it never chooses a chess transition.
+- **Cut reusable libraries below game semantics.** `lib/graphics` has Base-only
+  modules and colocated laws, proofs, finite tests, examples and license. Camera
+  limits, Rift topology, piece art and animation remain project adapters.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.
@@ -778,12 +805,19 @@ Bend releases:
   exposed an embedding-depth defect missed by small uniform tests.
 - **Bound replay work, not just JSON size.** Validate a bounded number of
   commands per update and keep the previous state until the candidate succeeds.
+  A chosen action is staged for one visible frame, then committed serially on
+  the next tick; queued presses use the post-commit board and revision.
 - **Laws must not depend on implementation-owned expectations.** The v2 laws
   refer to separately authored `RuleContracts.expected`/`legal`, so a kernel
   that rejects everything fails them (a mutation control checks this).
 - **Native IO contracts need source inspection.** The native audio effect takes
   interleaved stereo through a bounded ring, unlike a browser mono buffer.
 - **C emission, source checking and native execution are separate evidence.**
+- **A green checker or browser suite is not a frame budget.** Stage-two hosted
+  post-move ticks reached 668 ms at p95 and bot replies took hundreds of
+  milliseconds. Profile source lowering, legal refresh, rendering and pixel
+  transport separately; use automatic detail tiers with a measured CPU fallback
+  before promising a high-resolution GPU presentation.
 
 The current law and proof receipts are linked from `../README.md`. JavaScript
 measurements and rendered browser checks do not establish native CPU, CUDA or

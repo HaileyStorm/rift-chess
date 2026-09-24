@@ -1,0 +1,49 @@
+{
+  "schema": "rift-bend-amendment/1",
+  "sequence": 5,
+  "parentSha256": "3e5ca2292f0af6dd35d0b453caa7619633594375ebe9c75f7ca3bf57a7d4e8ed",
+  "createdAt": "2026-09-24T00:32:51.806Z",
+  "kind": "tooling",
+  "semanticMeaning": "unchanged",
+  "rationale": "Advance the clean pinned upstream Bend checkout from 6a77e1246c351055cb15031267a7c76c87036cbc (2.0.26) to d37909174ebd664338ae3194799a9e0899dedd51 (2.0.27) without changing frozen project rules, proofs, fixtures, reference tests, or the Bend browser loader. The upstream checker now declares datatypes before checking definitions, permits forward definition calls only in unsafe definitions, and retains the safe definition ordering boundary. The bundled executable also hardens project configuration and environment loading; our source-based wrapper does not claim that binary hardening. Bun remains 1.4.2. A non-frozen v1 graphics verifier now excludes only the new v2 namespace from its recursively enumerated v1 source set; all existing v1 source hashes and checks remain mandatory, while v2 gets a separate verification boundary before freeze. Current v1/v2 proof and conformance, mutation, graphics-library and draft-browser-build receipts independently recheck the new pin. Native build and hosted acceptance are separate gates.",
+  "toolchain": {
+    "bendVersion": "2.0.27",
+    "bendRepository": "https://github.com/bendlang/bend",
+    "bendCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
+    "bunVersion": "1.4.2",
+    "bunWindowsPackage": "@oven/bun-windows-x64@1.4.2",
+    "telemetry": "BEND_NO_TELEMETRY=1",
+    "target": "browser JavaScript; native parallelism not yet measured"
+  },
+  "records": {
+    "bend2/laws/semantic-v1.json": "8a1eb013c498e8e065265ef5dfa0327ae908a3cb4dde58dae9f324f9e924118b",
+    "bend2/laws/pixels-v1.json": "545c8c6ade06a5f59e9db985237adf1137a86c801b2b1a6b2bad9a43cee40398",
+    "bend2/laws/proof-v1.json": "7dc690646fb84b66ffbc525fd1ee2d3ddc0908679b45cc34fa2572e2737b18d6",
+    "bend2/laws/semantic-v2.json": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "substitutions": {
+    "bend2/TOOLCHAIN.json": {
+      "from": "7d7e5005b273c3737ee7f0585b82b8354f59149aa63e903e9a63cb127d775e10",
+      "to": "17419db1617fece38c72dba9136463a313db43bf2c61f657334d9fdce0ae51a6",
+      "records": [
+        "semantic-v1",
+        "pixels-v1",
+        "semantic-v2"
+      ],
+      "reason": "Update the Bend commit and version to the reviewed clean 2.0.27 upstream pin; no Bun or frozen Bend source changes."
+    }
+  },
+  "preserved": {},
+  "evidence": {
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/v1.json": "1319d357af2ef8816206403712263be97fe1e4b1d7710e3ab57f212a16171b87",
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/v2.json": "b7d1f7da9b9bb3a2154d6cde5812ee10b2c7ef3c602219522743d556be6bff33",
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/mutations.json": "26b26156e235ff71c02153052d85ce430f3c0a688792af34a803b16ccebe435e",
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/library.json": "38725a749d7075138696af290882090a7b2f79c5c36bc7a0cd9ea5840c3e630e",
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/build.json": "a2591f1066db7f6254a45f3ef87b2e7f2a9a8049d168b0d23e9c0ccdff23a861",
+    "bend2/docs/evidence/amendments/005-bend-2-0-27/review.md": "c6d44aaefbbd7c326cadc4cb1c935c0e35d62c0f85d73db8a5a25af5fe4110a9"
+  },
+  "tools": {
+    "bend2/tools/amendments.mjs": "fde126541451c483f922920744fc7fbe35d9c0103fee466b166c8c4ab2c75c6e",
+    "bend2/tools/amend.mjs": "e6b095784e48c9de1ef08bf5277da363419b32926f8df6dd7c1b9dcc2cf8f240"
+  }
+}
