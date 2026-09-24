@@ -1,0 +1,19 @@
+RIFT CHESS | Layout B | Draws prompt | Black to move | quiet 0
+8 b  r  n  q  k  n  r  b 
+7 p  p  p  p  p  p  p  p 
+6 .. .. ## ## .. .. .. ..
+5 .. .. ## ## .. .. .. ..
+4 .. .. ## ## P  .. .. ..
+3 .. .. ## ## .. .. .. ..
+2 P  P  P  P  .. P  P  P 
+1 B  R  N  Q  K  N  R  B 
+  a b c d e f g h
+Draw by agreement
+
+LEGAL ACTIONS (use the bracketed ID):
+
+Commands: moves | show | move ID | shift ID | undo confirm | offer [white|black] | accept | decline | resign [white|black] | new [B|C] [prompt|auto|off] | help
+Each invocation takes one action. IDs are printed with coordinates, promotions, and platform shifts.
+
+That ID is not a legal action. Run `moves` to list current IDs.
+
