@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "method": "Render a compiled-Bend effects/type specimen using a caller-supplied local font.\n\nThe local font and temporary glyph-coverage data are NOT distributed. Pillow is\nused only for native 8-bit glyph masks and metrics; all final drawing, placement,\ngradients, group opacity, blend modes and exact box halos execute compiled Bend.\n",
+  "font_basename": "DejaVuSans.ttf",
+  "font_sha256": "57f73e11f51999432bf7ab22ce55b6f945d5eca1bf824404cfa9ec2e3718c84e",
+  "font_name": [
+    "DejaVu Sans",
+    "Book"
+  ],
+  "pillow": "12.3.0",
+  "glyphs": 161,
+  "runs": 20,
+  "temporary_coverage_sha256": "918d6d7fb1b09acb990faad9160436c4ab699598761e6289daa521177d4d4138",
+  "command": [
+    "node",
+    "--max-old-space-size=3072",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/effects-plate.mjs",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-visual/temporary-coverage.json",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-visual/effects.rgba"
+  ],
+  "renderer_sha256": "c680d4b4bde9000db2d24805e5f089e5ed10519503d3c547c87e6d856f16c50a",
+  "png_sha256": "dddf076b42d6d5d7fee11f2b1bb1bcd70c02dc8559bc3390fc203542693441a8",
+  "renderer": {
+    "ok": true,
+    "pixels": 1048576,
+    "seconds": 21.671731175999998,
+    "scope": "All pixels composed by actual compiled Bend, including native glyph placement. Pillow supplied native 8-bit font coverage only. This one-shot visual duration is not a benchmark."
+  },
+  "limits": "Native 8-bit local-font masks, not a shaping/hinting proof or font comparison. No font or reusable generated font data is shipped."
+}

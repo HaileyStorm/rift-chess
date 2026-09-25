@@ -1,0 +1,67 @@
+{
+  "backend": "actual pinned compiler emitted JS under Node; not a browser screenshot or GPU execution",
+  "font_modules": "temporary hash-pinned local-font bakes; no font files bundled",
+  "timing": "single diagnostic captures, not benchmark medians; construction includes example preparation; readback and PNG encoding separate",
+  "receipts": [
+    {
+      "file": "01-reusable-workbench.png",
+      "width": 1024,
+      "height": 1024,
+      "constructionMs": 2305.086696999999,
+      "readbackMs": 56.320102000005136,
+      "pngMs": 82.4582059999957,
+      "visited": 1078837,
+      "pixels": 1048576,
+      "rgba_sha256": "e552a232957675d3267a475d0641f24cfdfe221b025e4f2e867562b2e1d7dcb7",
+      "png_sha256": "3653779b95eaaf531aa6ae7264bb32523cb02f45e28bd314f29c010b4e7c85df"
+    },
+    {
+      "file": "02-alpha-and-mips.png",
+      "width": 1024,
+      "height": 1024,
+      "constructionMs": 2244.855021000003,
+      "readbackMs": 138.69542199999705,
+      "pngMs": 60.77631599999586,
+      "visited": 608641,
+      "pixels": 1048576,
+      "rgba_sha256": "c16cd2b5eddff524e420f02f7accced32078ff9b178bb83eca83993099c1d8a4",
+      "png_sha256": "b62a69b103e52898f298f2a1abdf2f0ba6ffb04ceb9c7ba07924401300ead2b8"
+    },
+    {
+      "file": "03-materials-and-skins.png",
+      "width": 1024,
+      "height": 1024,
+      "constructionMs": 2634.510338,
+      "readbackMs": 50.87472700000217,
+      "pngMs": 67.48425300000235,
+      "visited": 827037,
+      "pixels": 1048576,
+      "rgba_sha256": "f40458e31fb267d040b62787c909dee24d8b8ad991f83f5500a4515c2b4bdd3a",
+      "png_sha256": "018f17cfe63eeb10644c802d4d931549c7e603737b458c72cfb5b7edc8ed9b7a"
+    },
+    {
+      "file": "04-text-and-native-type.png",
+      "width": 1024,
+      "height": 1024,
+      "constructionMs": 834.0290620000014,
+      "readbackMs": 44.65878299999895,
+      "pngMs": 76.05342000000383,
+      "visited": 817173,
+      "pixels": 1048576,
+      "rgba_sha256": "d47c10309d7975c77e9108991405b70e08fc1422f33c3fa88d3b1c2498b29e69",
+      "png_sha256": "800f607020c4bcffce2bf7d3c5eda828bab6295478b32ebb7b8ef18f1e00ea04"
+    },
+    {
+      "file": "05-damage-reconstruction.png",
+      "width": 1024,
+      "height": 1024,
+      "constructionMs": 1450.734344000004,
+      "readbackMs": 216.33198300000367,
+      "pngMs": 77.7067309999984,
+      "visited": 637453,
+      "pixels": 1048576,
+      "rgba_sha256": "ae73fd03b1228c97d52782b6cbd6f27fb0ca0c55b6d5a4bdab6724099e9c6fa5",
+      "png_sha256": "114d369e2effd5d4ef809f4b7b4763d9d4d4b38f63ceda908ccf350fb562e073"
+    }
+  ]
+}

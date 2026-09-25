@@ -1,0 +1,18 @@
+(node:3835) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3835) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error [ERR_WORKER_OUT_OF_MEMORY]: Worker terminated due to reaching memory limit: JS heap out of memory
+    at [kOnExit] (node:internal/worker:314:26)
+    at Worker.<computed>.onexit (node:internal/worker:230:20)
+Emitted 'error' event on InternalWorker instance at:
+    at [kOnExit] (node:internal/worker:314:12)
+    at Worker.<computed>.onexit (node:internal/worker:230:20) {
+  code: 'ERR_WORKER_OUT_OF_MEMORY'
+}
+
+Node.js v22.16.0

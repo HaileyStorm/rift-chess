@@ -1,0 +1,454 @@
+{
+  "required_gates": 85,
+  "required_ok": true,
+  "completed_source_laws": 62,
+  "unfilled_F32_candidates": 2,
+  "native_pixel_comparisons": 24576,
+  "negative_controls": 2,
+  "finite_and_proof_entries": [
+    {
+      "entrypoint": "bend2/lib/graphics/v2/contracts/PROOF.bend",
+      "kind": "actual-source-proof",
+      "exit_code": 0,
+      "stdout_sha256": "cdbfef3a8ccee1ad6cae5076b6e98123e3ca04042e1628b8d08f1913db28d052",
+      "stderr_sha256": "0de50966739dcf962b6532dea50f570fc2c13f2805cdfa3d2f57033dae4d3a51",
+      "results": []
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/contracts/extensions/PROOF.bend",
+      "kind": "actual-source-proof",
+      "exit_code": 0,
+      "stdout_sha256": "0a1e9a26c12e9fc5248e6dcc7e3c63d7252a241c5de61a799af69ef2a4230d79",
+      "stderr_sha256": "657b2fe4082f9cfaf601d9a4b2033c567a094a10a7f5d456ca94aacb3bacbabf",
+      "results": []
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/assets/contracts/PROOF.bend",
+      "kind": "actual-source-proof",
+      "exit_code": 0,
+      "stdout_sha256": "c89181b0dcaa771ae30a3c7effa45ff574fa91be4f0dc79ae6fce713b887622e",
+      "stderr_sha256": "c0a138e0770b3423ef0d78d05edba15a32b35ad6044421d7911892d6b80cf9a3",
+      "results": []
+    },
+    {
+      "entrypoint": "bend2/lib/grid8/contracts/PROOF.bend",
+      "kind": "actual-source-proof",
+      "exit_code": 0,
+      "stdout_sha256": "2b704a7985d32b1749a4b975ff768cff9001e5457f1aafce3dcee504392e8d93",
+      "stderr_sha256": "cb3f50eeb388bc5496e4c09b4c6f65439fe86327307787f80af89ced816b48e5",
+      "results": []
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/contracts/expansion/PROOF.bend",
+      "kind": "actual-source-proof",
+      "exit_code": 0,
+      "stdout_sha256": "81cf774faae4a5ec18e1d6eeaf0a0880453b9ac933261f6fc3540bf64e31a1de",
+      "stderr_sha256": "838519475d63b29b167180b45dce22e33d58b49c3f1025cf5b14d43bf0c8219c",
+      "results": []
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/library.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "b53f479a561b288aa5b33b1da42fee8db93f0ef531325fc359085f69190eb780",
+      "stderr_sha256": "fec4a853189ebd72923d00d94992e11cda3fe0fbba58aba83c44330c2ce49f1b",
+      "results": [
+        {
+          "ok": true,
+          "checks": 5874,
+          "scope": "Independent finite core graphics reference; native/GPU/browser evidence separate"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/grain.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "e29331c98253072bcc0a3e8451a9cc85b80afdbeb19a490dec7b722c42c0b602",
+      "stderr_sha256": "dfc9d7a25de45491a36896ce03ff8a1f4cc16bd312b73d8599d7ea5310a9a6b3",
+      "results": [
+        {
+          "ok": true,
+          "checks": 356615,
+          "ambiguous": 0,
+          "scope": "Independent scalar quarter samples, hash/palette/color, offscreen and rotated clipped geometry; F32 near-edge pixels excluded only within \u00b11e-5 signed distance; JS finite evidence"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/texture-pool.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "948207e487253de5f13eba3e0e4b5dfdf76a2cf8dbb04f20331f4102b7b1db67",
+      "stderr_sha256": "1cdb8fe944391cb79250afcfcdd7071921751356a1c3ec3e36a4e2b454442cf9",
+      "results": [
+        {
+          "ok": true,
+          "structural": 96,
+          "pixels": 125616,
+          "scope": "Independent integer leaf scalar and complete structural finite differential of serial/top-fork/non-bang Image; emitted JS, no native speed/GPU claim"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/affine-grain.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "1ca5c8ec0c0e4b828bc3a003572810e9ebba8777511ec3903ce9163bc585c1b7",
+      "stderr_sha256": "e67bd9740d8bf060dbf912cbcd039aa422dfedce29b9f5d105441ad60f1b861c",
+      "results": [
+        {
+          "ok": true,
+          "exact": 246994,
+          "ambiguous": 1801,
+          "scope": "Independent double-precision scalar inverse affine UV, quarter-mask and color reference; both determinant signs, rotated/offscreen/thin, endpoints; F32 edge/UV ties only excluded within stated bands"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/affine-texture.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "9ba7e92866a5f857c8a8ace823a02319d2e297f156326bbe2455e34e58ea7ff5",
+      "stderr_sha256": "d3c1062819bbe97c4f9cf84f430e488105413c0413ab70bd7430ddb1b103cc47",
+      "results": [
+        {
+          "ok": true,
+          "exact": 112008,
+          "ambiguous": 538,
+          "scope": "Independent row-major source RGB scalar, nearest center UV, quarter mask, mirrored/offscreen/clipped512/1024 and endpoint differential; F32 ties only excluded within contract bands"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/masked-stamp.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "41f194202c3e02503774b428a0bf3906bfc80e8ce55a4664b8ab2e7ed8abea94",
+      "stderr_sha256": "d5bd5d721003683e8f0f6dd25f369c7a8639a70c472f0c40e7e05c96007a0319",
+      "results": [
+        {
+          "ok": true,
+          "checks": 65540,
+          "scope": "Independent scalar red-alpha, rounded opacity, signed clipping and painter overlap; exact endpoints; finite emitted JS only"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/assets/tests/rgb-image.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "9aa38da325f13b055b2ec6178dfa4d2ef0c63acc57ddfa21cb09c678d3adfd7c",
+      "stderr_sha256": "af7b86b430a4ad32cb1878154b97d1ccc58fd9c995c8c8dbd287ab8b8dc6360b",
+      "results": [
+        {
+          "ok": true,
+          "finitePixels": 349525,
+          "depth9": {
+            "listBuildMs": 106.79,
+            "decodeMedianMs": 340.87,
+            "decodeP90Ms": 413.38,
+            "gcAvailable": false,
+            "rssBeforeInputBytes": 238260224,
+            "rssAfterInputBytes": 238260224,
+            "rssAfterBendListBytes": 255168512,
+            "rssAfterDecodeBytes": 309563392,
+            "rssAfterRepeatsBytes": 376279040,
+            "rssAfterOverlengthBytes": 426086400,
+            "decoderSnapshotDeltaBytes": 54394880,
+            "maxRssRawBeforeDepth9": 232676,
+            "maxRssRawAfterWork": 416100,
+            "inputBytes": 786437,
+            "outputPixels": 262144
+          },
+          "claim": "Independent finite row-major RGB reference; not native/GPU/browser evidence"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/review/alpha-pipeline.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "00d7ceaff3a4e2504ceb5824d8d20ce48f6b7f01826d5cfdea4723a8deea1fe6",
+      "stderr_sha256": "d07a3df4a451e0e5a22efe90b450fcc3a6783ab6fdc364fe25c721be40b0a212",
+      "results": [
+        {
+          "ok": true,
+          "opacityPairs": 65536,
+          "pixelChecks": 224228,
+          "maskChecks": 30499,
+          "mipChecks": 11816,
+          "glyphChecks": 41008,
+          "endpoints": 720,
+          "scope": "Finite independent integer reference tests; execution backend is reported by the runner separately."
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/review/rgba-codec.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "b4de2ec110058288dfd7af43d21e6e8cec68deff9dfb10338200fdd073b2e0d4",
+      "stderr_sha256": "589258d5291038ecae4ee030cfced918de8a75b28e96c996579713acffcb332c",
+      "results": [
+        {
+          "ok": true,
+          "pixelChecks": 699050,
+          "rejections": 20,
+          "endpoints": 22,
+          "scope": "Finite RGA2 boundary and all-pixel row-major tests, including depth 9. Not a general codec proof."
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/batch.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "17ba99b6f50ab5059ee41a49ca1c54eae3c46bb0047f5065e4a9ad0ab1b0ba87",
+      "stderr_sha256": "ec0fc5ac4e19bc33bdc162b4049ed2ce45c89746b0541b81aad075a9d5c09222",
+      "results": [
+        {
+          "ok": true,
+          "pixels": 1669620,
+          "frames": 1200,
+          "endpoints": 109,
+          "scope": "actual pinned compiler JS under Node; independent integer raster; serial/pool JS partition parity; no native scheduling claim"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/sampling.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "a2864d97a2b1813e30a16a8e75c984547931b587d90dfc06a1ab0de6b30bd622",
+      "stderr_sha256": "feafbdeebec9417deacd1f56739591d88244f651dbe97a3e350d87f87192915f",
+      "results": [
+        {
+          "ok": true,
+          "mixes": 267144,
+          "axes": 144987,
+          "pixels": 317440,
+          "endpoints": 342,
+          "scope": "actual pinned compiler emitted JS; BigInt premultiplied integer oracle; exact nine-slice; scalar-F32 operation-order reference and full-frame mapped plan parity; no F32 exclusions or cross-backend bit claim"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/text.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "03a510c8f21f0d70c55085494bd6cf30f21f9600976b6440828a931688d93ec7",
+      "stderr_sha256": "216e54656b3730afefaae4768f64e0c57c58dec5ab2e18d42deab7b35793baca",
+      "results": [
+        {
+          "ok": true,
+          "flows": 2004,
+          "carets": 16000,
+          "selections": 16000,
+          "pixels": 786432,
+          "scope": "actual emitted JS; randomized independent metric flow, truncation, word wrap, tabs, affinity and selection; CRLF and astral source indices; exact existing-atlas parity"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/utilities.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "99b44abfc8a581b02e41cafa1e3274d5c25b7e51a7f553068b6fafeeb5313dfd",
+      "stderr_sha256": "ffb0400879ff16938affa60ce21554bb7cdf8d402fdf72c69f28cf15ec4c897d",
+      "results": [
+        {
+          "ok": true,
+          "tracks": 303380,
+          "ticks": 10000,
+          "curves": 15005,
+          "coverage": 327680,
+          "pixels": 87380,
+          "gathers": 24000,
+          "fits": 10000,
+          "scope": "actual emitted JS; independent exact integer track, fit, U32-boundary timing conservation, complete byte mask arithmetic, shared-prefix gathers and color preparation; F32 easing formula checks"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/stroke.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "3b230f69dcc2c7b99517f6e1dd4d76a739dec480c7cc58f542c90d8c7686254a",
+      "stderr_sha256": "bb6fb0dff6a98fc8c5b983069df8b2fb8c404d4480d6680d10c21cb7193f54cf",
+      "results": [
+        {
+          "ok": true,
+          "pixels": 131072,
+          "joins": 16,
+          "scope": "actual emitted JS; independent flat F32 quarter-sample capsule/Bezier reference; clipped/offscreen/degenerate segments and idempotent geometric union; no boundary exclusions"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/materials.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "18484baa3f133c89f01a9b98c4ba55e6ce5a3ec907e4eb3d34862ee2dd6d6230",
+      "stderr_sha256": "6cc57c853033d1b641d8edbe2972ea5937864180410aea25a825cca8382fc36d",
+      "results": [
+        {
+          "ok": true,
+          "ramps": 75536,
+          "luts": 42416,
+          "noise": 12000,
+          "periodic": 24000,
+          "pixels": 53248,
+          "scope": "actual pinned compiler emitted JS; independent exact integer and BigInt noise references; material and mixed-command planner comparisons"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/host.mjs",
+      "kind": "host-adapter",
+      "exit_code": 0,
+      "stdout_sha256": "8dfd3e67394d6cff5c9c692f19993ea27131cfccd548e8053596e2ca6a44bcf8",
+      "stderr_sha256": "f126003887dd8b8c638ff852b03e2c8b834293848097db4d43213aa2cb2b5c55",
+      "results": [
+        {
+          "ok": true,
+          "bytes": 2796320,
+          "regions": 200,
+          "canvasCalls": 2,
+          "scope": "Node typed arrays and mock Canvas2D contract only; no browser/device presentation claim"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/expansion/native-pixels.mjs",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "2092a21ee6636240d45afc8d0167af78fecaeea53743db0e2d03a7af54bf6944",
+      "stderr_sha256": "6a9ef3cf9a6aa8e28cb259de6d6771d919236d4e893ad3db38c622be7e7847cd",
+      "results": [
+        {
+          "ok": true,
+          "pixels": 28672,
+          "fixturePixels": 4096,
+          "scope": "actual pinned JS compiler; complete reference output for C/native comparison, independently tested component composition"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/grid8/tests/library.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "31da79741a14803e8f6942af38af1a9be9739b5119d06cdef54638ffaa772ed6",
+      "stderr_sha256": "418403c815e4853584b659df34f3c14be06ccd5699de47beaa28c645f67e46fb",
+      "results": [
+        {
+          "ok": true,
+          "checks": 48021,
+          "scope": "Independent finite integer reference and tree sampling; not formal proof/native GPU performance"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/grid8/tests/camera.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "332ce05b7474b1cbac9f4ad1659c8349bb6f2cad1c57d9c8c7ca9a04143368f7",
+      "stderr_sha256": "f3a9c29dea135452fe1008e507c16023884f94f4a5114a496486317664526cc2",
+      "results": [
+        {
+          "size": 1024,
+          "outputSize": 1024,
+          "previewOutput": false,
+          "hudComposed": true,
+          "baseMs": 330.14,
+          "hudBuildMs": 90.6,
+          "frames": 50,
+          "boardMs": {
+            "median": 11.77,
+            "p90": 12.89,
+            "p95": 14.35,
+            "max": 41.27
+          },
+          "tokensMs": {
+            "median": 1.39,
+            "p90": 1.71,
+            "p95": 1.81,
+            "max": 2.35
+          },
+          "overlayMs": {
+            "median": 4.97,
+            "p90": 6.91,
+            "p95": 14.79,
+            "max": 18.3
+          },
+          "dirtyCopyMs": {
+            "median": 4.11,
+            "p90": 4.55,
+            "p95": 5.36,
+            "max": 7.19
+          },
+          "totalMs": {
+            "median": 22.64,
+            "p90": 25.51,
+            "p95": 32.34,
+            "max": 68.18
+          },
+          "dirtyPixels": 413000,
+          "root": "Qua",
+          "scope": "Retained world + 64 top cells + 13 preview tokens + optional Bend keyed HUD overlay + serial dirty RGBA copy; no Chrome transport/rules"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/grid8/tests/spatial-fast.ts",
+      "kind": "actual-emitted-JS",
+      "exit_code": 0,
+      "stdout_sha256": "76406ebb2a00ebe3ddf0735a9243f55bec370371b7fb4c3501d302f82b979ea7",
+      "stderr_sha256": "3fd759e279012a40560291928b93dabad966c67d5b16d217f933bacfb45ddb28",
+      "results": [
+        {
+          "ok": true,
+          "checks": 154588,
+          "precisionAmbiguous": 28,
+          "tieBand": 1e-05,
+          "scope": "Independent unbiased finite affine reference; only F32 near-tie band accepts either adjacent cell; native/browser evidence separate"
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/tests/review/offline_tools.py",
+      "kind": "offline-python",
+      "exit_code": 0,
+      "stdout_sha256": "030d8b2ea3e7c187820a2c108eabaa661a8cc66e6def57245d3e7c24370185d9",
+      "stderr_sha256": "a35ebf39f57989ce097a8f4564dc93116b1251077588d71618965f1b54b531b5",
+      "results": [
+        {
+          "ok": true,
+          "tests": 7,
+          "skipped": 0,
+          "area_output_channels": 3676,
+          "alpha_values": 256,
+          "font_bake": {
+            "status": "passed",
+            "source_name": "Lato-Medium.ttf",
+            "sha256": "be8bbf7105500e8fc1f9429307fb396905a0e6cff63fe1eb751bb319d0f1b0db",
+            "native_px": 40,
+            "alpha_bits": 4,
+            "font_not_bundled": true
+          },
+          "quantization_max_error_4bit": 8,
+          "quantization_max_error_2bit": 42,
+          "scope": "Actual Python offline-tool execution; no Bend or font-module typecheck claimed."
+        }
+      ]
+    },
+    {
+      "entrypoint": "bend2/lib/graphics/v2/assets/tools/test_encode_rgb.py",
+      "kind": "offline-python",
+      "exit_code": 0,
+      "stdout_sha256": "c7d72517acb8fbbb6fc88215ccce87f0e1aeb2a335ad8175e658bfed0cd4adf3",
+      "stderr_sha256": "4df503ebe60a4541dd4f90fae1dbf3edc86c852fba65400beb55b372e8186720",
+      "results": []
+    }
+  ]
+}

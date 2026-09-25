@@ -1,0 +1,75 @@
+# DRAFT internal constant-alpha translation. A uniform mask needs no per-pixel
+# mask cursor/read or effective-alpha calculation. Same clipped source-over rule.
+import Base
+import ./Color.bend as Color
+import ./Layer.bend as Layer
+import ./ImageOps.bend as ImageOps
+import ./ImageView.bend as View
+
+type Work is Data:
+  Keep{}
+  Aligned{pixels: Image}
+  Split{source: View.View}
+
+def focused(aligned: Bool,+source: View.View) -> Work:
+  match aligned:
+    case True{}: Aligned{View.pixels(source)}
+    case False{}: Split{source}
+
+def focus(+source: View.View,+x: U32,+y: U32,+size: U32) -> Work:
+  +next = View.narrow(source,x,y,size)
+  focused(View.matches(next,x,y,size),next)
+
+def outside_case(outside: Bool,source: View.View,x: U32,y: U32,size: U32) -> Work:
+  match outside:
+    case True{}: Keep{}
+    case False{}: focus(source,x,y,size)
+
+def prepare(+source: View.View,+x: U32,+y: U32,+size: U32) -> Work:
+  outside_case(View.outside(source,x,y,size),source,x,y,size)
+
+def leaf(source: View.View,x: U32,y: U32,alpha: U32,target: Image) -> Image:
+  match target:
+    case Pix{background}: Pix{Color.over(View.sample(source,x,y),background,alpha)}
+    case Qua{a,b,c,d}: Qua{a,b,c,d}
+
+def scalar(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,
+  +source: View.View,+alpha: U32,+target: Image) -> Image:
+  match depth outside:
+    case _ True{}: target
+    case 0n False{}: leaf(source,x,y,alpha,target)
+    case 1n+rest False{}:
+      +h = U32.div(size,2)
+      +xx = U32.add(x,h)
+      +yy = U32.add(y,h)
+      a = scalar(rest,h,x,y,View.outside(source,x,y,h),source,alpha,ImageOps.tl(target))
+      b = scalar(rest,h,xx,y,View.outside(source,xx,y,h),source,alpha,ImageOps.tr(target))
+      c = scalar(rest,h,x,yy,View.outside(source,x,yy,h),source,alpha,ImageOps.bl(target))
+      d = scalar(rest,h,xx,yy,View.outside(source,xx,yy,h),source,alpha,ImageOps.br(target))
+      Qua{a,b,c,d}
+
+def tree(+depth: Nat,+size: U32,+x: U32,+y: U32,work: Work,small: Bool,
+  +alpha: U32,+target: Image) -> Image:
+  match depth work small:
+    case _ Keep{} _: target
+    case _ Aligned{pixels} _: Layer.over(depth,pixels,alpha,target)
+    case 0n Split{source} _: leaf(source,x,y,alpha,target)
+    case 1n+rest Split{source} True{}: scalar(depth,size,x,y,False{},source,alpha,target)
+    case 1n+rest Split{+source} False{}:
+      +h = U32.div(size,2)
+      +xx = U32.add(x,h)
+      +yy = U32.add(y,h)
+      +terminal = U32.is_le(h,8)
+      a b c d = tree(rest,h,x,y,prepare(source,x,y,h),terminal,alpha,ImageOps.tl(target))
+        tree(rest,h,xx,y,prepare(source,xx,y,h),terminal,alpha,ImageOps.tr(target))
+        tree(rest,h,x,yy,prepare(source,x,yy,h),terminal,alpha,ImageOps.bl(target))
+        tree(rest,h,xx,yy,prepare(source,xx,yy,h),terminal,alpha,ImageOps.br(target))
+      Qua{a,b,c,d}
+
+def start_zero(zero: Bool,depth: Nat,+size: U32,+source: View.View,alpha: U32,target: Image) -> Image:
+  match zero:
+    case True{}: target
+    case False{}: tree(depth,size,4096,4096,prepare(source,4096,4096,size),U32.is_le(size,8),alpha,target)
+
+def start(depth: Nat,size: U32,source: View.View,+alpha: U32,target: Image) -> Image:
+  start_zero(U32.is_zero(alpha),depth,size,source,alpha,target)

@@ -1,0 +1,220 @@
+{
+  "method": "one warmup and five complete native processes per configuration; wall time includes startup, immutable scene preparation, 16 render+whole-image-checksum rounds and output; CPU affinity four allowed CPUs; no concurrent benchmark process, no GPU",
+  "frames_per_process": 16,
+  "affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpu_quota": "400000 100000",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "clang": "clang version 17.0.0 (https://github.com/swiftlang/llvm-project.git 10999b6d034fe318f3d56c83bddb6572593a8bb0)",
+  "results": [
+    {
+      "name": "before-gather",
+      "binary": "NativePlanBeforeGather",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanBeforeGather",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.4639128979999896,
+        1.476467490999994,
+        1.4364867619999586,
+        1.400983159999896,
+        1.432814039999812
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "31ec11549066a72a180ce993bfaa4b099a8ad9f05329bd38fc9b57cf7724f9e8",
+      "c_sha256": "aa0b15c2701033fda2a32ee8b3c378412cc60168c69f41d847aca38026e359ce",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 1.4364867619999586
+    },
+    {
+      "name": "serial",
+      "binary": "NativePlanSerial",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanSerial",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.0578589639999336,
+        1.0627643190000526,
+        1.0343169559998842,
+        1.048044862000097,
+        1.0377033019999544
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "06756c302af3aa0d9444070b39317f070eac5862fcd9ae43a37d050747471785",
+      "c_sha256": "1203c337f4878ae228e724210b5f919d91caaff95520bc3d7f66f5f9df39c344",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 1.048044862000097
+    },
+    {
+      "name": "fork1",
+      "binary": "NativePlanCpu1",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanCpu1",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.019217149000042,
+        1.0531871250000222,
+        1.0314071730001615,
+        1.0674601919999986,
+        1.0622277380000469
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "dc518972f8bc1c72ac821a21402b741b8793936402bfe208a542973326c078e0",
+      "c_sha256": "fd5a77144c9eb3133c53eddd6c673687153fa6e8f2af8447d49889b0a0b9333e",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 1.0531871250000222
+    },
+    {
+      "name": "fork1",
+      "binary": "NativePlanCpu1",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanCpu1",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.7201167129999249,
+        0.7748175689998789,
+        0.7602504439998938,
+        0.7343454970000494,
+        0.6985920540000734
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "dc518972f8bc1c72ac821a21402b741b8793936402bfe208a542973326c078e0",
+      "c_sha256": "fd5a77144c9eb3133c53eddd6c673687153fa6e8f2af8447d49889b0a0b9333e",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 0.7343454970000494
+    },
+    {
+      "name": "fork2",
+      "binary": "NativePlanCpu2",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanCpu2",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.6885130020000361,
+        0.7306067900001381,
+        0.7652623569999832,
+        0.7433652330000768,
+        0.7779061940000247
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "70810556356db3a3a92c4cc809839c159657017f1a415d2dca7b7f969f0d4869",
+      "c_sha256": "2c3ae6d1de72f29a806a2dc062d4582ac06e8fadf277db37b1f599f328e8fed2",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 0.7433652330000768
+    },
+    {
+      "name": "fork3",
+      "binary": "NativePlanCpu3",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/NativePlanCpu3",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.7030213949999506,
+        0.7066329749998204,
+        0.6897194559999207,
+        0.7217961979999927,
+        0.7403086529998291
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "binary_sha256": "0e0bb54f2b6a849a376a6fa70dd9461fc294bed71f400795b4670b3a1fc7cfc6",
+      "c_sha256": "3d87e74bcdabd504063e918aef11f79c24eb5f5032d3d9478235b213edf7ed4d",
+      "warmup_output": "2162379048",
+      "stderr": "",
+      "median_s": 0.7066329749998204
+    }
+  ],
+  "source_note": "pre-gather variant is byte-identical to experiments/RgbaSample-four-walks.bend.txt, source hash 762f9082bbd8a9878bb9f273fbfaf0009f7499bf57830230a31c734d4684d0c5; frozen runtime/compiler source unmodified"
+}

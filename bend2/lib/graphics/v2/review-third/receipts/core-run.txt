@@ -1,0 +1,5 @@
+(node:2254) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2254) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ok":true,"arithmetic":590165,"pixelComparisons":925351,"atlasSamples":16000,"scope":"Actual emitted Bend under Node; independent finite integer oracles, not a proof or GPU result."}

@@ -1,0 +1,1 @@
+{"ok":true,"frames":250,"pixelComparisons":1032192,"pickQueries":5000,"negativeControl":"Omitting a required revision leaves changed color unreported; documented caller obligation, not a semantic scene diff."}

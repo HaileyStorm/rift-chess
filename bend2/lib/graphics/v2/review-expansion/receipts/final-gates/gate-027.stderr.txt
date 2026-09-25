@@ -1,0 +1,6 @@
+encode_rgb: raw RGB input has at least 4 bytes; expected exactly 3
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.002s
+
+OK

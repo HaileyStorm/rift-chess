@@ -1,0 +1,45 @@
+--- a/bend2/lib/graphics/v2/MaskedStamp.bend
++++ b/bend2/lib/graphics/v2/MaskedStamp.bend
+@@ -9,6 +9,8 @@
+ import ./Shapes.bend as Shapes
+ import ./ImageView.bend as ImageView
+ import ./MaskedStampKernel.bend as Kernel
++import ./ConstantStamp.bend as ConstantStamp
++import ./MaskedLayer.bend as MaskedLayer
+ 
+ def transparent(mask: Image) -> Bool:
+   match mask:
+@@ -77,6 +79,21 @@
+               xx, yy, sx, sy, source_size, colors, mask, opacity, br)
+           Qua{a, b, c, d}
+ 
++# A uniform mask is exactly a constant-opacity RGB stamp. Its ignored green/blue
++# bits do not force the general two-cursor path. Pixel/endpoint laws are unchanged.
++def draw_views(+target_depth: Nat, +target_size: U32,
++  +source_depth: Nat, +source_size: U32, +sx: U32, +sy: U32,
++  colors: Image, mask: Image, +opacity: U32, image: Image) -> Image:
++  match mask:
++    case Pix{coverage}:
++      ConstantStamp.start(target_depth,target_size,
++        ImageView.View{source_depth,source_size,sx,sy,colors},
++        MaskedLayer.effective(Color.red(coverage),opacity),image)
++    case Qua{tl,tr,bl,br}:
++      Kernel.start(target_depth,target_size,
++        ImageView.View{source_depth,source_size,sx,sy,colors},
++        ImageView.View{source_depth,source_size,sx,sy,Qua{tl,tr,bl,br}},opacity,image)
++
+ def draw_valid(valid: Bool, +target_depth: Nat, +target_size: U32,
+   +source_depth: Nat, +source_size: U32, +left: Shapes.Coord,
+   +top: Shapes.Coord, +colors: Image, +mask: Image,
+@@ -86,9 +103,8 @@
+     case True{}:
+       +sx = Shapes.biased(left)
+       +sy = Shapes.biased(top)
+-      Kernel.start(target_depth, target_size,
+-        ImageView.View{source_depth, source_size, sx, sy, colors},
+-        ImageView.View{source_depth, source_size, sx, sy, mask}, opacity, image)
++      draw_views(target_depth,target_size,source_depth,source_size,sx,sy,
++        colors,mask,opacity,image)
+ 
+ def draw_mask(empty: Bool, +target_depth: Nat, +target_size: U32,
+   +source_depth: Nat, +source_size: U32, +left: Shapes.Coord,

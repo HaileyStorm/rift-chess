@@ -1,0 +1,5 @@
+/** Independent host-protocol fixture; intentionally not a renderer performance test. */
+/** Deliberate initialization failure/timeout controls remain confined to tests. */
+export async function setup(init){if(init?.fail)throw new Error('deliberate setup failure');if(init?.hang)return new Promise(()=>{});return {initialized:true};}
+/** Return exact scalar RGBA values or deliberate faults for protocol tests. */
+export async function render(state,input,tile){if(!state?.initialized)throw Error('setup omitted');if(input.delay)await new Promise(resolve=>setTimeout(resolve,input.delay));if(input.fail)throw Error('deliberate tile failure');if(input.short)return new Uint8Array(3);const result=new Uint8Array(tile.size*tile.size*4);for(let y=0;y<tile.size;y++)for(let x=0;x<tile.size;x++){const xx=x+tile.x,yy=y+tile.y,i=(y*tile.size+x)*4;let r=(xx+input.seed)%256,g=(yy*7+input.seed)%256,b=input.seed%256;if(input.object){const hit=xx>=input.object.x&&xx<input.object.x+6&&yy>=3&&yy<12;r=hit?240:7;g=hit?102:19;b=hit?61:33;}result.set([r,g,b,255],i);}return result;}

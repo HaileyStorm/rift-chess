@@ -1,0 +1,1 @@
+{"ok":true,"mixes":267144,"axes":144987,"pixels":317440,"endpoints":342,"scope":"actual pinned compiler emitted JS; BigInt premultiplied integer oracle; exact nine-slice; scalar-F32 operation-order reference and full-frame mapped plan parity; no F32 exclusions or cross-backend bit claim"}

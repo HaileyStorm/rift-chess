@@ -1,0 +1,727 @@
+{
+  "ok": true,
+  "method": "Check third-pass source/proofs and execute unchanged independent oracles.\n\nThe real pinned compiler runs under Node's TypeScript stripping. This does not\nclaim the unavailable pinned Bun wrapper, browser, native or GPU gates. Mutation\ncontrols copy the library into ignored build storage and never modify delivery\nsources. Historical verification is a separate optional, unchanged command.\n",
+  "source_checks": 24,
+  "syntax_checks": 19,
+  "records": [
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/AtlasRegion.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5447674359998018,
+      "stdout": "check-third-AtlasRegion.stdout.txt",
+      "stderr": "check-third-AtlasRegion.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Blur.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5401500160000978,
+      "stdout": "check-third-Blur.stdout.txt",
+      "stderr": "check-third-Blur.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Brush.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.3789405679999618,
+      "stdout": "check-third-Brush.stdout.txt",
+      "stderr": "check-third-Brush.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Effects.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.527253754999947,
+      "stdout": "check-third-Effects.stdout.txt",
+      "stderr": "check-third-Effects.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/GlyphLayer.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5906806230000257,
+      "stdout": "check-third-GlyphLayer.stdout.txt",
+      "stderr": "check-third-GlyphLayer.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/ImageShift.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.414519946999917,
+      "stdout": "check-third-ImageShift.stdout.txt",
+      "stderr": "check-third-ImageShift.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Paint.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5133110380002108,
+      "stdout": "check-third-Paint.stdout.txt",
+      "stderr": "check-third-Paint.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/PathFill.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5087132969997583,
+      "stdout": "check-third-PathFill.stdout.txt",
+      "stderr": "check-third-PathFill.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/PixelBuffer.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.352843779000068,
+      "stdout": "check-third-PixelBuffer.stdout.txt",
+      "stderr": "check-third-PixelBuffer.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Premul.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.32567200399989815,
+      "stdout": "check-third-Premul.stdout.txt",
+      "stderr": "check-third-Premul.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/PreparedSprite.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5510096610000801,
+      "stdout": "check-third-PreparedSprite.stdout.txt",
+      "stderr": "check-third-PreparedSprite.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Raster.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.4955645719996937,
+      "stdout": "check-third-Raster.stdout.txt",
+      "stderr": "check-third-Raster.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Retained.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.500037981999867,
+      "stdout": "check-third-Retained.stdout.txt",
+      "stderr": "check-third-Retained.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Shape.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.47037443399995027,
+      "stdout": "check-third-Shape.stdout.txt",
+      "stderr": "check-third-Shape.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Surface.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.4318472869999823,
+      "stdout": "check-third-Surface.stdout.txt",
+      "stderr": "check-third-Surface.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/contracts/third/PROOF.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5698122379999404,
+      "stdout": "check-contracts-third-PROOF.stdout.txt",
+      "stderr": "check-contracts-third-PROOF.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/NativePixels.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.6055463929997131,
+      "stdout": "check-tests-third-NativePixels.stdout.txt",
+      "stderr": "check-tests-third-NativePixels.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/NativePixelsCpu.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5418300940000336,
+      "stdout": "check-tests-third-NativePixelsCpu.stdout.txt",
+      "stderr": "check-tests-third-NativePixelsCpu.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/NativePixelsOffload.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.516532621999886,
+      "stdout": "check-tests-third-NativePixelsOffload.stdout.txt",
+      "stderr": "check-tests-third-NativePixelsOffload.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/CachedCpu.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5306188639997345,
+      "stdout": "check-bench-third-CachedCpu.stdout.txt",
+      "stderr": "check-bench-third-CachedCpu.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/CachedSerial.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5291574430002584,
+      "stdout": "check-bench-third-CachedSerial.stdout.txt",
+      "stderr": "check-bench-third-CachedSerial.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/Immediate.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.5377680370002054,
+      "stdout": "check-bench-third-Immediate.stdout.txt",
+      "stderr": "check-bench-third-Immediate.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/PathTraversal.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.47760089399980643,
+      "stdout": "check-bench-third-PathTraversal.stdout.txt",
+      "stderr": "check-bench-third-PathTraversal.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/StableSprites.bend"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.6155194859998119,
+      "stdout": "check-bench-third-StableSprites.stdout.txt",
+      "stderr": "check-bench-third-StableSprites.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/browser.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.023124226999698294,
+      "stdout": "syntax-00.stdout.txt",
+      "stderr": "syntax-00.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/core.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.02141317399991749,
+      "stdout": "syntax-01.stdout.txt",
+      "stderr": "syntax-01.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/glyph-layer.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.024151913999958197,
+      "stdout": "syntax-02.stdout.txt",
+      "stderr": "syntax-02.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/native-pixels.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.027123007999762194,
+      "stdout": "syntax-03.stdout.txt",
+      "stderr": "syntax-03.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/retained.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.021810664999975415,
+      "stdout": "syntax-04.stdout.txt",
+      "stderr": "syntax-04.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/vectors.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.021768002000044362,
+      "stdout": "syntax-05.stdout.txt",
+      "stderr": "syntax-05.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/worker-bad-identity.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.021354657000301813,
+      "stdout": "syntax-06.stdout.txt",
+      "stderr": "syntax-06.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/worker-bend.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.023840160999952786,
+      "stdout": "syntax-07.stdout.txt",
+      "stderr": "syntax-07.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/worker-task.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.022775658999762527,
+      "stdout": "syntax-08.stdout.txt",
+      "stderr": "syntax-08.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/host/FrameWorkers.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.021536277999985032,
+      "stdout": "syntax-09.stdout.txt",
+      "stderr": "syntax-09.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/host/frame-worker.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.025134643999990658,
+      "stdout": "syntax-10.stdout.txt",
+      "stderr": "syntax-10.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/host/TileDamage.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.025990761000230123,
+      "stdout": "syntax-11.stdout.txt",
+      "stderr": "syntax-11.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/host/TilePresenter.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.08332765900013328,
+      "stdout": "syntax-12.stdout.txt",
+      "stderr": "syntax-12.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/app.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.022553372999936983,
+      "stdout": "syntax-13.stdout.txt",
+      "stderr": "syntax-13.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/effects-plate.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.02418134800018379,
+      "stdout": "syntax-14.stdout.txt",
+      "stderr": "syntax-14.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/scene.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.02391613800000414,
+      "stdout": "syntax-15.stdout.txt",
+      "stderr": "syntax-15.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/task.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.022322975999941264,
+      "stdout": "syntax-16.stdout.txt",
+      "stderr": "syntax-16.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.02126725300013277,
+      "stdout": "syntax-17.stdout.txt",
+      "stderr": "syntax-17.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third-path.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+      "exit_code": 0,
+      "seconds": 0.023332496999955765,
+      "stdout": "syntax-18.stdout.txt",
+      "stderr": "syntax-18.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/core.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 0,
+      "seconds": 4.072843840000132,
+      "stdout": "core.stdout.txt",
+      "stderr": "core.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/vectors.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 0,
+      "seconds": 8.041340167000271,
+      "stdout": "vectors.stdout.txt",
+      "stderr": "vectors.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/retained.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 0,
+      "seconds": 3.0257206100000076,
+      "stdout": "retained.stdout.txt",
+      "stderr": "retained.stderr.txt"
+    },
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/glyph-layer.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 0,
+      "seconds": 2.023118396999962,
+      "stdout": "glyph-layer.stdout.txt",
+      "stderr": "glyph-layer.stderr.txt"
+    }
+  ],
+  "mutations": [
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-mutations/alpha-rounding/lib/graphics/v2/tests/third/core.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 1,
+      "seconds": 3.182152660000156,
+      "stdout": "mutant-alpha-rounding.stdout.txt",
+      "stderr": "mutant-alpha-rounding.stderr.txt",
+      "name": "alpha-rounding",
+      "replacement": {
+        "before": "U32.add(U32.mul(a,b),127)",
+        "after": "U32.add(U32.mul(a,b),0)"
+      },
+      "expected_assertion_failure": true,
+      "source_sha256": "1fb1c3435298d3871278ccce2b1e155a386d5af2a543f15d3b2a51d4869243f6",
+      "oracle_unchanged": true
+    },
+    {
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-mutations/edge-boundary/lib/graphics/v2/tests/third/vectors.mjs"
+      ],
+      "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/toolchains/bend/bend2",
+      "exit_code": 1,
+      "seconds": 3.26001689099985,
+      "stdout": "mutant-edge-boundary.stdout.txt",
+      "stderr": "mutant-edge-boundary.stderr.txt",
+      "name": "edge-boundary",
+      "replacement": {
+        "before": "F32.is_gt(F32.sub(F32.mul(dx,F32.sub(y,ay))",
+        "after": "F32.is_ge(F32.sub(F32.mul(dx,F32.sub(y,ay))"
+      },
+      "expected_assertion_failure": true,
+      "source_sha256": "d214294ff95683bf215cb6a2f20df4616a1478c55007700c1ab812b1aa907bcf",
+      "oracle_unchanged": true
+    }
+  ],
+  "source_sha256": {
+    "bend2/lib/graphics/v2/third/AtlasRegion.bend": "fbbff2f395fba2140fe7454721f58945fe6cb24751221c769ad80a0ba7f51ffd",
+    "bend2/lib/graphics/v2/third/Blur.bend": "6f1987b504fbcbad4d3e743522d62dc64a8de1cf8b353c62859ace8073b7d65a",
+    "bend2/lib/graphics/v2/third/Brush.bend": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e",
+    "bend2/lib/graphics/v2/third/Effects.bend": "c5085279938160e5c10878731539573e6196b3d6dfb686fd4b2dfd4cd2c2c98b",
+    "bend2/lib/graphics/v2/third/GlyphLayer.bend": "2a401c26b5dba0d65345c3ad67abed78342711413b645d102f284463d5e0f0a4",
+    "bend2/lib/graphics/v2/third/ImageShift.bend": "c1ffae1f832157b89c34e1d6d4463512af4876172c57c66fb2b65c3717b0b703",
+    "bend2/lib/graphics/v2/third/Paint.bend": "8ad84e947c1794c12e259b78a9d2e89c3f31babde4c6e575257931f46a56c8de",
+    "bend2/lib/graphics/v2/third/PathFill.bend": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119",
+    "bend2/lib/graphics/v2/third/PixelBuffer.bend": "25372e79794917f564d129d9124c18d99d7f6142c7daba5b0815b1254b6e8981",
+    "bend2/lib/graphics/v2/third/Premul.bend": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1",
+    "bend2/lib/graphics/v2/third/PreparedSprite.bend": "fd37e8bd71b428819eb32963a6aa013c3034f790d5e97ccf8a619e01d6ffeb9d",
+    "bend2/lib/graphics/v2/third/Raster.bend": "c888ce77c06dd414efe4a6c8d3776683aa2f364a03c1c3dc6ac3aabf851eacdb",
+    "bend2/lib/graphics/v2/third/Retained.bend": "4c1c573cfb1eb95de4f441c9e813e29323027728785d864b2f16884a65adf82f",
+    "bend2/lib/graphics/v2/third/Shape.bend": "75392e5fb653b058d870e437c8c94c14b786f314df9a583cb62a690da922562f",
+    "bend2/lib/graphics/v2/third/Surface.bend": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0",
+    "bend2/lib/graphics/v2/contracts/third/PROOF.bend": "621bc5b86f4ac417100023321fcb95fec62254ed418e8377e5408d0537225a6d",
+    "bend2/lib/graphics/v2/tests/third/NativePixels.bend": "6db016019ee8b04e8074f18748e3b4c7b17faa9b26c1219d1948e200e8e1575e",
+    "bend2/lib/graphics/v2/tests/third/NativePixelsCpu.bend": "936cc3564b8b28b74e5da827a65fb525618694e6cb4561cbcd579a9741a532bd",
+    "bend2/lib/graphics/v2/tests/third/NativePixelsOffload.bend": "f7c0b149a077bba6e5b85531e83aca8f07416db7d3954987c38e712bec5e3309",
+    "bend2/lib/graphics/v2/bench/third/CachedCpu.bend": "784bcb3b90ee8be2687d666a73f63db3d8a61d1ad9f9d2b5b6444c8a03ac5a10",
+    "bend2/lib/graphics/v2/bench/third/CachedSerial.bend": "a318e4081e88a33a2d8678513d6c1d46879a3078c28b4c3d559f6b5f20f58503",
+    "bend2/lib/graphics/v2/bench/third/Immediate.bend": "fd6acd60eba94c23687c6d9577bfe39435a64a4fdde398fecf6f71eb14f58bd6",
+    "bend2/lib/graphics/v2/bench/third/PathTraversal.bend": "b28e45bb9c1c5cae4329ba893389d49ccb067028b649c9c9e8a389d42c9c2e14",
+    "bend2/lib/graphics/v2/bench/third/StableSprites.bend": "04199d9393975e0862e116c70135d71c7b77fd6118fead3887d6fb4267da4219",
+    "bend2/lib/graphics/v2/tests/third/browser.mjs": "4958414bb2a474433a6fab57a3d59e0f58b962ad0eafc368b7a36dab674503af",
+    "bend2/lib/graphics/v2/tests/third/core.mjs": "413c33504fd1541bc2a9c38982ed241ddc288345deb85a4166eb5c61534a4c94",
+    "bend2/lib/graphics/v2/tests/third/glyph-layer.mjs": "a10cbe5f9f152c8b0e1ecd7238c656fc720a025fb6c64d2c42d71b45511b27b9",
+    "bend2/lib/graphics/v2/tests/third/native-pixels.mjs": "769261b43e0f3c5ff3aaa82fe9c0c6edc8946fd11a5fc555df18c8ac37826ef7",
+    "bend2/lib/graphics/v2/tests/third/retained.mjs": "ad4f311c7d227f0f014b39e0d971d91eaae200fe733b7376b69159bb3ac614ad",
+    "bend2/lib/graphics/v2/tests/third/vectors.mjs": "02fb7d5bf379b3a322ca10ed4a84502f6939e63c69489aac483c578b3a1b9914",
+    "bend2/lib/graphics/v2/tests/third/worker-bad-identity.mjs": "35afb4b2f816809f8db6ee7432536e1caccc5fab86f2decfa905783eb1bbc240",
+    "bend2/lib/graphics/v2/tests/third/worker-bend.mjs": "dd71f14907fb285b3a2fb0046dfe67137f3b62c73a45d01f55980c3193c9606f",
+    "bend2/lib/graphics/v2/tests/third/worker-task.mjs": "6f7d0624301ff3a6f5acd74672288c606e43f3f0e517600fd71052b97e6c7343",
+    "bend2/lib/graphics/v2/host/FrameWorkers.mjs": "3b48b140cef2ea80edb23fe5d332455fc008d6e226aa165ae52d78f505e89b7f",
+    "bend2/lib/graphics/v2/host/frame-worker.mjs": "20ac9e629957098c8d67f67d820dd135047ef090056a1775c2c1615135bb11d8",
+    "bend2/lib/graphics/v2/host/TileDamage.mjs": "cceb25ecb53d7a6717489e6f505c61070c332d5337d9929a1ccf5faf03e0e065",
+    "bend2/lib/graphics/v2/host/TilePresenter.mjs": "62553b9a1cbc3b40c3df949a7f2b4a0083f7b6d3c1b8f4a4e25badfe653197bd",
+    "review-third/demo/app.mjs": "3d7b584b117dd56d534cef0e3a146aebe545806637aa7d0c5c3d91b200443d53",
+    "review-third/demo/effects-plate.mjs": "c680d4b4bde9000db2d24805e5f089e5ed10519503d3c547c87e6d856f16c50a",
+    "review-third/demo/scene.mjs": "5d958e4fba806a50b7f50018917de4ac6f3582f65859f97182f15bb774f2c1ee",
+    "review-third/demo/task.mjs": "0d7df55aa5c67d672a14bde217888e19998e129548da150eed600da5a3c7d55a",
+    "bend2/lib/graphics/v2/bench/third.mjs": "0d8107348729ca5d22b1d7f0e2b7c07421178225406758d98085b871575abad5",
+    "bend2/lib/graphics/v2/bench/third-path.mjs": "e6eb92766973246d16ffb10085efe72f6a842ac2073e42e8002d942ed996fac1"
+  },
+  "baseline_rerun": false,
+  "limits": "Source and finite JS gates only. Native and actual browser receipts are separate. Bun and GPU not validated."
+}

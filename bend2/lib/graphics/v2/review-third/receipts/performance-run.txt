@@ -1,0 +1,470 @@
+(node:2689) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2689) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schema": "graphics-third-performance/1",
+  "host": "v22.16.0",
+  "backend": "pinned compiler emitted JavaScript",
+  "pixelComparisons": 1966080,
+  "sprites": [
+    {
+      "size": 256,
+      "side": 32,
+      "kind": "opaque-aligned",
+      "count": 32,
+      "preparation": [
+        1.4239659999998366,
+        1.110149999999976,
+        1.0744770000001154,
+        1.1166990000001533,
+        1.431196,
+        1.1809140000000298,
+        1.0910509999998794
+      ],
+      "prepareMedianMs": 1.1166990000001533,
+      "render": {
+        "immediate": [
+          1.0849520000001576,
+          0.7539510000001428,
+          0.88775899999996,
+          0.754460999999992,
+          0.8815099999999347,
+          1.9695169999999962,
+          0.6806420000000344
+        ],
+        "cached": [
+          0.188570000000027,
+          0.1918749999999818,
+          1.3784679999998843,
+          0.14219199999979537,
+          0.16491500000006454,
+          0.16343300000016825,
+          0.6542919999999413
+        ],
+        "prepareAndDraw": [
+          1.098201999999901,
+          0.8770539999998164,
+          0.9141579999998157,
+          0.8289319999998952,
+          0.7888120000000072,
+          0.7734989999999016,
+          0.9539270000000215
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 0.8815099999999347,
+        "cached": 0.188570000000027,
+        "prepareAndDraw": 0.8770539999998164
+      },
+      "steadySpeedup": 4.674709656890324,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 1366,
+      "preparedUniqueImageNodes": 2196,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    },
+    {
+      "size": 256,
+      "side": 32,
+      "kind": "opaque-unaligned",
+      "count": 32,
+      "preparation": [
+        24.693493000000217,
+        25.524237000000085,
+        23.369626000000153,
+        22.685367999999926,
+        29.879459000000224,
+        25.171182000000044,
+        24.01021700000001
+      ],
+      "prepareMedianMs": 24.693493000000217,
+      "render": {
+        "immediate": [
+          21.608287999999902,
+          21.1612140000002,
+          19.993298000000323,
+          21.110859000000346,
+          35.61931800000002,
+          16.646625999999742,
+          26.913260999999693
+        ],
+        "cached": [
+          1.3508879999999408,
+          1.2613850000002458,
+          1.2478940000000875,
+          1.482792999999674,
+          1.6096619999998438,
+          1.2519399999996494,
+          1.5946100000001024
+        ],
+        "prepareAndDraw": [
+          27.752488000000085,
+          27.242150000000038,
+          27.52844499999992,
+          29.331826000000092,
+          33.613526999999976,
+          29.615385999999944,
+          29.061522999999852
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 21.1612140000002,
+        "cached": 1.3508879999999408,
+        "prepareAndDraw": 29.061522999999852
+      },
+      "steadySpeedup": 15.66466946186592,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 1366,
+      "preparedUniqueImageNodes": 33428,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    },
+    {
+      "size": 256,
+      "side": 32,
+      "kind": "soft-unaligned",
+      "count": 32,
+      "preparation": [
+        35.76615599999968,
+        48.14013799999975,
+        29.568607000000156,
+        29.909188000000086,
+        27.59289099999978,
+        32.782197,
+        31.658641999999872
+      ],
+      "prepareMedianMs": 31.658641999999872,
+      "render": {
+        "immediate": [
+          22.557788999999957,
+          23.68672699999979,
+          23.700647000000117,
+          22.690577000000303,
+          34.396079999999984,
+          25.564597999999933,
+          21.339528999999857
+        ],
+        "cached": [
+          5.5544629999999415,
+          7.293308000000252,
+          6.116949000000204,
+          5.0499439999998685,
+          5.303911000000426,
+          9.214171999999962,
+          9.988592000000153
+        ],
+        "prepareAndDraw": [
+          38.807716000000255,
+          40.91213199999993,
+          51.30429499999991,
+          36.0334069999999,
+          38.09000900000001,
+          37.53897000000006,
+          39.86559699999998
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 23.68672699999979,
+        "cached": 6.116949000000204,
+        "prepareAndDraw": 38.807716000000255
+      },
+      "steadySpeedup": 3.8723106895282275,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 2122,
+      "preparedUniqueImageNodes": 30900,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    },
+    {
+      "size": 512,
+      "side": 64,
+      "kind": "opaque-aligned",
+      "count": 32,
+      "preparation": [
+        0.2250240000003032,
+        0.2164919999995618,
+        0.2993549999996503,
+        0.21757399999978588,
+        0.23758299999963128,
+        0.21312699999998586,
+        0.24258099999997285
+      ],
+      "prepareMedianMs": 0.2250240000003032,
+      "render": {
+        "immediate": [
+          0.20456400000011854,
+          0.3223889999999301,
+          0.19786400000020876,
+          0.8015909999999167,
+          0.19914600000038263,
+          0.20045800000025338,
+          0.20546600000034232
+        ],
+        "cached": [
+          0.047039999999924476,
+          0.04839200000014898,
+          0.04376499999989392,
+          0.04388599999992948,
+          0.04590800000005402,
+          0.04695899999978792,
+          0.044636000000082277
+        ],
+        "prepareAndDraw": [
+          0.29886400000032154,
+          0.27755300000035277,
+          0.2560809999999947,
+          0.278063000000202,
+          0.2641230000003816,
+          0.2764809999998761,
+          0.2612879999996949
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 0.20456400000011854,
+        "cached": 0.04590800000005402,
+        "prepareAndDraw": 0.2764809999998761
+      },
+      "steadySpeedup": 4.455955389036286,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 5462,
+      "preparedUniqueImageNodes": 6292,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    },
+    {
+      "size": 512,
+      "side": 64,
+      "kind": "opaque-unaligned",
+      "count": 32,
+      "preparation": [
+        117.0329069999998,
+        147.23658299999988,
+        119.34098699999959,
+        117.91990100000021,
+        105.6791319999993,
+        100.38666700000067,
+        99.45589500000006
+      ],
+      "prepareMedianMs": 117.0329069999998,
+      "render": {
+        "immediate": [
+          86.99000100000012,
+          71.1007609999997,
+          96.82639699999982,
+          77.26810400000068,
+          122.01273200000014,
+          101.63781699999981,
+          71.97610199999963
+        ],
+        "cached": [
+          3.254746999999952,
+          3.559109000000717,
+          3.512380000000121,
+          4.023889000000054,
+          3.283309000000372,
+          2.8428350000003775,
+          3.4720589999997173
+        ],
+        "prepareAndDraw": [
+          111.11421700000028,
+          138.96277800000007,
+          123.30303000000004,
+          123.23523899999964,
+          113.87344800000028,
+          118.9908919999998,
+          118.68631899999946
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 86.99000100000012,
+        "cached": 3.4720589999997173,
+        "prepareAndDraw": 118.9908919999998
+      },
+      "steadySpeedup": 25.05429804044436,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 5462,
+      "preparedUniqueImageNodes": 115776,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    },
+    {
+      "size": 512,
+      "side": 64,
+      "kind": "soft-unaligned",
+      "count": 32,
+      "preparation": [
+        111.47626600000058,
+        109.14770500000031,
+        106.11362700000063,
+        128.32721500000025,
+        115.88291300000037,
+        124.21346199999971,
+        109.2610539999996
+      ],
+      "prepareMedianMs": 111.47626600000058,
+      "render": {
+        "immediate": [
+          160.2357090000005,
+          145.0562719999998,
+          89.71569099999942,
+          90.99217800000042,
+          134.60021600000073,
+          94.85597400000006,
+          110.98625800000082
+        ],
+        "cached": [
+          18.34808400000111,
+          14.803577000000587,
+          17.409630000000107,
+          15.239584999999352,
+          24.506664999998975,
+          18.50753000000077,
+          17.677787000000535
+        ],
+        "prepareAndDraw": [
+          177.15684699999838,
+          145.2673709999999,
+          159.57169199999953,
+          154.18690099999912,
+          152.06452700000045,
+          156.20618599999943,
+          154.57006899999942
+        ]
+      },
+      "renderMedianMs": {
+        "immediate": 110.98625800000082,
+        "cached": 17.677787000000535,
+        "prepareAndDraw": 154.57006899999942
+      },
+      "steadySpeedup": 6.278289132004898,
+      "breakEvenFrames": 2,
+      "inputUniqueImageNodes": 7386,
+      "preparedUniqueImageNodes": 99960,
+      "method": "Unchanged stable poses; all sprites recomposited. prepareAndDraw rebuilds every patch to expose cache misses. JS object-node counts exclude runtime headers, host buffers and native allocation."
+    }
+  ],
+  "blurs": [
+    {
+      "size": 64,
+      "times": {
+        "1": [
+          10.852656000000934,
+          9.508168000000296,
+          10.530958000001192,
+          10.091295000000173,
+          12.065237999999226
+        ],
+        "8": [
+          12.310331999999107,
+          10.997119999999995,
+          10.75412999999935,
+          11.21042800000032,
+          12.64142399999946
+        ],
+        "32": [
+          14.238137000000279,
+          13.361214000000473,
+          13.94383999999991,
+          13.007327999999688,
+          15.492130000000543
+        ],
+        "128": [
+          22.19409899999846,
+          19.321640000000116,
+          19.424512999999934,
+          18.7274780000007,
+          20.416807999999946
+        ]
+      },
+      "medianMs": {
+        "1": 10.530958000001192,
+        "8": 11.21042800000032,
+        "32": 13.94383999999991,
+        "128": 19.424512999999934
+      },
+      "method": "Complete surface->owned buffers->horizontal and vertical scans->immutable surface; includes allocation and conversion; no render-only claim."
+    },
+    {
+      "size": 128,
+      "times": {
+        "1": [
+          40.19932300000073,
+          44.8309449999997,
+          38.497794999999314,
+          48.22263600000042,
+          39.624157999998715
+        ],
+        "8": [
+          40.22057500000119,
+          41.832469999999375,
+          43.333550999999716,
+          45.64431400000103,
+          39.655995999999504
+        ],
+        "32": [
+          43.00873700000011,
+          47.95007999999871,
+          46.933859999999186,
+          45.570073000000775,
+          44.231674999999086
+        ],
+        "128": [
+          63.333989999999176,
+          56.52452100000119,
+          63.70135999999911,
+          58.8828650000014,
+          56.41521399999874
+        ]
+      },
+      "medianMs": {
+        "1": 40.19932300000073,
+        "8": 41.832469999999375,
+        "32": 45.570073000000775,
+        "128": 58.8828650000014
+      },
+      "method": "Complete surface->owned buffers->horizontal and vertical scans->immutable surface; includes allocation and conversion; no render-only claim."
+    },
+    {
+      "size": 256,
+      "times": {
+        "1": [
+          173.1057180000007,
+          172.10806500000035,
+          179.89644699999917,
+          176.13160700000117,
+          180.1018609999992
+        ],
+        "8": [
+          207.42616999999882,
+          186.6716660000002,
+          203.67450599999938,
+          183.71216800000002,
+          172.4341719999993
+        ],
+        "32": [
+          187.07168900000033,
+          194.3630039999989,
+          188.6931940000013,
+          175.37335100000018,
+          178.09068699999807
+        ],
+        "128": [
+          206.50239800000054,
+          190.5083510000004,
+          209.63278400000127,
+          206.95217799999955,
+          201.86981599999854
+        ]
+      },
+      "medianMs": {
+        "1": 176.13160700000117,
+        "8": 186.6716660000002,
+        "32": 187.07168900000033,
+        "128": 206.50239800000054
+      },
+      "method": "Complete surface->owned buffers->horizontal and vertical scans->immutable surface; includes allocation and conversion; no render-only claim."
+    }
+  ],
+  "sources": {
+    "MaskedStamp.bend": "6d6d6ee0bb7a02879d72a012b96ef17ac5aecb64840a22e976e43a60c2e3744a",
+    "third/PreparedSprite.bend": "fd37e8bd71b428819eb32963a6aa013c3034f790d5e97ccf8a619e01d6ffeb9d",
+    "third/Blur.bend": "6f1987b504fbcbad4d3e743522d62dc64a8de1cf8b353c62859ace8073b7d65a",
+    "third/PixelBuffer.bend": "25372e79794917f564d129d9124c18d99d7f6142c7daba5b0815b1254b6e8981"
+  }
+}

@@ -1,0 +1,1 @@
+{"ok":true,"checks":5874,"scope":"Independent finite core graphics reference; native/GPU/browser evidence separate"}

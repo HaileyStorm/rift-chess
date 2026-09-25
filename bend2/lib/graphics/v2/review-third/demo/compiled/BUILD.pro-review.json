@@ -1,0 +1,1113 @@
+{
+  "scope": "Actual pinned compiler emitted JavaScript, not a replacement renderer. Node host, not pinned Bun. No GPU backend.",
+  "modules": [
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Premul.bend",
+      "ms": 158.216682,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Premul.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Premul.mjs"
+      ],
+      "output": "review-third/demo/compiled/Premul.mjs",
+      "output_sha256": "64804acd3a77f6d01aca1de7ab3acd563af35db9cecd08d2ce667255b4e3d62a"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Brush.bend",
+      "ms": 187.23519000000002,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Brush.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Brush.mjs"
+      ],
+      "output": "review-third/demo/compiled/Brush.mjs",
+      "output_sha256": "b5ca1b038077b908b4bc57921cfdc96e207a9f52b56eb25f850bf47ac5f440f9"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Shape.bend",
+      "ms": 314.900507,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PathFill.bend",
+          "sha256": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Shape.bend",
+          "sha256": "75392e5fb653b058d870e437c8c94c14b786f314df9a583cb62a690da922562f"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Shape.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Shape.mjs"
+      ],
+      "output": "review-third/demo/compiled/Shape.mjs",
+      "output_sha256": "186161ec036e2dd9649d50b4988dfe2d22313682b61a2bf662d0b13e6b959626"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/PathFill.bend",
+      "ms": 280.725116,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PathFill.bend",
+          "sha256": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/PathFill.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/PathFill.mjs"
+      ],
+      "output": "review-third/demo/compiled/PathFill.mjs",
+      "output_sha256": "bae415f9c0539a8429bbb89fb0ca6df610dd978150a74b1e71ada7207e3df723"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Surface.bend",
+      "ms": 219.29733600000003,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Surface.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Surface.mjs"
+      ],
+      "output": "review-third/demo/compiled/Surface.mjs",
+      "output_sha256": "52296ab348fb22713142b74aefd8d4ad731201f282ac66a75c0a1c681ab1efc3"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Effects.bend",
+      "ms": 359.70237199999997,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageView.bend",
+          "sha256": "429eb7db3e9c662b62dd5cfaf5f6b37cb0170e63fb6df468149a4d4e5558b427"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Blur.bend",
+          "sha256": "6f1987b504fbcbad4d3e743522d62dc64a8de1cf8b353c62859ace8073b7d65a"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Effects.bend",
+          "sha256": "c5085279938160e5c10878731539573e6196b3d6dfb686fd4b2dfd4cd2c2c98b"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/ImageShift.bend",
+          "sha256": "c1ffae1f832157b89c34e1d6d4463512af4876172c57c66fb2b65c3717b0b703"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PixelBuffer.bend",
+          "sha256": "25372e79794917f564d129d9124c18d99d7f6142c7daba5b0815b1254b6e8981"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Effects.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Effects.mjs"
+      ],
+      "output": "review-third/demo/compiled/Effects.mjs",
+      "output_sha256": "a414c02a964ccacc70d6fba68fbe980fe89780642db8f75e2aa5c9c9d16ebe04"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Raster.bend",
+      "ms": 384.67377200000004,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Paint.bend",
+          "sha256": "8ad84e947c1794c12e259b78a9d2e89c3f31babde4c6e575257931f46a56c8de"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PathFill.bend",
+          "sha256": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Raster.bend",
+          "sha256": "c888ce77c06dd414efe4a6c8d3776683aa2f364a03c1c3dc6ac3aabf851eacdb"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Shape.bend",
+          "sha256": "75392e5fb653b058d870e437c8c94c14b786f314df9a583cb62a690da922562f"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Raster.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Raster.mjs"
+      ],
+      "output": "review-third/demo/compiled/Raster.mjs",
+      "output_sha256": "1355555a9384c0861356949532d5a69edfaad5a05d4988c52dfbb4d727788613"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/Paint.bend",
+      "ms": 375.27910299999996,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Paint.bend",
+          "sha256": "8ad84e947c1794c12e259b78a9d2e89c3f31babde4c6e575257931f46a56c8de"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PathFill.bend",
+          "sha256": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Shape.bend",
+          "sha256": "75392e5fb653b058d870e437c8c94c14b786f314df9a583cb62a690da922562f"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/Paint.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Paint.mjs"
+      ],
+      "output": "review-third/demo/compiled/Paint.mjs",
+      "output_sha256": "d3a8dfce5a5d1b225af9b2b75088da4812ec9726b49915a7600c65c72da234c3"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/ImageShift.bend",
+      "ms": 253.045322,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageView.bend",
+          "sha256": "429eb7db3e9c662b62dd5cfaf5f6b37cb0170e63fb6df468149a4d4e5558b427"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/ImageShift.bend",
+          "sha256": "c1ffae1f832157b89c34e1d6d4463512af4876172c57c66fb2b65c3717b0b703"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/ImageShift.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/ImageShift.mjs"
+      ],
+      "output": "review-third/demo/compiled/ImageShift.mjs",
+      "output_sha256": "3f13594819ff7dae82eee71045d6d0391888f69cc996d87265516148317ff022"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/third/GlyphLayer.bend",
+      "ms": 455.60882799999996,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Canvas.bend",
+          "sha256": "16a734cd616a3ab70be5677fad2c9c90e566aa6a34dcedeef25ee438bc1338b0"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/BlendRect.bend",
+          "sha256": "9e19b15e0c742d8c47db68faec382a5f51500a630c5cbd69d0e1d9c77eb1b0d7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Clip.bend",
+          "sha256": "d83f3f7d87d4602b86a0c00c704704c781e694f73a1138ea0c885addc5f097f5"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ClippedStamp.bend",
+          "sha256": "6176e0b941a9abf35614b42d5c84a2e687410eb8b7e12e3610f64532fb9c3ddc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/DrawList.bend",
+          "sha256": "7bd3663bde536077d41af99752efbdb3903568e9453b64820c42a0f49b0f908c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Glyph.bend",
+          "sha256": "e46958aa6b3b3aa22c7eced12d2ea82666ed081eafb22e380886dbfc9d2432d8"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageView.bend",
+          "sha256": "429eb7db3e9c662b62dd5cfaf5f6b37cb0170e63fb6df468149a4d4e5558b427"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedStamp.bend",
+          "sha256": "6d6d6ee0bb7a02879d72a012b96ef17ac5aecb64840a22e976e43a60c2e3744a"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedStampKernel.bend",
+          "sha256": "7fa468ebb4838fdda31f0b64392664f0e9ad5b82b7076332efa13633758ab969"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/NineSlice.bend",
+          "sha256": "3d235a86acb6e4f2a4ecd8f48b493027dbb03733a506bfbd1aad8e405d63bdf4"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stamp.bend",
+          "sha256": "ef3279d480c6a33383d4717cf346a5a98c3a58f0f9f680fd57d0d216bf2eb1c2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/TileRaster.bend",
+          "sha256": "351265b9c37cce18f61bdf8dc396582b3906ea9cbc9beec8120f8727aa096558"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/GlyphLayer.bend",
+          "sha256": "2a401c26b5dba0d65345c3ad67abed78342711413b645d102f284463d5e0f0a4"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PreparedSprite.bend",
+          "sha256": "fd37e8bd71b428819eb32963a6aa013c3034f790d5e97ccf8a619e01d6ffeb9d"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/third/GlyphLayer.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/GlyphLayer.mjs"
+      ],
+      "output": "review-third/demo/compiled/GlyphLayer.mjs",
+      "output_sha256": "baff0cc060ed1a51710514a87bcd25a53e5931958f2955f746d39b9fe5208d6d"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/Stroke.bend",
+      "ms": 357.788546,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/Stroke.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/Stroke.mjs"
+      ],
+      "output": "review-third/demo/compiled/Stroke.mjs",
+      "output_sha256": "7d31e9ffc459afd4d681ffc464c606a8c9f7264ac0fcb51f8ebd05c2be41122a"
+    },
+    {
+      "ok": true,
+      "mode": "js",
+      "input": "bend2/lib/graphics/v2/tests/third/NativePixels.bend",
+      "ms": 485.01937399999997,
+      "compiler": "d37909174ebd664338ae3194799a9e0899dedd51",
+      "host": "v22.16.0",
+      "pinnedBun": false,
+      "promises": [],
+      "closure": [
+        {
+          "path": ".artifacts/toolchains/bend/bend2/base.bend",
+          "sha256": "90a4a9a4ec3997d7d4927d7dac04f9ddd3b884e6521ac9d691bfe6765ba0d4d7"
+        },
+        {
+          "path": "bend2/lib/graphics/Quad.bend",
+          "sha256": "70ca9dccb6c73901ca6952193f2587c3cb9b4e1b83f83ceca188453d734c4f12"
+        },
+        {
+          "path": "bend2/lib/graphics/pixels/Pixel.bend",
+          "sha256": "ea556df8087a47ad5e07a192f17dc63c62ccfcc763d13dfceb873116849308a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/AffineTexture.bend",
+          "sha256": "401c3a2329013ca35a8854ed97a2758cdc07afa6031c90c4bf21f1e7cbdaaaa9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Color.bend",
+          "sha256": "a4fcab9080a6ea87a01f9fd23ddf1c786619ff32671ab0c09932d7c249b42888"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Facet.bend",
+          "sha256": "d7bc849d1fdbc71a494c7149df5fbc23eafd2ffe50ff78e04347463de55d3dad"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Gather.bend",
+          "sha256": "8b2b201ea4f4f85662e57acab77e55a14307d1bf93f1469dbee0c5b1f97b4f5c"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageOps.bend",
+          "sha256": "c45d8ae36653cc94e144080151492a72d891c1c4f9c2590bf08cea22ce5f3c90"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/ImageView.bend",
+          "sha256": "429eb7db3e9c662b62dd5cfaf5f6b37cb0170e63fb6df468149a4d4e5558b427"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Layer.bend",
+          "sha256": "cfbb7fbb181c7e4a7098288e32c033aadd3dc052ea4efcd1566871ae08238ef2"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/MaskedLayer.bend",
+          "sha256": "e8940d56f72ea8ea4b7acbe5977ca7fab98a1379f57984f4b13c0d4cb81d41f9"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Ramp.bend",
+          "sha256": "bfe333e4213cc73779d5b6764c33af6a5a12de68eb5e1ae0f7481d205b91586e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Rect.bend",
+          "sha256": "a625d2923ced7ed7a34fa7c1257d845ac54d4f1fe88bfff6266b0d325189fe02"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaAffine.bend",
+          "sha256": "0ca9fddac9f874a25f649a49d7f42a99365e1dbde874205a252636d4d8c462a3"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/RgbaSample.bend",
+          "sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Shapes.bend",
+          "sha256": "ab0a2be854836bd816e0bc902e4f82b2c20b08e19e3ac63203d444019dff8eec"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Stroke.bend",
+          "sha256": "ea30a11dba3aec9ae94ff4466c1f10d811aefdaa51d4199f2b728f4bbf7d1fd0"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/Transform2D.bend",
+          "sha256": "c831e02320f5753855fd2d36967ab8dfb6ae06bc7a97279d5566edc9f61aa6b7"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/tests/third/NativePixels.bend",
+          "sha256": "6db016019ee8b04e8074f18748e3b4c7b17faa9b26c1219d1948e200e8e1575e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Blur.bend",
+          "sha256": "6f1987b504fbcbad4d3e743522d62dc64a8de1cf8b353c62859ace8073b7d65a"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Brush.bend",
+          "sha256": "f9fb927fc7b4ebd65ac290e2bb958ab0b8ec6cb7ce3ba142667f2a3ede9f5a7e"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Effects.bend",
+          "sha256": "c5085279938160e5c10878731539573e6196b3d6dfb686fd4b2dfd4cd2c2c98b"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/ImageShift.bend",
+          "sha256": "c1ffae1f832157b89c34e1d6d4463512af4876172c57c66fb2b65c3717b0b703"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Paint.bend",
+          "sha256": "8ad84e947c1794c12e259b78a9d2e89c3f31babde4c6e575257931f46a56c8de"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PathFill.bend",
+          "sha256": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/PixelBuffer.bend",
+          "sha256": "25372e79794917f564d129d9124c18d99d7f6142c7daba5b0815b1254b6e8981"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Premul.bend",
+          "sha256": "04ce6109506655f507a4b57a96ab225ddf1ba04822ab727c6490e2934df890e1"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Raster.bend",
+          "sha256": "c888ce77c06dd414efe4a6c8d3776683aa2f364a03c1c3dc6ac3aabf851eacdb"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Shape.bend",
+          "sha256": "75392e5fb653b058d870e437c8c94c14b786f314df9a583cb62a690da922562f"
+        },
+        {
+          "path": "bend2/lib/graphics/v2/third/Surface.bend",
+          "sha256": "aff9701a81b8e3caa6fc404ce17e66b8529fc8a4ae2104e89b246dfe2ba702d0"
+        }
+      ],
+      "command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "js",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/NativePixels.bend",
+        "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/compiled/NativePixels.mjs"
+      ],
+      "output": "review-third/demo/compiled/NativePixels.mjs",
+      "output_sha256": "860abe3d4d906dedfaf9fd24b36f6519175d951e0e8ebef77245e2eeda86df48"
+    }
+  ]
+}

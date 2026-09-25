@@ -1,0 +1,8 @@
+Source closures checked: 24
+core {"ok":true,"arithmetic":590165,"pixelComparisons":925351,"atlasSamples":16000,"scope":"Actual emitted Bend under Node; independent finite integer oracles, not a proof or GPU result."}
+vectors {"ok":true,"pointQueries":2158592,"coverageChecks":312320,"gradientChecks":66578,"pixelComparisons":305408,"scope":"Actual emitted Bend; independent finite F32 crossing and integer effect references. Radial sampler parity only, not a real-number proof."}
+retained {"ok":true,"frames":250,"pixelComparisons":1032192,"pickQueries":5000,"negativeControl":"Omitting a required revision leaves changed color unreported; documented caller obligation, not a semantic scene diff."}
+glyph-layer {"ok":true,"pixelComparisons":491520,"positionedGlyphs":960,"scope":"Actual emitted Bend; independent scalar native-mask reference, signed bearings, clipping, overlap and PMA ink. Not shaping or font-quality proof."}
+Mutation rejected by oracle: alpha-rounding
+Mutation rejected by oracle: edge-boundary
+{"ok": true, "source_checks": 24, "syntax_checks": 19, "oracles": 4, "mutation_controls": 2}

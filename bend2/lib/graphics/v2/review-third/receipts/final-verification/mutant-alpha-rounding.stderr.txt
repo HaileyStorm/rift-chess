@@ -1,0 +1,27 @@
+(node:7778) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7778) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 16777216
+- 16777472
+       ^
+
+    at file:///mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-mutations/alpha-rounding/lib/graphics/v2/tests/third/core.mjs:23:66
+    at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 16777216,
+  expected: 16777472,
+  operator: 'strictEqual'
+}
+
+Node.js v22.16.0

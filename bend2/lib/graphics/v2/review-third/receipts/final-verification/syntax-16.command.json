@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "--check",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/review-third/demo/task.mjs"
+  ],
+  "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+  "exit_code": 0,
+  "seconds": 0.022322975999941264,
+  "stdout": "syntax-16.stdout.txt",
+  "stderr": "syntax-16.stderr.txt"
+}

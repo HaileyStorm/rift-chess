@@ -1,0 +1,1 @@
+{"ok":true,"ramps":75536,"luts":42416,"noise":12000,"periodic":24000,"pixels":53248,"scope":"actual pinned compiler emitted JS; independent exact integer and BigInt noise references; material and mixed-command planner comparisons"}

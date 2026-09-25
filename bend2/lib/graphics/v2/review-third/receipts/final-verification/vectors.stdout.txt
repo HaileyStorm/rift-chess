@@ -1,0 +1,1 @@
+{"ok":true,"pointQueries":2158592,"coverageChecks":312320,"gradientChecks":66578,"pixelComparisons":305408,"scope":"Actual emitted Bend; independent finite F32 crossing and integer effect references. Radial sampler parity only, not a real-number proof."}

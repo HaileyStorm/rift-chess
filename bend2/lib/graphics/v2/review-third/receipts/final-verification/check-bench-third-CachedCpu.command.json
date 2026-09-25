@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--experimental-strip-types",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+    "check",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/CachedCpu.bend"
+  ],
+  "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+  "exit_code": 0,
+  "seconds": 0.5306188639997345,
+  "stdout": "check-bench-third-CachedCpu.stdout.txt",
+  "stderr": "check-bench-third-CachedCpu.stderr.txt"
+}

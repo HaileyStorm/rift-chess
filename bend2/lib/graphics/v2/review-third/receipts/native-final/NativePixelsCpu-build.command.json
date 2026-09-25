@@ -1,0 +1,15 @@
+{
+  "command": [
+    "clang",
+    "-std=c11",
+    "-O3",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-native/NativePixelsCpu.c",
+    "-lpthread",
+    "-lm",
+    "-o",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/.artifacts/third-native/NativePixelsCpu"
+  ],
+  "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+  "exit_code": 0,
+  "seconds": 1.7222088169996823
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--experimental-strip-types",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+    "check",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/third/StableSprites.bend"
+  ],
+  "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+  "exit_code": 0,
+  "seconds": 0.6155194859998119,
+  "stdout": "check-bench-third-StableSprites.stdout.txt",
+  "stderr": "check-bench-third-StableSprites.stderr.txt"
+}

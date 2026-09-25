@@ -1,0 +1,1 @@
+{"ok":true,"pixelComparisons":491520,"positionedGlyphs":960,"scope":"Actual emitted Bend; independent scalar native-mask reference, signed bearings, clipping, overlap and PMA ink. Not shaping or font-quality proof."}

@@ -1,0 +1,1 @@
+{"ok":true,"bytes":2796320,"regions":200,"canvasCalls":2,"scope":"Node typed arrays and mock Canvas2D contract only; no browser/device presentation claim"}

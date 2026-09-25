@@ -1,0 +1,1 @@
+{"ok":true,"exact":112008,"ambiguous":538,"scope":"Independent row-major source RGB scalar, nearest center UV, quarter mask, mirrored/offscreen/clipped512/1024 and endpoint differential; F32 ties only excluded within contract bands"}

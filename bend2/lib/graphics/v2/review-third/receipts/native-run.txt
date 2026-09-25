@@ -1,0 +1,12 @@
+Built NativePixels
+Built NativePixelsCpu
+Built NativePixelsOffload
+Built Immediate
+Built CachedSerial
+Built CachedCpu
+Measured round 1
+Measured round 2
+Measured round 3
+Measured round 4
+Measured round 5
+{"ok": true, "pixels": 6144, "times": [["Immediate", 1, 0.23776474999999664], ["CachedSerial", 1, 0.09766137599990543], ["CachedCpu", 1, 0.09531162800021775], ["CachedCpu", 4, 0.04907440699980725]]}

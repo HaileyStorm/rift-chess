@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "backend": "Actual pinned compiler emitted JS under Node",
+  "method": "Five rotated samples after one untimed complete sweep per variant. Identical original edge coordinates and F32 crossing kernel. Every grid point is also compared individually outside timing. Public polygon now uses a binary-carry hierarchy; old contour accumulator retained for comparison.",
+  "results": [
+    {
+      "edges": 64,
+      "linear": {
+        "edges": 64,
+        "depth": 64
+      },
+      "balanced": {
+        "edges": 64,
+        "depth": 7
+      },
+      "size": 256,
+      "samples": {
+        "linear": [
+          89.53096399999981,
+          91.09354500000018,
+          137.59432100000004,
+          94.76835600000004,
+          98.3454240000001
+        ],
+        "balanced": [
+          18.681296000000202,
+          17.616725000000315,
+          30.857456999999613,
+          28.380918000000293,
+          31.23588000000018
+        ]
+      },
+      "inside": 29360,
+      "exactPointChecks": 65536,
+      "medianMs": {
+        "linear": 94.76835600000004,
+        "balanced": 28.380918000000293
+      }
+    },
+    {
+      "edges": 256,
+      "linear": {
+        "edges": 256,
+        "depth": 256
+      },
+      "balanced": {
+        "edges": 256,
+        "depth": 9
+      },
+      "size": 256,
+      "samples": {
+        "linear": [
+          456.5166039999999,
+          406.6420969999999,
+          432.11380199999985,
+          483.41962199999944,
+          411.67920999999933
+        ],
+        "balanced": [
+          36.11133400000017,
+          37.390473000000384,
+          23.300720000000183,
+          24.9339829999999,
+          20.38796899999943
+        ]
+      },
+      "inside": 29404,
+      "exactPointChecks": 65536,
+      "medianMs": {
+        "linear": 432.11380199999985,
+        "balanced": 24.9339829999999
+      }
+    },
+    {
+      "edges": 1024,
+      "linear": {
+        "edges": 1024,
+        "depth": 1024
+      },
+      "balanced": {
+        "edges": 1024,
+        "depth": 11
+      },
+      "size": 256,
+      "samples": {
+        "linear": [
+          1767.808951000001,
+          1811.9473230000003,
+          1757.211269999998,
+          1665.916885999999,
+          1911.4693480000024
+        ],
+        "balanced": [
+          26.8364619999993,
+          28.268620000000737,
+          34.23222600000008,
+          24.031818999999814,
+          24.305746000001818
+        ]
+      },
+      "inside": 29404,
+      "exactPointChecks": 65536,
+      "medianMs": {
+        "linear": 1767.808951000001,
+        "balanced": 26.8364619999993
+      }
+    }
+  ],
+  "sources": {
+    "./third-path.mjs": "e6eb92766973246d16ffb10085efe72f6a842ac2073e42e8002d942ed996fac1",
+    "./third/PathTraversal.bend": "b28e45bb9c1c5cae4329ba893389d49ccb067028b649c9c9e8a389d42c9c2e14",
+    "../third/PathFill.bend": "8b86fbacd692b032263b558eeef2a733de76af636bf7f3839fd9e142d8687119"
+  },
+  "scope": "Finite convex contours on 256² grid, not a speed guarantee for arbitrary self-intersecting paths; independent randomized point/coverage suite separately unchanged."
+}

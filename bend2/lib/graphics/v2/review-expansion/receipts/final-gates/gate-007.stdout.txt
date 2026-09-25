@@ -1,0 +1,1 @@
+{"ok":true,"structural":96,"pixels":125616,"scope":"Independent integer leaf scalar and complete structural finite differential of serial/top-fork/non-bang Image; emitted JS, no native speed/GPU claim"}

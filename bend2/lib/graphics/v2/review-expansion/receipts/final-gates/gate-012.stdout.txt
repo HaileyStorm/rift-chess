@@ -1,0 +1,1 @@
+{"ok":true,"opacityPairs":65536,"pixelChecks":224228,"maskChecks":30499,"mipChecks":11816,"glyphChecks":41008,"endpoints":720,"scope":"Finite independent integer reference tests; execution backend is reported by the runner separately."}

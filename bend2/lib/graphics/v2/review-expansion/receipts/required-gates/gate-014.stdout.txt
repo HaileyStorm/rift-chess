@@ -1,0 +1,1 @@
+{"ok":true,"pixels":1669620,"frames":1200,"endpoints":109,"scope":"actual pinned compiler JS under Node; independent integer raster; serial/pool JS partition parity; no native scheduling claim"}

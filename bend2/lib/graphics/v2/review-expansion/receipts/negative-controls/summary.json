@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "scope": "Actual pinned compiler emission; disposable source copies; unchanged test assertions; import/typecheck failures are not accepted as successful controls",
+  "results": [
+    {
+      "name": "alpha-rounding",
+      "file": "RgbaSample.bend",
+      "old": "32768",
+      "new": "0",
+      "source_before_sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc",
+      "source_after_sha256": "93ef8b4c813c87c88cf2258a5fca714851848ebf608c4a4058c46ba0e3d710f7",
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/tmp/graphics-negative-l6onyqhy/lib/graphics/v2/tests/expansion/sampling.mjs"
+      ],
+      "exit_code": 1,
+      "assertion_failure_detected": true
+    },
+    {
+      "name": "painter-order",
+      "file": "DrawList.bend",
+      "old": "render(rest,depth,size,x,y,draw_one(command,depth,size,x,y,target))",
+      "new": "draw_one(command,depth,size,x,y,render(rest,depth,size,x,y,target))",
+      "source_before_sha256": "7bd3663bde536077d41af99752efbdb3903568e9453b64820c42a0f49b0f908c",
+      "source_after_sha256": "0b93c5ebcb8676deff9a863f149e3a65dd51f910cabc34e3cc49ee03cebf0cb1",
+      "command": [
+        "node",
+        "--stack-size=8192",
+        "--experimental-strip-types",
+        "--import",
+        "./main.ts",
+        "/tmp/graphics-negative-641eqlx4/lib/graphics/v2/tests/expansion/batch.mjs"
+      ],
+      "exit_code": 1,
+      "assertion_failure_detected": true
+    }
+  ]
+}

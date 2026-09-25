@@ -1,0 +1,1 @@
+{"ok":true,"pixels":6144,"fixturePixels":1024,"scope":"Actual emitted JS; composed new component fixture with native full-pixel reference."}

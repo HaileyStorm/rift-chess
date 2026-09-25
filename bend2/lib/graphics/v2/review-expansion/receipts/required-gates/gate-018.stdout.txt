@@ -1,0 +1,1 @@
+{"ok":true,"pixels":131072,"joins":16,"scope":"actual emitted JS; independent flat F32 quarter-sample capsule/Bezier reference; clipped/offscreen/degenerate segments and idempotent geometric union; no boundary exclusions"}

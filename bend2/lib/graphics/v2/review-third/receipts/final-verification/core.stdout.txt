@@ -1,0 +1,1 @@
+{"ok":true,"arithmetic":590165,"pixelComparisons":925351,"atlasSamples":16000,"scope":"Actual emitted Bend under Node; independent finite integer oracles, not a proof or GPU result."}

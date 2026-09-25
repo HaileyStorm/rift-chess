@@ -1,0 +1,5 @@
+(node:2907) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2907) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ok":true,"frames":250,"pixelComparisons":1032192,"pickQueries":5000,"negativeControl":"Omitting a required revision leaves changed color unreported; documented caller obligation, not a semantic scene diff."}

@@ -1,0 +1,4 @@
+Protocol groups 12
+Rendered topology
+Rendered instrument
+{"ok": true, "groups": 12, "comparedBytes": 86016, "showcaseFrames": 8, "errors": 0}

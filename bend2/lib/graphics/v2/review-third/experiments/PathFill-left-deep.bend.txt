@@ -1,0 +1,177 @@
+# DRAFT closed paths: half-open upward ray crossings, even-odd/nonzero winding.
+# Coordinates finite in [-4096,4096]. Polygon input <=1024 points. Curves use
+# explicitly bounded subdivision levels<=8; they are not analytic/tolerance paths.
+# Multiple contours combine by join(); choose the winding rule when sampling.
+import Base
+import ../../Quad.bend as Quad
+import ../Stroke.bend as Stroke
+import ../Rect.bend as Rect
+import ../RgbaAffine.bend as Affine
+import ./Brush.bend as Brush
+
+type Rule is Data:
+  EvenOdd{}
+  NonZero{}
+
+type Extent is Data:
+  Extent{left: F32,top: F32,right: F32,bottom: F32}
+
+type Edges is Data:
+  Empty{}
+  Edge{ax: F32,ay: F32,dx: F32,dy: F32,up: Bool,extent: Extent}
+  Join{left: Edges,right: Edges,extent: Extent}
+
+type Count is Data:
+  Count{up: U32,down: U32}
+
+# Read conservative bounds before testing individual ray crossings.
+def extent(edges: Edges) -> Extent:
+  match edges:
+    case Empty{}: Extent{0.0,0.0,0.0,0.0}
+    case Edge{ax,ay,dx,dy,up,extent}: extent
+    case Join{left,right,extent}: extent
+
+# Merge closed-contour edge sets without reversing or reordering their winding.
+def union_extent(a: Extent,b: Extent) -> Extent:
+  match a b:
+    case Extent{al,at,ar,ab} Extent{bl,bt,br,bb}:
+      Extent{F32.min(al,bl),F32.min(at,bt),F32.max(ar,br),F32.max(ab,bb)}
+
+# Empty nodes are identities; balanced curve subdivision retains balanced joins.
+def join(+left: Edges,+right: Edges) -> Edges:
+  match left right:
+    case Empty{} _: right
+    case _ Empty{}: left
+    case _ _: Join{left,right,union_extent(extent(left),extent(right))}
+
+# Store edges low-y to high-y while preserving original contour direction.
+def ordered(up: Bool,+ax: F32,+ay: F32,+bx: F32,+by: F32) -> Edges:
+  match up:
+    case True{}: Edge{ax,ay,F32.sub(bx,ax),F32.sub(by,ay),True{},Extent{F32.min(ax,bx),ay,F32.max(ax,bx),by}}
+    case False{}: Edge{bx,by,F32.sub(ax,bx),F32.sub(ay,by),False{},Extent{F32.min(ax,bx),by,F32.max(ax,bx),ay}}
+
+# Horizontal/degenerate edges do not participate in the half-open crossing count.
+def edge_case(valid: Bool,a: Quad.Point,b: Quad.Point) -> Edges:
+  match valid a b:
+    case False{} _ _: Empty{}
+    case True{} Quad.Point{ax,+ay} Quad.Point{bx,+by}: ordered(F32.is_lt(ay,by),ax,ay,bx,by)
+
+# Low-level segment preparation; high-level polygon validates the entire contour.
+def edge(+a: Quad.Point,+b: Quad.Point) -> Edges:
+  match a b:
+    case Quad.Point{+ax,+ay} Quad.Point{+bx,+by}:
+      edge_case(Bool.and(Bool.and(Brush.point(Quad.Point{ax,ay}),Brush.point(Quad.Point{bx,by})),F32.is_ne(ay,by)),Quad.Point{ax,ay},Quad.Point{bx,by})
+
+# Close a contour explicitly from the final point back to its first point.
+def contour(points: List<&2,Quad.Point>,+first: Quad.Point,last: Quad.Point,edges: Edges) -> Edges:
+  match points:
+    case Nil{}: join(edges,edge(last,first))
+    case Con{+head,tail}: contour(tail,first,head,join(edges,edge(last,head)))
+
+# Bound count and validate every input point before constructing any geometry.
+def valid(fuel: Nat,points: List<&2,Quad.Point>) -> Bool:
+  match fuel points:
+    case _ Nil{}: True{}
+    case 0n Con{head,tail}: False{}
+    case 1n+rest Con{head,tail}: Bool.and(Brush.point(head),valid(rest,tail))
+
+# Empty/one-point input produces an empty path, not a fabricated area.
+def polygon_case(ok: Bool,points: List<&2,Quad.Point>) -> Maybe<Edges>:
+  match ok points:
+    case False{} _: None{}
+    case True{} Nil{}: Some{Empty{}}
+    case True{} Con{+first,tail}: Some{contour(tail,first,first,Empty{})}
+
+# Public checked closed polygon, including self-intersecting and compound usage.
+def polygon(+points: List<&2,Quad.Point>) -> Maybe<Edges>:
+  polygon_case(valid(1024n,points),points)
+
+# Fixed 2^levels quadratic pieces; caller closes the surrounding contour.
+def quadratic(+levels: Nat,+a: Quad.Point,+control: Quad.Point,+b: Quad.Point) -> Edges:
+  match levels:
+    case 0n: edge(a,b)
+    case 1n+rest:
+      +ac = Stroke.middle(a,control)
+      +cb = Stroke.middle(control,b)
+      +mid = Stroke.middle(ac,cb)
+      join(quadratic(rest,a,ac,mid),quadratic(rest,mid,cb,b))
+
+# Fixed 2^levels cubic pieces via de Casteljau subdivision.
+def cubic(+levels: Nat,+a: Quad.Point,+c1: Quad.Point,+c2: Quad.Point,+b: Quad.Point) -> Edges:
+  match levels:
+    case 0n: edge(a,b)
+    case 1n+rest:
+      +ab = Stroke.middle(a,c1)
+      +bc = Stroke.middle(c1,c2)
+      +cd = Stroke.middle(c2,b)
+      +abc = Stroke.middle(ab,bc)
+      +bcd = Stroke.middle(bc,cd)
+      +mid = Stroke.middle(abc,bcd)
+      join(cubic(rest,a,ab,abc,mid),cubic(rest,mid,bcd,cd,b))
+
+# Ray points outside the y interval or right of all edges can be skipped safely.
+def excluded(extent: Extent,+x: F32,+y: F32) -> Bool:
+  match extent:
+    case Extent{left,top,right,bottom}: Bool.or(Bool.or(F32.is_lt(y,top),F32.is_ge(y,bottom)),F32.is_ge(x,right))
+
+# Add signed crossing counts without a wrapping signed-int representation.
+def add(a: Count,b: Count) -> Count:
+  match a b:
+    case Count{au,ad} Count{bu,bd}: Count{U32.add(au,bu),U32.add(ad,bd)}
+
+# A strict cross-product test specifies the on-edge side; vertical extrema use
+# low-inclusive/high-exclusive y tests so vertices are never counted twice.
+def crossing(hit: Bool,up: Bool) -> Count:
+  match hit up:
+    case False{} _: Count{0,0}
+    case True{} True{}: Count{1,0}
+    case True{} False{}: Count{0,1}
+
+# Recursively cull edge ranges before evaluating the F32 cross product.
+def count(edges: Edges,outside: Bool,+x: F32,+y: F32) -> Count:
+  match edges outside:
+    case _ True{}: Count{0,0}
+    case Empty{} False{}: Count{0,0}
+    case Edge{ax,ay,dx,dy,up,extent} False{}:
+      crossing(F32.is_gt(F32.sub(F32.mul(dx,F32.sub(y,ay)),F32.mul(F32.sub(x,ax),dy)),0.0),up)
+    case Join{+left,+right,cached} False{}:
+      add(count(left,excluded(extent(left),x,y),x,y),count(right,excluded(extent(right),x,y),x,y))
+
+# Interpret winding independently from contour orientation/order.
+def decide(rule: Rule,value: Count) -> Bool:
+  match rule value:
+    case EvenOdd{} Count{up,down}: U32.is_ne(U32.mod(U32.add(up,down),2),0)
+    case NonZero{} Count{up,down}: U32.is_ne(up,down)
+
+# Point queries share the exact crossing rule used by raster coverage.
+def hit(+edges: Edges,rule: Rule,+x: F32,+y: F32) -> Bool:
+  decide(rule,count(edges,excluded(extent(edges),x,y),x,y))
+
+# Convert finite geometry bounds conservatively into screen-space pixel bounds.
+def screen_extent(extent: Extent) -> Rect.Box:
+  match extent:
+    case Extent{left,top,right,bottom}: Rect.Box{Affine.floor_bound(left),Affine.floor_bound(top),Affine.ceil_bound(right),Affine.ceil_bound(bottom)}
+
+# Empty geometry never forces a full-canvas raster pass.
+def bounds(edges: Edges) -> Rect.Box:
+  screen_extent(extent(edges))
+
+# Checked curve wrappers validate all controls and the complete subdivision budget.
+def checked_quadratic_case(ok: Bool,levels: Nat,a: Quad.Point,c: Quad.Point,b: Quad.Point) -> Maybe<Edges>:
+  match ok:
+    case False{}: None{}
+    case True{}: Some{quadratic(levels,a,c,b)}
+
+# Rejection is explicit instead of silently truncating an excessive level request.
+def checked_quadratic(+levels: Nat,+a: Quad.Point,+c: Quad.Point,+b: Quad.Point) -> Maybe<Edges>:
+  checked_quadratic_case(Bool.and(Nat.is_le(levels,8n),Bool.and(Brush.point(a),Bool.and(Brush.point(c),Brush.point(b)))),levels,a,c,b)
+
+# The unchecked kernel is reachable only after the public wrapper's complete check.
+def checked_cubic_case(ok: Bool,levels: Nat,a: Quad.Point,c1: Quad.Point,c2: Quad.Point,b: Quad.Point) -> Maybe<Edges>:
+  match ok:
+    case False{}: None{}
+    case True{}: Some{cubic(levels,a,c1,c2,b)}
+
+# Fixed subdivision is a visible approximation parameter, not an error tolerance.
+def checked_cubic(+levels: Nat,+a: Quad.Point,+c1: Quad.Point,+c2: Quad.Point,+b: Quad.Point) -> Maybe<Edges>:
+  checked_cubic_case(Bool.and(Nat.is_le(levels,8n),Bool.and(Bool.and(Brush.point(a),Brush.point(c1)),Bool.and(Brush.point(c2),Brush.point(b)))),levels,a,c1,c2,b)

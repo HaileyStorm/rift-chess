@@ -1,0 +1,1 @@
+{"ok":true,"checks":65540,"scope":"Independent scalar red-alpha, rounded opacity, signed clipping and painter overlap; exact endpoints; finite emitted JS only"}

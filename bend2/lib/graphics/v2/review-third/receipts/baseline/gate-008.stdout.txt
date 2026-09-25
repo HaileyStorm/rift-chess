@@ -1,0 +1,1 @@
+{"ok":true,"exact":246994,"ambiguous":1801,"scope":"Independent double-precision scalar inverse affine UV, quarter-mask and color reference; both determinant signs, rotated/offscreen/thin, endpoints; F32 edge/UV ties only excluded within stated bands"}

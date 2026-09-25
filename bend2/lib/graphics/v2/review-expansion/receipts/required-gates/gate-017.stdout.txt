@@ -1,0 +1,1 @@
+{"ok":true,"tracks":303380,"ticks":10000,"curves":15005,"coverage":327680,"pixels":87380,"gathers":24000,"fits":10000,"scope":"actual emitted JS; independent exact integer track, fit, U32-boundary timing conservation, complete byte mask arithmetic, shared-prefix gathers and color preparation; F32 easing formula checks"}

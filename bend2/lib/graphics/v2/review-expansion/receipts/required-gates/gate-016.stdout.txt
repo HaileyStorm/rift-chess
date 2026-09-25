@@ -1,0 +1,1 @@
+{"ok":true,"flows":2004,"carets":16000,"selections":16000,"pixels":786432,"scope":"actual emitted JS; randomized independent metric flow, truncation, word wrap, tabs, affinity and selection; CRLF and astral source indices; exact existing-atlas parity"}

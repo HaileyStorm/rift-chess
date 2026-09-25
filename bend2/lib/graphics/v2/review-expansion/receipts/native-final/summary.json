@@ -1,0 +1,606 @@
+{
+  "ok": true,
+  "method": "Reproduce native full-pixel checks and a controlled four-walk/gather benchmark.\n\nRequires the exact clean pinned compiler, Node and clang. Uses --gpu off.\nGenerated C, binaries and the before-variant library stay in ignored .artifacts.\nTiming includes process startup, scene preparation, 16 render/checksum rounds\nand output. Configurations alternate across sample rounds; no speed thresholds.\n",
+  "samples": 5,
+  "frames_per_process": 16,
+  "affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cpu_quota": "400000 100000",
+  "memory_limit_bytes": "4294967296",
+  "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "clang": "clang version 17.0.0 (https://github.com/swiftlang/llvm-project.git 10999b6d034fe318f3d56c83bddb6572593a8bb0)",
+  "before_sampler_sha256": "762f9082bbd8a9878bb9f273fbfaf0009f7499bf57830230a31c734d4684d0c5",
+  "after_sampler_sha256": "7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc",
+  "pixel_comparisons": [
+    {
+      "name": "NativePixels",
+      "threads": 1,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixels",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    },
+    {
+      "name": "NativePixels",
+      "threads": 4,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixels",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    },
+    {
+      "name": "NativePixelsCpu",
+      "threads": 1,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsCpu",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    },
+    {
+      "name": "NativePixelsCpu",
+      "threads": 4,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsCpu",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    },
+    {
+      "name": "NativePixelsOffload",
+      "threads": 1,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsOffload",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    },
+    {
+      "name": "NativePixelsOffload",
+      "threads": 4,
+      "pixels": 4096,
+      "exact": true,
+      "command": [
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsOffload",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "output_sha256": "bcae01bd5e871cec2a26dd346839794b8b17858ddca46a8d44f1c64ff50617c0"
+    }
+  ],
+  "artifacts": {
+    "BeforeGather": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/before/lib/graphics/v2/bench/NativePlanSerial.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/before/lib/graphics/v2/bench/NativePlanSerial.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather"
+      ],
+      "c_sha256": "c0aa63aad3682eaadb665ea0d44d97752c9473ebc94210e4d81635f1964ce080",
+      "binary_sha256": "b7397d693287af56f7b75c173aeefb095c75a1603cb60b5edcfdcd604516cd48"
+    },
+    "NativePlanSerial": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanSerial.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanSerial.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial"
+      ],
+      "c_sha256": "a94e44b0c3ee957066bab3f70cb0ec3824c8b943de6e656e185b9330286f7ea0",
+      "binary_sha256": "bb8952cb97d01688437303f046a342828dd9595d8fd5ff88a03e642869bbe55c"
+    },
+    "NativePlanCpu1": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1"
+      ],
+      "c_sha256": "98fc223f3eb003ed5959876946d52f8b01ad2248b0fd2c5121c553b2723a94de",
+      "binary_sha256": "4903239109aaecd5b31ec912224f2abc56e6e43912883bf18f80e1257220d239"
+    },
+    "NativePlanCpu2": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu2.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu2.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2"
+      ],
+      "c_sha256": "d8407cd1aec284e7139e3eb4a131a2388fbe4e280fe6e0be058df568ab03fa6d",
+      "binary_sha256": "77fb3ac546c4c6d842315bc7ce07f6d1f3d4e30e30000026efc55cd32bac545e"
+    },
+    "NativePlanCpu3": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu3.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu3.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3"
+      ],
+      "c_sha256": "195eb3e861b28357cb8e34e44146b51b47ce5887679b22d17e243b41fbb3704d",
+      "binary_sha256": "836a59d4db51707b872b0efbfbfb041f2917707b72d4c8092862c515a3e3549d"
+    },
+    "NativePixels": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixels.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixels.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixels.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixels.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixels"
+      ],
+      "c_sha256": "f96aca739b6d39073028b8046ffa019b05f5af98cde60f3891cd93e71133712a",
+      "binary_sha256": "ec9ed95dda84844d8cb9610f14292f7f26fe591c73b5a0f5d88b87b9bdf7784e"
+    },
+    "NativePixelsCpu": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixelsCpu.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixelsCpu.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsCpu.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsCpu.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsCpu"
+      ],
+      "c_sha256": "d096e32d52f9a72468cd009e1425ede3891aa4be89792f6733cd895fcac547b4",
+      "binary_sha256": "f0c42dd4b27e3918960e3659373274f1ca79122811233fb9461c67b8e83225c7"
+    },
+    "NativePixelsOffload": {
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixelsOffload.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/expansion/NativePixelsOffload.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsOffload.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsOffload.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePixelsOffload"
+      ],
+      "c_sha256": "545549815a53814d8470ac2f83a3daca51e03485189bd279e5824b15e7df097b",
+      "binary_sha256": "bc04107372aace926273dfc0c26794f84e9d33cf97d37245375b44e7c439e5ec"
+    }
+  },
+  "results": [
+    {
+      "name": "BeforeGather",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.4409369230002085,
+        1.4268459800000528,
+        1.3977572280000459,
+        1.424977090000084,
+        1.4221753039996656
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/before/lib/graphics/v2/bench/NativePlanSerial.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/before/lib/graphics/v2/bench/NativePlanSerial.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/BeforeGather"
+      ],
+      "c_sha256": "c0aa63aad3682eaadb665ea0d44d97752c9473ebc94210e4d81635f1964ce080",
+      "binary_sha256": "b7397d693287af56f7b75c173aeefb095c75a1603cb60b5edcfdcd604516cd48",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 1.424977090000084
+    },
+    {
+      "name": "NativePlanSerial",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.114611079000042,
+        1.069438736000393,
+        1.0658331329996145,
+        1.0609505500001433,
+        1.0454583390001062
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanSerial.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanSerial.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanSerial"
+      ],
+      "c_sha256": "a94e44b0c3ee957066bab3f70cb0ec3824c8b943de6e656e185b9330286f7ea0",
+      "binary_sha256": "bb8952cb97d01688437303f046a342828dd9595d8fd5ff88a03e642869bbe55c",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 1.0658331329996145
+    },
+    {
+      "name": "NativePlanCpu1",
+      "threads": 1,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1",
+        "--threads",
+        "1",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        1.1060536639997736,
+        1.0504971420000402,
+        1.07414526499997,
+        1.075652816999991,
+        1.0335526600001685
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1"
+      ],
+      "c_sha256": "98fc223f3eb003ed5959876946d52f8b01ad2248b0fd2c5121c553b2723a94de",
+      "binary_sha256": "4903239109aaecd5b31ec912224f2abc56e6e43912883bf18f80e1257220d239",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 1.07414526499997
+    },
+    {
+      "name": "NativePlanCpu1",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.5527219890000197,
+        0.7536908659999426,
+        0.6803476739996768,
+        0.7312141469997187,
+        0.6931504819999645
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu1.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu1"
+      ],
+      "c_sha256": "98fc223f3eb003ed5959876946d52f8b01ad2248b0fd2c5121c553b2723a94de",
+      "binary_sha256": "4903239109aaecd5b31ec912224f2abc56e6e43912883bf18f80e1257220d239",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 0.6931504819999645
+    },
+    {
+      "name": "NativePlanCpu2",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.49994623100019453,
+        0.7386500259999593,
+        0.693799167999714,
+        0.7391296080004395,
+        0.7195237220003037
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu2.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu2.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu2"
+      ],
+      "c_sha256": "d8407cd1aec284e7139e3eb4a131a2388fbe4e280fe6e0be058df568ab03fa6d",
+      "binary_sha256": "77fb3ac546c4c6d842315bc7ce07f6d1f3d4e30e30000026efc55cd32bac545e",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 0.7195237220003037
+    },
+    {
+      "name": "NativePlanCpu3",
+      "threads": 4,
+      "command": [
+        "taskset",
+        "-c",
+        "0,1,2,3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3",
+        "--threads",
+        "4",
+        "--gpu",
+        "off"
+      ],
+      "samples_s": [
+        0.6544075609999709,
+        0.6194324840002992,
+        0.6884655610001573,
+        0.7567236800000501,
+        0.7594753509997645
+      ],
+      "outputs": [
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048",
+        "2162379048"
+      ],
+      "entrypoint": "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu3.bend",
+      "emit_command": [
+        "node",
+        "--experimental-strip-types",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tools/actual_compiler.mjs",
+        "c",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/bench/NativePlanCpu3.bend",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3.c"
+      ],
+      "compile_command": [
+        "clang",
+        "-std=c11",
+        "-O3",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3.c",
+        "-lpthread",
+        "-lm",
+        "-o",
+        "/mnt/data/graphics_expansion/graphics-v2-pro-checkpoint/.artifacts/expansion-native/NativePlanCpu3"
+      ],
+      "c_sha256": "195eb3e861b28357cb8e34e44146b51b47ce5887679b22d17e243b41fbb3704d",
+      "binary_sha256": "836a59d4db51707b872b0efbfbfb041f2917707b72d4c8092862c515a3e3549d",
+      "warmup_output": "2162379048",
+      "last_stderr": "",
+      "median_s": 0.6884655610001573
+    }
+  ],
+  "limits": "Native CPU only. One workload and finite full-pixel fixture, not a general F32/GPU theorem. No browser upload. No claim about users hardware."
+}

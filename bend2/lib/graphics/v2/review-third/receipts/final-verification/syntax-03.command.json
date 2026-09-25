@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "--check",
+    "/mnt/data/third_pass/graphics-v2-pro-checkpoint/bend2/lib/graphics/v2/tests/third/native-pixels.mjs"
+  ],
+  "cwd": "/mnt/data/third_pass/graphics-v2-pro-checkpoint",
+  "exit_code": 0,
+  "seconds": 0.027123007999762194,
+  "stdout": "syntax-03.stdout.txt",
+  "stderr": "syntax-03.stderr.txt"
+}

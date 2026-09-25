@@ -1,0 +1,1 @@
+{"ok":true,"checks":356615,"ambiguous":0,"scope":"Independent scalar quarter samples, hash/palette/color, offscreen and rotated clipped geometry; F32 near-edge pixels excluded only within ±1e-5 signed distance; JS finite evidence"}

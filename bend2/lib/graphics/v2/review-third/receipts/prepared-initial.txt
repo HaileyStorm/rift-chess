@@ -1,0 +1,9 @@
+(node:981) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Error:
+- expected : a fresh name (duplicate declaration: Pair)
+- observed : ' '
+Location:
+13 | 
+14>| type Pair is Data:
+15 |   Pair{colors: Image,mask: Image}

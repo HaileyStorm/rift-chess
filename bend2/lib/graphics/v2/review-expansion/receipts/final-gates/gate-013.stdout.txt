@@ -1,0 +1,1 @@
+{"ok":true,"pixelChecks":699050,"rejections":20,"endpoints":22,"scope":"Finite RGA2 boundary and all-pixel row-major tests, including depth 9. Not a general codec proof."}

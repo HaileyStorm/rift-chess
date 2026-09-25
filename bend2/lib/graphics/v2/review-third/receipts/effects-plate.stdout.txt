@@ -1,0 +1,1 @@
+{"ok":true,"pixels":1048576,"seconds":21.671731175999998,"scope":"All pixels composed by actual compiled Bend, including native glyph placement. Pillow supplied native 8-bit font coverage only. This one-shot visual duration is not a benchmark."}

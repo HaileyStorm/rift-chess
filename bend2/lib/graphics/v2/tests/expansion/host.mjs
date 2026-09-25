@@ -1,0 +1,10 @@
+/** Host byte packing, partial writes and Canvas adapter tests without a browser. */
+import {ImageBuffer,CanvasPresenter,clipRect} from '../../host/ImageBuffer.mjs';
+import {assert,image,pix,flat,rng} from './support.mjs';
+const random=rng(1737);let bytes=0,regions=0;
+for(const size of [1,2,8,32,128]){const buffer=new ImageBuffer(size);let expected=new Uint8ClampedArray(size*size*4);for(let k=0;k<40;k++){const im=k%7?image(size,(x,y)=>(x*913+y*781+k*173)&0xffffff):pix(k*713),r={left:random(size+10)-5,top:random(size+10)-5,right:random(size+10),bottom:random(size+10)},c=clipRect(r,size),rgb=flat(im,size);const result=buffer.write(im,r);let count=0;for(let y=c.top;y<c.bottom;y++)for(let x=c.left;x<c.right;x++){const p=rgb[y*size+x],i=(y*size+x)*4;expected.set([p>>>16&255,p>>>8&255,p&255,255],i);count++;}assert.equal(result.pixels,count);assert.deepEqual(buffer.bytes,expected);bytes+=expected.length;regions++;}}
+for(const size of [0,3,4097,NaN,1.5])assert.throws(()=>new ImageBuffer(size));const a=new ImageBuffer(2);assert.throws(()=>a.write({$:'Error'}));assert.throws(()=>a.write(pix(1),{left:0,top:0,right:NaN,bottom:2}));
+let calls=[];const context={canvas:{width:8,height:8},createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData:(data,...args)=>calls.push({bytes:data.data.slice(),args})},p=new CanvasPresenter(context,8);
+let r=p.present(pix(0x112233),[]);assert.deepEqual(r,{pixels:64,visited:1,uploads:1});assert.deepEqual(calls[0].args,[0,0,0,0,8,8]);r=p.present(pix(0xabcdef),[{left:2,top:3,right:5,bottom:6}]);assert.equal(r.pixels,9);assert.deepEqual(calls[1].args,[0,0,2,3,3,3]);for(let y=0;y<8;y++)for(let x=0;x<8;x++){const expected=x>=2&&x<5&&y>=3&&y<6?[171,205,239,255]:[17,34,51,255];assert.deepEqual([...calls[1].bytes.slice((y*8+x)*4,(y*8+x+1)*4)],expected);}
+assert.equal(p.present(pix(0),[]).uploads,0);assert.throws(()=>new CanvasPresenter({...context,canvas:{width:1,height:2}},8));assert.throws(()=>p.present(pix(0),{}));
+console.log(JSON.stringify({ok:true,bytes,regions,canvasCalls:calls.length,scope:'Node typed arrays and mock Canvas2D contract only; no browser/device presentation claim'}));

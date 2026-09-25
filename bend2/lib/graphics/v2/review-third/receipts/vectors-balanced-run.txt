@@ -1,0 +1,5 @@
+(node:5438) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5438) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ok":true,"pointQueries":2158592,"coverageChecks":312320,"gradientChecks":66578,"pixelComparisons":305408,"scope":"Actual emitted Bend; independent finite F32 crossing and integer effect references. Radial sampler parity only, not a real-number proof."}

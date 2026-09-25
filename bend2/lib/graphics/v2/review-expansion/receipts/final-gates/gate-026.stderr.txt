@@ -1,0 +1,12 @@
+test_exact_area_fraction_oracle (__main__.OfflineTests.test_exact_area_fraction_oracle) ... ok
+test_identity_and_transparency (__main__.OfflineTests.test_identity_and_transparency) ... ok
+test_pinned_local_font_baker (__main__.OfflineTests.test_pinned_local_font_baker) ... ok
+test_prepare_deterministic_crop_fit (__main__.OfflineTests.test_prepare_deterministic_crop_fit) ... ok
+test_quantization (__main__.OfflineTests.test_quantization) ... ok
+test_wire_and_maximum (__main__.OfflineTests.test_wire_and_maximum) ... ok
+test_wire_rejections (__main__.OfflineTests.test_wire_rejections) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.250s
+
+OK

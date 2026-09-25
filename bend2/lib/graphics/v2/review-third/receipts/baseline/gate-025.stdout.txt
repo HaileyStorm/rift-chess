@@ -1,0 +1,1 @@
+{"ok": true, "tests": 7, "skipped": 1, "area_output_channels": 3676, "alpha_values": 256, "font_bake": "not requested", "quantization_max_error_4bit": 8, "quantization_max_error_2bit": 42, "scope": "Actual Python offline-tool execution; no Bend or font-module typecheck claimed."}

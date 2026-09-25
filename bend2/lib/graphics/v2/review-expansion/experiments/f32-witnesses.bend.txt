@@ -1,0 +1,9 @@
+# These attempted witnesses do NOT check. Retained as failed evidence.
+# Both law meanings remain in contracts/expansion/presentation/LAWS.bend.
+import ./LAWS.bend as Laws
+
+def Laws.empty_stroke_radius(a,b):
+  {==}
+
+def Laws.transform_identity_origin():
+  {==}

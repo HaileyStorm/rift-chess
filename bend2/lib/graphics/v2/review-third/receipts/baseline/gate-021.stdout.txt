@@ -1,0 +1,1 @@
+{"ok":true,"pixels":28672,"fixturePixels":4096,"scope":"actual pinned JS compiler; complete reference output for C/native comparison, independently tested component composition"}

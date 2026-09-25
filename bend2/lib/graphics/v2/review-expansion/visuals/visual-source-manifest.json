@@ -1,0 +1,21 @@
+{
+  "schema": "bend-graphics-expansion-visuals/1",
+  "renderer": "Actual supplied pinned Bend compiler loader under Node; host only input construction/readback/PNG encoding",
+  "font_binaries_included": false,
+  "new_font_modules_included": false,
+  "final_texture_tags_validated_in_source": true,
+  "files": {
+    "bend2/lib/graphics/v2/examples/render-expansion.mjs": "3c0c2b8eb30f6f639b1f104bcc4c4ace332021868c63a66fed87844e158737f2",
+    "bend2/lib/graphics/v2/host/ImageBuffer.mjs": "e34cfffe3b3781ad2d1ef9691319edcc198b4a83107b77961e85ca985fac7c96",
+    "bend2/lib/graphics/v2/tools/png.mjs": "018485fb2097c04a13df08d8e8c0f4ffbfdac250081ce9f8787ace5f51f5b57c",
+    "review-expansion/visuals/01-reusable-workbench.png": "3653779b95eaaf531aa6ae7264bb32523cb02f45e28bd314f29c010b4e7c85df",
+    "review-expansion/visuals/02-alpha-and-mips.png": "b62a69b103e52898f298f2a1abdf2f0ba6ffb04ceb9c7ba07924401300ead2b8",
+    "review-expansion/visuals/03-materials-and-skins.png": "018f17cfe63eeb10644c802d4d931549c7e603737b458c72cfb5b7edc8ed9b7a",
+    "review-expansion/visuals/04-text-and-native-type.png": "800f607020c4bcffce2bf7d3c5eda828bab6295478b32ebb7b8ef18f1e00ea04",
+    "review-expansion/visuals/05-damage-reconstruction.png": "114d369e2effd5d4ef809f4b7b4763d9d4d4b38f63ceda908ccf350fb562e073",
+    "review-expansion/visuals/Native24.provenance.json": "63a67fa4663b0f27c36a433585b83003682e4649a38d5cc7d4b56e8b0abfaced",
+    "review-expansion/visuals/Native40.provenance.json": "d61defa681cf4d0c71a0b8805d30ff6597f301b3cb30d92dbcd535115f030357",
+    "review-expansion/visuals/visual-receipts.json": "631770eb2b2386b5b344f38a1f54af36fd5b8e81deb2fa9273de8dba86e7748d",
+    "review-expansion/receipts/render-final.log": "81fdb417ed69feaf023735207c41a6f3d98df17c08599891134123d379b13719"
+  }
+}
