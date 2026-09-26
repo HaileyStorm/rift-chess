@@ -172,7 +172,8 @@ Effects are deliberately narrow:
 
 No custom C or JavaScript is embedded in this entrypoint. The pinned source
 check passes, but full graphical C emission did not finish within the bounded
-600-second attempts. There is no emitted graphical C artifact to hand off. Use
+600-second attempts. There is no emitted C artifact for this older `Native.bend`
+entrypoint. The newer NativeV2 C artifact is tracked above. Use
 the separate [supported text CLI](NATIVE_CLI.md) for the browser-independent C
 export. This file remains useful as the source-level graphical adapter and as
 preserved evidence for a future rendering-target investigation.

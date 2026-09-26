@@ -445,10 +445,11 @@ for the raw ignored fixture location and limitations.
 A smaller graphical `NativeMini.bend` has linked and played through WSLg with
 the real Bend position kernel, but its 256px flat board is visibly far below
 the browser presentation. It is a native binary feasibility checkpoint only.
-The full source-level `NativeV2.bend` has not emitted a binary; its larger
-checker/emitter exceeded a safe working set on the 16 GiB laptop. The Mini
-visual parity follow-up is ongoing. Linux acknowledged the exact graphics
-commit for isolated CPU/GPU testing, but no device measurement has returned.
+At that earlier checkpoint, the full source-level `NativeV2.bend` had not
+emitted a binary; its larger checker/emitter exceeded a safe working set on
+the 16 GiB laptop. The Mini visual parity follow-up was then ongoing. Linux
+had acknowledged the exact graphics commit for isolated CPU/GPU testing;
+later device and native C results are recorded below.
 
 Linux subsequently returned [measured GPU evidence](lib/graphics/v2/INTEGRATION.md#linux-cpu-and-gpu-device-follow-up)
 for the older exact graphics commit `fb73a82`. The RTX 5090 executed the
