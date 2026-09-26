@@ -935,6 +935,12 @@ Bend releases:
   managed pages make page migration plausible, but that transfer has not been
   independently timed. Test it in isolation before changing the library or
   selecting a GPU detail tier. This is a single fixture, not game frame time.
+  Native Linux `Window.frame` in the pinned `bend2/effs/window_frame.c` has a
+  separate CUDA path: `window_dev` traverses the tree on-device, then
+  `cuMemcpyDtoH` moves a flat `width × height × 4` output buffer. The expensive
+  host quadtree checksum is therefore not a proxy for that native display
+  path. Measure the real graphical ELF, first on CPU and then on GPU under a
+  fresh grant, before making a native GPU policy choice.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.

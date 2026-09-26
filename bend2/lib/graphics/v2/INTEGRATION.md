@@ -142,5 +142,10 @@ Next isolate that boundary with a source-bound transfer/readback probe before
 changing automatic detail policy or library code. Exact pixels were compared
 only for the first frame of each case; the remaining 15 were checked by a
 32-bit aggregate checksum. These timings say nothing about browser frames or
-the full game. The [benchmark README](bench/gpu/README.md) defines the fixture;
+the full game. In particular, pinned `bend2/effs/window_frame.c` has a distinct
+CUDA `Window.frame` path: it launches `window_dev` to flatten the image tree on
+the device, then copies a contiguous `width × height × 4` buffer to host for
+X11. The benchmark's recursive CPU checksum does not exercise that presentation
+path. Its frame time, copy cost, input latency and idle CPU remain unmeasured.
+The [benchmark README](bench/gpu/README.md) defines the fixture;
 the library renderer and Laws/Proofs were not changed.

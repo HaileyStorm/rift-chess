@@ -481,6 +481,10 @@ but transfer/readback is not independently timed, the 15 subsequent frames
 have aggregate rather than per-pixel validation, and no game or browser GPU
 claim follows. A source-bound readback experiment is the next GPU gate; keep
 automatic GPU selection unpromoted.
+The pinned native Linux `Window.frame` has a separate CUDA presentation path
+that rasterizes the image tree on-device and copies a flat pixel buffer to
+X11; this benchmark's recursive host checksum does not measure that path.
+Native game frame and input timing under CPU/GPU remain separate gates.
 
 The native arity blocker is now cleared at the source level. At exact public
 commit `b3ffb3b`, Linux emitted the full `NativeV2` C source with both a
