@@ -160,6 +160,28 @@ before selecting GPU by default. This is one fixed scene and input trace,
 not browser/Windows parity, broad game coverage, audio playback or owner
 visual acceptance.
 
+### Linux audio and saved-game restart
+
+The [CPU-only Linux follow-up](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843868320)
+reused the earlier NativeV2 **CPU** ELF (SHA-256 `3193015c...`) and seven runtime
+assets for both launches. In a fresh isolated data directory, the first X11 run
+played g1–h3 and closed via
+`WM_DELETE_WINDOW`; the second launched the **same binary and data directory**.
+Its resumed frame showed Black to move and the white knight at h3. The status
+and knight crops matched the post-move frame pixel-for-pixel; 424 full-frame
+differences were confined to a transient board highlight. Primary and
+alternate save/preference journal slots were present and nonempty after
+relaunch. This establishes one move-and-restart path, not crash recovery or
+all-state persistence.
+
+An existing PipeWire HDMI sink monitor recorded 48 kHz stereo PCM without
+changing audio defaults. The 2.987 s idle capture had zero nonzero samples;
+the move capture contained 12,762 nonzero samples, peak 6,926 and RMS 333.252
+in signed 16-bit units, no clips. Its short signal aligned with the move. This
+is routed, nonzero PCM at the local monitor, **not** human audibility or proof
+that every game sound works. The disposable probe, WAVs and detailed receipts
+remain on the Linux host; no evidence bytes were transferred to Windows.
+
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
 the retained image is

@@ -534,6 +534,15 @@ without proving higher delivered FPS, lower input latency, or a suitable
 automatic device policy. Native audio, wider playtesting, Windows/WSLg and
 human visual acceptance remain open.
 
+The [native CPU sound/restart checkpoint](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843868320)
+then reused the earlier native CPU ELF/assets and a single isolated journal directory across
+two real X11 launches. After g1–h3 and a clean close, the relaunch showed
+Black to move and the knight at h3; relevant status/piece crops were exact.
+The PipeWire sink monitor was silent during idle and captured 12,762 nonzero
+48 kHz stereo s16 samples around the move, without clipping. This confirms
+one saved-game restart and routed PCM, while crash recovery, all game states,
+physical audibility, Windows/WSLg and owner visual acceptance remain open.
+
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
 asset hashes and module MIME types matched; the extended hosted Chrome suite
