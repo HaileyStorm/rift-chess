@@ -449,3 +449,10 @@ The full source-level `NativeV2.bend` has not emitted a binary; its larger
 checker/emitter exceeded a safe working set on the 16 GiB laptop. The Mini
 visual parity follow-up is ongoing. Linux acknowledged the exact graphics
 commit for isolated CPU/GPU testing, but no device measurement has returned.
+
+Linux subsequently returned [measured GPU evidence](lib/graphics/v2/INTEGRATION.md#linux-cpu-and-gpu-device-follow-up)
+for the older exact graphics commit `fb73a82`. The RTX 5090 executed the
+explicit offload correctly, but its coarse 16-frame whole-process run took
+about 28.8 seconds median versus 0.41 seconds with four CPU workers. This
+rejects automatic GPU promotion for that fixture; it neither benchmarks the
+current browser scene nor changes the visual parity/native source gates.

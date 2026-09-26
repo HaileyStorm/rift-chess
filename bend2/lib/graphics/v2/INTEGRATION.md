@@ -55,3 +55,23 @@ receipts are retained within the review directories for comparison. The latter
 describe the Pro machine, not this Windows host. Current local receipts are
 written under ignored `.artifacts/` and should be reviewed independently before
 promoting any acceptance claim.
+
+## Linux CPU and GPU device follow-up
+
+The isolated Linux executor tested exact public source commit
+`fb73a82b7a573cbfd46550a8edcee8a1bb4042f4` with the clean pinned Bend
+compiler. Expansion gates passed 85/85; third-pass checks covered 24 closures,
+19 syntax cases, four oracles and two rejected mutations. Native CPU output
+matched emitted JavaScript for 24,576 expansion and 6,144 third-pass pixels.
+The [host result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842031165)
+reports Clang 19.1.1, NVRTC 13.0.88 and an RTX 5090. Explicit GPU offload
+matched all 4,096 reference pixels. For the 16-frame 512-square coarse fixture,
+every GPU-on/off run returned checksum `2162379048`. Median whole-process time
+was 0.8150 s (one CPU worker), 0.4144 s (four), and 28.8019/28.6138 s for
+GPU on with those worker settings. `nvidia-smi` observed the binary using about
+502 MiB at 100% device utilization. This verifies actual device execution but
+shows that this particular workload should not be promoted to GPU detail by
+default. It is not a game/browser GPU integration or a per-frame device-kernel
+benchmark. The ignored host-local benchmark JSON has SHA-256
+`b5af2c5e9ab5d79440d22856c4a21d2d5a98b6b7481c47a2c2d34fa9836b1aae`;
+its exact Linux path is recorded in the linked handoff.
