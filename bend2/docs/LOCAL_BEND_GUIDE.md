@@ -948,6 +948,13 @@ Bend releases:
   around 0–1 ms. This supports first-touch managed-memory cost, but without a
   page-fault trace it does not prove migration. A prefetch would shift or trade
   that cost unless a source-bound full frame measurement shows otherwise.
+  A later [real NativeV2 window test](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843730674)
+  confirmed why the two paths must remain separate: CPU-off and CUDA-on game
+  captures matched byte-for-byte, while native CUDA window fill dropped from
+  9.371 to 1.002 ms median for one 1024×640 scene. The latter includes a
+  0.993 ms flat copy; 60 Hz pacing absorbed the remaining gain. Preserve CPU
+  performance and measure actual input-to-present latency and heavier scenes
+  before promoting an automatic native GPU tier.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.

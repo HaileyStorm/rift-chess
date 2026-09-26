@@ -174,4 +174,14 @@ the CPU may move the cost into a different phase, and the next GPU render may
 have to fetch it back. The fixture's second read also changes memory residency,
 so its later render timings are not interchangeable with the earlier one-read
 sweep. No graphics library or automatic-policy change follows from this one
-diagnostic. Native CUDA `Window.frame` still requires its own device frame test.
+diagnostic. At that checkpoint Native CUDA `Window.frame` still required its
+own device frame test.
+
+The subsequent [NativeV2 CUDA window pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843730674)
+tested that distinct presentation path on a real X11 display. Four game-state
+frames matched CPU bytes exactly. In one instrumented 120-frame idle trace,
+median CPU fill was 9.371 ms versus CUDA fill 1.002 ms including a 0.993 ms
+contiguous host copy; the 60 Hz pacing wait expanded correspondingly. This is
+application presentation evidence, not a library GPU speed theorem or proof
+that automatic GPU selection improves user-perceived latency. No library
+Laws/Proofs or default renderer policy were changed.

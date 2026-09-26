@@ -518,8 +518,21 @@ exact selection/deselection/move pixel counts, Escape live, and a clean
 window-close exit. Captured stderr was empty and isolated save/preferences
 files were created. This establishes a real graphical Linux native checkpoint,
 not Windows/WSLg, native audio playback, broad visual acceptance, or measured
-responsiveness. The native CUDA `Window.frame` path still needs a separate
-device test; the host-checksum fixture does not measure it.
+responsiveness. At that checkpoint the native CUDA `Window.frame` path still
+needed a separate device test; the host-checksum fixture did not measure it.
+
+The [real native CUDA window pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843730674)
+then reused that source-bound C, built a CUDA ELF and sidecar under a fresh
+released lease, and passed the same Linux X11 input/close probe. All four
+GPU-on frame files were byte-identical to both the CUDA binary's CPU-off run
+and the original CPU ELF. A disposable phase timer measured 120 idle frames:
+CPU image fill median/p95 9.371/11.033 ms; GPU fill including its flat
+device-to-host copy 1.002/1.284 ms (copy itself 0.993/1.279 ms). The 60 Hz
+wait grew from 6.389 to 12.477 ms median, absorbing the saved fill time.
+This demonstrates headroom in the native GPU presentation path for this scene,
+without proving higher delivered FPS, lower input latency, or a suitable
+automatic device policy. Native audio, wider playtesting, Windows/WSLg and
+human visual acceptance remain open.
 
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted

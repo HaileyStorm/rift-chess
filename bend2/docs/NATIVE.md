@@ -127,6 +127,39 @@ also created save and preferences files in a fresh isolated data directory.
 This is synthetic XSendEvent interaction on Linux X.Org, not a Windows/WSLg,
 native audio playback, human visual acceptance, or performance measurement.
 
+### Linux CUDA window presentation
+
+The [bounded native CUDA pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843730674)
+reused the **same** clean-pin NativeV2 C artifact and linked a CUDA-capable ELF
+with Clang 19 and CUDA 13. Its `.gpu` sidecar was built under a fresh monitored
+coordinator grant, and `nvidia-smi` observed the running NativeV2 process on
+the RTX 5090 (about 744 MiB). The CPU-off and explicit GPU-on runs of the
+corrected real-X11 probe both passed. All four 1024×640 capture files were
+**byte-identical** to the earlier CPU ELF: boot, selected g1, deselected g1,
+and g1–h3 with Black to move. The GPU-on window closed cleanly and emitted no
+captured stderr. The lease was withdrawn and independently verified closed.
+
+A separate ignored diagnostic C/probe copy timed 120 idle frames with a
+monotonic clock. These medians (p95) are milliseconds, on that one Linux host:
+
+| Window phase | CPU off | CUDA on |
+| --- | ---: | ---: |
+| Image fill, including CUDA copy | 9.371 (11.033) | 1.002 (1.284) |
+| Contiguous device-to-host copy within fill | — | 0.993 (1.279) |
+| 60 Hz pacing wait | 6.389 (7.934) | 12.477 (13.007) |
+| X11 put/flush | 0.447 (0.756) | 0.497 (0.746) |
+
+GPU rasterizing the quadtree on-device is materially faster for this window
+fill. The native effect still copies a flat buffer synchronously; direct
+display interop was not tested. Pacing used most of the saved time, so this
+does not prove a higher delivered frame rate or improved pointer latency.
+The diagnostic processes rendered different total frame counts, making their
+whole-process elapsed/CPU totals unsuitable for automatic-policy selection.
+Measure heavier scenes, input-to-present latency and idle device/CPU cost
+before selecting GPU by default. This is one fixed scene and input trace,
+not browser/Windows parity, broad game coverage, audio playback or owner
+visual acceptance.
+
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
 the retained image is
