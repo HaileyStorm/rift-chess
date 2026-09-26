@@ -43,6 +43,26 @@ and `main.ts` `07b83741d7333717844a779351d262b731bd2f56dc170675e91a785c78325091`
 The maintained 002 and 004 patch bytes were unchanged. No rebased variant is
 accepted yet.
 
+A separate [005 Windows-path candidate](../toolchain-patches/005-windows-import-path/README.md)
+now fixes that **one** loader defect in the disposable 2.0.28 checkout by
+using native filesystem resolution and slash-normalized Bend module names.
+Its first ordinary nested-import check passed on Windows. Independent review
+then found symlinked `BEND_LIB` local-only bypass, same-inode case-variant
+module splitting, cross-volume ambiguity, and weak replay binding. The revised
+[005 receipt](../toolchain-patches/005-windows-import-path/LOCAL_RECEIPT.md)
+records focused tests for those boundaries, including an isolated cached named
+package with zero network requests, and a full expected source-stack hash.
+Root reverse/forward-replayed the final patch in a separately saved,
+LF-normalized pre-005 candidate state with ordinary `git apply` and the
+repeated fixture. That reconstructed state's source hashes differ from the
+earlier adapted-002 snapshot, so the full ordered stack still needs a fresh
+reconciliation and replay.
+The cross-volume check is synthetic rather than a real cross-drive junction.
+Independent final review, fresh full-stack replay, valid remote package fetch,
+Linux behavior, 004 worker migration and frozen proof/browser gates remain
+untested. This is still a candidate, not acceptance of 005.
+The pinned 2.0.27 toolchain remains unchanged.
+
 To adopt the release, follow [Updating the Bend toolchain](LOCAL_BEND_GUIDE.md#updating-the-bend-toolchain)
 as a separate reviewed amendment. Rebase 001/002/004 one at a time with
 source hashes, valid C/JS byte comparisons and negative provider guards; rerun
@@ -55,8 +75,10 @@ frozen dependency amendment. Until then, the published browser build and
 Linux device requests remain bound to clean 2.0.27.
 
 **Disposition on 2026-09-26:** defer the pin change. Root owns the rebase and
-amendment. The specific blockers are the Windows nested-import regression and
-the 004 worker/compiler API migration; switching now would invalidate the
+amendment. The Windows nested-import regression has an isolated, unaccepted
+candidate fix with focused edge-case coverage; the 004 worker/compiler API
+migration, fresh full-variant replay and independent final review remain
+blockers. Switching now would invalidate the
 published source-bound worker artifacts and in-flight 2.0.27 native/GPU
 measurements. Recheck after those exact device/layout gates return and after a
 disposable 2.0.28 variant passes the nested no-provider, worker, differential,

@@ -1,7 +1,9 @@
 # Bend 2 downstream patch stack
 
-These are source patches against the clean upstream Bend 2.0.27 commit
-`d37909174ebd664338ae3194799a9e0899dedd51`. The pinned compiler at
+Patches 001–004 originated against the clean upstream Bend 2.0.27 commit
+`d37909174ebd664338ae3194799a9e0899dedd51`; 005 is an isolated Bend
+2.0.28 compatibility candidate that replays after reviewed rebases of 001/002.
+The pinned compiler at
 `.artifacts/toolchains/bend` must remain clean. Each patch has its own test,
 receipt, and maintenance notes; no patch is an accepted replacement for the
 project toolchain merely because it applies or passes a small fixture.
@@ -12,6 +14,7 @@ project toolchain merely because it applies or passes a small fixture.
 | 002 | [Layout explanation](002-layout/README.md) | Read-only `--explain-layout` structural report; no execution or successful-output change. |
 | 003 | [Join-capture boxing](003-join-boxing/README.md) (experimental) | Optional compiler optimization; capture-only, with raw wide returns still rejected and GPU/full Native unverified. |
 | 004 | [Web Worker backend](004-web-workers/README.md) | Separate async JavaScript library output, source require/never policies, static module hosting and an explicit multi-artifact HTML bundle; replay after 001+002. |
+| 005 | [Windows import-path compatibility](005-windows-import-path/README.md) (candidate, unaccepted) | Native filesystem paths, canonical local-only library fence, Windows file-ID alias reuse and explicit cross-volume rejection; replay after 001+adapted 002 on 2.0.28. |
 
 The final 001+002 combination passes [the required stack gate](stack-receipt.json)
 with byte-identical successful C and JS. The separate
@@ -32,7 +35,12 @@ project wrapper; native GUI and device validation remain open.
    clean status. Apply 001, then 002, then any accepted 003 with `git apply
    --check` before each `git apply`. A conflict is a review event, never a
    reason to force or silently drop a hunk. Rebase one patch at a time and
-   record the old/new source and patch hashes.
+   record the old/new source and patch hashes. On 2.0.28, replay candidate 005
+   only after the reviewed 001 and adapted 002 sources; rebase 004 separately.
+   The current 005 candidate's reconstructed pre-005 source hashes differ from
+   the earlier adapted-002 snapshot; reconcile that difference in a fresh
+   full-stack replay. Do not infer 2.0.28 acceptance from 005's narrow
+   Windows fixture.
 3. Run each patch's deterministic fixtures on the isolated compiler. For the
    required 001+002 combination, run `node bend2/toolchain-patches/verify-stack.mjs
    <disposable-compiler-directory>` after 001's fixture generator; the exact
