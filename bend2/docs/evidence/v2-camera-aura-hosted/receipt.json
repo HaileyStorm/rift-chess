@@ -1,0 +1,88 @@
+{
+  "schema": "rift-bend-v2-browser-scenarios/1",
+  "at": "2026-09-26T21:41:19.766Z",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "buildVersion": "316b07717192e7d6d5bb",
+  "buildSourceRevision": "66af0570e3814b0d0be5b4411c198ffb7fa149cd",
+  "extended": true,
+  "checks": [
+    "Initial capture includes an applied sprite-helper refinement",
+    "Rendered click selects g1 knight and second click deselects it",
+    "White e2-e4 and Black e7-e5 commit from canvas input and persist",
+    "Undo prompt cancellation is inert; explicit agreement appends UndoCommand",
+    "Both themes render through the Bend scene and selection remains interactive after switching",
+    "Settings, Help and New Match prompts respond; match and preference survive reload",
+    "File chooser imports a legal record and a rendered move captures",
+    "Imported record reaches promotion and explicit knight underpromotion",
+    "A move emits finite, bounded Bend PCM through browser audio",
+    "Service-worker-controlled page reloads offline, refines ornate pieces with a module helper, and accepts a real move",
+    "Rendered empty-platform Shift changes topology and persists",
+    "Portrait layout exposes board/settings controls and Black selection toggles off"
+  ],
+  "captures": [
+    "01-desktop-initial.png",
+    "02-selected-knight.png",
+    "03-both-sides-e4-e5.png",
+    "04-undo-consent.png",
+    "05-settings.png",
+    "05b-warm-court.png",
+    "05c-warm-selected.png",
+    "05d-astral-restored-settings.png",
+    "06-help.png",
+    "07-new-match-prompt.png",
+    "08-capture.png",
+    "09-promotion-choice.png",
+    "10-offline-move.png",
+    "11-shift.png",
+    "12-portrait.png",
+    "13-portrait-settings.png"
+  ],
+  "errors": [],
+  "metrics": {
+    "desktop": {
+      "width": 1024,
+      "height": 640,
+      "aria": "Rift Chess. White to move. Select a piece or an open tile. Move or Shift choose a source",
+      "scale": 1,
+      "board": {
+        "$": "Rect",
+        "x": 256,
+        "y": 64,
+        "width": 512,
+        "height": 512
+      }
+    },
+    "audio": {
+      "sounds": [
+        {
+          "samples": 4080,
+          "peak": 0.3037683069705963,
+          "finite": true,
+          "rate": 24000
+        },
+        {
+          "samples": 3192,
+          "peak": 0.2110067903995514,
+          "finite": true,
+          "rate": 24000
+        }
+      ],
+      "starts": 2
+    },
+    "portrait": {
+      "width": 512,
+      "height": 1024,
+      "board": {
+        "$": "Rect",
+        "x": 0,
+        "y": 112,
+        "width": 512,
+        "height": 512
+      },
+      "scale": 1,
+      "menu": 0
+    }
+  },
+  "ok": true,
+  "finishedAt": "2026-09-26T21:42:39.808Z"
+}

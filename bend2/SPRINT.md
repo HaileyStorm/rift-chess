@@ -556,7 +556,7 @@ source-bound emission and Linux package/probe; the old ELF predates this view.
 The reproducible CPU-first packaging procedure and its limits are in
 [NATIVE_PACKAGE.md](docs/NATIVE_PACKAGE.md).
 
-The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
+The prior non-draft v2 browser preview was [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
 asset hashes and module MIME types matched; the extended hosted Chrome suite
 passed 11 groups, and a separate online/offline local-opponent probe completed
@@ -566,3 +566,12 @@ owner accepted. Subsequent shared-source native X11, CUDA, audio-route and
 restart pilots are recorded above; the published browser build predates the
 latest camera/selection iteration. Hosted publication does not close the
 remaining visual, package, broad native playtest or toolchain-update gates.
+
+The [next published checkpoint](docs/evidence/v2-camera-aura-hosted/README.md)
+is clean build `316b07717192e7d6d5bb` at source `66af057`: 21 public asset
+hashes match, and the extended hosted Chrome gate passed 12 groups, including
+the applied sprite helper, new default view, selected piece, warm observatory,
+offline play and portrait input. A new Linux package/GUI pilot was requested
+through the bounded host mailbox; it is pending and must report its own source
+and runtime hashes. The library, owner visual acceptance, and Bend 2.0.28
+rebase remain open.
