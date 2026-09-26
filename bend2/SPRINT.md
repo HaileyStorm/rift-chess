@@ -479,12 +479,18 @@ for those 15 frames. Four CPU workers at `7/7` took 426/18 ms for the same
 two phases. The device execution was monitored under a fresh released lease,
 but transfer/readback is not independently timed, the 15 subsequent frames
 have aggregate rather than per-pixel validation, and no game or browser GPU
-claim follows. A source-bound readback experiment is the next GPU gate; keep
-automatic GPU selection unpromoted.
+claim follows. The source-bound readback result appears below; keep automatic
+GPU selection unpromoted.
 The pinned native Linux `Window.frame` has a separate CUDA presentation path
 that rasterizes the image tree on-device and copies a flat pixel buffer to
 X11; this benchmark's recursive host checksum does not measure that path.
 Native game frame and input timing under CPU/GPU remain separate gates.
+The [paired-read CUDA result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843393565)
+then found first CPU traversal of the same GPU image at 84–99 ms (median 97)
+and immediate second traversal at 2–4 ms (median 2.5), with all 16 images
+matching their paired checksum and the frozen aggregate. This sharply
+isolates first-touch cost in the host checksum phase, without directly tracing
+page migration or measuring the native window's on-device raster path.
 
 The native arity blocker is now cleared at the source level. At exact public
 commit `b3ffb3b`, Linux emitted the full `NativeV2` C source with both a

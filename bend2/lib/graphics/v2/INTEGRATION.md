@@ -138,8 +138,8 @@ checksum measures host traversal of
 the returned image. The pinned C runtime uses GPU-preferred managed allocation;
 device-to-host page migration is a plausible explanation for the expensive
 checksum, **not** an independently measured transfer time or established cause.
-Next isolate that boundary with a source-bound transfer/readback probe before
-changing automatic detail policy or library code. Exact pixels were compared
+The separate paired-read probe below narrows that boundary before any
+automatic detail policy or library change. Exact pixels were compared
 only for the first frame of each case; the remaining 15 were checked by a
 32-bit aggregate checksum. These timings say nothing about browser frames or
 the full game. In particular, pinned `bend2/effs/window_frame.c` has a distinct
@@ -149,3 +149,29 @@ X11. The benchmark's recursive CPU checksum does not exercise that presentation
 path. Its frame time, copy cost, input latency and idle CPU remain unmeasured.
 The [benchmark README](bench/gpu/README.md) defines the fixture;
 the library renderer and Laws/Proofs were not changed.
+
+### Repeated-read boundary check
+
+The separate [Linux CUDA readback result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843393565)
+ran the source-bound `PlanReadback.bend` at commit `127a12a` on the same
+512-square, cuts/forks `7/7` workload. All four CPU and five CUDA-build routes
+passed 16 rounds; every first/second traversal of the **same** image agreed,
+the first frame matched serial pixels, and every route returned the frozen
+checksum `2162379048`. The device run had a CUDA-enabled ELF and `.gpu`
+sidecar, an observed RTX 5090 process, and a fresh monitored lease that was
+released afterward.
+
+| Route | First host checksum median (range) | Immediate second median (range) |
+| --- | ---: | ---: |
+| Four CPU workers, GPU off | 1 ms (0–1) | 0 ms (0–1) |
+| Four host workers, GPU on | 97 ms (84–99) | 2.5 ms (2–4) |
+
+The GPU-on first traversal was slower in all 16 pairs. The large within-image
+drop strongly supports first-touch cost in GPU-preferred managed memory; it
+does **not** directly measure a transfer or identify page faults. Nsight
+Systems was unavailable. In particular, explicitly prefetching a result to
+the CPU may move the cost into a different phase, and the next GPU render may
+have to fetch it back. The fixture's second read also changes memory residency,
+so its later render timings are not interchangeable with the earlier one-read
+sweep. No graphics library or automatic-policy change follows from this one
+diagnostic. Native CUDA `Window.frame` still requires its own device frame test.

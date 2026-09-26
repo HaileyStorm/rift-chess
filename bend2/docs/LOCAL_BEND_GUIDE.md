@@ -941,6 +941,13 @@ Bend releases:
   host quadtree checksum is therefore not a proxy for that native display
   path. Measure the real graphical ELF, first on CPU and then on GPU under a
   fresh grant, before making a native GPU policy choice.
+  A later [paired-read CUDA fixture](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843393565)
+  timed two CPU checksums of each returned GPU image without another render
+  between them. On an RTX 5090 the first took 84–99 ms (median 97) and the
+  second 2–4 ms (median 2.5) in all 16 exact-checksum rounds; CPU/four stayed
+  around 0–1 ms. This supports first-touch managed-memory cost, but without a
+  page-fault trace it does not prove migration. A prefetch would shift or trade
+  that cost unless a source-bound full frame measurement shows otherwise.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.

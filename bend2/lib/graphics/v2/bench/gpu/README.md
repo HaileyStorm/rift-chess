@@ -97,5 +97,13 @@ independent profiling evidence. The fixture passed a pinned Windows source
 check, emitted C from its source-bound closure, and ran all 16 rounds in the
 local WSL CPU/four route with matching first/second values and the frozen
 checksum; its two host traversals took about 2–4 ms each in that one run.
-The native CUDA device gate remains unrun. This is a falsifiable diagnostic,
-not a performance fix.
+At the Windows source/WSL CPU checkpoint, the native CUDA device gate had not
+run. This is a falsifiable diagnostic, not a performance fix.
+
+The subsequent [leased CUDA result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843393565)
+passed the source-bound 16-frame fixture on an RTX 5090. For the GPU-on route,
+the first host traversal of each returned image took 84–99 ms (median 97 ms),
+while the immediate second took 2–4 ms (median 2.5 ms); all 16 pairs had equal
+checksums. The CPU/four route's two medians were 1 and 0 ms. No page-fault
+profiler was available, so this is indirect first-touch evidence, not a
+measured migration cost. The old CPU-only pilot remains separately classified.
