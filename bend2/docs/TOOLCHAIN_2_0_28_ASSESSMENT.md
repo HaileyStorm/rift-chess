@@ -92,13 +92,29 @@ twelve roots emitted with `book_valid(book, 0)`. Static relocated packaging,
 browser/offline execution, a fresh-stack cross-host differential and oracle replay,
 frozen proofs and full game gates are not yet complete.
 
+**Fresh replay on 2026-09-26:** A new disposable checkout at the exact public
+tag applied maintained 001, [rebased 002](../toolchain-patches/002-layout/rebase-2028/README.md),
+candidate 005, and candidate 004 in ordinary patch order. Its intermediate
+source hashes now reconcile the previously unexplained pre-005 difference;
+the final LF-normalized compiler/resource files match the prior candidate.
+The intermediate 002 fixture passed its deterministic layout, negative local
+import and unchanged JS/C gates; the 005 provider-trap/path fixture passed;
+the fresh 004 stack passed 107/107 worker tests, and a nested static module
+worker demo passed 19/19 functional and six negative/lifecycle checks in both
+installed Chrome and Edge. A fresh 647-fixture compiler differential against
+the final-005 source baseline found no check or normalized JS/C difference.
+The 002-only canonical library junction gap is
+closed by 005. The [receipt](../toolchain-patches/002-layout/rebase-2028/LOCAL_RECEIPT.md)
+binds exact source and local browser evidence. This resolves **ordered
+Windows source replay**, but not the broader Linux/portable package,
+cross-engine, frozen-proof, native, or application gates.
+
 **Disposition on 2026-09-26:** defer the pin change. Root owns the rebase and
-amendment. The Windows nested-import regression has an isolated, unaccepted
-candidate fix with focused edge-case coverage; the remaining 004 worker/browser
-and compiler differential gates, fresh full-variant replay and independent
-final review remain blockers. Switching now would invalidate the
-published source-bound worker artifacts and in-flight 2.0.27 native/GPU
-measurements. Recheck after those exact device/layout gates return and after a
-disposable 2.0.28 variant passes the nested no-provider, worker, differential,
-proof and browser suites. Remove the 2.0.27 pin only through the guide's
+amendment. Ordered Windows replay, focused nested-import/provider guards,
+107 worker checks, and two Chromium-family browser engines are now positive.
+Linux source parity and relocated resources, independent browser engines and
+offline hosting, full frozen proof and game gates, native emission/link,
+measurements, and independent final review remain. Switching now would also
+invalidate the published source-bound worker artifacts and the in-flight
+2.0.27 native package pilot. Remove the old pin only through the guide's
 reviewed amendment and a clean, reproducible replacement build.

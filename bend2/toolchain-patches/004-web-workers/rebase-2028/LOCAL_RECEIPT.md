@@ -1,5 +1,19 @@
 # Bend 2.0.28 WebWorker rebase candidate
 
+## Subsequent fresh ordered replay
+
+Root later assembled a new disposable checkout from the exact upstream tag,
+applying maintained 001, separately recorded
+[rebased 002](../../002-layout/rebase-2028/LOCAL_RECEIPT.md), final 005,
+and this exact 004 patch in ordinary order. The intermediate pre-005 hashes
+reconcile the earlier difference; the final LF-normalized compiler and
+`web_runtime.js` contents match this candidate. The fresh stack passed
+107/107 combined worker tests and a nested static module-worker demo in
+Chrome 153 and Edge 154 (19/19 functional plus six negative/lifecycle checks
+each). The linked receipt has source hashes and browser evidence. This is
+local source composition and worker behavior, not pin adoption or Linux,
+offline, native, GPU, full game, or owner visual acceptance.
+
 Disposition: candidate only. This is an 004 compiler/API and runtime-resource
 rebase in a disposable 2.0.28 checkout. It is not a fresh replay of
 the complete upstream + 001 + adapted 002 + 005 stack, a pin adoption, or an
