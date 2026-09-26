@@ -575,3 +575,16 @@ offline play and portrait input. A new Linux package/GUI pilot was requested
 through the bounded host mailbox; it is pending and must report its own source
 and runtime hashes. The library, owner visual acceptance, and Bend 2.0.28
 rebase remain open.
+
+The next responsiveness gate is an actual orbit on representative browser
+hardware. Two local Chrome drags after this build delivered roughly 53–69 ms
+p90 worker replies across 10–14 pointer events; the Bend controller portion
+was about 1–2 ms, while constructing and walking the motion image dominated.
+Those short samples are diagnostics, not a stable latency benchmark. A direct
+raw-buffer/ImageBitmap transport comparison produced identical final pixels,
+but ImageBitmap did not establish a preparation-time win on this machine, so
+the automatic path remains on raw buffers. The motion renderer should be
+profiled and reduced or parallelized without changing its Bend-owned view and
+picking semantics. Fixed-facing piece sprites at wide yaw remain the largest
+visual gap; a transparent rear-knight art study exists only in ignored local
+artifacts and is not a consistent twelve-piece turntable.
