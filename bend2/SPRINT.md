@@ -169,22 +169,242 @@ visual acceptance remain unverified.
 The paragraphs above are historical checkpoints. Amendment 005 updates the
 reviewed compiler pin to Bend 2.0.27 without altering frozen chess semantics;
 v1/v2 proofs, conformance, six mutation controls, graphics v1 verification and
-the non-draft browser build passed. The reusable graphics **v2** library is a
-separate draft under `lib/graphics/v2/`; its own Laws/Proofs and finite tests
-must pass review before it replaces the current presentation. Its first scenes
-are not the requested WOW quality, and full-frame warm construction remains
-too slow, although cached hover/selection updates have measured interactive
-times. The huge Bend UI/UX overhaul and automatic detail integration are still
-in progress, not an accepted release.
+the non-draft browser build passed. The next presentation is still a draft in
+two reusable packages: generic raster/text/material primitives under
+`lib/graphics/v2/`, and 8×8 masks, tile materials and projected-grid rendering
+under `lib/grid8/`. Their own colocated Laws/Proofs and finite tests must pass
+final review before adoption. The draft checker currently closes 15 generic
+graphics and eight grid laws; this does not prove general F32 pixel semantics.
+The scenes have improved but have not met the requested WOW quality. Settled
+construction and real browser responsiveness still need work. The huge Bend
+UI/UX overhaul and automatic detail integration are in progress, not an
+accepted release.
 
 The [2.0.27 native CLI receipt](docs/evidence/native-cli-linux-2-0-27/receipt.json)
 records actual x86-64 Linux ELF compilation in WSL and a file-backed match
 through both-color moves, Undo and agreed draw; terminal `moves` lists no IDs.
 This satisfies a browser-independent Bend CPU/File/IO binary checkpoint, not
 native graphical acceptance. The full `Native.bend` C emission instead failed
-with `an arity over 255` after checking source; a disposable compiler diagnostic
-is isolating the generated limit before a source-only fix is attempted. The
+with `an arity over 255`. Source-only boxes have cleared the Native and New
+Match joins in a disposable compiler diagnostic; the Program event-loop fix is
+under focused tests and has not yet emitted graphical C. The
 browser transport now defaults to measured raw pixel transfer, and accepted
 position-preserving commands reuse legal IDs without changing the frozen
 kernel. Both changes passed focused real-browser/differential checks; broader
 visual/performance acceptance and publication remain ahead.
+
+## Downstream compiler patch checkpoint and resumed presentation work
+
+Commit `b5bd2f5` carries three separate source patches against the clean
+2.0.27 pin under `toolchain-patches/`. Required 001 diagnoses exact C arity
+owners/captures; required 002 reports checked layout and structural fork
+interfaces in a local-only read-only CLI mode. Their combined disposable stack
+passed byte-identical successful C/JS emission and an exact 256-word failure.
+Optional 003 boxes only oversized live join captures through Bend's existing
+box representation. A single final 001+002+003 revision passed nine finite
+fixture checks; eight Linux C binaries matched JS at one and four threads,
+while a raw-return overflow still rejected. Independent review found no
+confirmed CPU semantic defect, but 003 remains experimental and is not in the
+default wrapper. No GPU or general affine-ownership proof is claimed.
+
+The full graphical `Native.bend` C emission on that optional stack timed out
+after 480 seconds with no C output. A later diagnostic on the clean pin cleared
+the Program event-loop arity cluster after a source-only cursor refactor and
+identified `Application.boot_events` at 256 words. The boot join has a narrow
+source rewrite; a new C diagnostic and graphical binary remain pending. The
+existing WSL native CLI ELF remains a distinct, successful browser-independent
+checkpoint. WSLg and Clang 18 are present; X11/ALSA development headers and
+linker files are not yet installed.
+
+Graphics v2 and grid8 resumed after those compiler patches. Their 15+8 Laws
+and Proofs remain DRAFT and separate by package. Two private raster prototypes
+were pixel-equivalent in finite JS checks but failed performance gates: a
+fused six-face pass was about 2.4–2.7× slower at 512/1024, and naive aligned
+bins were near parity. Neither changed the public API or contracts. The next
+descriptor-bucketed trial and retained board/pointer layers are in progress.
+New game art and chrome source-check separately. The oblique ground/aperture
+finite checks pass, and a retained-scene hover-only JS pass measured about
+6 ms p90; a full scene rebuild is still above 100 ms. The modular browser
+build, actual rendered play, auto-detail integration, publication and owner
+visual acceptance remain open.
+
+The later [native Window smoke](docs/evidence/native-gui-smoke/receipt.json)
+closes a narrower infrastructure gate: pinned Bend emitted C, WSL Clang 18
+built an X11 ELF, and WSLg displayed its exact 256×256 Bend pixel frame before
+a clean WM close. Only `libx11-dev` and its seven dependencies were installed;
+no packages were upgraded. This is **not** the full Rift Chess graphical
+binary, which remains blocked on its much larger C emission and later
+X11/ALSA build.
+
+For the browser overhaul, a slim Bend `ApplicationControl` now owns input,
+presented picking, cache invalidation, effects and render requests. It
+source-checks in ~28 s without importing the heavy board/chrome painters.
+Three separately emitted Bend JS modules (controller, game scene, chrome)
+have source-bound cache manifests; the generic worker executes the Bend-authored
+requests and carries immutable `Data`/`Image` values. A small cross-book ABI
+test retains value and Image identity; its result is finite JS evidence, not
+an affine or browser proof. Controller boot/hover/selection/camera/inert-tick
+render-plan checks pass, including a cached hover that avoids ground/piece/
+chrome rebuild. The separately rendered chrome passed a 16-case menu/portrait/
+2× hit matrix, but integrated browser play and visual acceptance remain open.
+
+## Draft modular browser and native iteration (unreleased)
+
+The source-bound Bend controller, board scene and chrome raster emitted as three
+separate JS books and produced draft local asset version
+`51dbb8eaa67c5ad3d169` at `127.0.0.1:4185`. This is **not** the hosted
+preview. Six baseline and ten extended real-Chrome scenario groups passed on
+that exact version, with no page/console errors: both-side play and Undo
+consent, selection toggling, Shift, real import, capture, knight
+underpromotion, finite PCM reaching Web Audio, persistence and cold offline
+play. The ignored receipts are under `.artifacts/bend2/v2-preview/scenarios/`.
+The host sent a real eight-frame timing window into the pure Bend automatic
+detail policy; its 10,240 finite state/probe checks pass. The observed worker
+p90 was far over the policy's enhanced-tier budget, so the browser correctly
+retained standard detail; this is not GPU or high-tier acceptance.
+
+Moving the board embed onto quadtree-aligned layout coordinates reduced
+measured cached composition from about 100–170 ms to 1–2 ms in local Chrome.
+Actual cached pointer frames are around 5–32 ms; camera frames still rebuild
+ground and piece proxies and sometimes chrome at much higher cost. A subsequent
+controller source revision defers chrome reraster during orbit, while game-local
+256px preview and chrome shell/overlay splits are under separate source/render
+checks and have **not** passed a combined browser run. The updated art makes
+the observatory visible in both themes, but remains below the owner's WOW
+visual target. Board-free backdrop concepts and a separate Bend raw-RGB asset
+codec are experimental, not shipped.
+
+Graphics v2 has 18 checker-green **DRAFT** core proofs and eight grid8 proofs.
+A Texture pool-top revision passed independent structure/pixel checks and native
+Clang18 output equality, but an ext4-local WSL comparison found its 64-branch
+CPU path slower than true serial at 1/4/8 threads. The proposed CPU convenience
+API was removed from the DRAFT library; the negative benchmark remains
+reproducible. Object-anchored AffineGrain material and its two new DRAFT
+endpoint proofs await source/finite/performance checks. No GPU timing or Linux
+receiver grant exists yet.
+
+The pinned Bend `NativeSmoke.bend` did emit C, build a WSLg X11 ELF, show its
+256×256 pixel window, and exit cleanly. The full Rift Chess `NativeV2.bend`
+graphical entrypoint remains a source draft: its native effect journal,
+shell/motion cache and Audio/File affine path require checks, C emission,
+linking and actual rendered interaction. That smoke must not be represented as
+the full native game binary. Publication of this overhaul waits for a new
+source-bound build, visual review, interaction/performance regression and
+hosted asset hash verification.
+
+### Subsequent local visual gate (still unreleased)
+
+The refreshed `d737cff5feedbd8d46ee` local browser draft passed ten extended
+real-Chrome scenario groups (13 screenshots, no page errors), including both
+sides, cold offline play, PCM, Undo consent, Shift, capture and underpromotion.
+It also exposed unmistakable visual defects: desktop actions/history/camera
+labels overlap, Settings' narrow cards collide, portrait text and controls
+overlap, and the small flat chess tokens do not match the observatory premise.
+The owner rejected the five reviewed images as far short of WOW; this draft is
+**not** a visual acceptance or publication candidate.
+
+Two preserved 1254px board-free observatory plates now have deterministic
+512px RGA1 derivatives, source/runtime hashes and a separate reusable Base
+decoder with DRAFT codec Laws and Proofs. The Bend game requests exactly one
+theme and chooses its fallback; browser JavaScript only performs bounded byte
+transport. An isolated BoardScene checker and pixel reference gate passed:
+both themes, exact 256 area reduction and 1024 nearest expansion, invalid
+asset fallback, and hole witnesses at yaw 0/25/45/90. The isolated scene
+decoder took 1.12–1.24 seconds with whole-process peak RSS around 1.25 GiB;
+those are **not** browser startup or GPU measurements. The first composites
+make the court visible through the holes but still juxtapose detailed painted
+architecture with flat gray squares and indistinct pieces. Board/piece art
+and measured chrome reflow are in progress. A generic browser transport test
+caught and corrected Bend's snake_case `max_bytes` ABI; actual browser asset
+loading, theme-switch/offline captures and native asset loading remain open.
+
+### Graphics Pro handoff and independent audio continuation
+
+The reusable graphics v2/grid8 DRAFT checkpoint is committed and pushed as
+`436313f9c2bb68c29ce097a5e28e4dd2d9cabb0e`. Its portable 127-entry
+source/docs/reference package is under ignored
+`.artifacts/handoff/graphics-v2-pro-checkpoint.zip`, SHA-256
+`679ca6811098347d989c4c329aaf3e42a10da45218533c513c80de9639e898ac`.
+The owner has given the zip to GPT-6 Pro. Local graphics-library edits and
+integration wait for that independent improvement pass. This is not a visual,
+GPU or native-game acceptance.
+
+Independent of graphics, audio commit `3b08bb55b259f30eb3ba715c97b722c17266c70d`
+adds short note fades and avoids evaluating inactive waveforms. The Base-only
+synthesizer checks and its 5,040-sample finite test pass. Two alternating
+warm-JS timing runs disagree, so no speedup is claimed. The browser controller
+cache is now stale because it imports `Synthesis.bend`; it must be reemitted
+and the actual game/audio behavior playtested after the Pro handoff. No new
+graphics-library bytes were changed by this audio continuation.
+
+### September 25 worker and Pro-library checkpoint (draft, unreleased)
+
+The Bend WebWorker backend is now a separate downstream patch stacked after
+001 arity and 002 layout. The clean upstream 2.0.27 checkout remains untouched.
+[Variant bytes and local gate classes](toolchain-patches/004-web-workers/LOCAL_RECEIPT.md)
+bind a fresh replay, 107/107 compiler/HTML tests, 639 unchanged differential
+fixture outcomes, four static-module browser engines, a relocated resource
+package, and the game's source-bound five-file bot library. Automatic worker
+scheduling is conservative and can add substantial snapshot cost to cheap
+large-input calls. The game therefore uses a measured, explicit required
+helper boundary for its pure Bend bot choice, with Bend revision/legal-choice
+guards, stale-work cancellation and a serial fallback only when helper setup
+is unavailable.
+
+The draft modular browser build `bc2e4efb741f6cc791af` passed 11 extended
+Chrome scenario groups under a nested local URL. Its two bot helpers executed
+real jobs/results and completed a turn after a cold offline service-worker
+reload; source-binding, 16 resource hashes, and no page/console/network faults
+were checked. This is local browser evidence, **not** publication or owner
+visual acceptance. The current captured board/menu still have flat pieces,
+an overlarge permanent sidebar, and rough scaled bitmap text. A board-first
+menu, native-size 8-bit font coverage, and piece-art pipeline are underway.
+
+The Pro expansion and third pass were added to the reusable graphics v2
+library without overwriting prior local fixes. The 12+8 new Laws and Proofs
+remain DRAFT and byte-identical to the proposal; two F32 candidates remain
+unfilled. Local expansion and third verification plus Chrome static module
+worker checks pass (see [the library integration record](lib/graphics/v2/INTEGRATION.md)).
+Its demo is far from an interactive frame budget: a cold 1024² frame was
+33.17 seconds and a 28-tile partial frame 762 ms. Game adoption must use
+retained small dirty regions, prepared native-size glyphs and measured detail;
+neither demo timing nor a formal source scheduling equality establishes GPU
+or game performance. Full native Rift binary and GPU-device gates remain open.
+
+### Board-first UI and parallel sprite draft (unreleased)
+
+The permanent sidebar was replaced by a compact header/footer and focused
+View, Match, Preferences, History and decision surfaces. DM Sans is packed
+into a source-bound native-resolution 8-bit Bend glyph asset; the 151,343-byte
+pack is verified, shipped and service-worker cached. Browser Chrome scenario
+checks passed piece deselection, both sides, themes, Undo consent, import,
+capture, underpromotion, PCM, topology Shift, portrait controls, and a cold
+offline move. Preferences now label its optional overlay switches “Move hints”
+and “Shift hints.” This addresses the old misleading Move/Shift UI without
+changing the frozen rules §10 default or legal command path.
+
+The independent Pro library passes its source/finite/browser-worker gates and
+remains DRAFT, with two intentionally unfilled F32 candidates. The game now
+uses its alpha texture/affine primitives to map the twelve authored sprites.
+The browser ships only the 64px interactive RGA2 pages (196,623 bytes); 128px
+standard and 256px high-detail source candidates remain reproducible and
+unshipped. A separately bundled, source-bound module worker computes detailed
+512px court and pieces while the game worker keeps the fast proxy presentation
+and Bend controller responsive. A late Bend `refine` packet repaints only when
+revision, theme and placement still match. The helper JS transports/delegates;
+pixels, game policy, text and final composition remain Bend-owned. Real Chrome
+did show the detailed court and pieces after boot and camera motion, without
+page/console errors. Offline helper and stale-result tests are being finalized.
+
+The visual direction is improved but below the owner's WOW target. The
+painted observatory remains visible through topology gaps, while the board
+still reads as a relatively flat court and fixed-facing sprites do not solve
+large-angle 3D views. A detailed camera refinement took roughly 2–3.5 seconds
+in loaded local Chrome runs; cold starts varied more. The newer transient
+128px ground/256px silhouette preview lowered local drag pixel-preparation p90
+from about 180 ms to 57 ms in one Chrome run, with end-to-end reply p90 126 ms.
+Its enlarged 4x board blocks are plainly visible during orbit. Do not promote
+this draft as a complete responsiveness,
+GPU, owner visual, native binary, or hosted acceptance. The Linux GPU request
+is [Coordination comment 5840057909](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5840057909)
+and has no result as of this checkpoint.

@@ -1,0 +1,24 @@
+{
+  "axes": [
+    20,
+    650
+  ],
+  "bytes": 151343,
+  "coverage_bits": 8,
+  "license": "SIL OFL 1.1; see bend2/assets/source/fonts/OFL.txt",
+  "naming": "Rift Observatory Sans derivative; not marketed as original DM Sans",
+  "numpy": "2.4.2",
+  "output": "bend2/assets/runtime/rift-observatory-font.rga",
+  "output_sha256": "d67f6b3321b0821fdb41ac3c59d42d633757db75a32328f7c38f7a94e5a91977",
+  "pillow": "12.3.0",
+  "records": 242,
+  "schema": "rift-observatory-font-pack/1",
+  "sizes": {
+    "20": 80,
+    "30": 41,
+    "40": 80,
+    "60": 41
+  },
+  "source": "bend2/assets/source/fonts/dm-sans-pinned.ttf",
+  "source_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d"
+}

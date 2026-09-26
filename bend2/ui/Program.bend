@@ -16,6 +16,13 @@ import ./Records.bend as R
 import ./Commands.bend as C
 import ./Actions.bend as A
 
+# A recursive cursor carries Update's fields through the event loop as one
+# word. It avoids rebuilding a second wide Update while merging effects; its
+# inert tail makes the constructor boxed on native C.
+type UpdateCursor is Data:
+  UpdateCursor{state: S.State, effects: List<&2, Types.Effect>, redraw: U32,
+    after: U32, spent: Bool, tail: List<&2, UpdateCursor>}
+
 # Legal Shifts as deduplicated from*16+to pairs (promotion variants share one).
 def shift_pairs(ids: List<&2, U32>, +acc: List<&2, U32>) -> List<&2, U32>:
   match ids:
@@ -93,6 +100,14 @@ def pointer_move(orbiting: Bool, +s: S.State, +x: U32, +y: U32) -> S.Update:
       +square = board_square(s, x, y)
       S.result(S.set_hover(s, square), [], Bool.pick(U32, U32.is_eq(square, S.hover(s)), 0, 1))
 
+def pointer_move_presented(orbiting: Bool, +s: S.State,
+  +x: U32, +y: U32, +square: U32) -> S.Update:
+  match orbiting:
+    case True{}: S.result(S.set_view(s, orbit_view(S.pointer(s), x, y)), [], 1)
+    case False{}:
+      S.result(S.set_hover(s, square), [],
+        Bool.pick(U32, U32.is_eq(square, S.hover(s)), 0, 1))
+
 def pointer_up.primary(primary: Bool, +s: S.State, +x: U32, +y: U32) -> S.Update:
   match primary:
     case True{}: A.release(s, board_square(s, x, y))
@@ -102,6 +117,18 @@ def pointer_up(orbiting: Bool, +s: S.State, +x: U32, +y: U32, +button: U32) -> S
   match orbiting:
     case True{}: C.pref_result(S.set_pointer(s, S.released(x, y, S.view(s))), 2)
     case False{}: pointer_up.primary(U32.is_zero(button), s, x, y)
+
+def pointer_up_presented.primary(primary: Bool, +s: S.State,
+  +square: U32) -> S.Update:
+  match primary:
+    case True{}: A.release(s, square)
+    case False{}: S.unchanged(s)
+
+def pointer_up_presented(orbiting: Bool, +s: S.State,
+  +x: U32, +y: U32, +button: U32, +square: U32) -> S.Update:
+  match orbiting:
+    case True{}: C.pref_result(S.set_pointer(s, S.released(x, y, S.view(s))), 2)
+    case False{}: pointer_up_presented.primary(U32.is_zero(button), s, square)
 
 def wheel_view(v: Camera.View, delta: F32) -> Camera.View:
   match v:
@@ -180,9 +207,72 @@ def tick(replay: Bool, +s: S.State, +ms: U32) -> S.Update:
     case True{}: C.replay_tick(S.replay_state(s), s)
     case False{}: tick_offer(S.bot_offer(s), s, ms)
 
+# Browser ticks leave only the deterministic choice to the separate worker
+# library. Offer resolution, animation and staged player moves retain the same
+# order; the native tick above remains synchronous.
+def tick_staged_web(staged: Bool, +s: S.State) -> S.Update:
+  match staged:
+    case True{}: A.request_move(S.set_intent(s, 21760), S.intent(s))
+    case False{}: S.unchanged(s)
+
+def tick_anim_web(anim: Bool, +s: S.State, +ms: U32) -> S.Update:
+  match anim:
+    case True{}:
+      +elapsed = U32.min(240, U32.add(S.elapsed(s), U32.min(ms, 240)))
+      S.result(S.set_elapsed(s, elapsed), [], Bool.pick(U32, U32.is_ge(elapsed, 240), 2, 1))
+    case False{}: tick_staged_web(S.staged(s), s)
+
+def tick_offer_web(offer: Bool, +s: S.State, +ms: U32) -> S.Update:
+  match offer:
+    case True{}:
+      +side = Bool.not(U32.is_eq(Types.meta_offer(S.meta(s)), 1))
+      C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}),
+        Types.meta_revision(S.meta(s)), "The local bot declines draw offers.")
+    case False{}: tick_anim_web(S.moving(s), s, ms)
+
+def tick_web(replay: Bool, +s: S.State, +ms: U32) -> S.Update:
+  match replay:
+    case True{}: C.replay_tick(S.replay_state(s), s)
+    case False{}: tick_offer_web(S.bot_offer(s), s, ms)
+
+def bot_work_ready(+s: S.State) -> Bool:
+  Bool.and(S.bot_ready(s), Bool.and(Bool.not(S.replaying(s)),
+    Bool.and(Bool.not(S.staged(s)), Bool.not(S.bot_offer(s)))))
+
+def bot_apply_ready(revision: U32, +s: S.State) -> Bool:
+  Bool.and(bot_work_ready(s), Bool.and(Bool.not(S.moving(s)),
+    U32.is_eq(revision, U32.from_nat(S.revision(s)))))
+
+def bot_apply.choice(allowed: Bool, revision: U32, id: U32,
+  +s: S.State) -> S.Update:
+  match allowed:
+    case True{}: C.command(s, Match.MoveCommand{S.revision(s), id})
+    case False{}: S.unchanged(s)
+
+def bot_apply(+revision: U32, +id: U32, +s: S.State) -> S.Update:
+  bot_apply.choice(Bool.and(bot_apply_ready(revision, s),
+    S.contains(S.legal(s), id)), revision, id, s)
+
+def bot_fallback(allowed: Bool, +s: S.State) -> S.Update:
+  match allowed:
+    case True{}: tick_bot(S.bot_ready(s), s)
+    case False{}: S.unchanged(s)
+
+def bot_fallback_at(revision: U32, +s: S.State) -> S.Update:
+  bot_fallback(bot_apply_ready(revision, s), s)
+
 def merge(u: S.Update, before: List<&2, Types.Effect>, old_redraw: U32) -> S.Update:
   match u:
     case S.Update{s, effects, redraw, after}: S.Update{s, List.append(&2, Types.Effect, before, effects), U32.max(old_redraw, redraw), after}
+
+# Construct the recursive one-word cursor before a wide Update return could be
+# held beside the prior Update at a native continuation join.
+def merge.cursor(u: S.Update, before: List<&2, Types.Effect>,
+  old_redraw: U32, spent: Bool) -> UpdateCursor:
+  match u:
+    case S.Update{s, effects, redraw, after}:
+      UpdateCursor{s, List.append(&2, Types.Effect, before, effects),
+        U32.max(old_redraw, redraw), after, spent, []}
 
 def square_input(fresh: Bool, +s: S.State, +square: U32) -> S.Update:
   match fresh:
@@ -204,19 +294,35 @@ def square_after(u: S.Update, +square: U32, +expected: U32) -> S.Update:
 def square_press(+s: S.State, +square: U32, +expected: U32) -> S.Update:
   square_after(commit_staged(Bool.and(S.staged(s), Bool.not(S.moving(s))), s), square, expected)
 
+def activate_extended(id: U32, +s: S.State) -> S.Update:
+  match id:
+    case 56: S.redrawn(S.menu(s,11))
+    case 57: S.redrawn(S.menu(s,12))
+    case _: A.activate(id,s)
+
 def input(e: Types.Input, +s: S.State) -> S.Update:
   match e:
     case Types.PointerDown{x, y, +button, alt}: pointer_down(Bool.or(U32.is_eq(button, 2), Bool.and(U32.is_eq(button, 0), alt)), s, x, y)
     case Types.PointerMove{x, y}: pointer_move(S.orbiting(s), s, x, y)
     case Types.PointerUp{x, y, button}: pointer_up(S.orbiting(s), s, x, y, button)
+    case Types.PresentedMove{x, y, square}:
+      pointer_move_presented(S.orbiting(s), s, x, y, square)
+    case Types.PresentedUp{x, y, button, square}:
+      pointer_up_presented(S.orbiting(s), s, x, y, button, square)
     case Types.Wheel{x, y, delta}: C.camera(s, wheel_view(S.view(s), delta), 1)
     case Types.KeyInput{code, down, alt, ctrl, shift}: key(down, code, s, alt, ctrl)
-    case Types.Activate{id}: A.activate(id, s)
+    case Types.Activate{id}: activate_extended(id, s)
     case Types.SquareInput{square, expected}: square_press(s, square, expected)
     case Types.Tick{ms}: tick(S.replaying(s), s, ms)
     case Types.Resize{w, h}: S.redrawn(S.set_height(S.set_width(s, w), h))
+    case Types.QualityProbe{_, _, _, _, _, _, _}: S.unchanged(s)
     case Types.FileText{+text}: C.load_record(Codec.decode(text), s, text, True{})
     case Types.PortError{kind}: C.port_error(kind, s)
+
+def input_web(e: Types.Input, +s: S.State) -> S.Update:
+  match e:
+    case Types.Tick{ms}: tick_web(S.replaying(s), s, ms)
+    case _: input(e, s)
 
 def is_tick(e: Types.Input) -> Bool:
   match e:
@@ -229,15 +335,59 @@ def budget_input(skip: Bool, e: Types.Input, +s: S.State) -> S.Update:
     case False{}: input(e, s)
 
 # A batch may carry several Ticks; record validation takes at most one step.
-def update_go(events: List<&2, Types.Input>, u: S.Update, +spent: Bool) -> S.Update:
-  match events u:
-    case [] _: u
-    case +e <> tail S.Update{+s, effects, redraw, delay}:
+def update_go.finish(cursor: UpdateCursor) -> S.Update:
+  match cursor:
+    case UpdateCursor{state, effects, redraw, after, _, _}:
+      S.Update{state, effects, redraw, after}
+
+def update_go.apply(skip: Bool, e: Types.Input, +s: S.State,
+  effects: List<&2, Types.Effect>, redraw: U32, spent: Bool) -> UpdateCursor:
+  next: S.Update = budget_input(skip, e, s)
+  merge.cursor(next, effects, redraw, spent)
+
+def update_go.step(+e: Types.Input, cursor: UpdateCursor) -> UpdateCursor:
+  match cursor:
+    case UpdateCursor{+s, effects, redraw, _, +spent, _}:
       +replay_tick = Bool.and(is_tick(e), S.replaying(s))
-      update_go(tail, merge(budget_input(Bool.and(spent, replay_tick), e, s), effects, redraw), Bool.or(spent, replay_tick))
+      update_go.apply(Bool.and(spent, replay_tick), e, s, effects, redraw,
+        Bool.or(spent, replay_tick))
+
+def update_go(events: List<&2, Types.Input>, cursor: UpdateCursor) -> S.Update:
+  match events:
+    case Nil{}: update_go.finish(cursor)
+    case +e <> tail:
+      next: UpdateCursor = update_go.step(e, cursor)
+      update_go(tail, next)
 
 def update(events: List<&2, Types.Input>, +s: S.State) -> S.Update:
-  update_go(events, S.unchanged(s), False{})
+  update_go(events, UpdateCursor{s, [], 0, S.after(s), False{}, []})
+
+def budget_input_web(skip: Bool, e: Types.Input, +s: S.State) -> S.Update:
+  match skip:
+    case True{}: S.unchanged(s)
+    case False{}: input_web(e, s)
+
+def web_update_go.apply(skip: Bool, e: Types.Input, +s: S.State,
+  effects: List<&2, Types.Effect>, redraw: U32, spent: Bool) -> UpdateCursor:
+  next: S.Update = budget_input_web(skip, e, s)
+  merge.cursor(next, effects, redraw, spent)
+
+def web_update_go.step(+e: Types.Input, cursor: UpdateCursor) -> UpdateCursor:
+  match cursor:
+    case UpdateCursor{+s, effects, redraw, _, +spent, _}:
+      +replay_tick = Bool.and(is_tick(e), S.replaying(s))
+      web_update_go.apply(Bool.and(spent, replay_tick), e, s, effects, redraw,
+        Bool.or(spent, replay_tick))
+
+def web_update_go(events: List<&2, Types.Input>, cursor: UpdateCursor) -> S.Update:
+  match events:
+    case Nil{}: update_go.finish(cursor)
+    case +e <> tail:
+      next: UpdateCursor = web_update_go.step(e, cursor)
+      web_update_go(tail, next)
+
+def update_web(events: List<&2, Types.Input>, +s: S.State) -> S.Update:
+  web_update_go(events, UpdateCursor{s, [], 0, S.after(s), False{}, []})
 
 def start(+saved: String, preferences: String, width: U32, height: U32) -> S.Update:
   C.start(saved, preferences, width, height)

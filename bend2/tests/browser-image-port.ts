@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PixelPort, type Image } from '../platform/browser/image-port';
+import { PixelPort, extentForOutput, type Image } from '../platform/browser/image-port';
 const pix = (color: number): Image => Object.freeze({ $: 'Pix', color });
 const qua = (tl: Image, tr: Image, bl: Image, br: Image): Image => Object.freeze({ $: 'Qua', tl, tr, bl, br });
 // Independent original full-frame transport oracle: no identity comparisons,
@@ -37,6 +37,10 @@ function check(image: Image, width: number, height: number, extent: number): Arr
   return output;
 }
 const a = pix(0x123456), b = pix(0xabcdef), black = pix(0), white = pix(0xffffff);
+assert.equal(extentForOutput(1024, 640), 1024);
+assert.equal(extentForOutput(2048, 1280), 2048);
+assert.equal(extentForOutput(1024, 2048), 2048);
+assert.throws(() => extentForOutput(4097, 100), RangeError);
 const tree = qua(qua(a, b, white, black), a, b, qua(black, white, b, a));
 for (const [width, height, extent] of [[8, 8, 8], [7, 5, 8], [3, 9, 8], [8, 8, 16], [8, 8, 8], [0, 0, 8]]) {
   check(a, width, height, extent);
@@ -57,6 +61,9 @@ assert.deepEqual(new Uint8Array(transferred), reference(tree, 8, 8, 8));
 check(tree, 8, 8, 8);
 // A partial paint followed by an invalid node must invalidate cached identity.
 check(a, 8, 8, 8);
+// A 2048-wide rectangular presentation must traverse the 2048 tree extent:
+// the right half is not a copy of the left 1024 pixels.
+check(qua(a, b, black, white), 2048, 1280, extentForOutput(2048, 1280));
 const invalid = Object.freeze({ $: 'Qua', tl: white, tr: Object.freeze({ $: 'Invalid' }), bl: b, br: b }) as unknown as Image;
 assert.throws(() => port.render(invalid, 8, 8, 8), /Invalid Bend image tree/);
 check(a, 8, 8, 8);

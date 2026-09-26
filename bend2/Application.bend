@@ -162,13 +162,22 @@ def apply(u: S.Update, background: Image, chrome: Image, ground: Ground, old: Im
     case S.Update{state, effects, +redraw, after}:
       finish(U32.is_ne(redraw, 0), redraw, state, effects, after, background, chrome, ground, old, style)
 
-def boot_update(u: S.Update, errors: List<&2, T.Input>) -> S.Update:
-  match u:
-    case S.Update{state, effects, redraw, after}:
-      match errors:
-        case []: S.Update{state, effects, redraw, after}
-        case h <> rest:
-          Program.merge(Program.update(h <> rest, state), effects, redraw)
+def has_boot_errors(+errors: List<&2, T.Input>) -> Bool:
+  match errors:
+    case Nil{}: False{}
+    case head <> tail: True{}
+
+def boot_update.for(has_errors: Bool, u: S.Update,
+  errors: List<&2, T.Input>) -> S.Update:
+  match has_errors u:
+    case False{} S.Update{state, effects, redraw, after}:
+      S.Update{state, effects, redraw, after}
+    case True{} S.Update{state, effects, redraw, after}:
+      Program.merge(Program.update(errors, state), effects, redraw)
+
+def boot_update(u: S.Update, +errors: List<&2, T.Input>) -> S.Update:
+  +has = has_boot_errors(errors)
+  boot_update.for(has, u, errors)
 
 def boot_events(saved: String, prefs: String, width: U32, height: U32,
   errors: List<&2, T.Input>) -> Packet:

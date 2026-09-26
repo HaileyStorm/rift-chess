@@ -18,7 +18,24 @@ const bendCompute = new RollingP90();
 const workerPreparation = new RollingP90();
 const workerReply = new RollingP90();
 const hostPresentation = new RollingP90();
+const qualityWindow: Array<{ mainUs: number; workerUs: number }> = [];
 let textureProbeScheduled = false;
+function nextQualityProbe(): void {
+  if (qualityWindow.length < 8 || !presentation) return;
+  const p90 = (key: 'mainUs' | 'workerUs') => {
+    const ordered = qualityWindow.map(sample => sample[key]).sort((a, b) => a - b);
+    return ordered[7];
+  };
+  const mainP90Us = p90('mainUs'), workerP90Us = p90('workerUs');
+  qualityWindow.length = 0;
+  // This is measured transport telemetry only. Bend owns the tier decision.
+  const measuredScale = canvas.width === 2048 && canvas.height === 1280 ||
+    canvas.width === 1024 && canvas.height === 2048 ? 2 : 1;
+  send({ $: 'QualityProbe', portrait: canvas.height > canvas.width,
+    physicalEdge: capabilities.physicalEdge ?? 0,
+    timingValid: Number.isSafeInteger(mainP90Us) && Number.isSafeInteger(workerP90Us),
+    sampleCount: 8, measuredScale, mainP90Us, workerP90Us });
+}
 function publishProfile(): void {
   const samples = { bendCompute: bendCompute.count, workerPreparation: workerPreparation.count,
     workerReply: workerReply.count, hostPresentation: hostPresentation.count };
@@ -95,6 +112,28 @@ worker.addEventListener('message', event => {
     worker.postMessage({ kind: 'boot', id, saved: ports.read(0), prefs: ports.read(1), width: innerWidth, height: innerHeight });
     return;
   }
+  // A late Bend-authored sprite image refines the already-presented position.
+  // It never acknowledges or reorders an input request, changes controls, or
+  // samples the automatic detail policy. New input wins over an old picture.
+  if (message.kind === 'refinement') {
+    if (busy || queue.length || !presentation ||
+        message.presentation.revision !== (presentation as any).revision ||
+        message.width !== canvas.width || message.height !== canvas.height) {
+      message.bitmap?.close();
+      return;
+    }
+    if (message.bitmap) {
+      try { context.drawImage(message.bitmap, 0, 0, message.width, message.height); }
+      finally { message.bitmap.close(); }
+    } else if (message.image) {
+      context.putImageData(new ImageData(new Uint8ClampedArray(message.image),
+        message.width, message.height), 0, 0);
+    }
+    canvas.dataset.spriteRoundTripMs = String(message.spriteMetrics?.roundTripMs ?? '');
+    canvas.dispatchEvent(new CustomEvent('rift-bend-sprite-refined',
+      { bubbles: true, detail: message.spriteMetrics }));
+    return;
+  }
   busy = false;
   clearTimeout(slow); delete canvas.dataset.slow;
   const started = requestStarted.get(message.id);
@@ -108,6 +147,7 @@ worker.addEventListener('message', event => {
   if (message.image || message.bitmap) {
     const presentStart = performance.now();
     if (canvas.width !== message.width || canvas.height !== message.height) {
+      qualityWindow.length = 0;
       canvas.width = message.width; canvas.height = message.height; fit();
     }
     capabilities = measureBrowserCapabilities(window, canvas, capabilities.maxTextureEdge);
@@ -121,6 +161,11 @@ worker.addEventListener('message', event => {
       canvas.dataset.presentationMode = 'array-buffer';
     }
     hostPresentation.add(performance.now() - presentStart);
+    if (message.id > 1 && Number.isFinite(message.portMs) && message.portMs >= 0) {
+      const mainUs = Math.min(4_294_967_295, Math.round((performance.now() - presentStart) * 1000));
+      const workerUs = Math.min(4_294_967_295, Math.round(message.portMs * 1000));
+      qualityWindow.push({ mainUs, workerUs });
+    }
     canvas.dataset.hostPresentationMs = String(hostPresentation.value);
     publishProfile();
     scheduleTextureProbe();
@@ -136,6 +181,7 @@ worker.addEventListener('message', event => {
   // Always show a completed frame, even while newer pointer input is queued.
   pump();
   canvas.setAttribute('aria-busy', String(busy || queue.length > 0));
+  if (qualityWindow.length >= 8) queueMicrotask(nextQualityProbe);
 });
 worker.addEventListener('error', event => { status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only'); });
 function point(event: MouseEvent): { x: number; y: number } {
@@ -164,6 +210,7 @@ for (const [name, down] of [['keydown', true], ['keyup', false]] as const) canva
   if ([13, 27, 32, 37, 38, 39, 40].includes(event.keyCode)) event.preventDefault();
 });
 window.addEventListener('resize', () => {
+  qualityWindow.length = 0;
   fit();
   capabilities = measureBrowserCapabilities(window, canvas, capabilities.maxTextureEdge);
   publishProfile();

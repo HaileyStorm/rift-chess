@@ -1,6 +1,6 @@
 Bend 2 compiler, standard library, examples and emitted runtime
 https://github.com/bendlang/bend
-Pinned source: ff7a40cc9070a34c78399ecd2bbe46a044ad9b4b (2.0.25)
+Pinned source: d37909174ebd664338ae3194799a9e0899dedd51 (2.0.27)
 License: Apache License, Version 2.0
 Full license: Bend-Apache-2.0.txt in the browser distribution, or
 licenses/Bend-Apache-2.0.txt in this source directory.
@@ -11,6 +11,18 @@ were informed by the pinned examples, as catalogued in docs/SOURCE_CATALOG.md.
 Project-specific modifications and implementations are recorded in this Git
 branch. The pinned upstream checkout itself is unchanged.
 
-This experiment includes no downloaded image or sound assets. Sprites and
-bitmap fonts are project-authored; sounds are synthesized in Bend and presented
-through Web Audio in browsers or the pinned Base Audio effect in native exports.
+Rift Atlas Sans pixel glyph atlas (derived from DM Sans)
+Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)
+Pinned source: Google Fonts b5efa9c32e8f9b63005f5cdb1ad5527a77d2cd04,
+DM Sans source SHA-256 8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d
+License: SIL Open Font License, Version 1.1
+Full license and copyright notice: Rift-Atlas-Sans-OFL.txt in the browser
+distribution, or lib/graphics/v2/OFL.txt in this source directory.
+The v2 draft also includes a native-size 8-bit Rift Observatory Sans font pack
+derived from the same pinned DM Sans source. Its source TTF, OFL text, baker
+and hash-pinned pack manifest are in assets/source/fonts/ and ui/v2/fonts/;
+the same OFL notice above covers the shipped runtime font data.
+
+Other sprites and bitmap art are project-authored. Sounds are synthesized in
+Bend and presented through Web Audio in browsers or the pinned Base Audio effect
+in native exports.

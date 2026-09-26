@@ -409,6 +409,61 @@ a 5,440-deep leaf fail). A balanced tree of depth log2(n) removes that limit.
 The browser build runs Bend in one Web Worker, so JS parallel shape gives no
 speedup; the benefit is depth, the native path, and future targets.
 
+### Experimental JS helper workers (downstream variant)
+
+The clean Bend 2.0.27 pin still emits synchronous JavaScript. A separate
+source-bound downstream patch, documented in
+[`004-web-workers/README.md`](../toolchain-patches/004-web-workers/README.md),
+adds an **explicit async library output** without changing the normal import.
+Use the project preparation and emission scripts rather than editing the pin:
+
+```powershell
+node bend2/tools/prepare-worker-toolchain.mjs
+node bend2/tools/emit-worker-libs.mjs
+```
+
+`f@(args)` requires actual computation in a helper, optionally `f@4(args)`
+caps the number of helpers; `f~(args)` makes a serial island. Plain calls are
+automatic candidates *only inside this new output*. The old native `!` mark
+does not turn the ordinary browser bundle into parallel JavaScript. Worker
+sessions are explicit and asynchronous; `close()` terminates owned helpers.
+The generated `index.mjs`, content-named modules, and manifest travel together
+under a nested static URL. The host owns worker creation and transport; Bend
+owns the pure computation and checked source. See the patched compiler's
+`guide/WEB_WORKERS.md`, `WEB_WORKERS_CONTRACTS.md`, and
+`WEB_WORKERS_STAGE2.md` for types, policy scope, input snapshots, cancellation,
+packed transport, and finite F32 restrictions.
+
+On this Windows checkout, the worker variant passed 107 Node/Bun tests and a
+639-fixture differential matrix, and its generated static ESM module workers
+passed functional checks in Chrome, Edge, Firefox, and WebKit. WebKit executed
+correct JavaScript served as `text/plain` while the other engines rejected it;
+corrupted content and mixed builds still failed there. This is local browser
+evidence, not a deployed-site claim. Auto scheduling remains conservative and
+can incur a very large validation/copy cost on cheap, large-argument calls.
+Keep those on the synchronous API. A required helper can win on coarse work,
+but that alone does not justify enabling auto at every game boundary. The
+Rift browser build packages only selected measured worker libraries, includes
+their five files in its service-worker cache, and checks a build-only source
+binding so an old compiler or changed Bend source cannot silently be served.
+
+The game's **sprite helper** is a second, distinct pattern: a static browser
+module worker imports the ordinary source-bound selected `BoardScene.bend`
+book. It is not a `f@(...)` compiler-generated worker library. Bend supplies
+asset paths/caps, decodes three RGA2 pages, renders the court and pieces, and
+later issues a pure controller `refine` packet. JavaScript only schedules,
+fetches bounded bytes, clones one completed immutable `Image`, rejects stale
+revision/theme/placement, and presents the Bend-composed pixels. This avoids
+blocking input on a costly settled render, but cloning a full Image and
+duplicating a Bend book/plate in two workers are expensive. Do not send a
+quadtree on every pointer move. The 128px-ground/256px-silhouette motion path
+measured about 57 ms p90 pixel preparation and 126 ms p90 end-to-end reply in
+one local Chrome run; detailed helper refinement was roughly 2–3.5 seconds
+under loaded conditions. These timings support the scheduling choice, not a
+GPU or production responsiveness claim. Source and test paths are
+`platform/browser/sprite-helper.ts`, `ApplicationControl.refine`, and
+`tests/sprite-helper-node.mjs`.
+
 ### Idioms
 
 - **Balanced range split.** Index leaves by depth and offset, and make leaves
@@ -602,10 +657,21 @@ browser boundary: its UI imports `../main.bend`, sends every move through
   mutation-input binding are recorded in tool-only amendment 004.
 - **No Windows native target**; JS libc effects (File and friends) fail on
   Windows; JS `Window.open` always fails and JS audio is silent.
-- **Full graphical C emission** for `Native.bend` did not finish within 600 s
-  (about 3.1 GiB) on this host; the text CLI (`NativeCLI.bend`) emits C in a
-  bounded run. See `NATIVE.md`, `NATIVE_CLI.md`.
-- **Arity:** a C fork segment or join over 255 words is refused.
+- **Full graphical C emission** remains open. An earlier 600 s attempt did not
+  finish; a later exact-source 001 diagnostic timed out at 300 s and about
+  6.12 GiB peak RSS without C output or a new arity offender. The optional
+  001+002+003 compiler stack also reached a 480 s bound without C output.
+  These are bounded timeouts, not native binaries or evidence of a memory
+  failure. The text `NativeCLI.bend` did emit C and was actually built and run
+  as a Linux ELF in WSL; see `NATIVE.md`, `NATIVE_CLI.md`, and the native CLI
+  receipt.
+- **Arity:** a C fork segment or join over 255 words is refused. The separately
+  carried 001 patch reports the exact table/owner/captures; 002 adds a checked
+  local-only `--explain-layout` report. The optional 003 experiment boxes only
+  wide live join captures, retains raw-return rejections, and has finite
+  combined-stack one/four-thread Linux CPU evidence. None changes the default
+  clean pin or wrapper. See [`toolchain-patches/README.md`](../toolchain-patches/README.md)
+  for application order, hashes, limitations and rebase gates.
 - **JS continuation passing for non-tail calls** is listed as not implemented
   (`WONTFIX.txt`); deep non-tail folds overflow the host stack.
 - **Bun stack** is too small for some proofs; use the Node proof runner.
@@ -617,6 +683,41 @@ browser boundary: its UI imports `../main.bend`, sends every move through
 - **Fixed at ff7a40c:** a second book compiled in the same process reused a stale
   probe list (bendlang/bend#976). This project's loader compiles several books
   per Bun process, so the fix applies here.
+
+## Large Bend application and module boundaries (2026-09-24)
+
+The draft whole-game presentation imports a large book. One phase-instrumented
+`ApplicationV2.bend` run loaded 55 modules/2,229 definitions in 10.9 s and
+completed `book_valid` in 57.2 s at about 5.1 GiB RSS. A separately selected
+Chrome raster bundle validated in 27.5 s, then spent 411.5 s in `Comp.js_lib`
+and peaked at 7.35 GiB, producing 955,681 bytes of JS. Those timings are on
+this Windows/Bun host; they are not frame times or native/GPU benchmarks.
+`Comp.js_lib(book, roots, exports)` can emit only named reachable entry points,
+but it does not shrink the imported book that `book_valid` checks first. A
+controller that imports the full painter still pays for that closure.
+
+For an isolated browser build, compile a Bend controller (input/picking,
+session, cache/detail policy and tagged render requests), the Bend board scene,
+and Bend chrome raster as genuinely separate books. The generic JS host may
+pass their immutable values and execute the Bend-authored requests; it must
+not choose game or UI policy. A finite two-book probe in
+`tests/module-interop/` passed `Data`/`Image` values between independently
+compiled JS books and retained object identity. That does **not** prove affine
+ownership across an untyped host call, browser equivalence, or native C
+linkage. Bind every emitted bundle to the same source/toolchain closure, avoid
+`structuredClone` across this boundary, and compare the real browser behavior
+to the single-book reference. A native graphical entrypoint still needs its
+own Bend composition and actual C build/run evidence.
+
+The checker requires a `match` scrutinee to be a parameter or field. Matching
+a computed expression or local binder is rejected: move that case split into
+a helper whose formal parameter is matched. For multi-scrutinee recursion,
+follow parameter order and put a structurally decreasing argument first;
+the current compiler may reject an apparently decreasing later argument.
+When one affine value is inspected and passed onward, mark sharing explicitly
+with `+` at the relevant parameter/binding rather than relying on a local
+alias. These restrictions surfaced in the v2 scene, compiler diagnostics,
+and controller split; a source check is required before expensive emission.
 
 ## Changes from 6a77e12 to d379091 (2.0.27)
 
@@ -783,8 +884,13 @@ Bend releases:
 - **A proof can be true but expensive to normalize.** Generic Boolean guard
   lemmas avoided repeated unfolding; matching the Position parameter in
   `legal_range` stopped symbolic unfolding without changing runtime meaning.
-- **Use one browser facade import** (`Application.bend`) to avoid compiling
-  overlapping books concurrently.
+- **Split large browser books by actual import closure.** `book_valid` checks
+  the whole imported book before selected-export pruning; merely selecting
+  fewer roots from one monolith does not save validation cost. The current
+  browser emits the Bend controller, board scene and chrome raster in separate
+  supervised processes, binds each artifact to all source/toolchain bytes, and
+  carries ordinary `Data`/`Image` values across those books. Test that ABI in
+  an actual browser; selected JS checks alone do not prove the host seam.
 - **Keep the entire visible app in Bend when that is the goal.** Here Bend owns
   menus, bitmap fonts, selection and camera policy, record validation and PCM
   synthesis. Browser TypeScript transports typed events, immutable pixels,
@@ -802,7 +908,30 @@ Bend releases:
   complete ID range.
 - **Alignment matters for image reuse.** Placing a 512-square image on large
   power-of-two boundaries allowed direct subtree reuse: an offset of `(24,96)`
-  forced far more work than `(0,128)`.
+  forced far more work than `(0,128)`. In the newer chrome, moving desktop
+  board placement from `(86,96)` to `(64,96)` and portrait from `(0,52)` to
+  `(0,64)` reduced measured cached-frame Bend composition from roughly
+  100–170 ms to 1–2 ms in local Chrome. Pixel traversal itself was 8–20 ms
+  before alignment; do not blame transport for renderer work without timing
+  the stages separately.
+- **Check resolution math at every supported size.** Integer
+  `U32.div(size,512)` is zero for a 256px preview; use an explicit F32 ratio
+  for fractional projection and rerun camera, hole and pixel witnesses at
+  256/512/1024. A quadtree has an implicit extent supplied by its depth:
+  never pass a depth-8 tree as depth 9 without an exact nearest-neighbor
+  pixel/embed test or a real Bend expansion.
+- **A library with no `main` needs a selected-book test route.** A direct
+  CLI `-o` may fail with `no main to run` even when its definitions check.
+  Load/validate the book and emit selected pure functions with `Comp.js_lib`,
+  binding the output to the source and pin. For direct Bend source, a `match`
+  scrutinee must be a parameter/field, not a computed local; a reused affine
+  binder needs `+` or a helper that receives it as a parameter.
+- **Parallel syntax is not a speed claim.** A four-way let in the non-bang
+  `Texture.tree` still schedules work. A true sequential child chain uses
+  sequential `+` bindings. On WSL2 Clang 18, a 64-branch top pool and a
+  4^7 fine pool produced identical output but were slower than that serial
+  chain at one, four and eight threads, including an ext4-local rerun.
+  Keep hardware-specific native CPU and GPU conclusions separate.
 - **Source checking does not prove presentation.** The first whole-screen render
   exposed an embedding-depth defect missed by small uniform tests.
 - **Bound replay work, not just JSON size.** Validate a bounded number of
@@ -825,6 +954,25 @@ Bend releases:
   milliseconds. Profile source lowering, legal refresh, rendering and pixel
   transport separately; use automatic detail tiers with a measured CPU fallback
   before promising a high-resolution GPU presentation.
+- **Opaque artwork can cross the same Base boundary on web and native.** The
+  DRAFT RGA1 codec under `lib/graphics/v2/assets` accepts a capped Bend
+  `List<U32>` and returns an immutable Image. A browser worker only fetches a
+  Bend-requested relative path and transfers bytes; the game chooses the theme,
+  decodes the plate, and falls back on a malformed response. The native adapter
+  can pass `File.read_bytes` into that same decoder. Keep the preserved source
+  artwork, derivation script, exact hashes, and license outside the reusable
+  library. In generated JS a Bend field named `max_bytes` is still
+  `max_bytes`, not camelCase. The browser port's bounded mock test caught a
+  field-name mismatch before the actual browser asset gate. A depth-9 plate
+  decode retained roughly 1.2 GiB whole-process peak in the isolated scene
+  test; request and retain only the active theme, and distinguish this from
+  measured browser memory or native performance.
+- **Inspect physical display scaling as well as source pixels.** On a 1280×800
+  Chrome capture of the older 1024×640 scene, `image-rendering: auto` gave
+  smoother glyph edges than `pixelated` at fractional 1.25× display scaling.
+  This does not add detail or prove the redesigned scene is visually accepted;
+  it is a generic browser presentation choice to compare with the actual
+  high-resolution tier when that tier can meet its frame budget.
 
 The current law and proof receipts are linked from `../README.md`. JavaScript
 measurements and rendered browser checks do not establish native CPU, CUDA or

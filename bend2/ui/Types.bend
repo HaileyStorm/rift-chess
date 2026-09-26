@@ -31,12 +31,19 @@ type Input is Data:
   PointerDown{x: U32, y: U32, button: U32, alt: Bool}
   PointerMove{x: U32, y: U32}
   PointerUp{x: U32, y: U32, button: U32}
+  # Presented squares are picked by the Bend application from the frame the
+  # player saw. Raw x/y remain available for uninterrupted orbit deltas.
+  PresentedMove{x: U32, y: U32, square: U32}
+  PresentedUp{x: U32, y: U32, button: U32, square: U32}
   Wheel{x: U32, y: U32, delta: F32}
   KeyInput{code: U32, down: Bool, alt: Bool, ctrl: Bool, shift: Bool}
   Activate{id: U32}
   SquareInput{square: U32, expected: U32}
   Tick{ms: U32}
   Resize{width: U32, height: U32}
+  # Generic browser observations; the Bend controller alone chooses detail.
+  QualityProbe{portrait: Bool, physicalEdge: U32, timingValid: Bool,
+    sampleCount: U32, measuredScale: U32, mainP90Us: U32, workerP90Us: U32}
   FileText{text: String}
   PortError{kind: U32}
 

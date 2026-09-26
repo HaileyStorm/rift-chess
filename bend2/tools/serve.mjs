@@ -2,9 +2,12 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { root } from './freeze.mjs';
-const dir = path.join(root, 'bend2/dist');
+const preview = process.argv.includes('--v2-preview');
+const dir = preview ? path.join(root, '.artifacts/bend2/v2-preview/dist') : path.join(root, 'bend2/dist');
 const port = Number(process.argv[2] || 4184);
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
   let requested;

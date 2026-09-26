@@ -1,0 +1,63 @@
+{
+  "format": "rift-chess-piece-art-source-v1",
+  "source": {
+    "path": "../chess-piece-atlas.png",
+    "sha256": "e7e4dd458e02d098c5daa3db2d6a4dc903f10d2f55da33684932ecc2b9dad923",
+    "width": 1536,
+    "height": 1024,
+    "channels": "RGBA",
+    "provenance": "Project artwork generated for Rift Chess; no third-party piece art is incorporated."
+  },
+  "extraction": {
+    "cellWidth": 256,
+    "cellHeight": 512,
+    "rows": ["ivory", "navy"],
+    "pieceOrder": ["pawn", "knight", "bishop", "rook", "queen", "king"],
+    "alphaThreshold": 4,
+    "cropGuardSourcePixels": 2,
+    "resampling": "Lanczos",
+    "transparentGutters": true,
+    "baselineAligned": true,
+    "uniformScaleAcrossPieces": true,
+    "edgeCase": "The navy knight reaches the right edge of its source cell and is kept without extra clipping."
+  },
+  "tiers": {
+    "interactive": {
+      "spritePixels": 64,
+      "pagePixels": 128,
+      "depth": 7,
+      "totalBytes": 196623,
+      "deploymentIntegrated": true,
+      "note": "Runtime 512-board tier; retains the same crop, transparency and baseline with a quarter of the standard-tier samples per page.",
+      "pages": [
+        {"path": "../../runtime/pieces/pieces-fast-0.rga", "bytes": 65541, "sha256": "92355991cbf99556a73754fd904ec53a13f8e05fe1d1837d0696ebe6cdd7ad12"},
+        {"path": "../../runtime/pieces/pieces-fast-1.rga", "bytes": 65541, "sha256": "35e898841546ea10655c08ec763cb7793a038194c6058f9cbb312155da06ebeb"},
+        {"path": "../../runtime/pieces/pieces-fast-2.rga", "bytes": 65541, "sha256": "06aefb53eb2bc4d982add3690a3c0fbdb82dcaf9639797b374e908a49992e6eb"}
+      ]
+    },
+    "standard": {
+      "spritePixels": 128,
+      "pagePixels": 256,
+      "depth": 8,
+      "totalBytes": 786447,
+      "runtimeCandidatePages": true,
+      "deploymentIntegrated": false,
+      "pages": [
+        {"path": "../../runtime/pieces/pieces-std-0.rga", "bytes": 262149, "sha256": "0825b5edce1e61618c9f3438e5c70ead4c4f29c04cc94f48b84697705efe07d0"},
+        {"path": "../../runtime/pieces/pieces-std-1.rga", "bytes": 262149, "sha256": "9f18b50af8031858340d2b5c51a15906d926786b3ca2fcb9265d365990ea9c39"},
+        {"path": "../../runtime/pieces/pieces-std-2.rga", "bytes": 262149, "sha256": "435cd1b92f7f8e07611cb56c86d94c1fa2cf8b42ec2b78d3d9e6ed4c7ead9e70"}
+      ]
+    },
+    "highDetail": {
+      "spritePixels": 256,
+      "pagePixels": 512,
+      "depth": 9,
+      "totalBytes": 3145743,
+      "shippedRuntimePages": false,
+      "recipe": "python bend2/assets/source/pieces/prepare.py --tier high-detail",
+      "note": "Optional generated tier only; keep out of deployment and service-worker precache until measured visual benefit justifies its 3 MiB transfer/decode cost."
+    }
+  },
+  "builder": "bend2/assets/source/pieces/prepare.py",
+  "runtimeApi": "bend2/graphics/v2game/PieceSprites.bend"
+}

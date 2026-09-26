@@ -1,7 +1,7 @@
 // Generic Bend window adapter: no chess, UI, hit-testing, or persistence policy.
 // @ts-ignore Compiled by the pinned Bend loader.
 import Application from '../../Application.bend';
-import { PixelPort } from './image-port';
+import { PixelPort, extentForOutput } from './image-port';
 import { BitmapSurface } from './bitmap-surface';
 const api = Application as Record<string, (...args: any[]) => any>;
 let session: unknown;
@@ -20,7 +20,8 @@ function emit(packet: any, elapsed: number, id: number): void {
   session = packet.session;
   const transfers: Transferable[] = [];
   const pixelStart = performance.now();
-  const pixels: ArrayBuffer | null = packet.dirty ? pixelPort.render(packet.image, packet.width, packet.height) : null;
+  const pixels: ArrayBuffer | null = packet.dirty
+    ? pixelPort.render(packet.image, packet.width, packet.height, extentForOutput(packet.width, packet.height)) : null;
   const bitmap = pixels ? bitmapSurface.convert(pixels, packet.width, packet.height) : null;
   const pixelMs = performance.now() - pixelStart;
   if (!bitmap && pixels) transfers.push(pixels);

@@ -11,6 +11,7 @@ project toolchain merely because it applies or passes a small fixture.
 | 001 | [Arity diagnostics](001-arity/README.md) | Explain an over-255 C segment/table with exact ownership and word counts; no successful-output change. |
 | 002 | [Layout explanation](002-layout/README.md) | Read-only `--explain-layout` structural report; no execution or successful-output change. |
 | 003 | [Join-capture boxing](003-join-boxing/README.md) (experimental) | Optional compiler optimization; capture-only, with raw wide returns still rejected and GPU/full Native unverified. |
+| 004 | [Web Worker backend](004-web-workers/README.md) | Separate async JavaScript library output, source require/never policies, static module hosting and an explicit multi-artifact HTML bundle; replay after 001+002. |
 
 The final 001+002 combination passes [the required stack gate](stack-receipt.json)
 with byte-identical successful C and JS. The separate
