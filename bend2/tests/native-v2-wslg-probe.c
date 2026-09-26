@@ -220,7 +220,7 @@ static int click(Display* display, Window window, int x, int y) {
   return 1;
 }
 
-static void send_escape(Display* display, Window window) {
+static int send_escape(Display* display, Window window) {
   XEvent event;
   memset(&event, 0, sizeof event);
   event.xkey.type = KeyPress;
@@ -231,8 +231,26 @@ static void send_escape(Display* display, Window window) {
   event.xkey.time = CurrentTime;
   event.xkey.keycode = XKeysymToKeycode(display, XK_Escape);
   event.xkey.same_screen = True;
-  XSendEvent(display, window, False, KeyPressMask, &event);
+  int sent = XSendEvent(display, window, False, KeyPressMask, &event);
   XFlush(display);
+  return sent != 0;
+}
+
+static int send_window_close(Display* display, Window window) {
+  Atom protocols = XInternAtom(display, "WM_PROTOCOLS", False);
+  Atom close = XInternAtom(display, "WM_DELETE_WINDOW", False);
+  XEvent event;
+  memset(&event, 0, sizeof event);
+  event.xclient.type = ClientMessage;
+  event.xclient.display = display;
+  event.xclient.window = window;
+  event.xclient.message_type = protocols;
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = (long)close;
+  event.xclient.data.l[1] = CurrentTime;
+  int sent = XSendEvent(display, window, False, NoEventMask, &event);
+  XFlush(display);
+  return sent != 0;
 }
 
 static int wait_for_exit_zero(pid_t child, int seconds) {
@@ -345,7 +363,7 @@ int main(int argc, char** argv) {
       || attrs.width != WINDOW_WIDTH || attrs.height != WINDOW_HEIGHT
       || attrs.map_state != IsViewable) {
     fprintf(stderr, "NativeV2 window is not a visible 1024x640 client\n");
-    send_escape(display, window);
+    send_window_close(display, window);
     wait_for_timeout(child);
     XCloseDisplay(display);
     return 1;
@@ -357,7 +375,7 @@ int main(int argc, char** argv) {
 
   XImage* initial = capture(display, window, capture_directory, "native-v2-initial.ppm");
   if (!initial) {
-    send_escape(display, window);
+    send_window_close(display, window);
     wait_for_timeout(child);
     XCloseDisplay(display);
     return 1;
@@ -431,13 +449,21 @@ int main(int argc, char** argv) {
   if (selected) XDestroyImage(selected);
   XDestroyImage(initial);
 
-  send_escape(display, window);
+  int escape_sent = send_escape(display, window);
   XSync(display, False);
+  pause_ms(250);
+  XWindowAttributes escape_attrs;
+  int escape_keeps_window = escape_sent && has_title(display, window, title)
+      && XGetWindowAttributes(display, window, &escape_attrs)
+      && escape_attrs.map_state == IsViewable;
+  int close_sent = send_window_close(display, window);
   int clean_exit = wait_for_exit_zero(child, 10);
   int window_gone = clean_exit && wait_for_window_gone(display, title);
   XCloseDisplay(display);
-  printf("escape_close_exit_zero=%s window_gone=%s\n",
+  printf("escape_keeps_window=%s wm_close_sent=%s wm_close_exit_zero=%s window_gone=%s\n",
+    escape_keeps_window ? "yes" : "no", close_sent ? "yes" : "no",
     clean_exit ? "yes" : "no", window_gone ? "yes" : "no");
   return title_stable && selected_visible && deselected_visible
-      && white_move_visible && clean_exit && window_gone ? 0 : 1;
+      && white_move_visible && escape_keeps_window && close_sent
+      && clean_exit && window_gone ? 0 : 1;
 }

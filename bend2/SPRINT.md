@@ -496,6 +496,16 @@ reports a 32.22 GiB sampled peak RSS for the clean emit. A bounded CPU link,
 asset-loaded X11 launch and actual interaction/capture gate are next; no
 graphical native binary has yet been proven.
 
+Linux subsequently linked that exact C into a CPU ELF, SHA-256
+`3193015cdacb6559c788d43bf8ebf50a6497d7cbb21338c57613351270844f4a`.
+On a real X.Org display, the shared-source NativeV2 window loaded all seven
+matching assets, rendered 1024×640, selected and exactly deselected g1, and
+accepted g1–h3 with Black to move. The [four-capture receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843232546)
+is partial: the old probe expected Escape to quit, though Bend's UI defines it
+as cancel/clear. The corrected probe checks Escape preserves the window and
+uses `WM_DELETE_WINDOW` for close. That rerun, visual parity, audio and
+idle/input performance remain open.
+
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
 asset hashes and module MIME types matched; the extended hosted Chrome suite

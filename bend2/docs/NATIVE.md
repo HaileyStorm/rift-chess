@@ -5,8 +5,10 @@ historical evidence for the first graphical adapter. They do not describe a
 working full-game native binary. The newer `NativeV2.bend` is an unreleased
 `App.run` composition of the Bend controller, `BoardScene`, and the same
 `MenuAA`/`FontPack` source used by the browser worker. A clean pinned compiler
-has now emitted NativeV2 C after an internal controller refactor, but no game
-ELF or graphical interaction has yet been verified. The pinned 2.0.27 toolchain has built and run a separate WSLg X11
+has now emitted NativeV2 C and a CPU ELF has linked and shown real X11
+interaction on the Linux host. The first GUI probe's exit expectation was
+wrong; the corrected close gate has not yet run. The pinned 2.0.27 toolchain
+has built and run a separate WSLg X11
 smoke ELF; WSL Clang 18 and X11 development headers are available. Neither the
 smoke nor the text CLI proves NativeV2's game, Audio/File effects, rendering
 parity, or idle CPU cost.
@@ -100,9 +102,25 @@ both files had identical bytes and SHA-256
 The checked source imported the revised `ApplicationControl` while the top-level
 `NativeV2.bend` bytes remained unchanged. This establishes source/C emission,
 not a loadable ELF, asset/file/audio/window behavior, native rendering parity,
-or interactive acceptance. The C artifact stays on the Linux host. Its next
-gate is a CPU link with X11/ALSA dependencies and a real X11 interaction probe;
+or interactive acceptance **at that emission checkpoint**. The C artifact stays
+on the Linux host. Its next gate was a CPU link with X11/ALSA dependencies and a real X11 interaction probe;
 the exact request is [recorded here](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843072359).
+
+The [Linux CPU result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843232546)
+linked the identical clean-pin C artifact with Clang 19 and `-lX11 -lasound`
+in 59.44 s, without a new package install. The 5,602,680-byte ELF (SHA-256
+`3193015cdacb6559c788d43bf8ebf50a6497d7cbb21338c57613351270844f4a`)
+passed `--help`; all seven local runtime assets matched the clean hosted build
+manifest. A real local X.Org display opened a visible 1024×640 native window.
+The probe saw g1 selection (2,561 changed pixels), exact click-to-deselect
+(zero pixels versus boot), and g1–h3 movement (6,836 changed pixels, including
+both source and destination), with `Black to move` visible. Four captures were
+visually inspected on the Linux host. The probe then failed only its final
+expectation that Escape would exit. `Program.key_plain` intentionally maps
+Escape to clear menu/selection; window closure is a separate Base `Close`
+event. The probe now checks Escape leaves the window live and sends the X11
+`WM_DELETE_WINDOW` protocol to test clean exit. That corrected gate is pending.
+No idle CPU/frame timing, GPU-native path, or Windows WSLg execution is claimed.
 
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
@@ -235,10 +253,10 @@ browser. Camera motion uses the browser's 128px underlay and
 `fast_camera512` preview path; any missing or rejected page set falls back to
 `fast_prepare*`. Native loading is synchronous at startup while the browser
 helper is asynchronous, so startup latency and transition timing still differ.
-This is source-level path reuse only: the adapter has passed whole-book check
-and emitted C, but has not linked or run on a real X11 display, so no rendered
-parity claim is established. The ELF and real-input gates remain before NativeV2 can be called a
-native game. Base X11 `Window.frame` traverses the visible pixel
+This is source-level path reuse with a partial real X11 interaction gate: the
+adapter has linked and rendered selection and a legal move, but its corrected
+close gate, visual parity assessment, recovery, audio and performance remain
+open. Base X11 `Window.frame` traverses the visible pixel
 surface at its frame cadence even when a packet is unchanged, so actual native
 idle-CPU and pointer-latency measurements are required before any responsiveness
 claim. The older adapter below remains as compatibility and provenance until
@@ -251,7 +269,8 @@ It expects the `Rift Chess Bend2` title and a visible 1024×640 client, captures
 initial/selected/deselected/post-move PPM frames, selects and deselects the
 White g1 knight, then sends the legal g1–h3 move. It checks full-frame and
 source/target pixel differences, confirms the title/window remain live during
-input, sends Escape, and requires both a zero exit and window destruction. Its
+input and after Escape, then sends `WM_DELETE_WINDOW` and requires both a zero
+exit and window destruction. Its
 square points follow the desktop `ChromePlanCompact` board origin `(256,64)`
 and browser scenario's eight-pixel piece-body offset. The test takes absolute
 WSL paths for the ELF, its runtime directory containing
@@ -267,10 +286,10 @@ The observer's C syntax/header gate passed in WSL Ubuntu with:
 clang-18 -std=c11 -Wall -Wextra -Werror -fsyntax-only bend2/tests/native-v2-wslg-probe.c
 ```
 
-This did not link or run the observer, launch NativeV2, produce captures, or
-validate native input. The C artifact now exists on the Linux executor after
-the `b3ffb3b` source refactor; the observer remains unrun pending an ELF and
-a usable X11 display.
+This historical syntax gate did not launch NativeV2. The later Linux run on
+`b3ffb3b` did link and capture native frames and valid input, but the old
+Escape-to-exit assertion made the overall probe fail. The corrected window
+close protocol still needs the exact GUI rerun.
 
 ## Graphical emitter evidence
 
