@@ -47,6 +47,21 @@ Chrome `dd73947d3f6cf7dee59723064987d77a0e9eef86b2bfad4b255d153129b7c2bb`,
 Edge `35e21946ec5e296dc9aa004285fddd5a5291d9fa63643f201bd4e447d3f3438e`.
 The first attempt to launch Playwright's absent bundled Chromium made no
 browser claim; reruns used the installed browser executables.
+The same generated demo subsequently passed 19/19 and all six
+negative/lifecycle cases in Firefox 155.0 and WebKit 26.6, again with zero
+page errors or failed requests. Receipt SHA-256 values: Firefox
+`c9a6012b695d5ae9e53a4639b988995496a2b0a9936a6678774dff7347ba930e`,
+WebKit `059299e3d1a1fda7a7e52f95c71fb57bf427eac4f97cfc55250fce189afdbc5d`.
+WebKit executed the exact valid worker served as `text/plain`; its corrupt and
+mixed-build workers were rejected. The other three engines rejected wrong MIME.
+
+A separate relocated-resource smoke copied the candidate compiler's `bend2`
+resource tree into an ignored portable directory (95 files, including the
+worker runtime) and used that copy's `main.ts` to emit a strict required-only
+worker library from a Bend fixture. The output manifest declared the expected
+worker backend. This is resource relocation, not an upstream installer or
+native binary; only the local source tree was moved, and no provider was
+contacted.
 
 The copied 2.0.28 regression matrix compared the **fresh** 004 stack against
 the separately reconstructed final-005 source baseline across 647 parse,

@@ -105,15 +105,18 @@ installed Chrome and Edge. A fresh 647-fixture compiler differential against
 the final-005 source baseline found no check or normalized JS/C difference.
 The 002-only canonical library junction gap is
 closed by 005. The [receipt](../toolchain-patches/002-layout/rebase-2028/LOCAL_RECEIPT.md)
-binds exact source and local browser evidence. This resolves **ordered
-Windows source replay**, but not the broader Linux/portable package,
-cross-engine, frozen-proof, native, or application gates.
+binds exact source and local browser evidence. The same generated demo later
+passed the scenario in Firefox and WebKit, with WebKit's documented wrong-MIME
+tolerance. A relocated compiler resource copy also emitted the worker package.
+This resolves ordered **Windows source replay and local cross-engine worker
+behavior**, but not Linux parity, offline application hosting, frozen proofs,
+native execution, or full game acceptance.
 
 **Disposition on 2026-09-26:** defer the pin change. Root owns the rebase and
 amendment. Ordered Windows replay, focused nested-import/provider guards,
 107 worker checks, and two Chromium-family browser engines are now positive.
-Linux source parity and relocated resources, independent browser engines and
-offline hosting, full frozen proof and game gates, native emission/link,
+Linux source parity, offline hosting, full frozen proof and game gates,
+native emission/link,
 measurements, and independent final review remain. Switching now would also
 invalidate the published source-bound worker artifacts and the in-flight
 2.0.27 native package pilot. Remove the old pin only through the guide's
