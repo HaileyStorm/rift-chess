@@ -284,7 +284,6 @@ export function workerPrecachePaths(files: Record<string, string>): string[] {
 async function main(): Promise<void> {
 const draft = process.argv.includes('--draft');
 const v2Preview = process.argv.includes('--v2-preview');
-if (v2Preview && !draft) throw new Error('The v2 preview must be built as a draft until its visual and integration gates pass.');
 const plugin = (await import(v2Preview ? './loader-v2.ts' : './loader.ts')).default;
 const semantic = draft ? null : verifyFreeze();
 const pixels = draft ? null : verifyFreeze('graphics');

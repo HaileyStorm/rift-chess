@@ -422,3 +422,30 @@ confirmed the image was presented after input drained; a second gate changed
 camera zoom and confirmed the obsolete image was discarded before a fresh
 Bend scene arrived. A refinement never acknowledges an input event or changes
 rules. This is transport ordering evidence, not a broad performance claim.
+
+### September 26 local release gate and native parity gap
+
+The v2 packaging path now permits a non-draft build. Local version
+`f261f9d623e679d401f7` passed the frozen semantic, parent pixel,
+graphics-library, asset, selected-module and source-bound worker checks.
+An extended Chrome playtest passed 11 rendered groups without page errors,
+including both themes, selection toggle, both sides, capture, promotion,
+Shift, PCM sound, portrait layout and an offline module-worker refinement.
+This candidate is marked `sourceDirty: true` while native work continues; it
+is not yet a source-clean publication or hosted acceptance.
+
+The `maySuspend:false` worker auto fast-path probe is a no-go under the current
+strict input contract. Even validation without copying took 20–27 ms median
+for cheap 1.62 MB Image-shaped arguments, whereas serial leaves were under
+0.02 ms. The game retains its measured required bot helper and independent
+settled-sprite helper, leaving input and cheap render paths serial. See the
+[guide](docs/LOCAL_BEND_GUIDE.md#experimental-js-helper-workers-downstream-variant)
+for the raw ignored fixture location and limitations.
+
+A smaller graphical `NativeMini.bend` has linked and played through WSLg with
+the real Bend position kernel, but its 256px flat board is visibly far below
+the browser presentation. It is a native binary feasibility checkpoint only.
+The full source-level `NativeV2.bend` has not emitted a binary; its larger
+checker/emitter exceeded a safe working set on the 16 GiB laptop. The Mini
+visual parity follow-up is ongoing. Linux acknowledged the exact graphics
+commit for isolated CPU/GPU testing, but no device measurement has returned.

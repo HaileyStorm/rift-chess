@@ -29,6 +29,9 @@ await page.addInitScript(() => {
   window.__frames = [];
   window.__events = [];
   window.__sounds = [];
+  window.__refinements = [];
+  window.addEventListener('rift-bend-sprite-refined', event =>
+    window.__refinements.push(event.detail));
   window.__audioStarts = 0;
   try {
     const nativeStart = AudioBufferSourceNode.prototype.start;
@@ -257,9 +260,12 @@ try {
   if (extended) {
     // The game chooses and decodes a separate Bend plate for each theme. Keep
     // this as rendered evidence, including a selected piece on the warm court.
+    const beforeWarm = await page.evaluate(() => window.__refinements.length);
     await control(23);
     await control(28);
     await waitMenu(0);
+    await page.waitForFunction(before => window.__refinements.length > before,
+      beforeWarm, { timeout: 60000 });
     await capture('05b-warm-court');
     await plateWitness('stone');
     await square(6, 7, true);
@@ -268,10 +274,13 @@ try {
     await square(6, 7, true);
     await control(1);
     await waitMenu(2);
+    const beforeAstral = await page.evaluate(() => window.__refinements.length);
     await control(22);
     await capture('05d-astral-restored-settings');
     await control(28);
     await waitMenu(0);
+    await page.waitForFunction(before => window.__refinements.length > before,
+      beforeAstral, { timeout: 60000 });
     await plateWitness('astral');
     await control(1);
     await waitMenu(2);
@@ -302,18 +311,22 @@ try {
   await control(1);
   await waitMenu(2);
   assert.equal(await page.locator('[data-control="24"]').getAttribute('aria-pressed'), soundAfter);
+  await control(28);
+  await waitMenu(0);
   if (extended && soundAfter !== soundBefore) {
+    await control(1);
+    await waitMenu(2);
     await control(24);
     assert.equal(await page.locator('[data-control="24"]').getAttribute('aria-pressed'), soundBefore,
       'restore the initial sound preference before sound scenarios');
+    await control(28);
+    await waitMenu(0);
   }
   receipt.checks.push('Settings, Help and New Match prompts respond; match and preference survive reload');
 
   if (extended) {
     // Import a short reference sequence whose final move captures, then verify
     // the promoted-piece chooser by replaying the exact canonical path.
-    await control(28);
-    await waitMenu(0);
     await freshMatch();
     await upload(fixtureRecord(2));
     await commandCount(2);

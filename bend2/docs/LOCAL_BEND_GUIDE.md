@@ -443,7 +443,18 @@ evidence, not a deployed-site claim. Auto scheduling remains conservative and
 can incur a very large validation/copy cost on cheap, large-argument calls.
 Keep those on the synchronous API. A required helper can win on coarse work,
 but that alone does not justify enabling auto at every game boundary. The
-Rift browser build packages only selected measured worker libraries, includes
+bounded `maySuspend:false` fast-path experiment used two depth-7 Image-shaped
+arguments (21,845 ADTs; 1.62 MB wire form) and found that validating without
+copying still took 20–27 ms median, against sub-0.02 ms serial leaves. The
+usual snapshot took 33–47 ms median. The no-copy variant retained rejection
+of cycles, getters, extra fields, exotic prototypes and node-budget excess;
+skipping validation would change the public host-input contract. We therefore
+did not ship that compiler change. Route the game's measured coarse bot work
+through its required helper, keep input/rendering serial, and use the separate
+scene helper for settled artwork. These are Windows local fixture timings,
+not GPU or broad-device conclusions; the ignored raw probe receipt is at
+`.artifacts/bend2/toolchain-patches/workers-stage2-20260925/bench/workers/auto_fastpath-baseline.json`.
+The Rift browser build packages only selected measured worker libraries, includes
 their five files in its service-worker cache, and checks a build-only source
 binding so an old compiler or changed Bend source cannot silently be served.
 

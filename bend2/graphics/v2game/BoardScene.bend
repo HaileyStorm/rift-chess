@@ -538,6 +538,37 @@ def ground_tiles(order: List<&2, U32>, +c: Context, image: Image) -> Image:
     case +square <> rest:
       ground_tiles(rest, c, ground_tile_layer(square, c, image))
 
+# Four narrow brass rails frame the court without filling any interior square.
+# Missing macro tiles remain real openings onto the observatory beneath them.
+def rail_edges(+depth: Nat,+size: U32,+a: Quad.Point,+b: Quad.Point,
+  +c: Quad.Point,+d: Quad.Point,+e: Quad.Point,+f: Quad.Point,
+  +g: Quad.Point,+h: Quad.Point,+color: U32,image: Image) -> Image:
+  +north = Facet.draw(depth,size,Quad.make(a,b,f,e),color,255,image)
+  +east = Facet.draw(depth,size,Quad.make(b,c,g,f),color,255,north)
+  +south = Facet.draw(depth,size,Quad.make(c,d,h,g),color,255,east)
+  Facet.draw(depth,size,Quad.make(d,a,e,h),color,255,south)
+
+def board_rail(+depth: Nat,+size: U32,+camera: Camera.Basis,
+  +theme: U32,image: Image) -> Image:
+  +inner_nw = point(camera,size,F32.neg(0.5),F32.neg(0.5))
+  +inner_ne = point(camera,size,7.5,F32.neg(0.5))
+  +inner_se = point(camera,size,7.5,7.5)
+  +inner_sw = point(camera,size,F32.neg(0.5),7.5)
+  +edge_nw = point(camera,size,F32.neg(0.60),F32.neg(0.60))
+  +edge_ne = point(camera,size,7.60,F32.neg(0.60))
+  +edge_se = point(camera,size,7.60,7.60)
+  +edge_sw = point(camera,size,F32.neg(0.60),7.60)
+  +outer_nw = point(camera,size,F32.neg(0.66),F32.neg(0.66))
+  +outer_ne = point(camera,size,7.66,F32.neg(0.66))
+  +outer_se = point(camera,size,7.66,7.66)
+  +outer_sw = point(camera,size,F32.neg(0.66),7.66)
+  +shadow = rail_edges(depth,size,edge_nw,edge_ne,edge_se,edge_sw,
+    outer_nw,outer_ne,outer_se,outer_sw,
+    Bool.pick(U32,U32.is_zero(theme),1712926,2566960),image)
+  rail_edges(depth,size,inner_nw,inner_ne,inner_se,inner_sw,
+    edge_nw,edge_ne,edge_se,edge_sw,
+    Bool.pick(U32,U32.is_zero(theme),14265708,15712384),shadow)
+
 def piece_layer(+square: U32, +c: Context, image: Image) -> Image:
   match c:
     case Context{depth, size, frame, camera, +board, oldBoard,
@@ -1038,7 +1069,8 @@ def ground_prepared(+context: Context, background: Image) -> Image:
   match context:
     case Context{depth, size, frame, +camera, board, oldBoard,
         previous, holes, action, theme}:
-      ground_tiles(Camera.depth_order(camera), context, background)
+      +framed = board_rail(depth,size,camera,theme,background)
+      ground_tiles(Camera.depth_order(camera), context, framed)
 
 def compose_prepared(+context: Context, ground: Image) -> Image:
   match context:
