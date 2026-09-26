@@ -414,6 +414,18 @@ def cgroup_v2_headroom(root: Path, relative: str) -> int | None:
     available: int | None = None
     current_path = leaf
     while True:
+        # Linux cgroup v2 does not expose memory.max/current on the hierarchy
+        # root. Accept that one missing limit only when this really is a v2
+        # root with the memory controller; every non-root ancestor must have
+        # readable accounting or the expensive emission fails closed.
+        if current_path == root and not (root / "memory.max").exists():
+            try:
+                controllers = (root / "cgroup.controllers").read_text(encoding="ascii").split()
+            except OSError as exc:
+                raise BuildError(f"cannot verify cgroup v2 root controller: {exc}") from exc
+            if "memory" not in controllers:
+                raise BuildError("cgroup v2 root has no memory controller; cannot bound NativeV2 emission.")
+            return available
         try:
             limit_text = (current_path / "memory.max").read_text(encoding="ascii").strip()
             if limit_text != "max":
@@ -430,30 +442,38 @@ def cgroup_v2_headroom(root: Path, relative: str) -> int | None:
         current_path = current_path.parent
 
 
-def linux_memory_available() -> int:
+def linux_memory_available(
+    proc_root: Path = Path("/proc"), cgroup_root: Path = Path("/sys/fs/cgroup")
+) -> int:
     try:
         memory = {}
-        for line in Path("/proc/meminfo").read_text(encoding="ascii").splitlines():
+        for line in (proc_root / "meminfo").read_text(encoding="ascii").splitlines():
             if line.startswith("MemAvailable:"):
                 memory["available"] = int(line.split()[1]) * 1024
-            elif line.startswith("MemTotal:"):
-                memory["total"] = int(line.split()[1]) * 1024
         available = memory["available"]
-        total = memory["total"]
     except (OSError, ValueError, IndexError, KeyError) as exc:
         raise BuildError(f"cannot read Linux MemAvailable before NativeV2 emission: {exc}") from exc
 
     try:
-        cg_lines = Path("/proc/self/cgroup").read_text(encoding="ascii").splitlines()
+        cg_lines = (proc_root / "self" / "cgroup").read_text(encoding="ascii").splitlines()
     except OSError as exc:
         raise BuildError(f"cannot read process cgroup before NativeV2 emission: {exc}") from exc
     entries = [line.split(":", 2)[2] for line in cg_lines if line.startswith("0::")]
     if len(entries) != 1:
         raise BuildError("NativeV2 memory preflight requires one readable cgroup v2 process path.")
-    headroom = cgroup_v2_headroom(Path("/sys/fs/cgroup"), entries[0])
+    headroom = cgroup_v2_headroom(cgroup_root, entries[0])
     if headroom is not None:
         available = min(available, headroom)
     return available
+
+
+def require_emission_memory(available: int) -> None:
+    if available < EMIT_MEMORY_FLOOR:
+        gib = available / 1024**3
+        raise BuildError(
+            f"only {gib:.1f} GiB is available under host/cgroup limits; NativeV2 C emission requires at least "
+            f"{EMIT_MEMORY_FLOOR / 1024**3:.0f} GiB for the recorded 32.22 GiB peak."
+        )
 
 
 def choose_clang(requested: str | None, *, cuda: bool) -> dict[str, str | int]:
@@ -517,7 +537,8 @@ def probe_native_dependencies(
     cuda: dict[str, str] | None,
 ) -> str:
     if cuda is None:
-        probe = """#include <X11/Xlib.h>
+        probe = """#define _GNU_SOURCE 1
+#include <X11/Xlib.h>
 #include <alsa/asoundlib.h>
 int main(int argc, char **argv) {
   if (argc == 2147483647) {
@@ -529,7 +550,8 @@ int main(int argc, char **argv) {
 }
 """
     else:
-        probe = """#include <X11/Xlib.h>
+        probe = """#define _GNU_SOURCE 1
+#include <X11/Xlib.h>
 #include <alsa/asoundlib.h>
 #include <cuda.h>
 #include <nvrtc.h>
@@ -599,12 +621,7 @@ def preflight(root: Path, args: argparse.Namespace) -> dict[str, Any]:
         if not Path("/proc").is_dir():
             raise BuildError("Linux /proc is required for the bounded emission memory preflight.")
         available = linux_memory_available()
-        if available < EMIT_MEMORY_FLOOR:
-            gib = available / 1024**3
-            raise BuildError(
-                f"only {gib:.1f} GiB is MemAvailable; NativeV2 C emission requires at least "
-                f"{EMIT_MEMORY_FLOOR / 1024**3:.0f} GiB for the recorded 32.22 GiB peak."
-            )
+        require_emission_memory(available)
     compiler = verify_compiler(root)
     compiler_root = root / ".artifacts" / "toolchains" / "bend"
     closure = source_closure(root, compiler_root)

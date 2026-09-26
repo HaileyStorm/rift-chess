@@ -17,13 +17,35 @@ SPEC.loader.exec_module(package)
 
 
 class NativePackagePreflight(unittest.TestCase):
+    def memory_fixture(self, root: Path, available_gib: int, relative: str) -> Path:
+        proc = root / "proc"
+        (proc / "self").mkdir(parents=True)
+        (proc / "meminfo").write_text(
+            f"MemAvailable: {available_gib * 1024 * 1024} kB\n", encoding="ascii"
+        )
+        (proc / "self" / "cgroup").write_text(f"0::{relative}\n", encoding="ascii")
+        return proc
+
+    def test_unlimited_v2_root_uses_host_mem_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cgroup = root / "cgroup"
+            cgroup.mkdir()
+            (cgroup / "cgroup.controllers").write_text("cpu io memory pids\n", encoding="ascii")
+            self.assertIsNone(package.cgroup_v2_headroom(cgroup, "/"))
+            proc = self.memory_fixture(root, 39, "/")
+            available = package.linux_memory_available(proc, cgroup)
+            self.assertEqual(available, 39 * 1024**3)
+            with self.assertRaisesRegex(package.BuildError, "at least 40 GiB"):
+                package.require_emission_memory(available)
+
     def test_parent_limit_overrides_unlimited_leaf(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             leaf = root / "parent" / "child"
             leaf.mkdir(parents=True)
+            (root / "cgroup.controllers").write_text("memory cpu\n", encoding="ascii")
             for directory, limit, used in [
-                (root, "max", None),
                 (root / "parent", str(16 * 1024**3), 3 * 1024**3),
                 (leaf, "max", None),
             ]:
@@ -31,6 +53,11 @@ class NativePackagePreflight(unittest.TestCase):
                 if used is not None:
                     (directory / "memory.current").write_text(str(used), encoding="ascii")
             self.assertEqual(package.cgroup_v2_headroom(root, "/parent/child"), 13 * 1024**3)
+            proc = self.memory_fixture(root, 100, "/parent/child")
+            available = package.linux_memory_available(proc, root)
+            self.assertEqual(available, 13 * 1024**3)
+            with self.assertRaisesRegex(package.BuildError, "at least 40 GiB"):
+                package.require_emission_memory(available)
 
     def test_missing_ancestor_accounting_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

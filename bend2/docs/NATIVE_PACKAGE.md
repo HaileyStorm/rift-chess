@@ -16,15 +16,26 @@ compiler command.
 
 NativeV2 C emission previously used 32.22 GiB peak RSS. A build refuses to
 start unless at least 40 GiB remains available under the host memory report
-and every finite limit in its cgroup v2 ancestor chain. A host without readable
-cgroup v2 accounting fails closed. This is a protective floor, not a guarantee
-that other processes will not consume memory.
+and every **visible** finite limit in its cgroup v2 ancestor chain. A host
+without readable cgroup v2 accounting fails closed. A cgroup namespace may
+hide a stricter parent outside its visible hierarchy, so this local check
+alone cannot certify that ancestor's headroom; the Linux host must report its
+actual mount and process-cgroup topology for the pilot. This is a protective
+floor, not a guarantee that other processes will not consume memory.
+The actual [cgroup v2 root has no `memory.max` file](https://cdn.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files).
+The guard treats only that verified controller root as unlimited; unreadable
+non-root ancestors still fail closed, and host `MemAvailable` always applies.
 
 The read-only preflight verifies the exact Bend import closure, the compiler
 pin and wrapper version, asset manifests and bytes, a suitable Clang, and a
 small X11/ALSA compile-and-link probe. It does not source-check NativeV2 or emit
 C. On Windows it validates the pin, source closure, and assets, reports that
 building is unavailable, and makes no output directory.
+
+The Linux dependency probe defines `_GNU_SOURCE` before including X11/ALSA,
+matching the pinned Bend-generated C. Without that feature-test macro, a
+strict-C probe could spuriously redeclare `timespec` in ALSA headers even
+though the real generated program links on the same host.
 
 ~~~sh
 python3 bend2/tools/build-native-v2.py --preflight
