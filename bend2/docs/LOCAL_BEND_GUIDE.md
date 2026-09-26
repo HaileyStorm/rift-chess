@@ -909,6 +909,21 @@ Bend releases:
 - **Cut reusable libraries below game semantics.** `lib/graphics` has Base-only
   modules and colocated laws, proofs, finite tests, examples and license. Camera
   limits, Rift topology, piece art and animation remain project adapters.
+- **Tune GPU forks on the device, with phase timers.** The pinned
+  `guide/SHADERS.md` recommends one root bang leading to roughly `4^7`
+  balanced leaves, with flat work at each leaf; sweep adjacent depths rather
+  than adding `!` to every child. Its CUDA path can fault managed-memory
+  pages across PCIe when host preparation and checksum touch the same scene.
+  A Linux RTX 5090 fixture at graphics commit `fb73a82` changed one 512px
+  `Plan.render` call to `render_offload` but used `forks=1`, so at most four
+  device branches preceded serial raster. The reported 28.8 s GPU versus
+  0.41 s four-worker CPU median included process startup, preparation,
+  16 renders, checksum and output. It proved device execution and pixel
+  equality, but cannot isolate kernel, launch or readback cost, or predict a
+  better fork setting. Preserve the single-core and four-worker references,
+  compare exact pixels, and time cold, warm-render and readback phases before
+  using a GPU tier in a game. The [source-bound host receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842302700)
+  identifies the one-line fixture edit, command and timing boundary.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.
