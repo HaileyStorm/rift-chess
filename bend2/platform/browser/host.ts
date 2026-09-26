@@ -10,6 +10,8 @@ const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
 let ports: Ports;
 let presentation: unknown;
+let presentedTheme: number | null = null;
+let pendingRefinement: any = null;
 let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0, slow = 0;
 const queue = new PresentedInputQueue<any>();
 let capabilities: BrowserCapabilities;
@@ -103,6 +105,32 @@ function accessibility(items: any[]): void {
   }
   for (const button of controls.querySelectorAll<HTMLElement>('[data-control]')) if (!keep.has(button.dataset.control!)) button.remove();
 }
+function discardRefinement(message: any): void { message?.bitmap?.close(); }
+function samePresentedView(candidate: any): boolean {
+  const current = presentation as any;
+  const next = candidate.presentation;
+  return !!current && current.revision === next?.revision && current.menu === next.menu &&
+    current.view?.yaw === next.view?.yaw && current.view?.pitch === next.view?.pitch &&
+    current.view?.zoom === next.view?.zoom && presentedTheme === candidate.renderTheme &&
+    candidate.width === canvas.width && candidate.height === canvas.height;
+}
+function presentRefinement(message: any): void {
+  if (!samePresentedView(message)) {
+    canvas.dataset.spriteDiscarded = String(Number(canvas.dataset.spriteDiscarded || 0) + 1);
+    discardRefinement(message);
+    return;
+  }
+  if (message.bitmap) {
+    try { context.drawImage(message.bitmap, 0, 0, message.width, message.height); }
+    finally { message.bitmap.close(); }
+  } else if (message.image) {
+    context.putImageData(new ImageData(new Uint8ClampedArray(message.image),
+      message.width, message.height), 0, 0);
+  }
+  canvas.dataset.spriteRoundTripMs = String(message.spriteMetrics?.roundTripMs ?? '');
+  canvas.dispatchEvent(new CustomEvent('rift-bend-sprite-refined',
+    { bubbles: true, detail: message.spriteMetrics }));
+}
 worker.addEventListener('message', event => {
   const message = event.data;
   if (message.kind === 'ready') {
@@ -114,24 +142,16 @@ worker.addEventListener('message', event => {
   }
   // A late Bend-authored sprite image refines the already-presented position.
   // It never acknowledges or reorders an input request, changes controls, or
-  // samples the automatic detail policy. New input wins over an old picture.
+  // samples the automatic detail policy. Hold at most one refinement while an
+  // input is in flight, then compare Bend's presented revision/view/theme.
   if (message.kind === 'refinement') {
-    if (busy || queue.length || !presentation ||
-        message.presentation.revision !== (presentation as any).revision ||
-        message.width !== canvas.width || message.height !== canvas.height) {
-      message.bitmap?.close();
-      return;
+    if (busy || queue.length) {
+      discardRefinement(pendingRefinement);
+      pendingRefinement = message;
+      canvas.dataset.spriteDeferred = String(Number(canvas.dataset.spriteDeferred || 0) + 1);
+    } else {
+      presentRefinement(message);
     }
-    if (message.bitmap) {
-      try { context.drawImage(message.bitmap, 0, 0, message.width, message.height); }
-      finally { message.bitmap.close(); }
-    } else if (message.image) {
-      context.putImageData(new ImageData(new Uint8ClampedArray(message.image),
-        message.width, message.height), 0, 0);
-    }
-    canvas.dataset.spriteRoundTripMs = String(message.spriteMetrics?.roundTripMs ?? '');
-    canvas.dispatchEvent(new CustomEvent('rift-bend-sprite-refined',
-      { bubbles: true, detail: message.spriteMetrics }));
     return;
   }
   busy = false;
@@ -170,6 +190,7 @@ worker.addEventListener('message', event => {
     publishProfile();
     scheduleTextureProbe();
     presentation = message.presentation;
+    presentedTheme = message.renderTheme;
     canvas.setAttribute('aria-label', message.summary);
     accessibility(message.controls);
     status.textContent = message.summary;
@@ -181,6 +202,11 @@ worker.addEventListener('message', event => {
   // Always show a completed frame, even while newer pointer input is queued.
   pump();
   canvas.setAttribute('aria-busy', String(busy || queue.length > 0));
+  if (!busy && !queue.length && pendingRefinement) {
+    const ready = pendingRefinement;
+    pendingRefinement = null;
+    presentRefinement(ready);
+  }
   if (qualityWindow.length >= 8) queueMicrotask(nextQualityProbe);
 });
 worker.addEventListener('error', event => { status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only'); });

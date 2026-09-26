@@ -200,7 +200,8 @@ function ensureSpriteHelper(): void {
     }
     messageQueue = messageQueue.then(async () => {
       const current = latestPacket;
-      if (!current || current.render.boardSize !== 512 || current.render.motion ||
+      if (!current || (current.render.boardSize !== 512 && current.render.boardSize !== 1024) ||
+          current.render.motion ||
           current.snapshot.moving || current.render.theme !== pending.theme ||
           current.presentation.revision !== pending.revision ||
           !scene.sprite_same_placement(pending.frame, current.snapshot.frame)) {
@@ -222,7 +223,8 @@ function ensureSpriteHelper(): void {
 }
 
 function scheduleSprite(packet: any): void {
-  if (packet.render.boardSize !== 512 || packet.render.motion || packet.snapshot.moving) return;
+  if ((packet.render.boardSize !== 512 && packet.render.boardSize !== 1024) ||
+      packet.render.motion || packet.snapshot.moving) return;
   const frame = packet.snapshot.frame, theme = packet.render.theme;
   if (spriteLayer && spriteTheme === theme && spriteFrame &&
       scene.sprite_same_placement(spriteFrame, frame)) return;
@@ -260,11 +262,13 @@ function render(packet: any): any {
   if (!underlay || !motionUnderlay) throw new Error('Missing Bend underlay');
   if (request.ground) ground = timed('ground', () => scene[`fast_ground${suffix}`](frame, underlay));
   if (!ground) throw new Error('Missing Bend ground');
-  const spriteSettled = boardSize === 512 && !request.motion && !packet.snapshot.moving &&
+  const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
   if (request.prepared || (spriteSettled && !prepared)) prepared = timed('prepared', () =>
-    spriteSettled ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
+    spriteSettled ? (boardSize === 512
+      ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
+      : scene.nearest2(9n, scene.fast_sprite_feedback_static512(frame, spriteLayer)))
       : scene[`fast_prepare${suffix}`](frame, ground));
   if (!prepared) throw new Error('Missing Bend prepared scene');
   const data = packet.chromeData, plan = packet.plan;
@@ -350,6 +354,7 @@ async function emit(packet: any, elapsed: number, id: number,
   });
   const audioMs = performance.now() - audioStart;
   self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,
+    renderTheme: packet.render.theme,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
     treeMs, traversalMs, sceneTimes, spriteMetrics,

@@ -15,6 +15,17 @@ limit; a graphical native binary is not yet built. The smaller `NativeCLI.bend`
 is a browser-independent text game over the same Bend rules and record codec.
 It now emits C, builds as a WSL Linux ELF, and has a real file-backed playthrough.
 
+The public Bend link currently serves the earlier release. The current
+`codex/visual-overhaul` source has a **draft v2 preview** with a board-first
+menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
+and a separate Bend-rendered sprite helper. Run
+`node bend2/tools/bend.mjs --run bend2/tools/build.ts --draft --v2-preview`
+and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
+The local Chrome interaction/offline gates pass; detailed sprite refinement
+is still slow, GPU evidence and a full graphical native binary remain open,
+and this branch has not replaced the public Bend preview. See
+[the current sprint checkpoint](SPRINT.md) for evidence and limitations.
+
 ## Start here
 
 - [Local Bend guide](docs/LOCAL_BEND_GUIDE.md): language, proof, runtime and browser

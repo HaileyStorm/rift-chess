@@ -35,7 +35,7 @@ def surface(+theme: U32) -> U32:
   Bool.pick(U32,U32.is_eq(theme,1),2700858,793377)
 
 def raised(+theme: U32) -> U32:
-  Bool.pick(U32,U32.is_eq(theme,1),3560928,1058603)
+  Bool.pick(U32,U32.is_eq(theme,1),3489847,1058603)
 
 def line(+theme: U32) -> U32:
   Bool.pick(U32,U32.is_eq(theme,1),8161107,2180688)
@@ -360,7 +360,8 @@ def paint_button(+depth: Nat,+size: U32,+theme: U32,+fonts: FontPack.Book,
   +width = Font.body_width(size,label,fonts)
   +start = U32.add(x,U32.div(U32.sub(w,U32.min(w,width)),2))
   +top = U32.add(y,U32.div(U32.sub(h,U32.min(h,px(size,21))),2))
-  +color = Bool.pick(U32,enabled,ink(theme),muted(theme))
+  +color = Bool.pick(U32,Bool.and(active,U32.is_eq(theme,1)),bg(theme),
+    Bool.pick(U32,enabled,ink(theme),muted(theme)))
   Font.body(depth,size,label,start,top,color,fonts,face)
 
 def paint_control_if(show: Bool,+depth: Nat,+size: U32,+theme: U32,

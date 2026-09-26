@@ -408,3 +408,17 @@ this draft as a complete responsiveness,
 GPU, owner visual, native binary, or hosted acceptance. The Linux GPU request
 is [Coordination comment 5840057909](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5840057909)
 and has no result as of this checkpoint.
+
+One Chrome test injected three valid fast timing windows through the actual
+controller policy, promoted to a 2048×1280 presentation, and confirmed the
+existing detailed sprite scene remained visible. It measured 40 ms for the
+prepared high-tier Bend layer in that one run. This synthetic promotion is a
+rendering regression gate, not evidence that the live automatic policy should
+prefer high detail on this Windows machine or that GPU work ran.
+
+The browser host holds at most one late sprite refinement while an input is in
+flight. A real-Chrome race gate forced a pointer event at that boundary and
+confirmed the image was presented after input drained; a second gate changed
+camera zoom and confirmed the obsolete image was discarded before a fresh
+Bend scene arrived. A refinement never acknowledges an input event or changes
+rules. This is transport ordering evidence, not a broad performance claim.
