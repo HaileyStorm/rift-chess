@@ -25,6 +25,34 @@ type GroundKey is Data:
 type ShellKey is Data:
   ShellKey{valid: Bool, theme: U32, width: U32, height: U32}
 
+type DirtyFacts is Data:
+  DirtyFacts{ground: GroundKey, cameraStyle: U32, theme: U32,
+    backgroundDirty: Bool, groundDirty: Bool, preparedDirty: Bool}
+
+def fact_ground(facts: DirtyFacts) -> GroundKey:
+  match facts:
+    case DirtyFacts{ground, _, _, _, _, _}: ground
+
+def fact_camera_style(facts: DirtyFacts) -> U32:
+  match facts:
+    case DirtyFacts{_, cameraStyle, _, _, _, _}: cameraStyle
+
+def fact_theme(facts: DirtyFacts) -> U32:
+  match facts:
+    case DirtyFacts{_, _, theme, _, _, _}: theme
+
+def fact_background_dirty(facts: DirtyFacts) -> Bool:
+  match facts:
+    case DirtyFacts{_, _, _, backgroundDirty, _, _}: backgroundDirty
+
+def fact_ground_dirty(facts: DirtyFacts) -> Bool:
+  match facts:
+    case DirtyFacts{_, _, _, _, groundDirty, _}: groundDirty
+
+def fact_prepared_dirty(facts: DirtyFacts) -> Bool:
+  match facts:
+    case DirtyFacts{_, _, _, _, _, preparedDirty}: preparedDirty
+
 type Session is Data:
   Session{program: S.State, ground: GroundKey, cameraStyle: U32,
     quality: Quality.State, shell: ShellKey}
@@ -218,16 +246,10 @@ def planned(+snapshot: T.Snapshot, +scale: U32,
   Compact.plan_for(T.panels_menu(T.snapshot_panels(snapshot)),
     ChromePlan.plan_controls(base),view)
 
-def finish.dirty(+redraw: U32, +state: S.State,
-  effects: List<&2, T.Effect>, after: U32,
-  +ground: GroundKey, +style: U32, +quality: Quality.State,
-  +shell: ShellKey,
-  +scale: U32, board_size: U32, depth: Nat, +board_depth: Nat,
-  +tier_changed: Bool) -> Packet:
-  +snapshot = Program.snapshot(state)
-  +plan = planned(snapshot, scale, board_depth)
+def dirty_facts(redraw: U32, +snapshot: T.Snapshot,
+  +ground: GroundKey, +orbiting: Bool,
+  +tier_changed: Bool) -> DirtyFacts:
   +frame = T.snapshot_frame(snapshot)
-  +orbiting = S.orbiting(state)
   +moving = Bool.or(orbiting, T.snapshot_moving(snapshot))
   +shifting = animated_shift(frame)
   +keep_ground = Bool.or(orbiting, Bool.and(Bool.not(tier_changed),
@@ -237,22 +259,41 @@ def finish.dirty(+redraw: U32, +state: S.State,
     Bool.and(keep_ground, U32.is_lt(redraw, 2)))
   +next_style = camera_style(Scene.frame_view(frame))
   +theme = Scene.frame_theme(frame)
+  +background_dirty = Bool.or(tier_changed,
+    Bool.not(background_matches(ground, frame)))
+  DirtyFacts{ground_key_after(keep_ground, ground, frame),
+    next_style, theme, background_dirty, Bool.not(keep_ground),
+    Bool.not(keep_prepared)}
+
+def finish.dirty(+redraw: U32, +state: S.State,
+  effects: List<&2, T.Effect>, after: U32,
+  +ground: GroundKey, +style: U32, +quality: Quality.State,
+  +shell: ShellKey,
+  +scale: U32, board_size: U32, depth: Nat, +board_depth: Nat,
+  +tier_changed: Bool) -> Packet:
+  +snapshot = Program.snapshot(state)
+  +orbiting = S.orbiting(state)
+  +facts = dirty_facts(redraw, snapshot, ground, orbiting, tier_changed)
+  +plan = planned(snapshot, scale, board_depth)
+  +next_ground = fact_ground(facts)
+  +next_style = fact_camera_style(facts)
+  +theme = fact_theme(facts)
+  +background_dirty = fact_background_dirty(facts)
+  +ground_dirty = fact_ground_dirty(facts)
+  +prepared_dirty = fact_prepared_dirty(facts)
   +width = ChromeModel.plan_width(plan)
   +height = ChromeModel.plan_height(plan)
   +shell_dirty = Bool.and(Bool.not(orbiting),
     Bool.not(shell_matches(shell, theme, width, height)))
-  # The chrome has no continuously changing camera readout. While orbiting,
-  # defer active-preset changes until release so a drag only rebuilds the board.
+  # Defer the active camera-preset chrome change during an orbit drag.
   +chrome_dirty = Bool.and(Bool.not(orbiting),
     Bool.or(shell_dirty, Bool.or(tier_changed,
       Bool.or(U32.is_ne(style, next_style), U32.is_ge(redraw, 2)))))
-  +request : RenderPlan = RenderPlan{Bool.or(tier_changed,
-    Bool.not(background_matches(ground, frame))),
-    Bool.not(keep_ground), Bool.not(keep_prepared),
-    chrome_dirty,
+  +request : RenderPlan = RenderPlan{background_dirty, ground_dirty,
+    prepared_dirty, chrome_dirty,
     True{}, theme, U32.mul(1024, scale), board_size,
     depth, board_depth, shell_dirty, orbiting}
-  pack(Session{state, ground_key_after(keep_ground, ground, frame),
+  pack(Session{state, next_ground,
     Bool.pick(U32, chrome_dirty, next_style, style),
     quality, shell_key_after(Bool.not(shell_dirty), shell, theme, width, height)},
     effects, snapshot, plan, request, True{}, after)
