@@ -18,7 +18,7 @@ forward references to `tick`, `read_import_choice`, and `runtime_exit`, a
 repeated `slot` and `theme` use, and a typed `TickNext` construction. A later
 check then found duplicated `effect_inputs` in `tick_continue`; that binder was
 made reusable, but this last source fix has not been checked. The current
-MenuAA/font adapter edits below are also unchecked.
+MenuAA/font/sprite adapter edits below are also unchecked.
 
 The four recent whole-book checks reached peaks of 7.22, 7.17, 7.98, and 7.16
 GiB; their minimum free physical-memory readings were 0.03, 0.13, 0.37, and
@@ -35,10 +35,16 @@ source-closure candidate is to separate the RGA2 sprite cluster from
 `BoardScene`: the `PieceSprites`/`PieceAssets` imports, sprite renderer and
 placement helpers around `fast_sprite_pieces512` / `fast_sprite_feedback_*`,
 and the page request/decode exports. A game-owned sibling module can hold that
-optional cluster while the browser helper and a future native path both import
-the same source. NativeV2 will need that module for visual parity, so this
-extraction alone is not a final memory reduction; the larger-host or
-legacy-renderer-split gate still needs measured evidence.
+cluster with both the browser helper and NativeV2 importing the same source.
+Because parity keeps this cluster in the native source closure, the extraction
+alone is not a final memory reduction; a legacy-renderer split or larger-host
+check still needs measured evidence.
+An in-tree Bend2 call-site scan found no callers beyond their declarations for
+`BoardScene.render512`, `render1024`, `render512_asset`, `render1024_asset`,
+`fast_overlay512/1024`, or `fast512/fast1024`. Those public wrappers are the
+first candidate set for a separate optional/legacy renderer module, pending an
+external-compatibility review; shared helpers stay in place until their call
+graph is mapped. This is a source search, not a proof of no external consumer.
 An earlier WSL query during memory pressure failed with Windows error
 `0x800705aa`, which is contention evidence rather than a source defect.
 
@@ -167,13 +173,22 @@ OS-level read failure. Those native interruption/read-error cases remain a
 separate ELF gate and must run in an isolated `RIFT_CHESS_DATA_DIR` after the
 graphical binary exists.
 
-NativeV2 still uses BoardScene's fast procedural piece path. The browser may
-replace settled pieces with the asynchronous helper's game-owned RGA2
-`PieceSprites` pages; NativeV2 does not yet load those pages, so same-source
-module reuse is not rendered-output parity. The adapter changes above have not
-passed a whole-book check, emitted C, or run on WSLg. A checked source closure
-and practical C-emission result are prerequisites to the ELF and real-input
-gates before NativeV2 can be called a native game. Base X11 `Window.frame` traverses the visible pixel
+NativeV2 now has a source path for the same three RGA2 fast-piece pages used by
+the browser: it takes `BoardScene.sprite_asset_ids()`, checks each file size
+against the game request, reads with one extra rejection byte, and calls
+`BoardScene.load_sprite_pages()`. When all pages decode, the settled board
+preparation makes a 512px underlay plus `settled_ground512`, then calls
+`fast_sprite_pieces512` and `fast_sprite_feedback_static512`; the 1024 tier
+uses the same `nearest2` upsampling of that completed 512px layer as the
+browser. Camera motion uses the browser's 128px underlay and
+`fast_camera512` preview path; any missing or rejected page set falls back to
+`fast_prepare*`. Native loading is synchronous at startup while the browser
+helper is asynchronous, so startup latency and transition timing still differ.
+This is source-level path reuse only: the adapter changes have not passed a
+whole-book check, emitted C, or run on WSLg, so no rendered parity claim is
+established. A checked source closure and practical C-emission result are
+prerequisites to the ELF and real-input gates before NativeV2 can be called a
+native game. Base X11 `Window.frame` traverses the visible pixel
 surface at its frame cadence even when a packet is unchanged, so actual native
 idle-CPU and pointer-latency measurements are required before any responsiveness
 claim. The older adapter below remains as compatibility and provenance until

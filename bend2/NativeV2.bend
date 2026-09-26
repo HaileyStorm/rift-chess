@@ -6,6 +6,8 @@ import ./ApplicationControl.bend as Control
 import ./graphics/Scene.bend as Scene
 import ./graphics/v2game/BoardScene.bend as BoardScene
 import ./graphics/v2game/Assets.bend as Assets
+import ./graphics/v2game/PieceAssets.bend as PieceAssets
+import ./graphics/v2game/PieceSprites.bend as PieceSprites
 import ./ui/Types.bend as T
 import ./ui/v2/ChromeData.bend as ChromeData
 import ./ui/v2/ChromePlan.bend as ChromePlan
@@ -15,7 +17,7 @@ import ./ui/v2/fonts/FontPack.bend as MenuFontPack
 type Cache is Data:
   Cache{valid: Bool, size: U32, board_size: U32, motion: Bool,
     assets_loaded: Bool, asset_theme: U32, plates: Assets.ObservatoryPlates,
-    fonts: MenuFontPack.Book,
+    fonts: MenuFontPack.Book, sprites: Maybe<&2, PieceSprites.Pieces>,
     chrome_data: ChromeData.Presentation, plan: ChromePlan.Plan,
     background: Image, motion_background: Image, ground: Image,
     prepared: Image, board: Image, shell: Image, overlay: Image, output: Image}
@@ -87,19 +89,20 @@ type State is Type:
     stamp: Nat}
 
 def empty_cache(fonts: MenuFontPack.Book,
+  sprites: Maybe<&2, PieceSprites.Pieces>,
   chrome_data: ChromeData.Presentation, plan: ChromePlan.Plan) -> Cache:
   Cache{False{}, 0, 0, False{}, False{}, 0, Assets.load_plates([]), fonts,
-    chrome_data, plan,
+    sprites, chrome_data, plan,
     Pix{0}, Pix{0}, Pix{0}, Pix{0}, Pix{0}, Pix{0}, Pix{0}, Pix{0}}
 
 def cache_with_assets(cache: Cache, theme: U32,
   plates: Assets.ObservatoryPlates) -> Cache:
   match cache:
-    case Cache{_, size, board_size, motion, _, _, _, +fonts,
+    case Cache{_, size, board_size, motion, _, _, _, +fonts, +sprites,
       +chrome_data, +plan, background,
       motion_background, ground, prepared, board, shell, overlay, output}:
       Cache{False{}, size, board_size, motion, True{}, theme, plates,
-        fonts, chrome_data, plan, background, motion_background, ground, prepared,
+        fonts, sprites, chrome_data, plan, background, motion_background, ground, prepared,
         board, shell, overlay, output}
 
 def background_size(board_size: U32, theme: U32,
@@ -108,11 +111,9 @@ def background_size(board_size: U32, theme: U32,
     case 512: BoardScene.underlay512_asset(theme, plates)
     case _: BoardScene.underlay1024_asset(theme, plates)
 
-def motion_background_size(board_size: U32, theme: U32,
+def motion_background_size(theme: U32,
   plates: Assets.ObservatoryPlates) -> Image:
-  match board_size:
-    case 512: BoardScene.underlay256_asset(theme, plates)
-    case _: BoardScene.underlay512_asset(theme, plates)
+  BoardScene.underlay128_asset(theme, plates)
 
 def choose_background(refresh: Bool, board_size: U32,
   theme: U32, plates: Assets.ObservatoryPlates, old: Image) -> Image:
@@ -120,10 +121,10 @@ def choose_background(refresh: Bool, board_size: U32,
     case True{}: background_size(board_size, theme, plates)
     case False{}: old
 
-def choose_motion_background(refresh: Bool, board_size: U32,
-  theme: U32, plates: Assets.ObservatoryPlates, old: Image) -> Image:
+def choose_motion_background(refresh: Bool, theme: U32,
+  plates: Assets.ObservatoryPlates, old: Image) -> Image:
   match refresh:
-    case True{}: motion_background_size(board_size, theme, plates)
+    case True{}: motion_background_size(theme, plates)
     case False{}: old
 
 def ground_size(board_size: U32, +frame: Scene.Frame,
@@ -144,10 +145,34 @@ def prepared_size(board_size: U32, +frame: Scene.Frame,
     case 512: BoardScene.fast_prepare512(frame, ground)
     case _: BoardScene.fast_prepare1024(frame, ground)
 
+def sprite_prepared512(+frame: Scene.Frame, +pieces: PieceSprites.Pieces,
+  theme: U32, plates: Assets.ObservatoryPlates) -> Image:
+  +underlay = BoardScene.underlay512_asset(theme, plates)
+  +sprite_ground = BoardScene.settled_ground512(frame, underlay)
+  +sprite_layer = BoardScene.fast_sprite_pieces512(frame, pieces, sprite_ground)
+  BoardScene.fast_sprite_feedback_static512(frame, sprite_layer)
+
+def sprite_prepared_size(board_size: U32, +frame: Scene.Frame,
+  +pieces: PieceSprites.Pieces, theme: U32,
+  plates: Assets.ObservatoryPlates) -> Image:
+  match board_size:
+    case 512: sprite_prepared512(frame, pieces, theme, plates)
+    case _: BoardScene.nearest2(9n,
+      sprite_prepared512(frame, pieces, theme, plates))
+
+def prepared_with_sprites(board_size: U32, +frame: Scene.Frame,
+  sprites: Maybe<&2, PieceSprites.Pieces>, theme: U32,
+  plates: Assets.ObservatoryPlates, ground: Image) -> Image:
+  match sprites:
+    case Some{pieces}: sprite_prepared_size(board_size, frame, pieces, theme, plates)
+    case None{}: prepared_size(board_size, frame, ground)
+
 def choose_prepared(refresh: Bool, board_size: U32, +frame: Scene.Frame,
-  ground: Image, old: Image) -> Image:
+  sprites: Maybe<&2, PieceSprites.Pieces>, theme: U32,
+  plates: Assets.ObservatoryPlates, ground: Image, old: Image) -> Image:
   match refresh:
-    case True{}: prepared_size(board_size, frame, ground)
+    case True{}: prepared_with_sprites(board_size, frame, sprites,
+      theme, plates, ground)
     case False{}: old
 
 def pointer_size(board_size: U32, +frame: Scene.Frame,
@@ -156,16 +181,14 @@ def pointer_size(board_size: U32, +frame: Scene.Frame,
     case 512: BoardScene.fast_pointer512(frame, prepared)
     case _: BoardScene.fast_pointer1024(frame, prepared)
 
-def camera_size(board_size: U32, +frame: Scene.Frame,
+def camera_size(+frame: Scene.Frame,
   motion_background: Image) -> Image:
-  match board_size:
-    case 512: BoardScene.fast_camera512(frame, motion_background)
-    case _: BoardScene.fast_camera1024(frame, motion_background)
+  BoardScene.fast_camera512(frame, motion_background)
 
 def board_refresh(motion: Bool, board_size: U32, +frame: Scene.Frame,
   motion_background: Image, prepared: Image) -> Image:
   match motion:
-    case True{}: camera_size(board_size, frame, motion_background)
+    case True{}: camera_size(frame, motion_background)
     case False{}: pointer_size(board_size, frame, prepared)
 
 def choose_board(refresh: Bool, motion: Bool, board_size: U32,
@@ -217,7 +240,8 @@ def render_request(+snapshot: T.Snapshot, +chrome_data: ChromeData.Presentation,
       prepared_dirty, +chrome_dirty, +frame_dirty, +theme, +size,
       +board_size, +depth, _, +shell_dirty, +motion}
       Cache{valid, cached_size, cached_board_size, cached_motion,
-        assets_loaded, asset_theme, +plates, +fonts, +cached_data, +cached_plan,
+        assets_loaded, asset_theme, +plates, +fonts, +sprites,
+        +cached_data, +cached_plan,
         background, motion_background, ground,
         prepared, board, shell, overlay, output}:
       +same_size = Bool.and(U32.is_eq(cached_size, size),
@@ -231,7 +255,7 @@ def render_request(+snapshot: T.Snapshot, +chrome_data: ChromeData.Presentation,
       +next_background = choose_background(Bool.or(force, background_dirty),
         board_size, theme, plates, background)
       +next_motion_background = choose_motion_background(
-        Bool.or(force, background_dirty), board_size, theme, plates, motion_background)
+        Bool.or(force, background_dirty), theme, plates, motion_background)
       +ground_refresh = Bool.and(Bool.not(motion), Bool.or(force,
         Bool.or(ground_dirty, settled_after_motion)))
       +prepared_refresh = Bool.and(Bool.not(motion), Bool.or(force,
@@ -239,7 +263,7 @@ def render_request(+snapshot: T.Snapshot, +chrome_data: ChromeData.Presentation,
       +next_ground = choose_ground(ground_refresh, board_size,
         T.snapshot_frame(snapshot), next_background, ground)
       +next_prepared = choose_prepared(prepared_refresh, board_size,
-        T.snapshot_frame(snapshot), next_ground, prepared)
+        T.snapshot_frame(snapshot), sprites, theme, plates, next_ground, prepared)
       +redraw_board = Bool.or(force, Bool.or(frame_dirty, settled_after_motion))
       +next_board = choose_board(redraw_board, motion, board_size,
         T.snapshot_frame(snapshot), next_motion_background, next_prepared, board)
@@ -258,7 +282,7 @@ def render_request(+snapshot: T.Snapshot, +chrome_data: ChromeData.Presentation,
       +next_output = choose_output(redraw_output, depth, size, chrome_data, plan, fonts,
         next_board, next_overlay, output)
       Composed{Cache{True{}, size, board_size, motion, assets_loaded, asset_theme,
-        plates, fonts, chrome_data, plan, next_background,
+        plates, fonts, sprites, chrome_data, plan, next_background,
         next_motion_background, next_ground, next_prepared, next_board,
         next_shell, next_overlay, next_output}, next_output}
 
@@ -563,6 +587,95 @@ def asset_requests_result(requests: List<&2, Assets.AssetRequest>) -> IO(Assets.
 
 def load_theme_assets(theme: U32) -> IO(Assets.ObservatoryPlates):
   asset_requests_result(Assets.asset_ids(theme))
+
+def sprite_read_bytes_result(id: U32,
+  result: File & Result<&1, &1, U32 & String, List<&2, U32>>) ->
+  IO(PieceAssets.AssetResponse):
+  (file, answer) = result
+  match answer:
+    case Done{bytes}:
+      do IO<PieceAssets.AssetResponse>:
+        Unit <- File.close(file)
+        IO.pure(PieceAssets.AssetResponse,
+          PieceAssets.AssetResponse{id, bytes, True{}})
+    case Fail{(code, message)}:
+      do IO<PieceAssets.AssetResponse>:
+        Unit <- File.close(file)
+        Unit <- IO.print_err(String.append("Native sprite read failed (OS code ",
+          String.append(U32.show(code), String.append(": ", message))))
+        IO.pure(PieceAssets.AssetResponse,
+          PieceAssets.AssetResponse{id, [], False{}})
+
+def sprite_file_size_choice(allowed: Bool, id: U32, path: String,
+  max_bytes: U32, file: File) -> IO(PieceAssets.AssetResponse):
+  match allowed:
+    case False{}:
+      do IO<PieceAssets.AssetResponse>:
+        Unit <- File.close(file)
+        Unit <- IO.print_err(String.append("Native sprite exceeds game byte cap: ", path))
+        IO.pure(PieceAssets.AssetResponse,
+          PieceAssets.AssetResponse{id, [], False{}})
+    case True{}:
+      do IO<PieceAssets.AssetResponse>:
+        bytes : File & Result<&1, &1, U32 & String, List<&2, U32>> <-
+          File.read_bytes(file, U32.add(max_bytes, 1))
+        sprite_read_bytes_result(id, bytes)
+
+def sprite_file_size_result(id: U32, path: String, max_bytes: U32,
+  result: File & Result<&1, &1, U32 & String, U32>) ->
+  IO(PieceAssets.AssetResponse):
+  (file, answer) = result
+  match answer:
+    case Done{size}:
+      sprite_file_size_choice(U32.is_le(size, max_bytes), id, path, max_bytes, file)
+    case Fail{(code, message)}:
+      do IO<PieceAssets.AssetResponse>:
+        Unit <- File.close(file)
+        Unit <- IO.print_err(String.append("Native sprite size failed (OS code ",
+          String.append(U32.show(code), String.append(": ", message))))
+        IO.pure(PieceAssets.AssetResponse,
+          PieceAssets.AssetResponse{id, [], False{}})
+
+def sprite_open_result(id: U32, path: String, max_bytes: U32,
+  result: Result<&1, &1, U32 & String, File>) -> IO(PieceAssets.AssetResponse):
+  match result:
+    case Done{file}:
+      do IO<PieceAssets.AssetResponse>:
+        sized : File & Result<&1, &1, U32 & String, U32> <- File.size(file)
+        sprite_file_size_result(id, path, max_bytes, sized)
+    case Fail{(code, message)}:
+      do IO<PieceAssets.AssetResponse>:
+        Unit <- IO.print_err(String.append("Native sprite open failed (OS code ",
+          String.append(U32.show(code), String.append(": ", path))))
+        IO.pure(PieceAssets.AssetResponse,
+          PieceAssets.AssetResponse{id, [], False{}})
+
+def sprite_asset_request(request: PieceAssets.AssetRequest) ->
+  IO(PieceAssets.AssetResponse):
+  match request:
+    case PieceAssets.AssetRequest{id, +path, max_bytes}:
+      do IO<PieceAssets.AssetResponse>:
+        opened : Result<&1, &1, U32 & String, File> <- File.open(path, "r")
+        sprite_open_result(id, path, max_bytes, opened)
+
+def sprite_requests_go(requests: List<&2, PieceAssets.AssetRequest>,
+  responses: List<&2, PieceAssets.AssetResponse>) ->
+  IO(List<&2, PieceAssets.AssetResponse>):
+  match requests:
+    case Nil{}:
+      IO.pure(List<&2, PieceAssets.AssetResponse>,
+        List.reverse(&2, PieceAssets.AssetResponse, responses))
+    case request <> rest:
+      do IO<List<&2, PieceAssets.AssetResponse>>:
+        response : PieceAssets.AssetResponse <- sprite_asset_request(request)
+        sprite_requests_go(rest, response <> responses)
+
+def load_native_sprites() -> IO(Maybe<&2, PieceSprites.Pieces>):
+  do IO<Maybe<&2, PieceSprites.Pieces>>:
+    responses : List<&2, PieceAssets.AssetResponse> <-
+      sprite_requests_go(BoardScene.sprite_asset_ids(), [])
+    IO.pure(Maybe<&2, PieceSprites.Pieces>,
+      BoardScene.load_sprite_pages(responses))
 
 # Base File returns bytes as a List; the game-owned FontPack decoder expects a
 # power-of-two Array like the browser host supplies. Copy at most its declared
@@ -938,10 +1051,12 @@ def boot_packet(saved: Read, preferences: Read) -> Control.Packet:
 
 def boot_state(paths: NativePaths, +packet: Control.Packet,
   plates: Assets.ObservatoryPlates, fonts: MenuFontPack.Book,
+  sprites: Maybe<&2, PieceSprites.Pieces>,
   stamp: Nat) -> State:
   +data = packet_chrome_data(packet)
   +plan = packet_chrome_plan(packet)
-  +cache = cache_with_assets(empty_cache(fonts, data, plan), packet_theme(packet), plates)
+  +cache = cache_with_assets(empty_cache(fonts, sprites, data, plan),
+    packet_theme(packet), plates)
   State{box_frame(packet, cache), paths, None{}, False{}, [], 0, 0, 0, stamp}
 
 def packet_effects(packet: Control.Packet) -> List<&2, T.Effect>:
@@ -1279,7 +1394,7 @@ def pump_runtime(runtime: Runtime) -> IO(Runtime):
 
 def cache_needs_assets(theme: U32, cache: Cache) -> Bool:
   match cache:
-    case Cache{_, _, _, _, loaded, cached_theme, _, _, _, _, _, _, _, _, _, _, _, _}:
+    case Cache{_, _, _, _, loaded, cached_theme, _, _, _, _, _, _, _, _, _, _, _, _, _}:
       Bool.not(Bool.and(loaded, U32.is_eq(cached_theme, theme)))
 
 def asset_frame_update(frame_box: List<&2, NativeFrame>, theme: U32,
@@ -1492,8 +1607,9 @@ def start_asset_app(paths: NativePaths, +packet: Control.Packet,
   do IO<Unit>:
     plates : Assets.ObservatoryPlates <- load_theme_assets(theme)
     fonts : MenuFontPack.Book <- load_menu_font()
+    sprites : Maybe<&2, PieceSprites.Pieces> <- load_native_sprites()
     App.run(~State, ~App{view, tick}, "Rift Chess Bend2", 1024, 640,
-      boot_state(paths, packet, plates, fonts, stamp))
+      boot_state(paths, packet, plates, fonts, sprites, stamp))
 
 def start_app(paths: NativePaths, saved: Read, preferences: Read) -> IO(Unit):
   +packet = boot_packet(saved, preferences)
