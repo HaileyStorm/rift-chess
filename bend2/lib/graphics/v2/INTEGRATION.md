@@ -69,9 +69,16 @@ matched all 4,096 reference pixels. For the 16-frame 512-square coarse fixture,
 every GPU-on/off run returned checksum `2162379048`. Median whole-process time
 was 0.8150 s (one CPU worker), 0.4144 s (four), and 28.8019/28.6138 s for
 GPU on with those worker settings. `nvidia-smi` observed the binary using about
-502 MiB at 100% device utilization. This verifies actual device execution but
-shows that this particular workload should not be promoted to GPU detail by
-default. It is not a game/browser GPU integration or a per-frame device-kernel
-benchmark. The ignored host-local benchmark JSON has SHA-256
+502 MiB at 100% device utilization. The [fixture clarification](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842302700)
+binds the run to an ignored copy of `NativePlanWork.bend` that changed only
+`Plan.render` to `Plan.render_offload` (copy SHA-256
+`451705163f054dab948e035c84e004a7b06c68f1bcdff59f2b6f3a6328098b7e`).
+The `NativePlanCpu1` entrypoint requested **one fork level**, exposing at most
+four device branches before serial raster work. Python timed each entire
+process, including startup, scene preparation, 16 render/checksum rounds and
+output; there were no warm-frame or transfer-phase timers. This verifies
+actual device execution but is an intentionally poor basis for choosing GPU
+detail automatically. It does not establish that a correctly forked renderer
+is slow, nor a game/browser GPU speed result. The ignored host-local benchmark JSON has SHA-256
 `b5af2c5e9ab5d79440d22856c4a21d2d5a98b6b7481c47a2c2d34fa9836b1aae`;
 its exact Linux path is recorded in the linked handoff.

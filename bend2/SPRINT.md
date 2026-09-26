@@ -453,9 +453,13 @@ commit for isolated CPU/GPU testing, but no device measurement has returned.
 Linux subsequently returned [measured GPU evidence](lib/graphics/v2/INTEGRATION.md#linux-cpu-and-gpu-device-follow-up)
 for the older exact graphics commit `fb73a82`. The RTX 5090 executed the
 explicit offload correctly, but its coarse 16-frame whole-process run took
-about 28.8 seconds median versus 0.41 seconds with four CPU workers. This
-rejects automatic GPU promotion for that fixture; it neither benchmarks the
-current browser scene nor changes the visual parity/native source gates.
+about 28.8 seconds median versus 0.41 seconds with four CPU workers. Linux's
+[exact fixture clarification](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842302700)
+shows the offload was requested at one fork level (at most four device
+branches), and the timer covered the entire process and host checksums. It
+does not establish the speed of a properly forked warm renderer. Keep GPU
+detail unpromoted until a phase-separated device sweep passes; this result
+neither benchmarks the current browser scene nor changes the native gates.
 
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
