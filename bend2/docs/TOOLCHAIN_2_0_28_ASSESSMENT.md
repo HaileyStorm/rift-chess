@@ -21,13 +21,27 @@ kernel timing evidence. The `.bend` Node-worker loader registration is also
 new, without proving it replaces our Windows adapter.
 
 An isolated checkout at `.artifacts/bend2/toolchain-patches/update-2028/`
-contains the exact upstream tag and only the maintained 001 arity-diagnostics
-patch applied. Its application check passed. The exact 002 layout patch does
-not apply to `bend.ts` and `comp.ts`; the 004 worker patch also overlaps
-upstream compiler/CLI changes. The experimental rebase is restricted to that
-ignored checkout. In particular, 2.0.28's new `book_file()` can reach package
-lookup before the old local-only guard: negative named/hash import fixtures
-must reject *before* any network access. No rebased variant is accepted yet.
+contains the exact upstream tag and maintained 001 arity-diagnostics patch.
+The experimental 002 layout report was adapted there only: its local-only
+guard now runs before `book_file()` and before `name_hash()`. Named/hash imports
+and a direct isolated library path failed with `BEND_HUB` set to a loopback
+trap; no external provider or package cache was contacted. A focused report
+fixture repeated byte-identically, and valid C/JS samples emitted stable
+bytes. Those are narrow diagnostics, not a reviewed toolchain variant.
+
+Ordinary 2.0.28 checking of the maintained nested relative-import fixture
+fails on Windows because the new loader combines backslash `realpath` output
+with POSIX path operations. The 004 WebWorker patch is still unapplied: its
+`bend.ts` and `main.ts` hunks check, but its `comp.ts` hunk conflicts at the
+new JS emitter, and its `name_own`/`eff_name` dependencies were removed by
+upstream. Replacing those touches worker wire tags and intrinsic eligibility;
+the 107 compiler/HTML and 639 differential gates are prerequisites to any
+replay claim. The isolated 001+adapted-002 source hashes are `bend.ts`
+`fd618ad061743b225c471c1a788b149ff86a6c73761fc6499eda696a25e5e5f7`,
+`comp.ts` `8e12351e723e295df10f83d625207591ebeb89547cb1261c2be410b7438ecd3f`,
+and `main.ts` `07b83741d7333717844a779351d262b731bd2f56dc170675e91a785c78325091`.
+The maintained 002 and 004 patch bytes were unchanged. No rebased variant is
+accepted yet.
 
 To adopt the release, follow [Updating the Bend toolchain](LOCAL_BEND_GUIDE.md#updating-the-bend-toolchain)
 as a separate reviewed amendment. Rebase 001/002/004 one at a time with
@@ -39,3 +53,12 @@ controls, native source/C gates and root application checks. Preserve the
 graphics compiler history, source-bound worker artifacts, docs, and the
 frozen dependency amendment. Until then, the published browser build and
 Linux device requests remain bound to clean 2.0.27.
+
+**Disposition on 2026-09-26:** defer the pin change. Root owns the rebase and
+amendment. The specific blockers are the Windows nested-import regression and
+the 004 worker/compiler API migration; switching now would invalidate the
+published source-bound worker artifacts and in-flight 2.0.27 native/GPU
+measurements. Recheck after those exact device/layout gates return and after a
+disposable 2.0.28 variant passes the nested no-provider, worker, differential,
+proof and browser suites. Remove the 2.0.27 pin only through the guide's
+reviewed amendment and a clean, reproducible replacement build.
