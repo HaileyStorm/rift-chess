@@ -509,8 +509,17 @@ matching assets, rendered 1024×640, selected and exactly deselected g1, and
 accepted g1–h3 with Black to move. The [four-capture receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843232546)
 is partial: the old probe expected Escape to quit, though Bend's UI defines it
 as cancel/clear. The corrected probe checks Escape preserves the window and
-uses `WM_DELETE_WINDOW` for close. That rerun, visual parity, audio and
-idle/input performance remain open.
+uses `WM_DELETE_WINDOW` for close. At that checkpoint the corrected rerun,
+visual parity, audio and idle/input performance remained open.
+
+The [corrected X11 rerun](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843428528)
+passed on the same CPU ELF and asset subset, with the same four frame hashes,
+exact selection/deselection/move pixel counts, Escape live, and a clean
+window-close exit. Captured stderr was empty and isolated save/preferences
+files were created. This establishes a real graphical Linux native checkpoint,
+not Windows/WSLg, native audio playback, broad visual acceptance, or measured
+responsiveness. The native CUDA `Window.frame` path still needs a separate
+device test; the host-checksum fixture does not measure it.
 
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted

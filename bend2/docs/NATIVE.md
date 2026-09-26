@@ -7,7 +7,7 @@ working full-game native binary. The newer `NativeV2.bend` is an unreleased
 `MenuAA`/`FontPack` source used by the browser worker. A clean pinned compiler
 has now emitted NativeV2 C and a CPU ELF has linked and shown real X11
 interaction on the Linux host. The first GUI probe's exit expectation was
-wrong; the corrected close gate has not yet run. The pinned 2.0.27 toolchain
+wrong; its corrected Escape/close gate has now passed. The pinned 2.0.27 toolchain
 has built and run a separate WSLg X11
 smoke ELF; WSL Clang 18 and X11 development headers are available. Neither the
 smoke nor the text CLI proves NativeV2's game, Audio/File effects, rendering
@@ -118,9 +118,14 @@ both source and destination), with `Black to move` visible. Four captures were
 visually inspected on the Linux host. The probe then failed only its final
 expectation that Escape would exit. `Program.key_plain` intentionally maps
 Escape to clear menu/selection; window closure is a separate Base `Close`
-event. The probe now checks Escape leaves the window live and sends the X11
-`WM_DELETE_WINDOW` protocol to test clean exit. That corrected gate is pending.
-No idle CPU/frame timing, GPU-native path, or Windows WSLg execution is claimed.
+event. The corrected probe checks Escape leaves the window live and sends the
+X11 `WM_DELETE_WINDOW` protocol. Its [exact Linux rerun](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843428528)
+passed in 3.779 s on the same ELF and seven assets: all four frame hashes and
+pixel counts matched the earlier attempt, Escape kept the window live, the
+close event produced exit 0/window gone, and captured stderr was empty. It
+also created save and preferences files in a fresh isolated data directory.
+This is synthetic XSendEvent interaction on Linux X.Org, not a Windows/WSLg,
+native audio playback, human visual acceptance, or performance measurement.
 
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
@@ -287,9 +292,10 @@ clang-18 -std=c11 -Wall -Wextra -Werror -fsyntax-only bend2/tests/native-v2-wslg
 ```
 
 This historical syntax gate did not launch NativeV2. The later Linux run on
-`b3ffb3b` did link and capture native frames and valid input, but the old
-Escape-to-exit assertion made the overall probe fail. The corrected window
-close protocol still needs the exact GUI rerun.
+`b3ffb3b` did link and capture native frames and valid input. Its corrected
+window-close protocol subsequently passed on the same CPU ELF. The missing
+gates are graphical responsiveness/idle cost, native Audio behavior, broader
+playtesting, presentation parity, and a native CUDA path under an actual lease.
 
 ## Graphical emitter evidence
 
