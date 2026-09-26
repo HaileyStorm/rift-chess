@@ -82,3 +82,24 @@ detail automatically. It does not establish that a correctly forked renderer
 is slow, nor a game/browser GPU speed result. The ignored host-local benchmark JSON has SHA-256
 `b5af2c5e9ab5d79440d22856c4a21d2d5a98b6b7481c47a2c2d34fa9836b1aae`;
 its exact Linux path is recorded in the linked handoff.
+
+### Phase-separated CPU pilot and CUDA build correction
+
+The [instrumented CPU receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842725462)
+uses source `ffd33a0`, an exact 64-command 512-square fixture, one historical
+cuts/forks `3/1` case, and a fixed cuts-7 fork sweep at 1/3/5/7. All 25
+route/case executions matched the serial first-frame pixels and 16-round
+checksum `2162379048`. For the 15 warmed render-return calls, the historical
+case took 715 ms serial, 719 ms on one CPU worker, 413 ms on four, and 411 ms
+with the `!` CPU fallback on four. Cuts 7/forks 5 took 752, 733, 387 and
+541 ms respectively in those same routes; preparation was 1–4 ms at the
+clock's resolution. These are one host pilot, not stable medians or game frames.
+
+The pilot's device build was stopped before execution: its Clang command
+omitted Bend's `BEND_CUDA` define, so `gpu_probe()` would choose CPU fallback.
+The coordinator grant was only queued/denied and no device workload ran. In
+source commit `dc8af02`, the runner now mirrors the pinned CLI's CUDA include,
+library, define and link flags, and requires a `.gpu` sidecar. That correction
+has passed Python syntax review but has not yet passed a new device gate. The
+[benchmark README](bench/gpu/README.md) states its phases and reproduction
+commands; the library renderer and Laws/Proofs were not changed.

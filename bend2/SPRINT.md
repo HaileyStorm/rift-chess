@@ -461,6 +461,16 @@ does not establish the speed of a properly forked warm renderer. Keep GPU
 detail unpromoted until a phase-separated device sweep passes; this result
 neither benchmarks the current browser scene nor changes the native gates.
 
+The new [phase-separated profile fixture](lib/graphics/v2/bench/gpu/README.md)
+passed its pinned Bend source check and a bounded JS integrity run of the
+historical case. Linux's first native CPU pilot passed all 25 route/case pixel
+and checksum checks; its [receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842725462)
+has the first/warm/preparation times. Its GPU attempt was correctly stopped
+before device execution because the runner omitted `BEND_CUDA`; no lease was
+granted. Commit `dc8af02` mirrors Bend's native CUDA build flags and requires
+the `.gpu` sidecar. An exact new CPU/device gate is queued after the native
+arity diagnostic. There is still no measured warm GPU comparison.
+
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
 asset hashes and module MIME types matched; the extended hosted Chrome suite
