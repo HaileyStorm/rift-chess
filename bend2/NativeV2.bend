@@ -205,7 +205,7 @@ def choose_shell(refresh: Bool, depth: Nat, size: U32,
     case True{}: MenuAA.base_chrome(depth, size, data, plan, fonts)
     case False{}: old
 
-def menu_chrome(depth: Nat, size: U32, +data: ChromeData.Presentation,
+def menu_chrome(+depth: Nat, +size: U32, +data: ChromeData.Presentation,
   +plan: ChromePlan.Plan, +fonts: MenuFontPack.Book, base: Image) -> Image:
   +controls = MenuAA.controls_chrome(depth, size, data, plan, fonts, base)
   MenuAA.dynamic_chrome(depth, size, data, plan, fonts, controls)
@@ -621,7 +621,7 @@ def sprite_file_size_choice(allowed: Bool, id: U32, path: String,
           File.read_bytes(file, U32.add(max_bytes, 1))
         sprite_read_bytes_result(id, bytes)
 
-def sprite_file_size_result(id: U32, path: String, max_bytes: U32,
+def sprite_file_size_result(id: U32, path: String, +max_bytes: U32,
   result: File & Result<&1, &1, U32 & String, U32>) ->
   IO(PieceAssets.AssetResponse):
   (file, answer) = result

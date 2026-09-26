@@ -18,7 +18,7 @@ forward references to `tick`, `read_import_choice`, and `runtime_exit`, a
 repeated `slot` and `theme` use, and a typed `TickNext` construction. A later
 check then found duplicated `effect_inputs` in `tick_continue`; that binder was
 made reusable, but this last source fix has not been checked. The current
-MenuAA/font/sprite adapter edits below are also unchecked.
+MenuAA/font/sprite adapter edits below were not checked on Windows.
 
 The four recent whole-book checks reached peaks of 7.22, 7.17, 7.98, and 7.16
 GiB; their minimum free physical-memory readings were 0.03, 0.13, 0.37, and
@@ -27,6 +27,15 @@ GiB; their minimum free physical-memory readings were 0.03, 0.13, 0.37, and
 check or emit its C on this host without a different memory strategy. The
 previous NativeV2 C-emission attempt exceeded 480 seconds and produced no
 artifact; it predates these source fixes and the MenuAA adapter.
+
+On the larger Linux host, the exact `c6c2910` whole-book check exited 1 after
+7.339 seconds with its first diagnostic at `menu_chrome`: `size` was passed to
+both `MenuAA.controls_chrome` and `MenuAA.dynamic_chrome` without a reusable
+binder. Peak process-tree use was 7.00 GiB with about 99.38 GiB available. The
+working source now marks both repeated `depth` and `size` reusable in that
+helper. A source-only affine audit also marked `sprite_file_size_result`'s
+`max_bytes` reusable because it feeds both the size comparison and bounded
+read path. No post-fix check or C emission has run yet.
 
 The pinned Bend 2.0.27 native C compiler emits one book-local executable and does
 not support separately checked Bend C modules linked into one game binary, so
