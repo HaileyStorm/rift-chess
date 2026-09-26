@@ -23,7 +23,12 @@ python3 bend2/lib/graphics/v2/tools/profile_gpu_plan.py \
 ```
 
 Only when an appropriate GPU host is available, add `--gpu` to build the
-compiler's GPU sidecar and run the offload path on the device. By default this
+compiler's GPU sidecar and run the offload path on the device. The runner
+mirrors pinned `bend2/main.ts` with `-DBEND_CUDA=1`, the CUDA include/library
+paths (`CUDA_HOME` or `/usr/local/cuda`), `-lcuda`, and `-lnvrtc`; it rejects
+a missing NVRTC header or missing `.gpu` sidecar. A plain Clang build can
+silently take the CPU fallback even when asked for `--gpu on`, so it is never
+device evidence. By default this
 does one GPU run with four host workers; request both historical host settings
 with repeated `--gpu-threads` flags:
 

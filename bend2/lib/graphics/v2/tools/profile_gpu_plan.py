@@ -170,13 +170,27 @@ def main() -> None:
             "bench/gpu/PlanProfile.bend") and item.get("sha256") == source_hash
             for item in import_closure if isinstance(item, dict)):
         raise RuntimeError("Compiler closure receipt does not bind PlanProfile.bend bytes")
-    compile_command = [args.cc, "-std=c11", "-O3", str(c_file),
-                       "-lpthread", "-lm", "-o", str(binary)]
+    # Mirror the pinned Bend CLI's native CUDA build in bend2/main.ts. A plain
+    # C build accepts --gpu on but gpu_probe() is false: that is CPU fallback,
+    # not a device benchmark.
+    cpu_flags = ["-std=c11", "-O3", str(c_file),
+                 "-lpthread", "-lm", "-o", str(binary)]
+    if args.gpu:
+        cuda = Path(env.get("CUDA_HOME") or "/usr/local/cuda").resolve()
+        if not (cuda / "include" / "nvrtc.h").is_file():
+            raise RuntimeError(f"CUDA NVRTC header is missing under {cuda}")
+        compile_command = [args.cc, "-DBEND_CUDA=1", f"-I{cuda / 'include'}",
+                           f"-L{cuda / 'lib64'}", f"-L{cuda / 'lib'}",
+                           *cpu_flags, "-lcuda", "-lnvrtc"]
+    else:
+        compile_command = [args.cc, *cpu_flags]
     run(compile_command, ROOT, env, out / "build", args.timeout_s)
 
     if args.gpu:
         run([str(binary), "--gpu-build"], ROOT, env,
             out / "gpu-build", args.timeout_s)
+        if not (build / "PlanProfile.gpu").is_file():
+            raise RuntimeError("GPU build returned without a device sidecar")
 
     configurations = [
         {"route": "serial", "threads": 1, "gpu": "off"},
