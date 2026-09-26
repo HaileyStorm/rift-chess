@@ -378,6 +378,7 @@ try {
   // Exercise legal topology Shift from an initially empty platform source.
   await context.setOffline(false);
   await freshMatch();
+  const beforeShiftRefinement = await page.evaluate(() => window.__refinements.length);
   await square(0, 2);
   const shift = await page.locator('[data-control]').evaluateAll(nodes => nodes
     .filter(node => Number(node.dataset.control) >= 21480 && !node.disabled)
@@ -385,6 +386,8 @@ try {
   assert.ok(shift.length, 'an empty shiftable platform presents legal Shift destinations');
   await control(shift[0].id);
   await commandCount(1);
+  await page.waitForFunction(before => window.__refinements.length > before,
+    beforeShiftRefinement, { timeout: 60000 });
   assert.ok((await getRecord()).commands[0].action >= 20480, 'committed action encodes Shift');
   await capture('11-shift');
   receipt.checks.push('Rendered empty-platform Shift changes topology and persists');
