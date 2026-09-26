@@ -1,8 +1,8 @@
 # BoardScene fixed-facing sprite stage
 
-This is an opt-in game-scene adapter over the reusable `PieceSprites` and
-`RgbaAffine` APIs. It leaves the existing proxy and procedural piece paths
-unchanged.
+This is the settled browser game-scene adapter over the reusable `PieceSprites`
+and `RgbaAffine` APIs. The fast proxy and procedural/native piece paths still
+serve motion, cold starts and fallback frames.
 
 `BoardScene.fast_sprite_pieces512(frame, pieces, ground)` returns the 512-square
 board image after drawing occupied pieces from the position, plus a transient
@@ -14,15 +14,15 @@ must not contain pixels for the current or previous pieces.
 Sprites remain screen-facing at every camera yaw and pitch. Their anchors use
 the same projected board centers and interpolated motion points as the proxy
 scene; draw order follows `Camera.depth_order`. Each sprite's axis-aligned quad
-uses 0.76 of the projected board pitch for width and 1.24 for height. Rift
+uses 1.16 of the projected board pitch for width and 1.48 for height. Rift
 holes suppress both current and dying sprites. Captured art drifts upward and
 fades during the first half of the existing 16-step action transition. The
 atlas is fixed-front artwork, so this renderer does not claim true 3D rotation
 or perspective.
 
 `BoardScene.fast_feedback_on_pieces512(frame, pieces_image)` is a separate,
-cheap UI feedback stage. It adds an outer gold halo and a brighter plinth rim to
-an occupied selected piece, and a cyan rim to a different occupied hovered
+cached UI feedback stage. It adds a bright cyan silhouette ring and square
+outline to an occupied selected piece, and a gold rim to a different occupied hovered
 piece. It then applies the existing recent-move, check, selection-square,
 preference-controlled destinations, shift, promotion, hover-square and capture
 cues. It does not create legal destination cues when `frame.targets` is empty;

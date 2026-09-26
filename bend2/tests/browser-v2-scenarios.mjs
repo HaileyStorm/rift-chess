@@ -201,12 +201,15 @@ const fixtureRecord = count => ({ schema: 'rift-bend-record/1', layout: 'B', pol
 try {
   await page.goto(url, { waitUntil: 'networkidle' });
   await ready();
+  await page.waitForFunction(() => window.__refinements.length > 0,
+    null, { timeout: 60000 });
   const desktop = await page.locator('canvas').evaluate(canvas => ({ width: canvas.width, height: canvas.height,
     aria: canvas.getAttribute('aria-label'), scale: window.__shown?.plan?.scale,
     board: window.__shown?.plan?.board }));
   assert.deepEqual([desktop.width, desktop.height], [1024, 640]);
   assert.ok(desktop.board?.width > 0 && desktop.board?.height > 0 && desktop.scale > 0);
   await capture('01-desktop-initial');
+  receipt.checks.push('Initial capture includes an applied sprite-helper refinement');
   await plateWitness('astral');
   receipt.metrics.desktop = desktop;
 

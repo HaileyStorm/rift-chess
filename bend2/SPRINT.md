@@ -543,11 +543,26 @@ The PipeWire sink monitor was silent during idle and captured 12,762 nonzero
 one saved-game restart and routed PCM, while crash recovery, all game states,
 physical audibility, Windows/WSLg and owner visual acceptance remain open.
 
+The subsequent game-owned visual iteration changes the default camera to an
+oblique, closer view so the raised sides and actual open voids read in the
+first frame. A cyan ring surrounds the selected piece in both proxy and
+settled sprite paths; the selected square remains outlined and a second click
+deselects it. The astral and warm observatory themes were inspected in actual
+Chrome frames. The full local browser scenario gate covers both themes,
+selection, moves, save/reload, capture, promotion, audio, offline helpers,
+Shift and portrait input. These checks are interaction and visual-inspection
+evidence, not owner WOW acceptance. The next native output requires a fresh
+source-bound emission and Linux package/probe; the old ELF predates this view.
+The reproducible CPU-first packaging procedure and its limits are in
+[NATIVE_PACKAGE.md](docs/NATIVE_PACKAGE.md).
+
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
 asset hashes and module MIME types matched; the extended hosted Chrome suite
 passed 11 groups, and a separate online/offline local-opponent probe completed
 the same two canonical actions with all bot modules served by the service
-worker. The graphics library still has draft laws, the desktop UI is not owner
-accepted, and the graphical native adapter is only unchecked shared-source
-code. Hosted browser publication does not close those gates.
+worker. The graphics library still has draft laws and the desktop UI is not
+owner accepted. Subsequent shared-source native X11, CUDA, audio-route and
+restart pilots are recorded above; the published browser build predates the
+latest camera/selection iteration. Hosted publication does not close the
+remaining visual, package, broad native playtest or toolchain-update gates.

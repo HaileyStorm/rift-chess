@@ -281,7 +281,7 @@ decoder, the scene uses its procedural fallback and logs a nonfatal diagnostic.
 Both image and font paths are relative to the working directory containing the
 packaged `assets/` directory.
 
-The Bend2 v2 draft packager copies the requested runtime plates to
+Historically, the Bend2 v2 draft browser packager copied the runtime plates to
 `.artifacts/bend2/v2-preview/dist/assets/`. Launch the native executable with
 that `dist` directory as its current working directory so the unchanged
 `assets/...` request paths resolve. The ELF may live elsewhere and be launched
@@ -291,6 +291,9 @@ directory. Initial plate reading and decode are synchronous before the window
 opens, and a theme change performs one synchronous file read after closing
 Audio, then reopens Audio while preserving queued PCM. Startup and theme-switch
 latency have not yet been measured.
+For new native builds, use [the source-bound NativeV2 package workflow](NATIVE_PACKAGE.md)
+and launch its `run-native-v2.sh`; it supplies the package working directory and
+separate save directory without relying on the browser preview's asset tree.
 
 NativeV2 also uses the alternating, sequence-framed `.b` journal for Save,
 Preferences, and Recovery. Its new `tests/native-v2-journal.mjs` gate exercises
@@ -409,3 +412,9 @@ It does not substitute for native device playtesting. This Windows environment
 has the upstream-supported WSL Ubuntu distribution, but it has no `clang`,
 `gcc`, or `cc`; no compiler was installed. The browser-independent CLI C
 artifact and its receipt are tracked separately in [NATIVE_CLI.md](NATIVE_CLI.md).
+
+A separate [NativeV2 package workflow](NATIVE_PACKAGE.md) now binds the current
+Bend source closure, generated C, native ELF, and runtime artwork to one local
+receipt. It builds CPU-first on a suitable Linux host. Until its fresh package
+is built and play tested, the earlier native X11 and PCM receipts apply only
+to their recorded source revision and binary hash.

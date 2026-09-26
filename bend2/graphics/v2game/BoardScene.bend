@@ -471,6 +471,19 @@ def interpolated_point(+size: U32, +basis: Camera.Basis, +source: U32,
   Quad.Point{F32.lerp(point_x(from), point_x(to), t),
     F32.sub(F32.lerp(point_y(from), point_y(to), t), U32.to_f32(lift))}
 
+# Selection is a piece-level silhouette cue, visible immediately on the proxy
+# frame and retained when the authored sprite replaces that frame. The broad
+# upper ring clears the art rather than hiding its face; the square outline
+# anchors the same cue at the square the player can click again to deselect.
+def selected_aura(show: Bool, +depth: Nat, +size: U32, +x: U32,
+  +y: U32, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}:
+      +crown_y = U32.sub(y, scale_coord(size, 30))
+      Ring.draw(depth, size, Shapes.Pos{x}, Shapes.Pos{crown_y},
+        scale_coord(size, 31), scale_coord(size, 33), 5434367, 215, image)
+
 def piece_at(show: Bool, +square: U32, code: U32, +c: Context,
   image: Image) -> Image:
   match show c:
@@ -483,10 +496,10 @@ def piece_at(show: Bool, +square: U32, code: U32, +c: Context,
       +y = Ortho.pixel(point_y(moving_point))
       +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
       +hovered_here = U32.is_eq(square, Scene.frame_hovered(frame))
-      +focus = Bool.or(selected_here, hovered_here)
-      +focus_color = Bool.pick(U32, selected_here, 16169039, 6282451)
       +drawn = PieceArt.draw(depth, size, x, y, code, image)
-      PieceArt.focus_rim(focus, depth, size, x, y, focus_color, drawn)
+      +selected = selected_aura(selected_here, depth, size, x, y, drawn)
+      PieceArt.focus_rim(Bool.and(hovered_here, Bool.not(selected_here)),
+        depth, size, x, y, 16768672, selected)
 
 def captured_square(decoded: Maybe<Model.Action>, +previous: Model.Position) -> U32:
   match decoded:
@@ -597,7 +610,7 @@ def fast_piece_at(show: Bool, +square: U32, code: U32, +c: Context,
       +y = Ortho.pixel(point_y(moving_point))
       +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
       +drawn = PieceArt.proxy_draw(depth, size, x, y, code, image)
-      PieceArt.focus_rim(selected_here, depth, size, x, y, 16169039, drawn)
+      selected_aura(selected_here, depth, size, x, y, drawn)
 
 def fast_dying_at(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
   match show c:
@@ -839,7 +852,7 @@ def feedback(+c: Context, image: Image) -> Image:
       +e = macro_ring(U32.is_lt(tile, 16), tile, 37, 39,
         16768672, c, d)
       +f = square_outline(U32.is_lt(selected, 64), selected,
-        16768672, 255, c, e)
+        5434367, 255, c, e)
       +g = target_marks(Scene.frame_targets(frame), board, c, f)
       +h = shift_marks(Scene.frame_shifts(frame), tile, c, g)
       promotion_mark(Model.decode(action), c, h)
@@ -970,7 +983,7 @@ def fast_feedback_static(+c: Context, image: Image) -> Image:
       +e = macro_ring(U32.is_lt(tile, 16), tile, 36, 38,
         16768672, c, d)
       +f = square_outline(U32.is_lt(selected, 64), selected,
-        16768672, 255, c, e)
+        5434367, 255, c, e)
       +g = fast_targets(Scene.frame_targets(frame), board, c, f)
       +i = fast_shift_marks(Scene.frame_shifts(frame), tile, c, g)
       fast_promotion(Model.decode(action), c, i)
@@ -1287,11 +1300,7 @@ def fast_sprite_selected_focus(show: Bool, +square: U32,
       +visible = Bool.and(Model.present(holes, square), occupied)
       +x = square_x(size, camera, square)
       +y = square_y(size, camera, square)
-      +halo = Ring.draw(depth, size, Shapes.Pos{x}, Shapes.Pos{y},
-        scale_coord(size, 19), scale_coord(size, 24), 16773305,
-        Bool.pick(U32, visible, 232, 0),
-        image)
-      PieceArt.focus_rim(visible, depth, size, x, y, 16768672, halo)
+      selected_aura(visible, depth, size, x, y, image)
 
 def fast_sprite_hover_focus(show: Bool, +square: U32,
   +context: Context, image: Image) -> Image:
@@ -1305,7 +1314,7 @@ def fast_sprite_hover_focus(show: Bool, +square: U32,
         Bool.and(Model.present(holes, square), occupied))
       +x = square_x(size, camera, square)
       +y = square_y(size, camera, square)
-      PieceArt.focus_rim(visible, depth, size, x, y, 6282451, image)
+      PieceArt.focus_rim(visible, depth, size, x, y, 16768672, image)
 
 def fast_sprite_feedback_on_pieces(+context: Context, pieces_image: Image) -> Image:
   match context:

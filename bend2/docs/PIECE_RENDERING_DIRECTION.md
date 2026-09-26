@@ -1,19 +1,19 @@
 # Piece rendering direction (design draft, not a Law)
 
 The first observatory-plate composites show a mismatch: detailed architecture
-behind a flat board with small vector tokens. The game now has a preserved
+behind a flat board with small vector tokens. The game now includes a preserved
 two-row, six-column ivory/obsidian concept atlas with actual transparent alpha
-and recognizable chess silhouettes. It is **not** in the runtime. The original
-and edited ImageGen PNGs are preserved under `bend2/assets/source/` with their
-hashes and provenance in the asset README; promotion must derive runtime data
-reproducibly from the edited source. A single frontal
-sprite is not acceptable at arbitrary camera yaw.
+and recognizable chess silhouettes. Its derived transparent RGA pages **are in
+the browser runtime**, with source and output hashes in the asset manifests.
+The original and edited ImageGen PNGs remain under `bend2/assets/source/`.
+This is a settled fixed-facing sprite layer over the Bend board, not true 3D:
+its frontal artwork does not turn when the camera orbits.
 
 ## Near-term options
 
 | Route | Orbit behavior | Cost and evidence needed | Current decision |
 | --- | --- | --- | --- |
-| One camera-facing sprite | Stable screen silhouette but its sculpted face never turns | Smallest decoder/blit; visibly wrong at side and rear angles | Reference only |
+| One camera-facing sprite | Stable screen silhouette but its sculpted face never turns | Current runtime route; clear identity but wrong at side and rear angles | Shipped browser scene pending better turntable art |
 | Baked turntable frames | Choose the nearest or blended view from one coherent mesh, with Bend owning camera-to-view selection and occlusion | Asset count, memory, transition quality and drag cost measured at yaw 0/25/45/90 and overhead | Preferred sprint candidate if a mesh can be made |
 | Runtime mesh | Correct continuous projection, shadows, and per-piece depth | Generic model/texture import, clipping, lighting, depth and GPU/CPU renderer must be designed and proved; JS fallback budget unknown | Future reusable graphics-library capability, not a prerequisite for the current browser build |
 

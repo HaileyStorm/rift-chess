@@ -23,10 +23,17 @@ function measure(run: () => unknown, samples: number, warm = 3) {
   return { median: at(0.5), p95: at(0.95), samples };
 }
 
-// Square centre under the default camera (yaw 0, pitch 65, zoom 100), desktop board at y 128.
-const centre = (square: number, lift = 16) => ({
-  x: Math.round(256 + 45 * (square % 8 - 3.5)),
-  y: Math.round(128 + 274 + 45 * Math.sin(65 * Math.PI / 180) * (3.5 - Math.floor(square / 8)) - lift) });
+// Square centre under the oblique default camera, desktop board at y 128.
+const centre = (square: number, lift = 16) => {
+  const yaw = 345 * Math.PI / 180;
+  const scale = 45 * 1.15 / (Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw)));
+  const u = square % 8 - 3.5, r = 3.5 - Math.floor(square / 8);
+  return {
+    x: Math.round(256 + scale * (Math.cos(yaw) * u - Math.sin(yaw) * r)),
+    y: Math.round(128 + 274 + scale * Math.sin(52 * Math.PI / 180) *
+      (Math.sin(yaw) * u + Math.cos(yaw) * r) - lift),
+  };
+};
 const down = (square: number) => ({ $: 'PointerDown', ...centre(square), button: 0, alt: false });
 const up = (square: number) => ({ $: 'PointerUp', ...centre(square), button: 0 });
 
