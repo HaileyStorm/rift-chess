@@ -231,3 +231,16 @@ of an old service worker upgrading in place.
 Local move-tick p95 was 608 ms; hosted p95 was 668 ms. Local bot reply medians
 were 721 ms (White) and 542 ms (Black). These are measured responsiveness
 limits on this host, not native parallel performance or broad-device acceptance.
+
+## Source-bound v2 worker and artwork publication
+
+The newer non-draft browser build `f261f9d623e679d401f7` from clean source
+`bfc069dc2b4ebd1bdd96e5111073e3243f642beb` is live at the same separate
+[Bend preview](https://haileystorm.github.io/rift-chess-bend2/). The
+[publication and hosted receipt](evidence/v2-workers-hosted/README.md) binds
+all 21 asset hashes, JavaScript MIME for the static bot modules, 11 passing
+rendered scenario groups, a cold offline sprite-helper refinement, and two
+online/offline local-opponent replies. The direct helper library's job/result
+gate is separate; the hosted bot test proves module loading and completed
+replies but does not instrument the helper job counter. Native visual parity,
+GPU game performance, and owner visual acceptance remain open.

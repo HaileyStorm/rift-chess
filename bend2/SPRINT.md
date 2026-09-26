@@ -456,3 +456,12 @@ explicit offload correctly, but its coarse 16-frame whole-process run took
 about 28.8 seconds median versus 0.41 seconds with four CPU workers. This
 rejects automatic GPU promotion for that fixture; it neither benchmarks the
 current browser scene nor changes the visual parity/native source gates.
+
+The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
+from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted
+asset hashes and module MIME types matched; the extended hosted Chrome suite
+passed 11 groups, and a separate online/offline local-opponent probe completed
+the same two canonical actions with all bot modules served by the service
+worker. The graphics library still has draft laws, the desktop UI is not owner
+accepted, and the graphical native adapter is only unchecked shared-source
+code. Hosted browser publication does not close those gates.

@@ -1,0 +1,34 @@
+{
+  "schema": "rift-bend-v2-workers-hosted/1",
+  "url": "https://haileystorm.github.io/rift-chess-bend2/",
+  "buildVersion": "f261f9d623e679d401f7",
+  "sourceRevision": "bfc069dc2b4ebd1bdd96e5111073e3243f642beb",
+  "pagesPublishCommit": "cbdd4fc",
+  "pagesBinaryAttributeCommit": "555e098",
+  "buildJsonSha256": "c00ddaf11e4639276838831042d8b8920b14a33c8ec76ba1a8f77afc403048ef",
+  "assetHashesChecked": 21,
+  "moduleMime": "text/javascript; charset=utf-8",
+  "hostedBrowser": {
+    "groups": 11,
+    "errors": 0,
+    "receiptSha256": "982ac1e016edbb3479ac18f58e89b866b16993ec6513184ff43275c0e9033d26",
+    "ignoredReceipt": ".artifacts/bend2/v2-preview/scenarios/2026-09-26T02-10-16-421Z/receipt.json",
+    "frames": {
+      "selected.png": "9a6fc3196073129c3afc02f764df3e4f5a5fbdc797e666a08c9f17160ad7cd0c",
+      "warm.png": "b9b9563269add357b5715ec1b0591984228274a2b2ef31ad15c33b4cecec2f59",
+      "portrait.png": "0cfbadb0bc1a006e5538a75c9b7df4afb0ab61a066834a83c3b0725ee4b78148"
+    }
+  },
+  "hostedBot": {
+    "testSha256": "8b42b6cc9b5af2cdb0bfa16ed5b2510d597c786b68b6c628a6dc4cf379508b2f",
+    "receiptSha256": "5fe62631f90eac4295c931a58fd8ece0ed0f88fa96643abe051ae27b48c65361",
+    "ignoredReceipt": ".artifacts/bend2/v2-preview/hosted-bot-receipt.json",
+    "onlineActions": [3980, 20065],
+    "offlineActions": [3980, 20065],
+    "moduleResponses": 18,
+    "moduleHttpStatus": 200,
+    "moduleFromServiceWorker": true,
+    "errors": 0
+  },
+  "limits": "Hosted module transport and bot reply are proven; helper job count, native rendering parity, GPU game performance and owner visual acceptance are not."
+}
