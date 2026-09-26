@@ -1508,7 +1508,7 @@ def make_tick_next(paths: NativePaths, stamp: Nat, alt_mask: U32,
 
 def tick_continue(native_inputs: List<&2, T.Input>, next_alt: U32,
   next_ctrl: U32, next_shift: U32, +packet: Control.Packet, cache: Cache,
-  paths: NativePaths, stamp: Nat, runtime: Runtime, +now: Nat) -> IO(Maybe<State>):
+  paths: NativePaths, +stamp: Nat, runtime: Runtime, +now: Nat) -> IO(Maybe<State>):
   match runtime:
     case Runtime{audio, ready, pending, +effect_inputs, _}:
       +elapsed = U32.min(240, U32.from_nat(Nat.sub(now, stamp)))
@@ -1599,7 +1599,7 @@ def tick(native_events: List<Event>, state: State) -> IO(Maybe<State>):
     case State{+frame_box, +paths, audio, audio_ready, audio_pending,
       alt_mask, ctrl_mask, shift_mask, stamp}:
       +batch = events(native_events, alt_mask, ctrl_mask, shift_mask)
-      +runtime = Runtime{audio, audio_ready, audio_pending, [], False{}}
+      runtime : Runtime = Runtime{audio, audio_ready, audio_pending, [], False{}}
       tick_frame(frame_box_valid(frame_box), frame_box, batch, paths, stamp, runtime)
 
 def start_asset_app(paths: NativePaths, +packet: Control.Packet,
