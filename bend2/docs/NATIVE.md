@@ -15,10 +15,10 @@ parity, or idle CPU cost.
 
 The checker exposed and the source was corrected for repeated affine values,
 forward references to `tick`, `read_import_choice`, and `runtime_exit`, a
-repeated `slot` and `theme` use, and a typed `TickNext` construction. A later
-check then found duplicated `effect_inputs` in `tick_continue`; that binder was
-made reusable, but this last source fix has not been checked. The current
-MenuAA/font/sprite adapter edits below were not checked on Windows.
+repeated `slot` and `theme` use, a typed `TickNext` construction, and duplicated
+`effect_inputs` in `tick_continue`. The Windows lane stopped whole-book checks
+after resource pressure; the later Linux check of the exact source revision is
+recorded below.
 
 The four recent whole-book checks reached peaks of 7.22, 7.17, 7.98, and 7.16
 GiB; their minimum free physical-memory readings were 0.03, 0.13, 0.37, and
@@ -31,11 +31,12 @@ artifact; it predates these source fixes and the MenuAA adapter.
 On the larger Linux host, the exact `c6c2910` whole-book check exited 1 after
 7.339 seconds with its first diagnostic at `menu_chrome`: `size` was passed to
 both `MenuAA.controls_chrome` and `MenuAA.dynamic_chrome` without a reusable
-binder. Peak process-tree use was 7.00 GiB with about 99.38 GiB available. The
-working source now marks both repeated `depth` and `size` reusable in that
-helper. A source-only affine audit also marked `sprite_file_size_result`'s
-`max_bytes` reusable because it feeds both the size comparison and bounded
-read path. No post-fix check or C emission has run yet.
+binder. Peak process-tree use was 7.00 GiB with about 99.38 GiB available.
+At that point in the timeline, the working source marked both repeated `depth`
+and `size` reusable in that helper. A source-only affine audit also marked
+`sprite_file_size_result`'s `max_bytes` reusable because it feeds both the size
+comparison and bounded read. The later exact-revision Linux result below
+supersedes the then-current no-post-fix-check status.
 
 The pinned Bend 2.0.27 native C compiler emits one book-local executable and does
 not support separately checked Bend C modules linked into one game binary, so
@@ -62,6 +63,27 @@ but no `libasound2-dev`, ALSA header/library, or `pkg-config`. No package was
 installed. NativeV2 reaches Base `Audio.open`, whose pinned Linux effect uses
 ALSA; revisit that dependency only after a checked C artifact makes an ELF
 build practical. The older NativeSmoke ELF only exercises Window/X11.
+
+At exact NativeV2 source revision `29fc92d0`, the whole-book Linux source check
+passed on attempt 2 in 15.845 seconds (10.84 GiB peak RSS) and reported 29
+unsafe/foreign definitions. The pinned C emission then failed after 159.089
+seconds with `an arity over 255`, at 28.08 GiB peak RSS. It produced no C
+artifact, so there is still no NativeV2 ELF or WSLg game interaction.
+
+The next arity investigation is diagnostic only. The existing
+[`001-arity` downstream patch notes](../toolchain-patches/001-arity/README.md)
+document a fresh disposable compiler clone under ignored
+`.artifacts/bend2/toolchain-patches/arity/compiler`, pinned-HEAD verification,
+`git apply --check`, patch application, and boundary fixtures. Patch
+[`0001-arity-diagnostics.patch`](../toolchain-patches/001-arity/0001-arity-diagnostics.patch)
+preserves the 255-word rejection and successful C/JS bytes; it adds table, row,
+owner, segment, and capture details to the failure. Its fixture suite does not
+diagnose NativeV2 by itself. A separate bounded one-shot NativeV2 emission
+through that disposable compiler is needed to identify the failing owner. The
+normal project wrapper and `native-c-emitter.mjs` are hard-bound to the pinned
+compiler; the diagnostic must import `bend.ts` and `comp.ts` from the isolated
+clone without changing the pin or game sources. No patched compiler run or
+toolchain change has been performed for this NativeV2 failure.
 
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
@@ -202,6 +224,33 @@ surface at its frame cadence even when a packet is unchanged, so actual native
 idle-CPU and pointer-latency measurements are required before any responsiveness
 claim. The older adapter below remains as compatibility and provenance until
 the replacement is executable and its recovery behavior is verified.
+
+## NativeV2 WSLg interaction gate
+
+`tests/native-v2-wslg-probe.c` is a bounded observer for a future NativeV2 ELF.
+It expects the `Rift Chess Bend2` title and a visible 1024×640 client, captures
+initial/selected/deselected/post-move PPM frames, selects and deselects the
+White g1 knight, then sends the legal g1–h3 move. It checks full-frame and
+source/target pixel differences, confirms the title/window remain live during
+input, sends Escape, and requires both a zero exit and window destruction. Its
+square points follow the desktop `ChromePlanCompact` board origin `(256,64)`
+and browser scenario's eight-pixel piece-body offset. The test takes absolute
+WSL paths for the ELF, its runtime directory containing
+`assets/`, and an existing capture directory. It launches from that runtime
+directory and sets `RIFT_CHESS_DATA_DIR` to a fresh
+`/tmp/rift-chess-native-v2-*` directory, then prints both paths. It uses
+XSendEvent input, so it probes the WSLg/X11 event path but is not
+physical-device or owner playtest evidence.
+
+The observer's C syntax/header gate passed in WSL Ubuntu with:
+
+```sh
+clang-18 -std=c11 -Wall -Wextra -Werror -fsyntax-only bend2/tests/native-v2-wslg-probe.c
+```
+
+This did not link or run the observer, launch NativeV2, produce captures, or
+validate native input. The gate remains unrun until a C artifact exists; NativeV2
+currently has no emitted C because the pinned emitter rejects its over-255 arity.
 
 ## Graphical emitter evidence
 
