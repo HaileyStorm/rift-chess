@@ -91,6 +91,25 @@ A pure `main` is evaluated by the checker's normalizer (`term_snf`), which is
 far slower than compiled code; use it for small results only. To time real
 code, emit JS or give `main` an `IO` type.
 
+For a direct compiler-API probe starting with `book_nil()`, validate the
+**whole** loaded book before emitting code:
+
+```typescript
+const book = Bend.book_nil();
+await Bend.book_load(book, entry, '', new Map());
+Bend.book_valid(book); // default done=0; also valid: book_valid(book, 0)
+```
+
+The number returned by `book_load` is the declaration count after the entry's
+imports and before parsing that entry. It is **not** the validated-prefix
+argument to `book_valid`. Passing it as `done` in a fresh book silently skips
+checking imported declarations; a later `js_lib` may then fail inside
+`term_force` with an apparent emitter error. A nonzero `done` is appropriate
+only when the book was explicitly seeded with that many already validated
+definitions, as the CLI's cached-Base path does (`main.ts::book_read`). This
+distinction was confirmed while probing the isolated 2.0.28 worker candidate;
+it does not change the clean 2.0.27 pin or any frozen Law.
+
 Native binaries: the CLI picks the first adequate compiler among `$CC`, `clang`
 and `clang-NN` on PATH: clang 14+ for a CPU build, clang 19+ (Apple clang 17)
 when the program has a `!` and a GPU toolchain exists (macOS, or CUDA headers).

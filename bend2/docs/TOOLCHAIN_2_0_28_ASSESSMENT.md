@@ -31,12 +31,12 @@ bytes. Those are narrow diagnostics, not a reviewed toolchain variant.
 
 Ordinary 2.0.28 checking of the maintained nested relative-import fixture
 fails on Windows because the new loader combines backslash `realpath` output
-with POSIX path operations. The 004 WebWorker patch is still unapplied: its
+with POSIX path operations. At this initial assessment, 004 was unapplied: its
 `bend.ts` and `main.ts` hunks check, but its `comp.ts` hunk conflicts at the
 new JS emitter, and its `name_own`/`eff_name` dependencies were removed by
 upstream. Replacing those touches worker wire tags and intrinsic eligibility;
-the 107 compiler/HTML and 639 differential gates are prerequisites to any
-replay claim. The isolated 001+adapted-002 source hashes are `bend.ts`
+the 107 compiler/HTML and 639 differential gates are prerequisites to pin
+acceptance. The isolated 001+adapted-002 source hashes are `bend.ts`
 `fd618ad061743b225c471c1a788b149ff86a6c73761fc6499eda696a25e5e5f7`,
 `comp.ts` `8e12351e723e295df10f83d625207591ebeb89547cb1261c2be410b7438ecd3f`,
 and `main.ts` `07b83741d7333717844a779351d262b731bd2f56dc170675e91a785c78325091`.
@@ -59,8 +59,8 @@ earlier adapted-002 snapshot, so the full ordered stack still needs a fresh
 reconciliation and replay.
 The cross-volume check is synthetic rather than a real cross-drive junction.
 Independent final review, fresh full-stack replay, valid remote package fetch,
-Linux behavior, 004 worker migration and frozen proof/browser gates remain
-untested. This is still a candidate, not acceptance of 005.
+Linux behavior, full 004 worker migration and frozen proof/browser gates remain
+untested for 005. This is still a candidate, not acceptance of 005.
 The pinned 2.0.27 toolchain remains unchanged.
 
 To adopt the release, follow [Updating the Bend toolchain](LOCAL_BEND_GUIDE.md#updating-the-bend-toolchain)
@@ -74,11 +74,29 @@ graphics compiler history, source-bound worker artifacts, docs, and the
 frozen dependency amendment. Until then, the published browser build and
 Linux device requests remain bound to clean 2.0.27.
 
+The [004 after-005 candidate](../toolchain-patches/004-web-workers/rebase-2028/README.md)
+now carries the adapted compiler files and unchanged worker runtime. The
+disposable stage-two gate passed 59/59. The combined gate first passed 106/107;
+its only failure was the old 2.0.27 JS/C oracle pin. A separate 2.0.28
+ten-fixture oracle from the pre-004 005 baseline matched the candidate, and
+the adapted combined gate then passed **107/107** with no skips. It included
+a positive nested static module-worker run in local Chrome, narrower than the
+full browser/offline matrix. Root's patch reverse/forward replay reached the
+LF-normalized final-005 text but did not reconcile
+the entire fresh ordered stack. A copied 647-case matrix against a separately
+reconstructed 005 baseline then had zero check/JS/C differences; comparison
+against pristine Windows 2.0.28 had only its 105 path-resolution failures.
+A preliminary `term_force` error was a probe mistake
+(`book_valid(book, n0)` on a fresh book) and was withdrawn after all
+twelve roots emitted with `book_valid(book, 0)`. Static relocated packaging,
+browser/offline execution, a fresh-stack cross-host differential and oracle replay,
+frozen proofs and full game gates are not yet complete.
+
 **Disposition on 2026-09-26:** defer the pin change. Root owns the rebase and
 amendment. The Windows nested-import regression has an isolated, unaccepted
-candidate fix with focused edge-case coverage; the 004 worker/compiler API
-migration, fresh full-variant replay and independent final review remain
-blockers. Switching now would invalidate the
+candidate fix with focused edge-case coverage; the remaining 004 worker/browser
+and compiler differential gates, fresh full-variant replay and independent
+final review remain blockers. Switching now would invalidate the
 published source-bound worker artifacts and in-flight 2.0.27 native/GPU
 measurements. Recheck after those exact device/layout gates return and after a
 disposable 2.0.28 variant passes the nested no-provider, worker, differential,

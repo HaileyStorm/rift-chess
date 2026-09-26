@@ -1,0 +1,78 @@
+{
+  "schema": "bend-worker-oracles-2028/1",
+  "compilerCommit": "bc178404f4778704fa5584a73fcdf72bcdf9f32c",
+  "source": "2.0.28 final-005 text; independent of 004 candidate",
+  "normalization": "Only the lane checkout absolute root replaced by <ROOT> in emitted JS/C before SHA-256",
+  "fixtures": [
+    {
+      "file": "tests/compile/fork_operand.bend",
+      "root": "main.out",
+      "sourceSha256": "6119ea1f5b5a7f017b82524e6fd2544a283a3e29e751601dbbd4ccdce2f58b0e",
+      "js": "b31eb66fd5b3bbe808b0aab9ae35a026e1d3a294db1f28007ca09ef923fd807d",
+      "native": "b30c70638b56334660c526697c851b52f5b6798848cd1ace5a6a7ddec7155feb"
+    },
+    {
+      "file": "tests/compile/fork_array_capture.bend",
+      "root": "main.out",
+      "sourceSha256": "be5c4c875d684f7d15e6d892c2c0bc28e6d93e033e7ce7e854cb72ea8c0b39bf",
+      "js": "07ce0ea01a45ecf5b68c2d5260372664414de73207d98802466e40bbc73769ea",
+      "native": "15c274299015dded2c4a102ef73197177912233ed6649b4250707eea5b6d344f"
+    },
+    {
+      "file": "tests/compile/fork_closure_capture.bend",
+      "root": "main.out",
+      "sourceSha256": "3fa53d19874b6c0dfaba7f55ce19e756b0dbc7785bde583183c9c2b3f39860de",
+      "js": "8e2b46c7f204bbc7c7be15eeb82fc1fade9f3c3c009bb331949698efae1b3254",
+      "native": "5077ce49f6f39194ce322f454b579f23c0916349683e0127a6a525280dd459ab"
+    },
+    {
+      "file": "tests/compile/fork_width.bend",
+      "root": "main.out",
+      "sourceSha256": "66b8e69c5777287dd19642530ec3a902b296593a54392181b2d0c1a9f802cf7d",
+      "js": "1346c6f50467ecb2a0b5ee8bd114a2c2f43de2061368baaab4d835157429e1b1",
+      "native": "fb6f86a511c91c4ee00f4c64f3a783aa235751832584ca06966150ef37c6bb4d"
+    },
+    {
+      "file": "tests/compile/bang_intrinsic_closure.bend",
+      "root": "main.out",
+      "sourceSha256": "00840b0697b0589c704a149d93d7296a7bdf101b6c9c3a053d779532c3eaa9d4",
+      "js": "f1d89a4a91c1a5117f44564e492dd9326cc96014325990d6ac37ae037e4b3d86",
+      "native": "ae3ac157257ac020649492949deb9abde04ff2e8fb75cc8d163e6ada42ee6e37"
+    },
+    {
+      "file": "tests/compile/closure_partial_app.bend",
+      "root": "main.out",
+      "sourceSha256": "e5669d11e1f556e5c1e15e695e4bfed64afa249b1ddfe1bcc9e5fedeb8c46f17",
+      "js": "3375e07753b69efe60b333fbd7da7c2823a5466486bc355d50fce315025b32f9",
+      "native": "d12be7a7498491d31aeba765111aec77dc5e4137353e33c551ce3b2524cd0ae2"
+    },
+    {
+      "file": "tests/compile/dead_code_prune.bend",
+      "root": "main.out",
+      "sourceSha256": "ef2e10e0ae86f2a3c367a7f8143414ad71cf83875f0004db948cb43ca5550f8f",
+      "js": "cc243f2e88d30a09bab3639bdde20aab74662cb6f63b401465a81ca45873a264",
+      "native": "cdb8479eaf14eda8f8b2348b87911c88f5667874918a75de98ed3600dfc3ec58"
+    },
+    {
+      "file": "tests/compile/f32_table_nan_bits.bend",
+      "root": "main",
+      "sourceSha256": "0484461fa12c802652a1c48bdbdae2e34897f126882bf322e28d8328ba419be1",
+      "js": "25ac3bebbcd4968a25fe6b74586ff8c41b7da5e3e3c3f71454fa35cc6d976b96",
+      "native": "a0205d1b8d1f6809bc2886c11385da0bb9cefa22b57e4d1c34e0f9fbfddfbdd5"
+    },
+    {
+      "file": "tests/compile/erased_argument.bend",
+      "root": "main.out",
+      "sourceSha256": "2cb421992a28e2adb845a709f1d919f9a3f24120b1a4f505175a2a5448ae09c3",
+      "js": "f4c14a965c3e95832d89e8096fded1295fd01db80036f3804f57afaaa0c04137",
+      "native": "036b4690ac41cd41eed118639b5ec9d18efdd48b61b409ec3fdfda26f6d026c1"
+    },
+    {
+      "file": "tests/compile/erased_partial_closure.bend",
+      "root": "main.out",
+      "sourceSha256": "93cadc66d0dd10ddf4ef0cd8a5fa93153c9a655594ad4e180e03e4ce2d276350",
+      "js": "b9a8372e4a5ea724222897025355e6f2f9875a2cc5fe07cbac02c70ad630172f",
+      "native": "4eb0824fec27ec8f9da66d539344aa8454ebf0f32c29ac8710fec4f002a3571e"
+    }
+  ]
+}

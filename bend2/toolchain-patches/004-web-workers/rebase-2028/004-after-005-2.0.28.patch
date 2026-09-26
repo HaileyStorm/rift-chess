@@ -1,0 +1,2299 @@
+diff --git a/bend2/bend.ts b/bend2/bend.ts
+--- a/bend2/bend.ts
++++ b/bend2/bend.ts
+@@ -280,7 +280,7 @@
+ export type SubsOf<B> = BodyOf<B> extends Function ? TermOf<NoInfer<B>> : HTerm;
+ export type TermOf<B> = (
+   | { $: "Var"; k: Name; i: number; v?: SubsOf<B> }                                // x
+-  | { $: "Ref"; k: Name; b?: Bool }                                                // x
++  | { $: "Ref"; k: Name; b?: Bool; web?: "require" | "never"; webMax?: number }   // x
+   | { $: "Sub"; i: number; v: TermOf<B> | Patt; f: TermOf<B> }                     // x <- v; f
+   | { $: "Let"; k: Name[]; i: number[]; q: Quant[]; v: TermOf<B>[]; f: LetsOf<B> } // x y = v w; f
+   | { $: "Typ"; g: TermOf<B> }                                                     // Kind(g)
+@@ -367,8 +367,11 @@
+   return { $: "Var", k, i, s, v };
+ }
+ 
+-export function Ref<X>(k: Name, s?: Span, b?: Bool): TermOf<X> {
+-  return { $: "Ref", k, s, b };
++/** Construct a reference; web metadata is operational, not part of equality. */
++export function Ref<X>(k: Name, s?: Span, b?: Bool,
++  web?: "require" | "never", webMax?: number): TermOf<X> {
++  return { $: "Ref", k, s, b, ...(web === undefined ? {} : { web }),
++    ...(webMax === undefined ? {} : { webMax }) };
+ }
+ 
+ export function Sub<X>(i: number, v: TermOf<X> | Patt, f: TermOf<X>, s?: Span): TermOf<X> {
+@@ -734,7 +737,7 @@
+           "Note: we broke this after launch, sorry. Until 2.0.16 a bare operator meant Nat.\n"
+           + "That was a bug: operators demand annotation. Wrap the expression and it'll work again.");
+       }
+-      return Ref(tm.k, tm.s, tm.b);
++      return Ref(tm.k, tm.s, tm.b, tm.web, tm.webMax);
+     }
+     case "Sub": {
+       const x = tm.v;
+@@ -825,7 +828,7 @@
+       return Var(tm.k, tm.i, tm.s);
+     }
+     case "Ref": {
+-      return Ref(tm.k, tm.s, tm.b);
++      return Ref(tm.k, tm.s, tm.b, tm.web, tm.webMax);
+     }
+     case "Sub": {
+       return Sub(tm.i, tm.v.$ === "PVar" || tm.v.$ === "PCtr" ? tm.v : term_lower(tm.v, d), term_lower(tm.f, d), tm.s);
+@@ -1505,7 +1508,8 @@
+         return bnd.lastIndexOf(tm.k) === tm.i ? tm.k : tm.k + "^" + String(tm.i);
+       }
+       case "Ref": {
+-        return (bnd.includes(tm.k) ? tm.k + "^" : tm.k) + (tm.b === true ? "!" : "");
++        return (bnd.includes(tm.k) ? tm.k + "^" : tm.k) + (tm.b === true ? "!" : "")
++          + (tm.web === "require" ? "@" + (tm.webMax ?? "") : tm.web === "never" ? "~" : "");
+       }
+       case "Sub": {
+         return go(tm.f, prc);
+@@ -2045,16 +2049,18 @@
+     }
+     case "%": {
+       parse_bump(p);
+-      const e0 = parse_term(p);
++      // A rewrite binder owns the first bare name@ delimiter, including
++      // %name@(proof). Grouping a worker call, %(f@(x)), disambiguates it.
+       parse_skip(p);
++      const binder = /^[a-zA-Z_][a-zA-Z0-9_.]*[ \t\r\n]*@/.exec(p.str.slice(p.pos));
+       let k = "";
+-      let e = e0;
+-      if (parse_take(p, "@")) {
+-        if (e0.$ !== "Var") {
+-          parse_fail(p, "a name before @ (a rewrite binder is one name: %e@E : P)");
+-        }
+-        k = e0.k;
++      let e: LTerm;
++      if (binder !== null) {
++        k = parse_name(p);
++        parse_eat(p, "@");
+         e = parse_term(p);
++      } else {
++        e = parse_term(p);
+       }
+       parse_eat(p, ":");
+       const n0 = p.sc.stk.length;
+@@ -2067,7 +2073,7 @@
+       parse_take(p, ";");
+       const f = parse_block(p);
+       const s = parse_span(p, beg);
+-      return Rwt(e, Lam("_", xi, Lam(k, ei, P, e0.s), s), f, s);
++      return Rwt(e, Lam("_", xi, Lam(k, ei, P, e.s), s), f, s);
+     }
+     case "{": {
+       parse_bump(p);
+@@ -2210,6 +2216,7 @@
+   return true;
+ }
+ 
++/** Parse existing operators plus canonical, saturated named-call web suffixes. */
+ export function parse_term_ops(p: Parse, tm: LTerm, lvl: number): LTerm {
+   let out = tm;
+   while (true) {
+@@ -2217,17 +2224,39 @@
+     if (parse_nl(p) && (parse_at(p, "(") || parse_at(p, "["))) {
+       return out;
+     }
+-    if (parse_at(p, "(") || parse_at(p, "!(")) {
++    const modifier = parse_at(p, "@") || parse_at(p, "~")
++      || parse_at(p, "!(") || parse_at(p, "!@") || parse_at(p, "!~")
++      || parse_at(p, "!!");
++    const legacyBang = parse_at(p, "!(");
++    if (modifier && parse_nl(p) && !legacyBang) return out;
++    if (parse_at(p, "(") || modifier) {
+       if (out.$ === "Var" && parse_lookup(p, out.k) === null) {
+         out = Ref(parse_reso(p, out.k), out.s);
+       }
+-      if (parse_at(p, "!")) {
++      if (modifier) {
+         if (out.$ !== "Ref") {
+-          parse_fail(p, "a named def before ! (only f!(..) offloads)");
++          parse_fail(p, "a named saturated call before !/@/~ (partial-call expressions cannot carry worker policies)");
+         }
+-        parse_bump(p);
+-        out.b = true;
+-        continue;
++        if (!legacyBang && (parse_nl(p) || /\s/.test(p.str[p.pos - 1] ?? ""))) {
++          parse_fail(p, "a contiguous named-call modifier and argument list on one line");
++        }
++        if (out.b || out.web) parse_fail(p, "one canonical suffix: optional ! then @count or ~");
++        out.b = parse_take(p, "!") || undefined;
++        if (parse_take(p, "@")) {
++          out.web = "require";
++          const digits = /^[0-9]+/.exec(p.str.slice(p.pos));
++          if (digits !== null) {
++            out.webMax = Number(digits[0]);
++            p.pos += digits[0].length;
++            if (!Number.isSafeInteger(out.webMax) || out.webMax < 1)
++              parse_fail(p, "a positive safe decimal worker cap");
++          }
++        } else if (parse_take(p, "~")) {
++          out.web = "never";
++        }
++        if (!parse_at(p, "(")) {
++          parse_fail(p, "a contiguous argument list after optional ! then @positive-decimal or ~ (no duplicates, mixed policies, fractional/negative caps, or cap on never)");
++        }
+       }
+       parse_bump(p);
+       const hd = p.book.tlds[out.$ === "Ref" ? out.k : ""];
+@@ -2235,7 +2264,7 @@
+       const ts: LTerm[] = [];
+       for (parse_skip(p); x > 0 && parse_at(p, "~"); parse_skip(p)) {
+         if (ts.length === x) {
+-          parse_fail(p, "a term (" + out.k + " takes " + String(x) + " ~)");
++          parse_fail(p, "a term (" + (out.$ === "Ref" ? out.k : "callee") + " takes " + String(x) + " ~)");
+         }
+         parse_bump(p);
+         ts.push(parse_term(p));
+@@ -2243,6 +2272,10 @@
+         parse_take(p, ",");
+       }
+       const xs = ts.concat(parse_term_args(p, ")"));
++      if (out.$ === "Ref" && out.web !== undefined
++        && (hd?.$ !== "Def" || xs.length !== hd.n)) {
++        parse_fail(p, "a named saturated call for @/~ (include every explicit argument)");
++      }
+       const s  = parse_grow(p, out);
+       for (const a of xs) {
+         out = App(out, a, s);
+@@ -3230,7 +3263,7 @@
+       return Var(tm.k, tm.i, tm.s);
+     }
+     case "Ref": {
+-      return Ref(tm.k, tm.s, tm.b);
++      return Ref(tm.k, tm.s, tm.b, tm.web, tm.webMax);
+     }
+     case "Sub": {
+       return Sub(tm.i, tm.v.$ === "PVar" || tm.v.$ === "PCtr" ? tm.v : term_snf(book, tm.v), term_snf(book, tm.f), tm.s);
+@@ -3520,7 +3553,7 @@
+       if (def.$ === "ADT" && def.n > 0) {
+         throw Err(book, ctx, "a family instance (write " + tm.k + "<..>)", tm, tm.s, lhs.def);
+       }
+-      return Infer(Ref(k, tm.s, tm.b), def.T, uses_nil(), x);
++      return Infer(Ref(k, tm.s, tm.b, tm.web, tm.webMax), def.T, uses_nil(), x);
+     }
+     // Γ ⊢ q : Quant
+     // where q is dead
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -3,6 +3,8 @@
+ // bugs ARE expected. It will take some time for the compiler to be stable.
+ 
+ import * as fs from "node:fs";
++import * as crypto from "node:crypto";
++import * as path from "node:path";
+ 
+ import * as Bend from "./bend.ts";
+ 
+@@ -95,6 +97,7 @@
+   consts: Map<string, Map<HTerm, Val>>;
+   reqs: string;
+   fuel: number;
++  web?: WebEmit;
+ };
+ 
+ type Gen = string | ((xs: string[]) => string);
+@@ -126,6 +129,9 @@
+   args: HTerm[];
+   all: HTerm[];
+   bang?: boolean;
++  web?: "require" | "never";
++  webMax?: number;
++  span?: Bend.Span;
+ };
+ 
+ type Intr = {
+@@ -750,7 +756,8 @@
+     const a = apps[live.lastIndexOf(true)];
+     let call: Call | null = null;
+     if (def !== null && args.length === need) {
+-      call = { k: def, args, all, bang: (c as Of<"Ref">).b };
++      call = { k: def, args, all, bang: (c as Of<"Ref">).b,
++        web: (c as Of<"Ref">).web, webMax: (c as Of<"Ref">).webMax, span: c.s };
+     } else if (args.length > need && (def !== null || c.$ !== "Ref")) {
+       call = { k: CLO_APPLY, args: [a.f, a.x], all: [a.f, a.x] };
+     }
+@@ -3195,8 +3202,18 @@
+ }
+ 
+ function js_call(fl: File, k: Name, args: HTerm[],
+-  tail: boolean): string {
++  tail: boolean, source?: Call): string {
+   let exprs = args.map((x) => js_expr(fl, x, null));
++  const web = fl.web;
++  if (web !== undefined && web.ids.has(k) && (intr_of(fl, k, true) === undefined || source?.web !== undefined)) {
++    const id = web.ids.get(k)!;
++    const line = source?.span ? source.span.src.slice(0, source.span.beg).split("\n").length : null;
++    const policy = JSON.stringify({ web: source?.web, max: source?.webMax,
++      site: `${fl.def}:${line ?? "?"}:${k}` });
++    const body = `${id}, [${exprs.join(", ")}], ${source?.bang === true}, ${policy}`;
++    return tail ? `web_tail(${body})` : `(yield web_call(${body}))`;
++  }
++  if (web !== undefined) tail = false; // finish legacy tail jumps before resuming a coordinator
+   if (k === CLO_APPLY) {
+     const [f, x] = exprs;
+     return tail ? "run_tail(" + f + ", " + x + ")" : f + "(" + x + ")";
+@@ -3236,6 +3253,28 @@
+ 
+ function js_open(fl: File, x: HLet): HTerm {
+   const on = let_live(fl, x);
++  if (fl.web !== undefined) {
++    const live = x.v.flatMap((v, j) => on[j] ? [{ v, j, call: call_kind(fl, v) }] : []);
++    if (live.length >= 2 && live.every(({ call }) => call !== null
++      && fl.web!.ids.has(call.k))) {
++      const site = fl.web.sites.length;
++      const span = x.s;
++      fl.web.sites.push({ id: site, function: fl.def,
++        line: span ? span.src.slice(0, span.beg).split("\n").length : null,
++        children: live.map(({ call }) => fl.web!.ids.get(call!.k)!) });
++      // Prepare all arguments in the caller's context before the fork. The
++      // continuation is the generator's local frame and never crosses a wire.
++      const children = live.map(({ call }) => {
++        const args = call!.args.map((v) => js_expr(fl, v, null));
++        const meta = JSON.stringify({ marked: call!.bang === true, web: call!.web, max: call!.webMax,
++          site: `${fl.def}:${span ? span.src.slice(0, span.beg).split("\n").length : "?"}:${call!.k}` });
++        return `{id: ${fl.web!.ids.get(call!.k)}, args: [${args.join(", ")}], ...${meta}}`;
++      });
++      const vals = emit_hold(fl, [`(yield web_fork(${site}, [${children.join(", ")}]))`], "web_fork")[0];
++      const refs = new Map(live.map(({ j }, i) => [j, Bend.Var(`${vals}[${i}]`, 0) as HTerm]));
++      return x.f(x.v.map((v, j) => refs.get(j) ?? v));
++    }
++  }
+   return x.f(x.v.map((v, j): HTerm => !on[j] ? v
+     : Bend.Var(emit_hold(fl, [js_expr(fl, v, null)], x.k[j])[0], 0)));
+ }
+@@ -3253,7 +3292,7 @@
+     case "App": {
+       const ck = call_kind(fl, x);
+       if (ck !== null) {
+-        return js_call(fl, ck.k, ck.args, false);
++        return js_call(fl, ck.k, ck.args, false, ck);
+       }
+       const m = term_spine(fl, x);
+       const y = call_eta(fl, x) ?? (m.t.$ !== "Ref" ? m.h : null);
+@@ -3266,7 +3305,8 @@
+       if (it?.call === true && it.C === undefined) {
+         lay_el(fl.book, m.all[0]);
+       }
+-      return js_call(fl, k, m.args, false);
++      return js_call(fl, k, m.args, false, m.t.$ === "Ref"
++        ? { k, args: m.args, all: m.all, bang: m.t.b, web: m.t.web, webMax: m.t.webMax, span: m.t.s } : undefined);
+     }
+     case "Ctr": {
+       const [adt, u] = ctr_adt(fl, x, ty);
+@@ -3293,7 +3333,17 @@
+       const arg = name_local(fl, "x");
+       const seg = fl.seg;
+       fl.seg = seg_new("", BOX, []);
++      // Runtime closures stay synchronous and local. A partial application is
++      // not a new worker region, and no yield may leak into a run_clo body.
++      const web = fl.web;
++      if (web && term_any(fl, x, (t) => t.$ === "Ref" && (t.web === "require"
++        || web.functions[web.ids.get(t.k) ?? -1]?.reachesRequire))) {
++        if (web.policy === "strict") throw new Error("required worker unsupported in runtime closure: " + fl.def);
++        web.diagnostics.push({ function: fl.def, reason: "require_unfulfilled:runtime_closure", severity: "warning" });
++      }
++      fl.web = undefined;
+       js_func(fl, x, ty, [arg]);
++      fl.web = web;
+       const lines = fl.seg.lines;
+       fl.seg = seg;
+       return `run_clo((${arg}) => {\n${lines.join("\n")}\n})`;
+@@ -3327,7 +3377,7 @@
+   }
+   const ck = call_kind(fl, x);
+   file_push(fl, "return " + (ck === null ? js_expr(fl, x, ty)
+-    : js_call(fl, ck.k, ck.args, true)) + ";");
++    : js_call(fl, ck.k, ck.args, true, ck)) + ";");
+ }
+ 
+ function js_match(fl: File, x: HTerm, ty: HTerm | null,
+@@ -3400,9 +3450,23 @@
+   file_push(fl, "");
+ }
+ 
++/** Emit the legacy synchronous library; explicit require cannot be silent. */
+ export function js_lib(book: Bend.Book, roots: Name[],
+-  outs: Name[] | null): string {
++  outs: Name[] | null, options: { policy?: "strict" | "permissive";
++    internal?: boolean; onDiagnostic?: (message: string) => void } = {}): string {
+   const cb = carb_book(book, roots.slice());
++  if (!options.internal) {
++    const warned = new Set<string>();
++    for (const [k, def] of done_defs(cb)) term_any(cb, def.h!, (t) => {
++      if (t.$ === "Ref" && t.web === "require") {
++        const line = t.s ? t.s.src.slice(0, t.s.beg).split("\n").length : "?";
++        const msg = `required worker disabled in synchronous JS at ${k}:${line} -> ${t.k}`;
++        if (options.policy === "strict") throw new Error(msg);
++        if (!warned.has(msg)) { warned.add(msg); (options.onDiagnostic ?? console.warn)(msg); }
++      }
++      return false;
++    });
++  }
+   const fl = file_new(cb, true);
+   fl.tab = 0;
+   for (const [k, def] of done_defs(cb)) {
+@@ -3441,6 +3505,345 @@
+       ? 0 : c), show.names]) + ");";
+ }
+ 
++// Web Workers (downstream, opt-in)
++// ===============================
++// Keep the synchronous emitter above as the serial oracle. Only a File carrying
++// WebEmit may produce generator continuations. Native layouts are not schemas.
++
++export type WebWorkerOptions = {
++  mode?: "marked" | "auto" | "required-only" | "off";
++  policy?: "strict" | "permissive";
++};
++export type WebDiagnostic = {
++  function: string; line?: number | null; callee?: string; reason: string; severity: "info" | "warning";
++};
++type WebSchema = {
++  kind: "u32" | "nat" | "bool" | "char" | "string" | "f32" | "adt";
++  name?: string;
++  arms?: { tag: string; fields: { name: string; schema: number }[] }[];
++};
++type WebFunction = {
++  id: number; name: string; arity: number; inputs: number[] | null;
++  output: number | null; eligible: boolean; reasons: string[];
++  reachesMark: boolean; reachesPolicy: boolean; reachesRequire: boolean; maySuspend: boolean; hasFork: boolean;
++};
++type WebSite = { id: number; function: string; line: number | null; children: number[] };
++type WebEmit = {
++  ids: Map<Name, number>; functions: WebFunction[]; sites: WebSite[];
++  maySuspend: Set<Name>;
++  policy: "strict" | "permissive"; diagnostics: WebDiagnostic[];
++};
++export type WebWorkerBuild = {
++  files: Record<string, string>;
++  entry: string;
++  manifest: {
++    protocol: number; program: string; backend: string; mode: string; policy: string;
++    schemas: WebSchema[]; functions: WebFunction[]; sites: WebSite[];
++    exports: Record<string, number>; artifacts: Record<string, string>;
++  };
++  diagnostics: WebDiagnostic[];
++};
++
++// A pinned, deliberately small intrinsic allowlist. The JS implementations are
++// in OPERATIONS. F32 arithmetic is allowed only with the representation audit
++// below and finite wire values. Bit inspection and mutable Array stay local.
++const WEB_INTRINSICS = new Set((
++  "u32_add u32_sub u32_and u32_or u32_xor u32_is_eq u32_is_ne u32_is_lt"
++  + " u32_is_le u32_is_gt u32_is_ge u32_mul u32_div u32_mod u32_inc u32_shl"
++  + " u32_shr u32_shln u32_shrn u32_not u32_is_zero u32_cmp u32_to_nat u32_from_nat"
++  + " nat_add nat_sub nat_mul nat_double nat_cmp nat_is_lt nat_divmod"
++  + " bool_or bool_xor string_append string_length"
++  + " u32_to_f32 f32_add f32_sub f32_mul f32_div f32_neg f32_mod"
++  + " f32_is_eq f32_is_ne f32_is_lt f32_is_le f32_is_gt f32_is_ge f32_cmp"
++  + " f32_sqrt f32_exp f32_log f32_log2 f32_log10 f32_sin f32_cos f32_tan"
++  + " f32_asin f32_acos f32_atan f32_sinh f32_cosh f32_tanh f32_floor f32_ceil"
++  + " f32_trunc f32_abs f32_round f32_pow f32_atan2 f32_to_u32"
++).split(" "));
++
++function web_closed(tm: HTerm, fuel = 128): boolean {
++  if (fuel === 0) return false;
++  const t = term_force(tm);
++  switch (t.$) {
++    case "Var": case "Hol": case "Lam": case "All": return false;
++    case "Ann": return web_closed(t.x, fuel - 1);
++    case "App": return web_closed(t.f, fuel - 1) && web_closed(t.x, fuel - 1);
++    case "ADT": case "Ctr": return t.x.every((x) => web_closed(x, fuel - 1));
++    case "Min": return web_closed(t.a, fuel - 1) && web_closed(t.b, fuel - 1);
++    default: return true;
++  }
++}
++
++function web_schema(cb: Carb, T: HTerm, schemas: WebSchema[], keys: Map<string, number>,
++  active = 0): number {
++  if (active > 128 || schemas.length >= 4096) throw new Error("schema_budget");
++  const t = ty_wnf(cb.book, T);
++  if (t?.$ !== "ADT") throw new Error(t?.$ === "All" ? "function_field" : "open_wire_type");
++  if (t.k === "Array") throw new Error("array_boundary");
++  if (t.k === "IO.OP") throw new Error("opaque_boundary");
++  if (!t.x.every((x) => web_closed(x))) throw new Error("open_wire_type");
++  const key = Bend.term_key(Bend.term_lower(t));
++  const old = keys.get(key);
++  if (old !== undefined) return old;
++  const primitives: Record<string, WebSchema["kind"]> = {
++    U32: "u32", Nat: "nat", Bool: "bool", Char: "char", String: "string", F32: "f32",
++  };
++  const id = schemas.length;
++  const kind = primitives[t.k];
++  if (kind) {
++    schemas.push({ kind });
++    keys.set(key, id);
++    return id;
++  }
++  const def = cb.book.tlds[t.k];
++  if (def?.$ !== "ADT") throw new Error("opaque_boundary");
++  // Install a recursive placeholder before descending; concrete recursive ADTs
++  // are permitted, open/dependent wire families are conservatively local.
++  const schema: WebSchema = { kind: "adt", name: t.k, arms: [] };
++  schemas.push(schema);
++  keys.set(key, id);
++  for (const ctr of def.c) {
++    const tag = ctr.k;
++    const fields = ctr_tail(cb.book, ctr, t.x).filter(live_dom).map(([, name, A]) => ({
++      name, schema: web_schema(cb, A, schemas, keys, active + 1),
++    }));
++    if (schema.arms!.some((a) => a.tag === tag)) throw new Error("ambiguous_wire_tag");
++    schema.arms!.push({ tag, fields });
++  }
++  return id;
++}
++
++function web_f32(schemas: WebSchema[], id: number, seen = new Set<number>()): boolean {
++  if (seen.has(id)) return false;
++  seen.add(id);
++  const s = schemas[id];
++  return s.kind === "f32" || (s.arms ?? []).some((a) => a.fields.some((f) => web_f32(schemas, f.schema, seen)));
++}
++
++function web_signature(cb: Carb, def: Def, schemas: WebSchema[], keys: Map<string, number>):
++  { inputs: number[] | null; output: number | null; reasons: string[] } {
++  // Roll back placeholders on a failed schema; otherwise a later definition
++  // could accidentally reuse an incompletely validated recursive wire type.
++  const begin = schemas.length, oldKeys = new Map(keys);
++  try {
++    let T = def.T;
++    const inputs: number[] = [];
++    for (let i = 0; i < def.n; i++) {
++      const all = ty_all(cb.book, T);
++      if (quant_live(all.q)) inputs.push(web_schema(cb, all.A, schemas, keys));
++      T = all.B(DUMMY);
++    }
++    const output = web_schema(cb, T, schemas, keys);
++    return { inputs, output, reasons: [] };
++  } catch (e) {
++    schemas.splice(begin);
++    keys.clear();
++    for (const [k, v] of oldKeys) keys.set(k, v);
++    return { inputs: null, output: null, reasons: [String((e as Error).message)] };
++  }
++}
++
++// Compile all artifacts in one serialized operation. Does not mutate the
++// source book, create pools at import, or change js_lib's synchronous API.
++export function js_worker_lib(book: Bend.Book, roots: Name[],
++  options: WebWorkerOptions = {}): WebWorkerBuild {
++  const mode = options.mode ?? "auto";
++  const policy = options.policy ?? (mode === "required-only" ? "strict" : "permissive");
++  if (!["marked", "auto", "required-only", "off"].includes(mode)) throw new Error("unknown worker mode");
++  if (!["strict", "permissive"].includes(policy)) throw new Error("unknown worker policy");
++  if (roots.length === 0 || new Set(roots).size !== roots.length) throw new Error("select distinct worker exports");
++  for (const k of roots) {
++    const d = book.tlds[k];
++    if (!done_live(d) || def_foreign(d) || d.x !== 0 || d.b) throw new Error("worker export must be a filled, non-base, non-template, non-foreign definition: " + k);
++  }
++  // This remains the existing serial implementation, byte for byte.
++  const serial = js_lib(book, roots, null, { internal: true });
++  const cb = carb_book(book, roots);
++  const explicitIntrinsics = new Set<Name>();
++  for (const [, d] of done_defs(cb)) term_any(cb, d.h!, (t) => {
++    if (t.$ === "Ref" && t.web && intr_of(cb, t.k, true)) explicitIntrinsics.add(t.k);
++    return false;
++  });
++  const defs = done_defs(cb).filter(([k]) => intr_of(cb, k, true) === undefined);
++  for (const k of explicitIntrinsics) {
++    const d = def_body(cb, k);
++    if (d?.$ === "Def") defs.push([k, d]);
++  }
++  const ids = new Map(defs.map(([k], i) => [k, i]));
++  const schemas: WebSchema[] = [];
++  const keys = new Map<string, number>();
++  const diagnostics: WebDiagnostic[] = [];
++  const functions: WebFunction[] = defs.map(([k, d], id) => ({
++    id, name: k, arity: sig_def(cb, k).live.length,
++    ...web_signature(cb, d, schemas, keys), eligible: false, reachesMark: false, reachesPolicy: false, reachesRequire: false, maySuspend: false, hasFork: false,
++  }));
++  const refs = new Map<Name, Set<Name>>();
++  const forkRefs = new Map<Name, Set<Name>>();
++  const reasons = new Map<Name, Set<string>>();
++  const marks = new Set<Name>();
++  const policies = new Set<Name>();
++  const requiredDefs = new Set<Name>();
++  const requirements: { owner: Name; target: Name; span?: Bend.Span }[] = [];
++  for (const [k, d] of defs) {
++    memo_gc();
++    const deps = new Set<Name>(), bad = new Set<string>();
++    if (d.u) bad.add("unsafe_reachable");
++    // Representation-sensitive float code is excluded even with integer-only
++    // public types. Finite literal constructors do not inspect representation.
++    const intrinsic = intr_of(cb, k, true);
++    if (intrinsic && !WEB_INTRINSICS.has(op_name(k))) bad.add(op_name(k).includes("f32") ? "f32_internal" : "intrinsic_not_allowed");
++    refs.set(k, deps);
++    forkRefs.set(k, new Set());
++    reasons.set(k, bad);
++    if (intrinsic) continue;
++    term_any(cb, d.h!, (s) => {
++      if (s.$ === "Ctr" && s.k === "F32") {
++        const bits = Bend.u32_from_term(s, "F32");
++        if (bits === null || !Number.isFinite(Bend.f32_from_bits(bits))) bad.add("f32_internal");
++      }
++      if (s.$ === "Mat" && s.k === "F32") bad.add("f32_internal");
++      if (s.$ === "Ref") {
++        if (s.web) policies.add(k);
++        if (s.web === "require") { requiredDefs.add(k); requirements.push({ owner: k, target: s.k, span: s.s }); }
++        const ref = def_body(cb, s.k);
++        if (def_foreign(ref)) bad.add("foreign_reachable");
++        else if (intr_of(cb, s.k, true)) {
++          if (!WEB_INTRINSICS.has(op_name(s.k))) bad.add(op_name(s.k).includes("f32") ? "f32_internal" : "intrinsic_not_allowed");
++        } else if (ids.has(s.k)) deps.add(s.k);
++        else if (ref?.$ === "Def") bad.add("unfilled_reachable");
++      }
++      const call = call_kind(cb, s);
++      if (call?.k === CLO_APPLY) bad.add("higher_order_call");
++      if (call?.bang && call.k !== CLO_APPLY) marks.add(k);
++      if (call && ids.has(call.k) && call.web !== "never") forkRefs.get(k)!.add(call.k);
++      return false;
++    });
++  }
++  // Closed-call-graph fixpoint handles self-recursion without treating a
++  // visiting node as a successful proof. Effect and transport facts differ.
++  let changed = true;
++  while (changed) {
++    changed = false;
++    for (const [k, deps] of refs) for (const dep of deps) {
++      for (const r of reasons.get(dep)!) if (!reasons.get(k)!.has(r)) {
++        reasons.get(k)!.add(r); changed = true;
++      }
++      if (marks.has(dep) && !marks.has(k)) { marks.add(k); changed = true; }
++      if (policies.has(dep) && !policies.has(k)) { policies.add(k); changed = true; }
++      if (requiredDefs.has(dep) && !requiredDefs.has(k)) { requiredDefs.add(k); changed = true; }
++    }
++  }
++  for (const f of functions) {
++    f.reasons = [...new Set([...f.reasons, ...reasons.get(f.name)!])].sort();
++    f.eligible = f.reasons.length === 0;
++    f.reachesMark = marks.has(f.name);
++    f.reachesPolicy = policies.has(f.name);
++    f.reachesRequire = requiredDefs.has(f.name);
++    const def = def_body(cb, f.name);
++    const span = def?.$ === "Def" ? def.h?.s : undefined;
++    for (const reason of f.reasons) diagnostics.push({ function: f.name,
++      line: span ? span.src.slice(0, span.beg).split("\n").length : null,
++      reason, severity: "info" });
++  }
++  for (const k of roots) {
++    const bad = reasons.get(k)!;
++    if (bad.has("foreign_reachable") || bad.has("unsafe_reachable") || bad.has("unfilled_reachable"))
++      throw new Error("worker export is not in the closed safe pure subset: " + k + " (" + [...bad].join(", ") + ")");
++  }
++  for (const r of requirements) {
++    const target = functions[ids.get(r.target) ?? -1];
++    const reason = mode === "off" ? "disabled" : !target?.eligible ? "unsupported:" + (target?.reasons.join(",") ?? "not_saturated_or_named") : null;
++    if (reason !== null) {
++      const line = r.span ? r.span.src.slice(0, r.span.beg).split("\n").length : null;
++      if (policy === "strict") throw new Error(`required worker ${reason} at ${r.owner}:${line ?? "?"} -> ${r.target}`);
++      diagnostics.push({ function: r.owner, callee: r.target, line, reason, severity: "warning" });
++    }
++  }
++  const maySuspend = new Set<Name>(policies);
++  const forks = new Set<Name>();
++  for (const [k, d] of defs) {
++    memo_gc();
++    term_any(cb, d.h!, (s) => {
++      if (s.$ === "Let") {
++        const on = let_live(cb, s), vs = s.v.filter((_, j) => on[j]);
++        if (vs.length >= 2) {
++          const calls = vs.map((v) => call_kind(cb, v));
++          if (calls.every((c) => c !== null && ids.has(c.k))) {
++            maySuspend.add(k);
++            if (calls.some((c) => c!.web !== "never" && functions[ids.get(c!.k)!].eligible)) forks.add(k);
++          }
++          else for (const c of calls) {
++            const target = c === null ? undefined : functions[ids.get(c.k) ?? -1];
++            if (target?.eligible) continue;
++            for (const reason of target?.reasons ?? ["not_saturated_or_named"]) diagnostics.push({
++              function: k, line: s.s ? s.s.src.slice(0, s.s.beg).split("\n").length : null,
++              ...(c ? { callee: c.k } : {}), reason, severity: "info",
++            });
++          }
++        }
++      }
++      return false;
++    });
++  }
++  changed = true;
++  while (changed) {
++    changed = false;
++    for (const [k, deps] of refs) {
++      if (!maySuspend.has(k) && [...deps].some((d) => maySuspend.has(d))) {
++        maySuspend.add(k); changed = true;
++      }
++      if (!forks.has(k) && [...forkRefs.get(k)!].some((d) => forks.has(d))) { forks.add(k); changed = true; }
++    }
++  }
++  for (const f of functions) { f.maySuspend = maySuspend.has(f.name); f.hasFork = forks.has(f.name); }
++  const sites: WebSite[] = [];
++  const fl = file_new(cb, true);
++  fl.tab = 0;
++  fl.web = { ids, functions, sites, maySuspend, policy, diagnostics };
++  for (const [k, d] of defs) {
++    if (!maySuspend.has(k) || intr_of(cb, k, true)) continue;
++    memo_gc();
++    fl.fresh = new Map();
++    fl.def = k;
++    fl.fuel = FOLD_FUEL;
++    const params = sig_def(cb, k).live.map(([, n]) => name_local(fl, n));
++    block(fl, `function* $web${ids.get(k)}(${params.join(", ")}) {`, () => js_func(fl, d.h!, d.T, params));
++    file_push(fl, "");
++  }
++  // Coordinator table optimizations get their own namespace, never colliding
++  // with tables already emitted by the serial oracle.
++  const emitted = fl.seg.lines.join("\n").replace(/\bTAB_(\d+)\b/g, "WEB_TAB_$1")
++    + "\n" + [...fl.tabs].map(([r, i]) => `const WEB_TAB_${i} = [${r}];`).join("\n");
++  const runtime = fs.readFileSync(path.join(Bend.BEND_DIR, "web_runtime.js"), "utf8").replace(/\r\n/g, "\n");
++  const exports = Object.fromEntries(roots.map((k) => [k, ids.get(k)!]));
++  const program = crypto.createHash("sha256").update(JSON.stringify({
++    backend: "bend-web-workers-2", serial, emitted, runtime, schemas, functions, sites, exports, mode, policy,
++  })).digest("hex");
++  const prefix = "bend-" + program.slice(0, 16);
++  const artifacts = { entry: "index.mjs", program: prefix + ".program.mjs",
++    worker: prefix + ".worker.mjs", runtime: prefix + ".runtime.mjs", manifest: "manifest.json" };
++  const manifest = { protocol: 1, program, backend: "bend-web-workers-2", mode, policy,
++    schemas, functions, sites, exports, artifacts };
++  const data = JSON.stringify(manifest);
++  const programSource = `import {web_call, web_tail, web_fork, freezeProgramData} from "./${artifacts.runtime}";\n`
++    + serial + "\n" + emitted + "\nexport const manifest = freezeProgramData(" + data + ");\n"
++    + "export const serial = Object.freeze([\n" + defs.map(([k]) => {
++      const intr = intr_of(cb, k, true);
++      const call = intr ? tpl(intr.JS, sig_def(cb, k).live.map((_, i) => `args[${i}]`)) : `run_loop(${js_sat(k)}(...args))`;
++      return `  (...args) => ${call},`;
++    }).join("\n") + "\n]);\n"
++    + "export const coordinators = Object.freeze([" + defs.map(([k]) => maySuspend.has(k) ? "$web" + ids.get(k) : "null").join(", ") + "]);\n";
++  const files: Record<string, string> = {
++    [artifacts.entry]: `import * as program from "./${artifacts.program}";\nimport {createWorkerSession} from "./${artifacts.runtime}";\n`
++      + `export const manifest = program.manifest;\nexport function createSession(options = {}) {\n`
++      + `  return createWorkerSession(program, new URL("./${artifacts.worker}", import.meta.url), options);\n}\n`,
++    [artifacts.program]: programSource,
++    [artifacts.worker]: `import * as program from "./${artifacts.program}";\nimport {serveWorker} from "./${artifacts.runtime}";\nserveWorker(program);\n`,
++    [artifacts.runtime]: runtime,
++    [artifacts.manifest]: JSON.stringify(manifest, null, 2) + "\n",
++  };
++  return { files, entry: artifacts.entry, manifest, diagnostics };
++}
++
+ // RuntimeC
+ // ========
+ 
+diff --git a/bend2/main.ts b/bend2/main.ts
+--- a/bend2/main.ts
++++ b/bend2/main.ts
+@@ -46,6 +46,14 @@
+                                 name a package already on the hub
+   bend login                    log in to Bender for --publish <name>@…
+   bend <page.html> -o <dir>     bundle a page that imports .bend files
++  bend <page.html> --web-library <file.bend> --web-exports=<names> [--web-workers=<mode>] -o <dir>
++                                bundle an external page module with a static worker library
++                                <file.bend> is relative to the page; its module imports "bend:workers"
++  bend <file.bend> --web-workers[=auto|required-only|off] --web-exports=<names> [--web-policy=strict|permissive] -o <dir>
++                                emit an experimental async worker library
++                                modes: auto (default), required-only, off; marked for tests
++                                <names>: comma-separated pure library exports
++                                the page imports the generated API as "bend:workers"
+   bend base [--types|<name>]    print Base, its types, or a name and subnames
+   bend guide                    print the Bend guide
+   bend update                   install the latest bend (curl | sh, shown first)
+@@ -135,9 +143,7 @@
+   } else {
+     await cli_file(args, () => { explained = true; });
+   }
+-  if (!explained) {
+-    await check();
+-  }
++  if (!explained) await check();
+ }
+ 
+ // cli_guide prints guide/<NAME>.md: the guide, or a named extra.
+@@ -222,10 +228,31 @@
+   let checkup = false;
+   let publish = false;
+   let named: string | undefined;
++  let web: Comp.WebWorkerOptions["mode"] | undefined;
++  let webExports: string[] | undefined;
++  let webPolicy: Comp.WebWorkerOptions["policy"] | undefined;
++  let webLibrary: string | undefined;
+   for (let i = 0; i < args.length; i += 1) {
+     const a = args[i];
+     if (a === "--help" || a === "-h") {
+       return cli_say(1, HELP);
++    } else if (a === "--web-workers" || a.startsWith("--web-workers=")) {
++      const mode = a === "--web-workers" ? "auto" : a.slice("--web-workers=".length);
++      if (!["marked", "auto", "required-only", "off"].includes(mode)) {
++        cli_fail("worker mode must be auto, required-only, off or development-only marked");
++      }
++      web = mode as Comp.WebWorkerOptions["mode"];
++    } else if (a.startsWith("--web-policy=")) {
++      const policy = a.slice("--web-policy=".length);
++      if (!["strict", "permissive"].includes(policy)) cli_fail("web policy must be strict or permissive");
++      webPolicy = policy as Comp.WebWorkerOptions["policy"];
++    } else if (a.startsWith("--web-exports=")) {
++      webExports = a.slice("--web-exports=".length).split(",");
++      if (webExports.some((x) => !x)) cli_fail("--web-exports needs comma-separated definition names");
++    } else if (a === "--web-library" || a.startsWith("--web-library=")) {
++      const source = a === "--web-library" ? args[++i] : a.slice("--web-library=".length);
++      if (!source || !source.endsWith(".bend")) cli_fail("--web-library needs a .bend source path");
++      webLibrary = source;
+     } else if (a === "--check-only") {
+       only = true;
+     } else if (a === "--explain-layout") {
+@@ -256,7 +283,49 @@
+     cli_say(1, HELP);
+     process.exit(1);
+   }
++  if (webPolicy !== undefined && web === undefined && webLibrary === undefined) cli_fail("--web-policy requires a worker-library output; use --web-workers=off for a diagnosed serial worker library");
++  if (webExports !== undefined && web === undefined && webLibrary === undefined) {
++    cli_fail("--web-exports requires --web-workers");
++  }
++  if (webLibrary !== undefined) {
++    if (!file.endsWith(".html") || outs.length !== 1 || only || explain || checkup || publish || argv.length) {
++      cli_fail("--web-library is for an HTML page and exactly one -o <new-or-empty-directory>");
++    }
++    if (!webExports?.length) cli_fail("select pure roots explicitly with --web-exports=name[,name]");
++    const source = path.isAbsolute(webLibrary) ? webLibrary
++      : path.resolve(path.dirname(path.resolve(file)), webLibrary);
++    try {
++      await cli_bundle(file, outs[0], {
++        source,
++        roots: webExports,
++        workerOptions: { mode: web ?? "auto", policy: webPolicy },
++      });
++    } catch (e) {
++      cli_say(2, book_err(e) + "\n");
++      process.exitCode = 1;
++    }
++    return;
++  }
++  if (web !== undefined) {
++    if (file.endsWith(".html") || outs.length !== 1 || only || explain || checkup || publish || argv.length) {
++      cli_fail("worker libraries use a .bend source and exactly one -o <new-or-empty-directory>; HTML bundling remains a separate route");
++    }
++    if (!webExports?.length) cli_fail("select pure roots explicitly with --web-exports=name[,name]");
++    try {
++      const build = await load_worker_js(file, webExports, { mode: web, policy: webPolicy });
++      write_worker_files(build, outs[0]);
++      for (const d of build.diagnostics) cli_say(2, "workers: " + d.function + ": " + d.reason + " (local)\n");
++      cli_say(2, "workers: " + path.join(outs[0], build.entry) + " (stage-two downstream backend)\n");
++    } catch (e) {
++      cli_say(2, book_err(e) + "\n");
++      process.exitCode = 1;
++    }
++    return;
++  }
+   if (file.endsWith(".html")) {
++    if (web !== undefined || webExports !== undefined || webPolicy !== undefined) {
++      cli_fail("HTML worker libraries require --web-library <source.bend>");
++    }
+     if (outs.length !== 1 || only || explain || checkup || publish) {
+       cli_fail("a page bundles with -o <dir>");
+     }
+@@ -268,7 +337,7 @@
+   if (only && (outs.length !== 0 || checkup)) {
+     cli_fail("--check-only takes no other option");
+   }
+-  if (explain && (outs.length !== 0 || only || checkup || publish)) {
++  if (explain && (outs.length !== 0 || only || checkup || publish || web !== undefined)) {
+     cli_fail("--explain-layout takes no other option");
+   }
+   if (argv.length !== 0 && (outs.length !== 0 || only || explain || checkup || publish)) {
+@@ -278,9 +347,7 @@
+     cli_fail("--checkup takes no -o: a binary holds one main, so build each"
+       + " import alone");
+   }
+-  if (explain) {
+-    onExplain();
+-  }
++  if (explain) onExplain();
+   try {
+     if (publish) {
+       return await cli_publish(file, named);
+@@ -466,7 +533,17 @@
+   cli_say(1, want.join("\n\n") + "\n");
+ }
+ 
+-async function cli_bundle(page: string, dir: string): Promise<void> {
++type HtmlWorkerBundle = {
++  source: string;
++  roots: string[];
++  workerOptions: Comp.WebWorkerOptions;
++};
++
++async function cli_bundle(page: string, dir: string,
++  workerBundle?: HtmlWorkerBundle): Promise<void> {
++  if (workerBundle !== undefined) {
++    return cli_bundle_with_workers(page, dir, workerBundle);
++  }
+   const out = await Bun.build({
+     entrypoints: [page],
+     outdir: dir,
+@@ -787,6 +864,7 @@
+     seen.set(BASE, "");
+   }
+   const n0 = await Bend.book_load(book, file, "", seen, undefined, localOnly);
++  resolve_base_foreign(book);
+   const laws = path.join(path.dirname(file), "LAWS.bend");
+   if (path.basename(file) === "PROOF.bend" && fs.existsSync(laws)
+     && !Bend.book_seen(seen, fs.realpathSync(laws))) {
+@@ -801,6 +879,135 @@
+   return [book, n0];
+ }
+ 
++// The Base effect twins belong to the installed compiler resource directory,
++// independent of a caller's cwd. A direct library/worker caller need not chdir
++// into bend2/ to make ./effs paths resolve, especially on Windows.
++export function resolve_base_foreign(book: Bend.Book): void {
++  for (const def of Object.values(book.tlds)) {
++    if (def.$ !== "Def" || def.b !== true || !def.i) continue;
++    def.i = def.i.map((spec) => {
++      const match = /^\.\/effs\/([A-Za-z0-9_-]+\.(?:c|js))$/.exec(spec);
++      if (!match) return spec;
++      const file = path.join(Bend.BEND_DIR, "effs", match[1]);
++      return fs.realpathSync(file);
++    });
++  }
++}
++
++// Build in a private sibling directory so the page and its static worker
++// modules become visible together. The generated package stays external to the
++// page bundle: Worker(new URL(..., import.meta.url)) then resolves against the
++// static module in its final, nested hosting location.
++async function cli_bundle_with_workers(page: string, directory: string,
++  workerBundle: HtmlWorkerBundle): Promise<void> {
++  const target = path.resolve(directory);
++  if (target === path.parse(target).root) {
++    throw new Error("refusing to use a filesystem root as the bundle directory");
++  }
++  if (fs.existsSync(target)) {
++    const stat = fs.lstatSync(target);
++    if (!stat.isDirectory() || stat.isSymbolicLink()) {
++      throw new Error("worker bundle output must be a new or empty real directory");
++    }
++    if (fs.readdirSync(target).length !== 0) {
++      throw new Error("worker bundle output directory must be empty");
++    }
++  }
++  const parent = path.dirname(target);
++  fs.mkdirSync(parent, { recursive: true });
++  const stage = fs.mkdtempSync(path.join(parent, ".bend-html-workers-"));
++  let published = false;
++  try {
++    const built = await load_worker_js(workerBundle.source,
++      workerBundle.roots, workerBundle.workerOptions);
++    if (!/^[0-9a-f]{64}$/.test(built.manifest.program)) {
++      throw new Error("worker compiler returned a malformed content identity");
++    }
++    const workerRelative = path.posix.join("workers", built.manifest.program);
++    const workerDirectory = path.join(stage, ...workerRelative.split("/"));
++    write_worker_files(built, workerDirectory);
++
++    let imported = false;
++    const workerSpecifier: BunPlugin = {
++      name: "bend-static-worker-library",
++      setup(build) {
++        build.onResolve({ filter: /^bend:workers$/ }, () => {
++          imported = true;
++          return { path: "./" + workerRelative + "/" + built.entry, external: true };
++        });
++      },
++    };
++    const result = await Bun.build({
++      entrypoints: [page],
++      outdir: stage,
++      target: "browser",
++      minify: true,
++      plugins: [PLUGIN, workerSpecifier],
++    });
++    if (!result.success) {
++      const errors = result.logs.map((log) => {
++        const item = log as { message?: string; level?: string };
++        return (item.level ? item.level + ": " : "") + (item.message ?? String(log));
++      }).join("\n");
++      throw new Error("Bun HTML build failed" + (errors ? ":\n" + errors : ""));
++    }
++    if (!imported) {
++      throw new Error('the HTML page must import the explicit worker library as "bend:workers"');
++    }
++    const expectedWorkerFiles = Object.keys(built.files).sort();
++    const actualWorkerFiles = fs.readdirSync(workerDirectory).sort();
++    if (expectedWorkerFiles.length !== actualWorkerFiles.length
++      || expectedWorkerFiles.some((name, i) => name !== actualWorkerFiles[i]
++        || fs.readFileSync(path.join(workerDirectory, name), "utf8") !== built.files[name])) {
++      throw new Error("Bun output collided with the static worker artifacts; refusing a mixed build");
++    }
++
++    const outputRows = result.outputs.map((output) => ({
++      relative: path.relative(stage, output.path),
++      size: fs.statSync(output.path).size,
++    }));
++
++    // Recheck the publication target to catch a concurrent writer. Never move
++    // aside a path that acquired files or changed type during the build.
++    let emptyTarget: string | undefined;
++    if (fs.existsSync(target)) {
++      const stat = fs.lstatSync(target);
++      if (!stat.isDirectory() || stat.isSymbolicLink() || fs.readdirSync(target).length !== 0) {
++        throw new Error("worker bundle output changed during build; refusing to publish over it");
++      }
++      emptyTarget = stage + ".empty-target";
++      fs.renameSync(target, emptyTarget);
++    }
++    try {
++      fs.renameSync(stage, target);
++      published = true;
++    } catch (error) {
++      if (emptyTarget !== undefined) fs.renameSync(emptyTarget, target);
++      throw error;
++    }
++    if (emptyTarget !== undefined) {
++      try {
++        fs.rmdirSync(emptyTarget);
++      } catch (error) {
++        cli_say(2, "warning: could not remove the prior empty output directory: " + String(error) + "\n");
++      }
++    }
++
++    for (const output of outputRows) {
++      cli_say(1, path.join(target, output.relative) + " (" + (output.size / 1024).toFixed(1) + "kb)\n");
++    }
++    cli_say(1, path.join(target, ...workerRelative.split("/"), built.entry)
++      + " (static module-worker library: " + built.manifest.program + ")\n");
++    for (const diagnostic of built.diagnostics) {
++      cli_say(2, "workers: " + diagnostic.function + ": " + diagnostic.reason + " (local)\n");
++    }
++  } finally {
++    if (!published && fs.existsSync(stage)) {
++      fs.rmSync(stage, { recursive: true, force: true });
++    }
++  }
++}
++
+ function book_seed(base: Bend.Book): Bend.Book {
+   const book = Bend.book_nil();
+   for (const k of Object.keys(base.tlds)) {
+@@ -862,6 +1069,39 @@
+   }
+ }
+ 
++// Separate multiple-artifact API. Ordinary .bend imports still call load_js
++// and export synchronous values. Compilation is serialized after async loading;
++// no compiler terms or compiler code are shipped to the browser.
++export async function load_worker_js(file: string, roots: string[],
++  options: Comp.WebWorkerOptions = {}): Promise<Comp.WebWorkerBuild> {
++  const [book] = await book_read(file);
++  if (book.hols + book.open !== 0) throw new Error("worker library has unfilled obligations");
++  return Comp.js_worker_lib(book, roots, options);
++}
++
++// Deliberately refuse collisions, rather than overwrite an application file or
++// silently leave mismatched artifacts. Rebuild into a fresh/empty directory.
++export function write_worker_files(build: Comp.WebWorkerBuild, directory: string): string[] {
++  const entries = Object.entries(build.files);
++  if (entries.some(([name, source]) => name !== path.basename(name) || typeof source !== "string")) {
++    throw new Error("invalid worker artifact set");
++  }
++  fs.mkdirSync(directory, { recursive: true });
++  if (fs.readdirSync(directory).length !== 0) throw new Error("worker output directory must be empty");
++  const written: string[] = [];
++  try {
++    for (const [name, source] of entries) {
++      const file = path.join(directory, name);
++      fs.writeFileSync(file, source, { flag: "wx" });
++      written.push(file);
++    }
++  } catch (error) {
++    for (const file of written) fs.rmSync(file, { force: true });
++    throw error;
++  }
++  return written;
++}
++
+ export async function load(u: string, context: unknown,
+   next: (u: string, context: unknown) => unknown): Promise<unknown> {
+   return u.endsWith(".bend")
+diff --git a/bend2/web_runtime.js b/bend2/web_runtime.js
+new file mode 100644
+index 0000000..6d9bb2e
+--- /dev/null
++++ b/bend2/web_runtime.js
+@@ -0,0 +1,1272 @@
++// Compiler-owned Web Worker runtime. This file is copied into static ESM output.
++// No filesystem, eval, network telemetry, shared memory or per-leaf Promises.
++// Public host objects are never frozen, transferred, or cached by identity.
++
++const STEP = Symbol("bend.web.step");
++const PROTOCOL = 1;
++const NAT_MAX = 281474976710655n;
++const DEFAULT_LIMITS = Object.freeze({
++  maxNodes: 200000, maxDepth: 256, maxBytes: 16 * 1024 * 1024,
++  maxStringUnits: 4 * 1024 * 1024,
++});
++
++export class BendWorkerError extends Error {
++  constructor(code, message = code) {
++    super("bend workers: " + message);
++    this.name = "BendWorkerError";
++    this.code = code;
++  }
++}
++const fail = (code, message) => { throw new BendWorkerError(code, message); };
++const now = () => performance.now();
++const integer = (x, lo, hi) => Number.isSafeInteger(x) && x >= lo && x <= hi;
++const plain = (x) => x !== null && typeof x === "object"
++  && (Object.getPrototypeOf(x) === Object.prototype || Object.getPrototypeOf(x) === null);
++function cap(x, fallback, lo, hi, name) {
++  const n = x === undefined ? fallback : x;
++  if (!integer(n, lo, hi)) fail("configuration", name + " must be an integer in " + lo + ".." + hi);
++  return n;
++}
++function finite(x, fallback, lo, hi, name) {
++  const n = x === undefined ? fallback : x;
++  if (typeof n !== "number" || !Number.isFinite(n) || n < lo || n > hi)
++    fail("configuration", "invalid " + name);
++  return n;
++}
++function limits(options = {}) {
++  return {
++    maxNodes: cap(options.maxNodes, DEFAULT_LIMITS.maxNodes, 1, 2000000, "maxNodes"),
++    maxDepth: cap(options.maxDepth, DEFAULT_LIMITS.maxDepth, 1, 512, "maxDepth"),
++    maxBytes: cap(options.maxBytes, DEFAULT_LIMITS.maxBytes, 8, 256 * 1024 * 1024, "maxBytes"),
++    maxStringUnits: cap(options.maxStringUnits, DEFAULT_LIMITS.maxStringUnits, 1, 32 * 1024 * 1024, "maxStringUnits"),
++  };
++}
++
++/**
++ * Validate/copy one argument vector against its parallel schema-ID vector.
++ * Traversal work is charged per edge, including references to known DAG nodes.
++ * Cycles, getters and exotic prototypes fail before any asynchronous submission.
++ * Limits bound traversal and accepted data, not a browser process allocator.
++ */
++export function snapshotArgs(values, ids, schemas, options = {}, copy = true) {
++  const lim = limits(options);
++  if (!Array.isArray(values) || values.length !== ids.length)
++    fail("input_shape", "expected exactly " + ids.length + " live arguments");
++  const result = new Array(values.length);
++  const seen = new WeakMap();
++  const todo = [];
++  let nodes = 0, bytes = 0, depth = 0, stringUnits = 0, nonfinite = false;
++  const assign = (obj, key, value) => Object.defineProperty(obj, key,
++    { value, enumerable: true, writable: true, configurable: true });
++  for (let i = ids.length - 1; i >= 0; i--) {
++    const d = Object.getOwnPropertyDescriptor(values, String(i));
++    if (!d || !("value" in d)) fail("input_shape", "argument arrays must contain data properties");
++    todo.push({ v: d.value, id: ids[i], parent: result, key: i, depth: 0 });
++  }
++  while (todo.length) {
++    const f = todo.pop();
++    if (f.exit) { f.exit.active = false; continue; }
++    if (++nodes > lim.maxNodes || f.depth > lim.maxDepth) fail("wire_budget", "node/depth budget exceeded");
++    depth = Math.max(depth, f.depth);
++    const s = schemas[f.id];
++    if (!s) fail("schema", "unknown wire schema");
++    const v = f.v;
++    let out = v;
++    bytes += 8;
++    switch (s.kind) {
++      case "u32":
++        if (!integer(v, 0, 4294967295) || Object.is(v, -0)) fail("input_shape", "invalid U32");
++        break;
++      case "nat":
++        if (typeof v !== "bigint" || v < 0n || v > NAT_MAX) fail("input_shape", "invalid Nat");
++        break;
++      case "bool":
++        if (typeof v !== "boolean") fail("input_shape", "invalid Bool");
++        break;
++      case "f32":
++        // Host F32 accepts nonfinite values for the local route; dispatch checks
++        // the aggregate flag before moving any finite-only task boundary.
++        if (typeof v !== "number" || (!Number.isNaN(v) && !Object.is(Math.fround(v), v)))
++          fail("input_shape", "invalid F32");
++        nonfinite ||= !Number.isFinite(v);
++        break;
++      case "char": case "string": {
++        if (typeof v !== "string") fail("input_shape", "invalid " + s.kind);
++        if (s.kind === "char") {
++          const cp = v.codePointAt(0);
++          if (cp === undefined || (cp >= 0xd800 && cp <= 0xdfff)
++            || v.length !== (cp > 0xffff ? 2 : 1)) fail("input_shape", "invalid Char");
++        }
++        stringUnits += v.length;
++        if (stringUnits > lim.maxStringUnits) fail("wire_budget", "string budget exceeded");
++        bytes += v.length * 2;
++        // String is a sequence of Unicode scalar Char values, not arbitrary
++        // ill-formed UTF-16 supplied by a JavaScript caller.
++        for (let i = 0; i < v.length; i++) {
++          const c = v.charCodeAt(i);
++          if (c >= 0xd800 && c <= 0xdbff) {
++            const next = v.charCodeAt(++i);
++            if (!(next >= 0xdc00 && next <= 0xdfff)) fail("input_shape", "invalid Unicode scalar string");
++          } else if (c >= 0xdc00 && c <= 0xdfff) fail("input_shape", "invalid Unicode scalar string");
++        }
++        break;
++      }
++      case "adt": {
++        if (!plain(v) || Array.isArray(v)) fail("input_shape", "expected a plain constructor object");
++        const old = seen.get(v);
++        if (old) {
++          if (old.active) fail("input_cycle", "cyclic host values are not Bend values");
++          if (old.id !== f.id) fail("input_shape", "shared node used with incompatible schemas");
++          out = old.out;
++          break;
++        }
++        const ds = Object.getOwnPropertyDescriptors(v);
++        const tag = ds.$;
++        if (!tag || !("value" in tag) || typeof tag.value !== "string")
++          fail("input_shape", "missing constructor tag");
++        const arm = s.arms.find((a) => a.tag === tag.value);
++        if (!arm) fail("input_shape", "unknown constructor tag for " + s.name);
++        const keys = Reflect.ownKeys(ds);
++        if (keys.length !== arm.fields.length + 1 || keys.some((k) => typeof k !== "string"))
++          fail("input_shape", "unexpected constructor fields");
++        if (keys.some((k) => !("value" in ds[k]) || !ds[k].enumerable))
++          fail("input_shape", "constructor accessors/non-enumerable fields are unsupported");
++        out = copy ? {} : v;
++        if (copy) assign(out, "$", arm.tag);
++        bytes += 24 + arm.tag.length * 2 + arm.fields.length * 16;
++        const record = { id: f.id, out, active: true };
++        seen.set(v, record);
++        todo.push({ exit: record });
++        for (let i = arm.fields.length - 1; i >= 0; i--) {
++          const field = arm.fields[i], d = ds[field.name];
++          if (!d || !("value" in d)) fail("input_shape", "missing constructor field");
++          todo.push({ v: d.value, id: field.schema, parent: copy ? out : null,
++            key: field.name, depth: f.depth + 1 });
++        }
++        break;
++      }
++      default: fail("schema", "unsupported wire schema");
++    }
++    if (bytes > lim.maxBytes) fail("wire_budget", "byte budget exceeded");
++    if (f.parent !== null) assign(f.parent, f.key, out);
++  }
++  return { values: result, nodes, bytes, depth, stringUnits, nonfinite };
++}
++
++/**
++ * Size compiler-created values and previously accepted invocation snapshots.
++ * This is NOT a public host validator: no caller object or unchecked worker
++ * reply may use this path. Generated ADTs cannot acquire getters, extra fields,
++ * or custom prototypes; avoid rediscovering these facts with descriptor copies
++ * at every fork and join. Wire size/depth and finite-F32 limits still apply.
++ */
++function measureTrusted(values, ids, schemas, options) {
++  const lim = limits(options), seen = new WeakMap();
++  const todo = values.map((v, i) => ({ v, id: ids[i], depth: 0 })).reverse();
++  let nodes = 0, bytes = 0, depth = 0, stringUnits = 0, nonfinite = false;
++  while (todo.length) {
++    const f = todo.pop();
++    if (f.exit) { f.exit.active = false; continue; }
++    if (++nodes > lim.maxNodes || f.depth > lim.maxDepth) fail("wire_budget", "node/depth budget exceeded");
++    depth = Math.max(depth, f.depth); bytes += 8;
++    const schema = schemas[f.id], v = f.v;
++    if (!schema) fail("schema", "unknown trusted wire schema");
++    if (schema.kind === "adt") {
++      const old = seen.get(v);
++      if (old) {
++        if (old.active || old.id !== f.id) fail("schema", "invalid generated constructor graph");
++      } else {
++        const arm = schema.arms.find((a) => a.tag === v.$);
++        if (!arm) fail("schema", "invalid generated constructor tag");
++        bytes += 24 + arm.tag.length * 2 + arm.fields.length * 16;
++        const record = { active: true, id: f.id };
++        seen.set(v, record); todo.push({ exit: record });
++        for (let i = arm.fields.length - 1; i >= 0; i--) {
++          const field = arm.fields[i];
++          todo.push({ v: v[field.name], id: field.schema, depth: f.depth + 1 });
++        }
++      }
++    } else if (schema.kind === "string" || schema.kind === "char") {
++      if (typeof v !== "string") fail("input_shape", "invalid generated string");
++      stringUnits += v.length; bytes += v.length * 2;
++      if (stringUnits > lim.maxStringUnits) fail("wire_budget", "string budget exceeded");
++      if (schema.kind === "char") {
++        const cp = v.codePointAt(0);
++        if (cp === undefined || (cp >= 0xd800 && cp <= 0xdfff)
++          || v.length !== (cp > 0xffff ? 2 : 1)) fail("input_shape", "invalid generated Char");
++      }
++      for (let i = 0; i < v.length; i++) {
++        const c = v.charCodeAt(i);
++        if (c >= 0xd800 && c <= 0xdbff) {
++          const next = v.charCodeAt(++i);
++          if (!(next >= 0xdc00 && next <= 0xdfff)) fail("input_shape", "invalid generated Unicode");
++        } else if (c >= 0xdc00 && c <= 0xdfff) fail("input_shape", "invalid generated Unicode");
++      }
++    } else if (schema.kind === "f32") {
++      if (typeof v !== "number" || (!Number.isNaN(v) && !Object.is(Math.fround(v), v))) fail("input_shape", "invalid generated F32");
++      nonfinite ||= !Number.isFinite(v);
++    } else if (schema.kind === "u32" && (!integer(v, 0, 4294967295) || Object.is(v, -0))) fail("input_shape", "invalid generated U32");
++    else if (schema.kind === "nat" && (typeof v !== "bigint" || v < 0n || v > NAT_MAX)) fail("input_shape", "invalid generated Nat");
++    else if (schema.kind === "bool" && typeof v !== "boolean") fail("input_shape", "invalid generated Bool");
++    if (bytes > lim.maxBytes) fail("wire_budget", "byte budget exceeded");
++  }
++  return { values, nodes, bytes, depth, stringUnits, nonfinite };
++}
++
++// Packed wire format v1: schema-directed little-endian primitive fields and
++// numbered constructor records. Only runtime-allocated buffers are transferred.
++const PACK_MAGIC = 0x32574442;
++
++/** Pack an already validated immutable invocation graph without recursion. */
++function packAccepted(values, ids, schemas, options) {
++  const lim = limits(options), encoder = new TextEncoder(), seen = new WeakMap();
++  let buffer = new ArrayBuffer(Math.min(4096, lim.maxBytes)), view = new DataView(buffer);
++  let at = 0, objects = 0, nodes = 0;
++  const reserve = (n) => {
++    if (at + n > lim.maxBytes) fail("wire_budget", "packed byte budget exceeded");
++    if (at + n > buffer.byteLength) {
++      const grown = new ArrayBuffer(Math.min(lim.maxBytes, Math.max(at + n, buffer.byteLength * 2)));
++      new Uint8Array(grown).set(new Uint8Array(buffer, 0, at));
++      buffer = grown; view = new DataView(buffer);
++    }
++  };
++  const u8 = (n) => { reserve(1); view.setUint8(at++, n); };
++  const u32 = (n) => { reserve(4); view.setUint32(at, n, true); at += 4; };
++  u32(PACK_MAGIC); u32(ids.length);
++  const stack = values.map((v, i) => ({ v, id: ids[i], depth: 0 })).reverse();
++  while (stack.length) {
++    const { v, id, depth } = stack.pop(), schema = schemas[id];
++    if (++nodes > lim.maxNodes || depth > lim.maxDepth) fail("wire_budget", "packed node/depth budget exceeded");
++    switch (schema.kind) {
++      case "u32": u32(v); break;
++      case "nat": reserve(8); view.setBigUint64(at, v, true); at += 8; break;
++      case "bool": u8(v ? 1 : 0); break;
++      case "f32":
++        if (!Number.isFinite(v)) fail("nonfinite_input", "packed wire uses finite F32 only");
++        reserve(4); view.setFloat32(at, v, true); at += 4; break;
++      case "char": case "string": {
++        const bytes = encoder.encode(v);
++        u32(bytes.length); reserve(bytes.length);
++        new Uint8Array(buffer, at, bytes.length).set(bytes); at += bytes.length;
++        break;
++      }
++      case "adt": {
++        const old = seen.get(v);
++        if (old !== undefined) { u8(0); u32(old); break; }
++        const ordinal = schema.arms.findIndex((a) => a.tag === v.$), arm = schema.arms[ordinal];
++        const index = objects++;
++        seen.set(v, index); u8(1); u32(index); u32(ordinal);
++        for (let i = arm.fields.length - 1; i >= 0; i--) {
++          const f = arm.fields[i];
++          stack.push({ v: v[f.name], id: f.schema, depth: depth + 1 });
++        }
++        break;
++      }
++      default: fail("schema", "unknown packed schema");
++    }
++  }
++  return buffer.slice(0, at);
++}
++
++/** Validate and pack a first-order DAG; never freeze or detach host objects. */
++export function packArgs(values, ids, schemas, options = {}) {
++  const scan = snapshotArgs(values, ids, schemas, options, false);
++  if (scan.nonfinite) fail("nonfinite_input", "packed wire uses finite F32 only");
++  return packAccepted(values, ids, schemas, options);
++}
++
++/**
++ * Iteratively reconstruct one packed graph, preserving only in-message DAG
++ * sharing. Reject forward/cyclic references, wrong schema aliases, truncation,
++ * invalid UTF-8, oversized records and trailing bytes before publication.
++ */
++export function unpackArgs(buffer, ids, schemas, options = {}) {
++  const lim = limits(options);
++  if (!(buffer instanceof ArrayBuffer) || buffer.byteLength > lim.maxBytes) fail("protocol", "invalid packed buffer");
++  const view = new DataView(buffer), decoder = new TextDecoder("utf-8", { fatal: true });
++  let at = 0, nodes = 0, bytes = 0, depth = 0, stringUnits = 0;
++  const need = (n) => { if (at + n > buffer.byteLength) fail("protocol", "truncated packed value"); };
++  const u8 = () => { need(1); return view.getUint8(at++); };
++  const u32 = () => { need(4); const v = view.getUint32(at, true); at += 4; return v; };
++  if (u32() !== PACK_MAGIC || u32() !== ids.length) fail("protocol", "packed header mismatch");
++  const result = new Array(ids.length), objects = [];
++  const stack = ids.map((id, i) => ({ id, parent: result, key: i, depth: 0 })).reverse();
++  while (stack.length) {
++    const f = stack.pop();
++    if (f.exit !== undefined) { objects[f.exit].active = false; continue; }
++    if (++nodes > lim.maxNodes || f.depth > lim.maxDepth) fail("wire_budget", "packed node/depth budget exceeded");
++    depth = Math.max(depth, f.depth);
++    bytes += 8;
++    const schema = schemas[f.id];
++    if (!schema) fail("schema", "unknown packed schema");
++    let value;
++    switch (schema.kind) {
++      case "u32": value = u32(); break;
++      case "nat": need(8); value = view.getBigUint64(at, true); at += 8;
++        if (value > NAT_MAX) fail("input_shape", "packed Nat exceeds runtime bound"); break;
++      case "bool": value = u8(); if (value > 1) fail("protocol", "invalid packed Bool"); value = value === 1; break;
++      case "f32": need(4); value = view.getFloat32(at, true); at += 4;
++        if (!Number.isFinite(value)) fail("nonfinite_input", "packed F32 must be finite"); break;
++      case "char": case "string": {
++        const n = u32(); need(n);
++        if (n > (lim.maxStringUnits - stringUnits) * 4) fail("wire_budget", "packed string budget exceeded");
++        try { value = decoder.decode(new Uint8Array(buffer, at, n)); }
++        catch { fail("protocol", "invalid packed UTF-8"); }
++        at += n;
++        stringUnits += value.length;
++        bytes += value.length * 2;
++        if (stringUnits > lim.maxStringUnits) fail("wire_budget", "packed string budget exceeded");
++        if (schema.kind === "char") {
++          const cp = value.codePointAt(0);
++          if (cp === undefined || value.length !== (cp > 0xffff ? 2 : 1)) fail("input_shape", "invalid packed Char");
++        }
++        break;
++      }
++      case "adt": {
++        const flag = u8(), index = u32();
++        if (flag === 0) {
++          const old = objects[index];
++          if (!old || old.active || old.schema !== f.id) fail("protocol", "invalid packed graph reference");
++          value = old.value;
++        } else if (flag === 1) {
++          const arm = schema.arms[u32()];
++          if (!arm || index !== objects.length || objects.length >= lim.maxNodes) fail("protocol", "invalid packed constructor");
++          value = { $: arm.tag };
++          bytes += 24 + arm.tag.length * 2 + arm.fields.length * 16;
++          objects.push({ value, schema: f.id, active: true });
++          stack.push({ exit: index });
++          for (let i = arm.fields.length - 1; i >= 0; i--) {
++            const field = arm.fields[i];
++            stack.push({ id: field.schema, parent: value, key: field.name, depth: f.depth + 1 });
++          }
++        } else fail("protocol", "invalid packed record flag");
++        break;
++      }
++      default: fail("schema", "unknown packed schema");
++    }
++    if (bytes > lim.maxBytes) fail("wire_budget", "packed graph byte budget exceeded");
++    Object.defineProperty(f.parent, f.key, { value, writable: true, configurable: true, enumerable: true });
++  }
++  if (at !== buffer.byteLength) fail("protocol", "trailing packed data");
++  // Decoding already establishes the same schema, DAG and sizing facts as
++  // snapshotArgs. Do not traverse the newly reconstructed graph a second time.
++  return { values: result, nodes, bytes, depth, stringUnits, nonfinite: false };
++}
++
++/** Suspend a named saturated call after argument preparation in caller scope. */
++export const web_call = (id, args, marked = false, policy = {}) => ({ [STEP]: "call", id, args, marked, ...policy });
++/** Tail transfer retains the caller's pending region obligations without its frame. */
++export const web_tail = (id, args, marked = false, policy = {}) => ({ [STEP]: "tail", id, args, marked, ...policy });
++export const web_fork = (site, children) => ({ [STEP]: "fork", site, children });
++
++function boundedPush(a, value, max) {
++  if (a.length === max) a.shift();
++  a.push(value);
++}
++function errorOf(e, code = "computation_failed") {
++  return e instanceof BendWorkerError ? e
++    : new BendWorkerError(code, String(e?.message ?? e).slice(0, 512));
++}
++function abortError() {
++  const e = new BendWorkerError("cancelled", "invocation cancelled");
++  e.name = "AbortError";
++  return e;
++}
++function deferred() {
++  let resolve, reject;
++  const promise = new Promise((a, b) => { resolve = a; reject = b; });
++  return { promise, resolve, reject };
++}
++
++// Only compiler-generated metadata is frozen; never a caller's values.
++export function freezeProgramData(value) {
++  const stack = [value];
++  while (stack.length) {
++    const x = stack.pop();
++    if (!x || typeof x !== "object" || Object.isFrozen(x)) continue;
++    for (const child of Object.values(x)) if (child && typeof child === "object") stack.push(child);
++    Object.freeze(x);
++  }
++  return value;
++}
++
++/**
++ * Execute a serial island, checking operational directives without dispatch.
++ * Each frame owns its context. A helper satisfies a nested require only when
++ * that call is not dynamically beneath never. No process-wide policy flag is
++ * used, and no Promise enters a generated constructor or arithmetic operation.
++ */
++export function runSerialRegion(program, id, args, context = {}, policy = "permissive", diagnose = () => {}, observe = () => {}) {
++  const stack = [];
++  let value;
++  const enter = (target, values, parent, meta = {}) => {
++    const ctx = { ...parent, never: parent.never || meta.web === "never",
++      marked: parent.marked || meta.marked, cap: Math.min(parent.cap ?? 32, meta.max ?? 32) };
++    if (meta.web === "never") observe({ kind: "never", functionId: target, site: String(meta.site ?? target).slice(0, 512), cap: ctx.cap });
++    if (meta.web === "require" && ctx.remote && !ctx.never)
++      observe({ kind: "coalesced_require", functionId: target, site: String(meta.site ?? target).slice(0, 512), cap: ctx.cap });
++    if (meta.web === "require" && (ctx.never || !ctx.remote)) {
++      const reason = ctx.never ? "policy_conflict" : ctx.blocked ?? "workers_unavailable";
++      if (policy === "strict") fail(reason === "policy_conflict" ? reason : "required_" + reason,
++        "unfulfilled require at " + (meta.site ?? target) + ": " + reason);
++      diagnose(meta.site ?? target, "require_unfulfilled:" + reason);
++    }
++    const f = program.manifest.functions[target];
++    if (!f) fail("continuation", "unknown serial function");
++    if (f.reachesPolicy && program.coordinators[target]) {
++      stack.push({ iterator: program.coordinators[target](...values), ctx });
++      value = undefined;
++    } else value = program.serial[target](...values);
++  };
++  enter(id, args, context);
++  while (stack.length) {
++    const frame = stack[stack.length - 1];
++    if (frame.children) {
++      if (frame.child > 0) frame.results.push(value);
++      if (frame.child < frame.children.length) {
++        const child = frame.children[frame.child++];
++        enter(child.id, child.args, frame.ctx, child);
++        continue;
++      }
++      value = frame.results;
++      stack.pop();
++      continue;
++    }
++    const next = frame.iterator.next(value), item = next.value;
++    value = undefined;
++    if (next.done) {
++      stack.pop();
++      if (item?.[STEP] === "tail") enter(item.id, item.args, frame.ctx, item);
++      else value = item;
++    } else if (item?.[STEP] === "call") enter(item.id, item.args, frame.ctx, item);
++    else if (item?.[STEP] === "fork")
++      stack.push({ children: item.children, child: 0, results: [], ctx: frame.ctx });
++    else fail("continuation", "invalid serial policy continuation");
++  }
++  return value;
++}
++
++/** Create a lazy session; module import and construction do not start helpers. */
++export function createWorkerSession(program, defaultURL, options = {}) {
++  return new WorkerSession(program, defaultURL, options);
++}
++
++/** One explicit bounded pool, with build-scoped observations and invocation-local policy. */
++class WorkerSession {
++  constructor(program, defaultURL, options) {
++    this.program = program;
++    this.manifest = program.manifest;
++    const hw = globalThis.navigator?.hardwareConcurrency ?? 2;
++    this.options = {
++      workers: cap(options.workers, Math.min(4, Math.max(1, hw - 1)), 0, 32, "workers"),
++      maxQueue: cap(options.maxQueue, 128, 1, 4096, "maxQueue"),
++      maxInvocations: cap(options.maxInvocations, 32, 1, 256, "maxInvocations"),
++      maxJobs: cap(options.maxJobs, 64, 1, 4096, "maxJobs"),
++      maxProfiles: cap(options.maxProfiles, 128, 1, 4096, "maxProfiles"),
++      maxRetainedBytes: cap(options.maxRetainedBytes, 64 * 1024 * 1024, 64, 1024 * 1024 * 1024, "maxRetainedBytes"),
++      maxQueuedBytes: cap(options.maxQueuedBytes, 32 * 1024 * 1024, 64, 1024 * 1024 * 1024, "maxQueuedBytes"),
++      startupTimeoutMs: cap(options.startupTimeoutMs, 5000, 1, 120000, "startupTimeoutMs"),
++      taskTimeoutMs: cap(options.taskTimeoutMs, 30000, 1, 600000, "taskTimeoutMs"),
++      minSamples: cap(options.minSamples, 2, 2, 64, "minSamples"),
++      minWorkMs: finite(options.minWorkMs, 4, 0, 600000, "minWorkMs"),
++      margin: finite(options.margin, 1.4, 1.05, 10, "margin"),
++      assumedRoundTripMs: finite(options.assumedRoundTripMs, 2, .1, 60000, "assumedRoundTripMs"),
++      yieldEvery: cap(options.yieldEvery, 2048, 1, 100000, "yieldEvery"),
++      mode: options.mode ?? this.manifest.mode ?? "auto",
++      policy: options.policy ?? this.manifest.policy ?? ((options.mode ?? this.manifest.mode) === "required-only" ? "strict" : "permissive"),
++      maxRegions: cap(options.maxRegions, 512, 1, 4096, "maxRegions"),
++      maxRegionDepth: cap(options.maxRegionDepth, 64, 1, 256, "maxRegionDepth"),
++      frontierDepth: cap(options.frontierDepth, (options.mode ?? this.manifest.mode) === "marked" ? 0 : 2, 0, 8, "frontierDepth"),
++      maxExpansions: cap(options.maxExpansions, 16, 0, 256, "maxExpansions"),
++      transport: options.transport ?? "clone",
++      force: options.diagnosticForce === true,
++      trace: options.trace === true,
++      wire: limits(options.wire),
++    };
++    if (!["marked", "auto", "required-only", "off"].includes(this.options.mode)) fail("configuration", "unknown scheduling mode");
++    if (!["strict", "permissive"].includes(this.options.policy)) fail("configuration", "unknown enforcement policy");
++    if (!["clone", "packed"].includes(this.options.transport)) fail("configuration", "unknown transport");
++    this.url = options.workerURL ?? defaultURL;
++    this.factory = options.workerFactory ?? ((u, o) => new Worker(u, o));
++    this.hasFactory = options.workerFactory !== undefined || typeof globalThis.Worker === "function";
++    this.epoch = 1;
++    this.nextInvocation = 0;
++    this.nextJob = 0;
++    this.closed = false;
++    this.unavailable = false;
++    this.pool = [];
++    this.queue = [];
++    this.jobs = new Map();
++    this.invocations = new Map();
++    this.profiles = new Map();
++    this.messages = [];
++    this.messageKeys = new Set();
++    this.traceLog = [];
++    this.readyPromise = null;
++    this.queuedBytes = 0;
++    this.inflightBytes = 0;
++    this.snapshotBytes = 0;
++    this.completedBytes = 0;
++    this.rtt = this.options.assumedRoundTripMs;
++    this.moveMsPerByte = 1000 / (16 * 1024 * 1024);
++    this.counters = { calls: 0, completed: 0, failed: 0, cancelled: 0,
++      localCalls: 0, localForks: 0, remoteForks: 0, remoteJobs: 0,
++      ignoredReplies: 0, maxReady: 0, maxInFlight: 0, maxRetainedBytes: 0,
++      startupMs: 0, snapshotMs: 0, workerBodyMs: 0, roundTripMs: 0,
++      requiredRegions: 0, requiredWitnesses: 0, coalescedRequires: 0, expandedForks: 0, movementSamples: 0,
++      queueDelayMs: 0, packedBytes: 0, packMs: 0, unpackMs: 0 };
++  }
++  _diagnose(site, reason) {
++    const key = site + ":" + reason;
++    if (this.messageKeys.has(key)) return;
++    if (this.messages.length === 128) this.messageKeys.delete(this.messages.shift().key);
++    this.messageKeys.add(key);
++    this.messages.push({ key, site, reason });
++  }
++  _trace(event) {
++    if (this.options.trace) boundedPush(this.traceLog, { at: now(), ...event }, 2048);
++  }
++  stats() {
++    return { ...this.counters, workers: this.pool.length, ready: this.queue.length,
++      inFlight: this.jobs.size - this.queue.length, activeInvocations: this.invocations.size,
++      queuedBytes: this.queuedBytes, inFlightBytes: this.inflightBytes,
++      snapshotBytes: this.snapshotBytes, completedBytes: this.completedBytes,
++      profileCount: this.profiles.size, closed: this.closed, unavailable: this.unavailable };
++  }
++  diagnostics() { return this.messages.map(({ key, ...x }) => ({ ...x })); }
++  trace() { return this.traceLog.map((x) => ({ ...x })); }
++  /** Return detached copies of bounded, session-local cost observations. */
++  profile() { return [...this.profiles].map(([key, value]) => ({ key, ...value, children: value.children.map((x) => ({ ...x, recent: [...x.recent] })), recent: [...value.recent] })); }
++  _retained() {
++    const n = this.snapshotBytes + this.completedBytes + this.queuedBytes + this.inflightBytes;
++    this.counters.maxRetainedBytes = Math.max(this.counters.maxRetainedBytes, n);
++    return n;
++  }
++  call(name, args = [], options = {}) { return this.submit(name, args, options).promise; }
++  submit(name, args = [], options = {}) {
++    const d = deferred();
++    const id = ++this.nextInvocation;
++    const handle = { id, promise: d.promise, cancel: () => this.cancel(id) };
++    const root = this.manifest.exports[name];
++    let inv;
++    try {
++      if (this.closed) fail("closed", "session is closed");
++      if (!integer(id, 1, Number.MAX_SAFE_INTEGER)) fail("invocation_limit");
++      if (root === undefined || !Object.hasOwn(this.manifest.exports, name)) fail("unknown_export", "unknown export");
++      if (options.signal?.aborted) throw abortError();
++      if (this.invocations.size >= this.options.maxInvocations) fail("invocation_limit");
++      const fn = this.manifest.functions[root];
++      this.counters.calls++;
++      // Unsupported public boundary types use a wholly synchronous invocation.
++      // There is no suspension before consumption and no recursive redispatch.
++      if (fn.inputs === null || fn.output === null) {
++        if (!Array.isArray(args) || args.length !== fn.arity) fail("input_shape", "wrong live arity");
++        this._diagnose("export:" + name, "local_boundary");
++        this.counters.localCalls++;
++        const value = runSerialRegion(this.program, root, args,
++          { remote: false, never: false, blocked: "local_boundary" }, this.options.policy,
++          (site, reason) => this._diagnose(site, reason));
++        this.counters.completed++;
++        d.resolve(value);
++        return handle;
++      }
++      const start = now();
++      const snap = snapshotArgs(args, fn.inputs, this.manifest.schemas, this.options.wire);
++      this.counters.snapshotMs += now() - start;
++      if (this._retained() + snap.bytes > this.options.maxRetainedBytes) fail("retained_budget");
++      inv = { id, root, args: snap.values, snapshotBytes: snap.bytes, completedBytes: 0,
++        fork: 0, nextRegion: 0, remaining: this.options.maxJobs, expansions: 0,
++        nonfinite: snap.nonfinite, active: true, ...d, signal: options.signal };
++      this.snapshotBytes += snap.bytes;
++      this.invocations.set(id, inv);
++      if (options.signal) {
++        inv.onAbort = () => this.cancel(id);
++        options.signal.addEventListener("abort", inv.onAbort, { once: true });
++        if (options.signal.aborted) this.cancel(id);
++      }
++      this._retained();
++      if (!inv.active) return handle;
++      // Both this call and _drive execute synchronously until a genuine fork or
++      // a bounded cooperative host-task checkpoint needs to suspend.
++      this._drive(inv).then((value) => {
++        if (!inv.active) return;
++        try {
++          measureTrusted([value], [fn.output], this.manifest.schemas, this.options.wire);
++          this._finish(inv, null, value);
++        } catch (error) { this._finish(inv, errorOf(error)); }
++      }, (error) => this._finish(inv, errorOf(error)));
++    } catch (e) {
++      if (inv) this._finish(inv, errorOf(e));
++      else { this.counters.failed++; d.reject(errorOf(e)); }
++    }
++    return handle;
++  }
++  _finish(inv, error, value) {
++    if (!inv.active) return;
++    inv.active = false;
++    this.invocations.delete(inv.id);
++    this.snapshotBytes -= inv.snapshotBytes;
++    this.completedBytes -= inv.completedBytes;
++    inv.completedBytes = 0;
++    inv.args = null;
++    if (inv.onAbort) inv.signal.removeEventListener("abort", inv.onAbort);
++    if (error) {
++      if (error.code === "cancelled") this.counters.cancelled++;
++      else this.counters.failed++;
++      this._dropJobs(inv, error);
++      inv.reject(error);
++    } else { this.counters.completed++; inv.resolve(value); }
++  }
++  cancel(id) {
++    const inv = this.invocations.get(id);
++    if (!inv) return false;
++    this._finish(inv, abortError());
++    return true;
++  }
++  _dropJobs(inv, error) {
++    this.queue = this.queue.filter((job) => {
++      if (job.inv !== inv) return true;
++      this.queuedBytes -= job.bytes;
++      this.jobs.delete(job.id);
++      job.reject(error);
++      job.args = null;
++      return false;
++    });
++    // Running helpers cannot process a cancellation message until their serial
++    // task ends. Keep their slot/accounting until reply or timeout, but reject
++    // the wait now; no partial value can be published.
++    for (const job of this.jobs.values()) if (job.inv === inv) job.reject(error);
++  }
++  /** Invocation-local policy context; a literal cap only narrows participation. */
++  _baseContext(inv) {
++    return { marked: false, never: false, remote: false, cap: this.options.workers,
++      regions: [], costScopes: [], depth: 0, blocked: inv.nonfinite ? "nonfinite_input" : null };
++  }
++  /** Report an unsatisfied requirement without weakening never or transport safety. */
++  _unfulfilled(region, reason) {
++    if (region.waived) return;
++    if (this.options.policy === "strict") fail(reason === "policy_conflict" ? reason : "required_" + reason,
++      "unfulfilled require at " + region.site + ": " + reason);
++    region.waived = true;
++    this._diagnose(region.site, "require_unfulfilled:" + reason);
++  }
++  /** Enter a body only after its argument expressions have already completed. */
++  _context(inv, parent, call) {
++    const ctx = { ...parent, marked: parent.marked || call.marked === true,
++      never: parent.never || call.web === "never", cap: Math.min(parent.cap, call.max ?? parent.cap) };
++    let region = null;
++    if (call.web === "never") this._trace({ kind: "never", invocation: inv.id,
++      site: call.site ?? call.id, functionId: call.id, executor: "coordinator" });
++    if (call.web === "require") {
++      if (++inv.nextRegion > this.options.maxRegions || parent.regions.length >= this.options.maxRegionDepth)
++        fail("region_budget", "required-region budget exceeded");
++      region = { id: inv.nextRegion, functionId: call.id, args: call.args, site: call.site ?? call.id,
++        cap: ctx.cap, helpers: new Set(), witness: false, waived: false, ctx };
++      ctx.regions = [...parent.regions, region];
++      this.counters.requiredRegions++;
++      const f = this.manifest.functions[call.id];
++      const reason = ctx.never ? "policy_conflict" : ctx.blocked ?? (this.options.mode === "off" ? "disabled"
++        : !f?.eligible ? "unsupported" : this.options.workers === 0 || !this.hasFactory || this.unavailable ? "workers_unavailable" : null);
++      if (reason) this._unfulfilled(region, reason);
++      this._trace({ kind: "region", invocation: inv.id, region: region.id, functionId: call.id,
++        site: region.site, cap: region.cap, waived: region.waived });
++    }
++    return { ctx, region };
++  }
++  /** Required-only grants permission by dynamic region, not by individual leaves. */
++  _enabled(ctx) {
++    return !ctx.never && !ctx.blocked && this.options.mode !== "off"
++      && this.options.workers > 0 && this.hasFactory && !this.unavailable
++      && (this.options.mode === "auto" || (this.options.mode === "marked" && ctx.marked)
++        || ctx.regions.some((r) => !r.waived));
++  }
++  /** Run original serial leaves; interpret policy-bearing definitions synchronously. */
++  _serial(id, args, ctx, blocked = null) {
++    this.counters.localCalls++;
++    const started = ctx.costScopes?.length ? now() : 0;
++    const result = runSerialRegion(this.program, id, args, { ...ctx, blocked: blocked ?? ctx.blocked
++      ?? (this.options.mode === "off" ? "disabled" : "workers_unavailable") }, this.options.policy,
++      (site, reason) => this._diagnose(site, reason));
++    if (ctx.costScopes?.length) {
++      const ms = now() - started;
++      for (const probe of ctx.costScopes) probe.bodyMs += ms;
++    }
++    return result;
++  }
++  /**
++   * Explicit generator frame stack. Only bounded frontier operations allocate
++   * Promises; a serial computational leaf uses the unchanged synchronous body.
++   * Tail transfers carry region finish obligations but discard the old frame.
++   */
++  async _drive(inv, start = null, parent = null) {
++    const stack = [];
++    let value, steps = 0, pending = null, finishing = [];
++    const enter = (call, outer, carry = []) => {
++      const { ctx, region } = this._context(inv, outer, call);
++      const finish = region ? [region, ...carry] : carry;
++      const f = this.manifest.functions[call.id];
++      if (!f) fail("continuation", "unknown coordinator function");
++      const unsatisfied = ctx.regions.some((r) => !r.waived && !r.witness) || (ctx.frontier && !ctx.frontier.used);
++      if (!ctx.never && this._enabled(ctx) && f.eligible && unsatisfied && !f.hasFork) {
++        pending = { call, ctx, finish };
++        value = undefined;
++        return;
++      }
++      const active = this._enabled(ctx) || (this.options.mode === "marked" && f.reachesMark
++        && this.options.workers > 0 && this.hasFactory && !this.unavailable && !ctx.blocked);
++      if (this.program.coordinators[call.id] && !ctx.never &&
++        (f.reachesRequire || (active && inv.remaining > 0))) {
++        stack.push({ generator: this.program.coordinators[call.id](...call.args), ctx, finish });
++        value = undefined;
++      } else {
++        value = this._serial(call.id, call.args, ctx);
++        finishing = finish;
++      }
++    };
++    enter(start ?? { id: inv.root, args: inv.args }, parent ?? this._baseContext(inv));
++    while (stack.length || pending || finishing.length) {
++      if (!inv.active) throw abortError();
++      if (pending) {
++        const p = pending; pending = null;
++        value = await this._single(inv, p.call, p.ctx);
++        finishing = p.finish;
++        continue;
++      }
++      if (finishing.length) {
++        const r = finishing.shift();
++        if (!r.witness && !r.waived) {
++          // A conditional region can return without reaching its potential
++          // fork. Execute the real whole call once on a helper in that case.
++          // This explicit require fallback is not a profiling replay; its full
++          // cost remains in invocation latency and is visible in the trace.
++          this._trace({ kind: "required_whole_call", invocation: inv.id, region: r.id, site: r.site });
++          value = await this._single(inv, { id: r.functionId, args: r.args, site: r.site }, r.ctx);
++        }
++        r.args = null;
++        continue;
++      }
++      if (++steps % this.options.yieldEvery === 0) {
++        await new Promise((resolve) => setTimeout(resolve, 0));
++        if (!inv.active) throw abortError();
++      }
++      const frame = stack[stack.length - 1];
++      const next = frame.generator.next(value), item = next.value;
++      value = undefined;
++      if (next.done) {
++        stack.pop();
++        if (item?.[STEP] === "tail") enter(item, frame.ctx, frame.finish);
++        else { value = item; finishing = frame.finish; }
++      } else if (item?.[STEP] === "call") enter(item, frame.ctx);
++      else if (item?.[STEP] === "fork") value = await this._fork(inv, frame.ctx, item);
++      else fail("continuation", "invalid coordinator suspension");
++    }
++    return value;
++  }
++  /** Dispatch a whole required call, or take its explicit enforcement fallback. */
++  async _single(inv, call, ctx) {
++    const fallback = (reason) => {
++      for (const r of ctx.regions) if (!r.witness && !r.waived) this._unfulfilled(r, reason);
++      return this._serial(call.id, call.args, ctx, reason);
++    };
++    if (!this._enabled(ctx)) return fallback(ctx.never ? "policy_conflict" : ctx.blocked
++      ?? (this.options.mode === "off" ? "disabled" : "workers_unavailable"));
++    const f = this.manifest.functions[call.id];
++    if (!f?.eligible) return fallback("unsupported");
++    if (inv.remaining < 1) return fallback("task_budget");
++    let scan;
++    try { scan = measureTrusted(call.args, f.inputs, this.manifest.schemas, this.options.wire); }
++    catch (e) { if (e.code === "wire_budget") return fallback("wire_budget"); throw e; }
++    if (scan.nonfinite) return fallback("nonfinite_input");
++    const plan = { ...call, ctx, bytes: scan.bytes, nodes: scan.nodes };
++    const result = await this._dispatch(inv, call.site ?? "required", [plan]);
++    if (result === null) return fallback(this.unavailable ? "workers_unavailable" : "queue_budget");
++    if (ctx.frontier) ctx.frontier.used = true;
++    return result[0];
++  }
++  /** Separate recursive frontier levels without keying profiles by arbitrary seeds. */
++  _key(site, plans, depth = 0) {
++    // Structural size only: arbitrary seed integers are not work-size keys.
++    // Conservative variance/minimum observations handle data-dependent work.
++    return site + ":frontier=" + depth + ":" + plans.map((p) => p.id + "/" + Math.ceil(Math.log2(p.bytes + 1))
++      + "/" + Math.ceil(Math.log2(p.nodes + 1))).join(",");
++  }
++  /**
++   * Bounded rolling natural observations. Forget stale load/JIT regimes after
++   * eight actual executions, instead of letting an old outlier keep a useful
++   * helper cold indefinitely. No duplicate foreground work is used to learn.
++   */
++  _sample(key, ms, bytes, durations = null) {
++    let p = this.profiles.get(key);
++    if (!p) {
++      if (this.profiles.size === this.options.maxProfiles) this.profiles.delete(this.profiles.keys().next().value);
++      p = { count: 0, mean: 0, variance: 0, min: ms, outputBytes: bytes, parallel: 0,
++        children: [], recent: [], enabled: false, good: 0, bad: 0 };
++      this.profiles.set(key, p);
++    }
++    boundedPush(p.recent, ms, 8);
++    p.mean = p.recent.reduce((a, b) => a + b, 0) / p.recent.length;
++    p.variance = p.recent.reduce((n, x) => n + (x - p.mean) ** 2, 0) / p.recent.length;
++    p.min = Math.min(...p.recent);
++    p.outputBytes = Math.max(bytes, p.outputBytes * .95);
++    if (durations) durations.forEach((t, i) => {
++      const c = p.children[i] ?? (p.children[i] = { mean: t, variance: 0, recent: [] });
++      boundedPush(c.recent, t, 8);
++      c.mean = c.recent.reduce((a, b) => a + b, 0) / c.recent.length;
++      c.variance = c.recent.reduce((n, x) => n + (x - c.mean) ** 2, 0) / c.recent.length;
++    });
++    p.count = Math.min(1000000, p.count + 1);
++  }
++  /** LPT makespan includes skew, queue load, receiver costs and snapshot share. */
++  _profitable(inv, ctx, plans, profile) {
++    if (!profile || profile.count < this.options.minSamples) return false;
++    const count = Math.max(1, Math.min(ctx.cap, this.options.workers, plans.length));
++    const loads = new Array(count).fill(0);
++    // Queue delay is observed on this coordinator; clocks from distinct workers
++    // are never subtracted to estimate it.
++    const queueWork = [...this.jobs.values()].reduce((n, j) => n + (j.predictedMs ?? this.rtt), 0);
++    loads.fill(queueWork / count);
++    const sigma = Math.sqrt(profile.variance);
++    const local = Math.max(0, Math.min(profile.min, profile.mean - sigma));
++    const childCosts = plans.map((p, i) => (profile.children[i]?.mean ?? profile.mean / plans.length)
++      + Math.sqrt(profile.children[i]?.variance ?? 0) + this.rtt + p.bytes * this.moveMsPerByte);
++    childCosts.sort((a, b) => b - a);
++    for (const ms of childCosts) {
++      const i = loads.indexOf(Math.min(...loads));
++      loads[i] += ms;
++    }
++    const parallel = Math.max(...loads) + (profile.outputBytes + inv.snapshotBytes) * this.moveMsPerByte;
++    const good = local >= this.options.minWorkMs && sigma < profile.mean * .5
++      && local > parallel * this.options.margin;
++    profile.good = good ? Math.min(2, profile.good + 1) : 0;
++    profile.bad = good ? 0 : Math.min(2, profile.bad + 1);
++    if (profile.good >= 2) profile.enabled = true;
++    if (profile.bad >= 2 || sigma >= profile.mean * .75) profile.enabled = false;
++    profile.predictedLocalMs = local;
++    profile.predictedParallelMs = parallel;
++    return profile.enabled && good;
++  }
++  /** Local siblings run in source order, with no speculative duplicate sampling. */
++  _local(inv, item, plans, key, ctx) {
++    this.counters.localForks++;
++    const values = [], durations = [];
++    let bytes = 0;
++    for (let i = 0; i < item.children.length; i++) {
++      if (!inv.active) throw abortError();
++      const c = item.children[i], before = now();
++      const childCtx = { ...ctx, never: ctx.never || c.web === "never" };
++      const value = this._serial(c.id, c.args, childCtx);
++      durations.push(now() - before);
++      values.push(value);
++      if (plans) {
++        try { bytes += measureTrusted([value], [this.manifest.functions[c.id].output],
++          this.manifest.schemas, this.options.wire).bytes; }
++        catch { bytes = this.options.maxRetainedBytes; }
++      }
++    }
++    // Sizing is coordinator/transport overhead, not serial computation. Charging
++    // it as body work would make a large, cheap result look worth offloading.
++    if (key) this._sample(key, durations.reduce((a, b) => a + b, 0), bytes, durations);
++    return values;
++  }
++  /**
++   * Only existing independent sibling calls become candidates. Decomposition
++   * follows generator continuations under one shared expansion/job budget.
++   * Remote subtrees always run serially; helpers never wait on nested jobs.
++   */
++  async _fork(inv, parent, item) {
++    const children = item.children;
++    if (children.length < 2 || !integer(item.site, 0, this.manifest.sites.length - 1)) fail("continuation");
++    const hasPolicy = children.some((c) => c.web === "require" || this.manifest.functions[c.id]?.reachesRequire
++      || (c.marked && this.options.mode === "marked" && !parent.marked));
++    const enabled = this._enabled(parent);
++    if ((!enabled || inv.remaining < children.length || children.length > this.options.maxQueue) && !hasPolicy) {
++      if (enabled && (inv.remaining < children.length || children.length > this.options.maxQueue)) this._diagnose(item.site, "task_budget");
++      return this._local(inv, item, null, null, parent);
++    }
++    // Expand only to fill otherwise unused helper capacity. Each branch is an
++    // already-independent source sibling; its prefix is evaluated once.
++    const required = parent.regions.some((r) => !r.waived);
++    const canSplit = enabled && (required || this.options.force || (parent.frontier && !parent.frontier.used)) && parent.depth < this.options.frontierDepth
++      && children.length < Math.min(parent.cap, this.options.workers)
++      && inv.expansions < this.options.maxExpansions
++      && children.every((c) => !c.web && this.manifest.functions[c.id]?.hasFork);
++    if (canSplit) {
++      inv.expansions++;
++      this.counters.expandedForks++;
++      if (parent.frontier) parent.frontier.used = true;
++      return Promise.all(children.map((c) => this._drive(inv, c,
++        { ...parent, depth: parent.depth + 1, frontier: { used: false } })));
++    }
++    let plans = [], allScannable = true;
++    for (const c of children) {
++      const f = this.manifest.functions[c.id];
++      try {
++        if (!f?.eligible || c.web === "never" || parent.never) { allScannable = false; continue; }
++        const scan = measureTrusted(c.args, f.inputs, this.manifest.schemas, this.options.wire);
++        if (scan.nonfinite) { allScannable = false; this._diagnose(item.site, "nonfinite_input"); continue; }
++        plans.push({ ...c, bytes: scan.bytes, nodes: scan.nodes });
++      } catch (e) {
++        if (e.code !== "wire_budget") throw e;
++        allScannable = false; this._diagnose(item.site, "wire_budget");
++      }
++    }
++    const key = allScannable ? this._key(item.site, plans, parent.depth) : null;
++    const profile = key ? this.profiles.get(key) : null;
++    const force = required || children.some((c) => c.web === "require") || this.options.force
++      || (parent.frontier && !parent.frontier.used);
++    const profitable = enabled && plans.length >= 2 && (force || this._profitable(inv, parent, plans, profile));
++    if ((!profitable || plans.length < 1) && !hasPolicy) {
++      this._diagnose(item.site, profile ? "not_profitable" : "uncalibrated");
++      // One declined frontier consumes exploration credit, not one credit per
++      // recursive leaf. Serial elision avoids fork-storm overhead.
++      inv.remaining = Math.max(0, inv.remaining - children.length);
++      return this._local(inv, item, allScannable ? plans : null, key, parent);
++    }
++    if (hasPolicy) {
++      // Attach every child rejection handler immediately. Independent source
++      // slots retain separate scopes, including f~(g@(x)) argument semantics.
++      return Promise.all(children.map((c) => this._drive(inv, c, parent)));
++    }
++    if (profitable && !force && parent.depth < this.options.frontierDepth
++      && children.length < Math.min(parent.cap, this.options.workers)
++      && inv.expansions < this.options.maxExpansions
++      && children.every((c) => !c.web && this.manifest.functions[c.id]?.hasFork)) {
++      inv.expansions++; this.counters.expandedForks++;
++      if (parent.frontier) parent.frontier.used = true;
++      const probe = { bodyMs: 0, outputBytes: 0 };
++      const results = await Promise.all(children.map((c) => this._drive(inv, c,
++        { ...parent, depth: parent.depth + 1, frontier: { used: false }, costScopes: [...parent.costScopes, probe] })));
++      // Update the parent even when deeper sites supplied its work; otherwise a
++      // formerly expensive shape could keep an obsolete profitable decision.
++      if (key) this._sample(key, probe.bodyMs, probe.outputBytes);
++      return results;
++    }
++    plans = plans.map((p) => ({ ...p, ctx: parent }));
++    const outputs = await this._dispatch(inv, item.site, plans, profile, key);
++    if (outputs === null) return this._local(inv, item, allScannable ? plans : null, key, parent);
++    if (parent.frontier) parent.frontier.used = true;
++    let r = 0;
++    return children.map((c) => plans.some((p) => p.args === c.args && p.id === c.id) ? outputs[r++]
++      : this._serial(c.id, c.args, { ...parent, never: parent.never || c.web === "never" }));
++  }
++  /** Atomically reserve a bounded ready frontier after the shared handshake. */
++  async _dispatch(inv, site, plans, profile = null, profileKey = null) {
++    const bytes = plans.reduce((n, p) => n + p.bytes, 0);
++    const fits = () => plans.length <= inv.remaining && this.queue.length + plans.length <= this.options.maxQueue
++      && this.queuedBytes + bytes <= this.options.maxQueuedBytes && this._retained() + bytes <= this.options.maxRetainedBytes;
++    if (!plans.length || !fits()) { this._diagnose(site, "queue_budget"); return null; }
++    try { await this.warmup(); }
++    catch (e) {
++      if (e.code !== "workers_unavailable") throw e;
++      this._diagnose(site, "workers_unavailable"); return null;
++    }
++    if (!inv.active) throw abortError();
++    if (!fits()) { this._diagnose(site, "queue_budget"); return null; }
++    inv.remaining -= plans.length;
++    const fork = ++inv.fork;
++    const requests = plans.map((p, slot) => {
++      const d = deferred(), id = ++this.nextJob;
++      if (!integer(id, 1, Number.MAX_SAFE_INTEGER)) fail("job_limit");
++      const job = { ...d, id, inv, fork, slot, functionId: p.id, args: p.args,
++        bytes: p.bytes, site, queued: now(), ctx: p.ctx, regions: p.ctx.regions.filter((r) => !r.waived),
++        predictedMs: profile?.children[slot]?.mean ?? this.rtt };
++      this.jobs.set(id, job);
++      this.queue.push(job);
++      this.queuedBytes += p.bytes;
++      return d.promise;
++    });
++    this.counters.remoteForks++;
++    this.counters.maxReady = Math.max(this.counters.maxReady, this.queue.length);
++    this._retained(); this._pump();
++    const results = await Promise.all(requests);
++    if (profile) {
++      profile.parallel++;
++      this._sample(profileKey ?? this._key(site, plans), results.reduce((n, r) => n + r.bodyMs, 0),
++        results.reduce((n, r) => n + r.bytes, 0), results.map((r) => r.bodyMs));
++    }
++    return results.map((r) => r.value);
++  }
++  async warmup() {
++    if (this.closed) fail("closed");
++    if (this.unavailable || !this.hasFactory || this.options.workers === 0) fail("workers_unavailable");
++    if (this.readyPromise) return this.readyPromise;
++    const start = now();
++    const promises = [];
++    try {
++      for (let i = 0; i < this.options.workers; i++) {
++        const worker = this.factory(this.url, { type: "module", name: "bend-" + i });
++        const d = deferred();
++        const slot = { worker, index: i, ready: false, busy: null, lastJob: 0, handshake: d };
++        slot.message = (e) => this._message(slot, e.data);
++        slot.error = (e) => { e.preventDefault?.(); this._workerFailure(slot, "worker_error"); };
++        slot.messageerror = () => this._workerFailure(slot, "messageerror");
++        worker.addEventListener("message", slot.message);
++        worker.addEventListener("error", slot.error);
++        worker.addEventListener("messageerror", slot.messageerror);
++        this.pool.push(slot);
++        slot.timer = setTimeout(() => this._workerFailure(slot, "startup_timeout"), this.options.startupTimeoutMs);
++        promises.push(d.promise);
++        worker.postMessage({ kind: "hello", protocol: PROTOCOL, program: this.manifest.program,
++          epoch: this.epoch, wire: this.options.wire, trace: this.options.trace, policy: this.options.policy, transport: this.options.transport });
++      }
++    } catch (e) {
++      for (const p of promises) p.catch(() => {});
++      this._unavailable(errorOf(e, "workers_unavailable"));
++      throw new BendWorkerError("workers_unavailable", "worker construction failed");
++    }
++    this.readyPromise = Promise.all(promises).then(() => {
++      this.counters.startupMs = now() - start;
++      return true;
++    });
++    return this.readyPromise;
++  }
++  _unavailable(error) {
++    this.unavailable = true;
++    for (const slot of this.pool) {
++      slot.handshake.reject(new BendWorkerError("workers_unavailable", error.message));
++      this._terminate(slot);
++    }
++    this.pool = [];
++  }
++  _workerFailure(slot, code) {
++    if (this.closed || !this.pool.includes(slot)) return;
++    if (this.counters.remoteJobs === 0) {
++      this._unavailable(new BendWorkerError("workers_unavailable", code));
++    } else this._fatal(new BendWorkerError(code, "worker failed; no serial retry"));
++  }
++  /** Validate the entire reply before releasing its pending continuation. */
++  _message(slot, m) {
++    if (this.closed || !this.pool.includes(slot)) return;
++    try {
++      if (!plain(m) || m.protocol !== PROTOCOL || m.program !== this.manifest.program)
++        fail("protocol", "worker protocol/build mismatch");
++      if (m.epoch !== this.epoch) { this.counters.ignoredReplies++; return; }
++      if (!slot.ready) {
++        if (m.kind !== "ready") fail("protocol", "expected ready handshake");
++        clearTimeout(slot.timer);
++        slot.ready = true;
++        slot.handshake.resolve(true);
++        return;
++      }
++      if (m.kind === "ready") fail("protocol", "duplicate handshake");
++      if (!integer(m.job, 1, Number.MAX_SAFE_INTEGER)) fail("protocol", "invalid job identity");
++      if (m.job <= slot.lastJob) { this.counters.ignoredReplies++; return; }
++      const job = slot.busy;
++      if (!job || m.job !== job.id || m.invocation !== job.inv.id || m.fork !== job.fork
++        || m.slot !== job.slot || m.functionId !== job.functionId || m.schemaId !== job.functionId)
++        fail("protocol", "reply does not belong to this result slot");
++      if (m.kind === "started" && this.options.trace) {
++        this._trace({ kind: "started", worker: slot.index, invocation: job.inv.id,
++          job: job.id, site: job.site, startEpochMs: m.startEpochMs });
++        return;
++      }
++      if (m.kind !== "result" && m.kind !== "error") fail("protocol", "unexpected reply kind");
++      if (!job.inv.active) {
++        this._release(slot, job);
++        this.counters.ignoredReplies++;
++        this._pump();
++        return;
++      }
++      if (m.kind === "error") {
++        this._release(slot, job);
++        const code = ["policy_conflict", "nonfinite_output", "wire_budget"].includes(m.code) ? m.code : "computation_failed";
++        const error = new BendWorkerError(code, String(m.error ?? "worker computation failed").slice(0, 512));
++        job.reject(error);
++        this._finish(job.inv, error);
++        this._pump();
++        return;
++      }
++      const f = this.manifest.functions[job.functionId];
++      const unpackStart = now();
++      if (this.options.transport === "packed" ? Object.hasOwn(m, "value") : Object.hasOwn(m, "packet"))
++        fail("protocol", "result transport differs from negotiated transport");
++      const scan = this.options.transport === "packed" ? unpackArgs(m.packet, [f.output], this.manifest.schemas, this.options.wire)
++        : snapshotArgs([m.value], [f.output], this.manifest.schemas, this.options.wire, false);
++      const value = scan.values[0];
++      if (this.options.transport === "packed") { this.counters.unpackMs += now() - unpackStart; this.counters.packedBytes += m.packet.byteLength; }
++      if (scan.nonfinite) fail("nonfinite_output", "finite-only worker result was nonfinite");
++      if (this._retained() + scan.bytes > this.options.maxRetainedBytes) fail("retained_budget", "completed result budget exceeded");
++      if (typeof m.bodyMs !== "number" || !Number.isFinite(m.bodyMs) || m.bodyMs < 0) fail("protocol", "invalid timing");
++      if (m.policyWarnings !== undefined) {
++        if (!Array.isArray(m.policyWarnings) || m.policyWarnings.length > 128) fail("protocol", "invalid policy diagnostics");
++        for (const w of m.policyWarnings) {
++          if (!plain(w) || typeof w.site !== "string" || typeof w.reason !== "string"
++            || w.site.length > 512 || w.reason.length > 512) fail("protocol", "invalid policy warning");
++          this._diagnose(w.site, w.reason);
++        }
++      }
++      if (m.policyEvents !== undefined) {
++        if (!Array.isArray(m.policyEvents) || m.policyEvents.length > 128) fail("protocol", "invalid policy events");
++        for (let i = 0; i < m.policyEvents.length; i++) {
++          const e = m.policyEvents[i];
++          if (!plain(e) || !["never", "coalesced_require"].includes(e.kind)
++            || typeof e.site !== "string" || e.site.length > 512
++            || !integer(e.functionId, 0, this.manifest.functions.length - 1) || !integer(e.cap, 1, 32))
++            fail("protocol", "invalid remote policy witness");
++          if (e.kind === "coalesced_require") this.counters.coalescedRequires++;
++          this._trace({ kind: "remote_region", event: e.kind, worker: slot.index,
++            invocation: job.inv.id, job: job.id, region: "remote:" + job.id + ":" + i,
++            functionId: e.functionId, site: e.site, cap: e.cap });
++        }
++      }
++      // Keep the pending job registered until all validations succeed, so a
++      // malformed result cannot strand its deferred continuation promise.
++      this._release(slot, job);
++      this.completedBytes += scan.bytes;
++      job.inv.completedBytes += scan.bytes;
++      this._retained();
++      const roundTrip = now() - job.sent;
++      this.counters.workerBodyMs += m.bodyMs;
++      this.counters.roundTripMs += roundTrip;
++      const movement = Math.max(.1, roundTrip - m.bodyMs);
++      const movedBytes = job.bytes + scan.bytes;
++      if (movedBytes >= 4096) {
++        const measured = Math.max(1 / (1024 * 1024), Math.min(.1, (movement - this.rtt) / movedBytes));
++        this.moveMsPerByte = .875 * this.moveMsPerByte + .125 * measured;
++        this.counters.movementSamples++;
++      } else this.rtt = .875 * this.rtt + .125 * movement;
++      for (const probe of job.ctx.costScopes ?? []) { probe.bodyMs += m.bodyMs; probe.outputBytes += scan.bytes; }
++      this._trace({ kind: "result", worker: slot.index, invocation: job.inv.id, job: job.id,
++        site: job.site, bodyMs: m.bodyMs, startEpochMs: m.startEpochMs, endEpochMs: m.endEpochMs });
++      for (const r of job.regions) if (!r.witness) {
++        r.witness = true; this.counters.requiredWitnesses++;
++        this._trace({ kind: "witness", invocation: job.inv.id, region: r.id,
++          functionId: job.functionId, worker: slot.index, job: job.id });
++      }
++      job.resolve({ value, bytes: scan.bytes, bodyMs: m.bodyMs });
++      this._pump();
++    } catch (e) { this._fatal(errorOf(e, "protocol")); }
++  }
++  _release(slot, job) {
++    clearTimeout(slot.taskTimer);
++    slot.busy = null;
++    slot.lastJob = job.id;
++    this.jobs.delete(job.id);
++    this.inflightBytes -= job.bytes;
++    job.args = null;
++  }
++  /** Assign ready work only where every ancestor region permits this helper. */
++  _pump() {
++    for (const slot of this.pool) {
++      if (!slot.ready || slot.busy || !this.queue.length) continue;
++      const index = this.queue.findIndex((j) => j.regions.every((r) => r.helpers.has(slot.index) || r.helpers.size < r.cap));
++      if (index < 0) continue;
++      const [job] = this.queue.splice(index, 1);
++      for (const r of job.regions) r.helpers.add(slot.index);
++      this.queuedBytes -= job.bytes;
++      this.inflightBytes += job.bytes;
++      slot.busy = job;
++      job.sent = now();
++      this.counters.queueDelayMs += job.sent - job.queued;
++      this.counters.remoteJobs++;
++      this.counters.maxInFlight = Math.max(this.counters.maxInFlight, this.jobs.size - this.queue.length);
++      slot.taskTimer = setTimeout(() => this._fatal(new BendWorkerError("task_timeout", "worker task timed out; no retry")),
++        this.options.taskTimeoutMs);
++      this._trace({ kind: "dispatch", worker: slot.index, invocation: job.inv.id,
++        job: job.id, site: job.site, functionId: job.functionId, regions: job.regions.map((r) => r.id) });
++      try {
++        let payload = { args: job.args }, transfer = [];
++        if (this.options.transport === "packed") {
++          const started = now();
++          const packet = packAccepted(job.args, this.manifest.functions[job.functionId].inputs, this.manifest.schemas, this.options.wire);
++          this.counters.packMs += now() - started;
++          this.counters.packedBytes += packet.byteLength;
++          payload = { packet }; transfer = [packet];
++        }
++        slot.worker.postMessage({ kind: "job", protocol: PROTOCOL, program: this.manifest.program,
++          epoch: this.epoch, job: job.id, invocation: job.inv.id, fork: job.fork, slot: job.slot,
++          functionId: job.functionId, schemaId: job.functionId, ...payload,
++          placement: { never: job.ctx.never, cap: job.ctx.cap } }, transfer);
++      } catch (e) { this._fatal(errorOf(e, "transport_failed")); break; }
++    }
++  }
++  _terminate(slot) {
++    clearTimeout(slot.timer);
++    clearTimeout(slot.taskTimer);
++    slot.worker.removeEventListener("message", slot.message);
++    slot.worker.removeEventListener("error", slot.error);
++    slot.worker.removeEventListener("messageerror", slot.messageerror);
++    slot.worker.terminate();
++    slot.busy = null;
++  }
++  _fatal(error) {
++    if (this.closed) return;
++    for (const inv of [...this.invocations.values()]) this._finish(inv, error);
++    for (const slot of this.pool) { slot.handshake.reject(error); this._terminate(slot); }
++    for (const job of this.jobs.values()) job.reject(error);
++    this.pool = [];
++    this.jobs.clear();
++    this.queue = [];
++    this.queuedBytes = this.inflightBytes = 0;
++    this.closed = true;
++    this.epoch++;
++  }
++  close() { this._fatal(new BendWorkerError("closed", "session closed")); }
++}
++
++// Helpers execute only the original synchronous implementation. They never
++// create workers, evaluate source strings, or accept arbitrary function names.
++/** Accept one negotiated session and execute allowlisted serial tasks without nested pools. */
++export function serveWorker(program, scope = globalThis) {
++  const manifest = program.manifest;
++  let epoch = null, wire = null, trace = false, lastJob = 0, policy = "permissive", transport = "clone";
++  scope.addEventListener("message", (event) => {
++    const m = event.data;
++    if (!plain(m)) return;
++    if (m.kind === "hello") {
++      if (epoch !== null || m.protocol !== PROTOCOL || m.program !== manifest.program || !integer(m.epoch, 1, Number.MAX_SAFE_INTEGER)) {
++        scope.postMessage({ kind: "fatal", protocol: PROTOCOL, program: manifest.program, epoch: m.epoch });
++        return;
++      }
++      try { wire = limits(m.wire); } catch { return; }
++      epoch = m.epoch;
++      trace = m.trace === true;
++      if (m.policy !== undefined && !["strict", "permissive"].includes(m.policy)) return;
++      policy = m.policy ?? "permissive";
++      if (m.transport !== undefined && !["clone", "packed"].includes(m.transport)) return;
++      transport = m.transport ?? "clone";
++      scope.postMessage({ kind: "ready", protocol: PROTOCOL, program: manifest.program, epoch });
++      return;
++    }
++    const envelope = { protocol: PROTOCOL, program: manifest.program, epoch,
++      job: m.job, invocation: m.invocation, fork: m.fork, slot: m.slot,
++      functionId: m.functionId, schemaId: m.schemaId };
++    try {
++      if (epoch === null || m.kind !== "job" || m.protocol !== PROTOCOL || m.program !== manifest.program || m.epoch !== epoch
++        || !integer(m.job, lastJob + 1, Number.MAX_SAFE_INTEGER) || !integer(m.invocation, 1, Number.MAX_SAFE_INTEGER)
++        || !integer(m.fork, 1, Number.MAX_SAFE_INTEGER) || !integer(m.slot, 0, 4095)
++        || !integer(m.functionId, 0, manifest.functions.length - 1) || m.schemaId !== m.functionId)
++        fail("protocol", "invalid job envelope");
++      lastJob = m.job;
++      const f = manifest.functions[m.functionId];
++      if (m.placement !== undefined && (!plain(m.placement)
++        || typeof m.placement.never !== "boolean" || !integer(m.placement.cap, 1, 32)))
++        fail("protocol", "invalid task placement context");
++      if (!f.eligible) fail("ineligible_task");
++      if (transport === "packed" ? Object.hasOwn(m, "args") : Object.hasOwn(m, "packet"))
++        fail("protocol", "job transport differs from negotiated transport");
++      const scan = transport === "packed" ? unpackArgs(m.packet, f.inputs, manifest.schemas, wire)
++        : snapshotArgs(m.args, f.inputs, manifest.schemas, wire, false);
++      if (scan.nonfinite) fail("nonfinite_input", "finite-only task received nonfinite input");
++      const start = now();
++      const startEpochMs = trace ? performance.timeOrigin + start : undefined;
++      if (trace) scope.postMessage({ ...envelope, kind: "started", startEpochMs });
++      const policyWarnings = [], policyEvents = [];
++      const value = runSerialRegion(program, m.functionId, scan.values,
++        { remote: true, never: m.placement?.never === true, cap: m.placement?.cap ?? 1 }, policy,
++        (site, reason) => {
++          const s = String(site).slice(0, 512), r = String(reason).slice(0, 512);
++          if (policyWarnings.length < 128 && !policyWarnings.some((x) => x.site === s && x.reason === r))
++            policyWarnings.push({ site: s, reason: r });
++        }, (event) => { if (trace && policyEvents.length < 128) policyEvents.push(event); });
++      const end = now();
++      const output = measureTrusted([value], [f.output], manifest.schemas, wire);
++      if (output.nonfinite) fail("nonfinite_output", "worker produced a nonfinite F32 boundary; no silent serial retry");
++      const packet = transport === "packed" ? packAccepted([value], [f.output], manifest.schemas, wire) : null;
++      scope.postMessage({ ...envelope, kind: "result", ...(packet ? { packet } : { value }), bodyMs: end - start, policyWarnings, policyEvents,
++        ...(trace ? { startEpochMs, endEpochMs: performance.timeOrigin + end } : {}) }, packet ? [packet] : []);
++    } catch (e) {
++      scope.postMessage({ ...envelope, kind: "error", code: e?.code, error: String(e?.message ?? e).slice(0, 512) });
++    }
++  });
++}
