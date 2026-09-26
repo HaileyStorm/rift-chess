@@ -9,9 +9,11 @@ opponent scoring, projection, picking, sprites, menus, bitmap fonts, input polic
 record codec and audio synthesis are written in Bend 2. The browser adapter only
 transports events and explicit IO effects, copies Bend pixels to Canvas and Bend
 PCM samples to Web Audio, and mirrors Bend controls for assistive technology.
-`Native.bend` expresses the same pixel application with Base Window, Audio and
-File effects, but its 2.0.27 C emission hit the compiler's generated arity
-limit; a graphical native binary is not yet built. The smaller `NativeCLI.bend`
+`Native.bend` expresses a browser-independent pixel application with Base
+Window, Audio and File effects, but its 2.0.27 C emission hit the compiler's
+generated arity limit. A reduced `NativeMini.bend` has built and played in
+WSLg; it uses the real position kernel but a separate 256px diagnostic renderer.
+It is not the shared-source visual native game. The smaller `NativeCLI.bend`
 is a browser-independent text game over the same Bend rules and record codec.
 It now emits C, builds as a WSL Linux ELF, and has a real file-backed playthrough.
 
@@ -23,8 +25,8 @@ and a separate Bend-rendered sprite helper. Run
 and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
 The non-draft build verifies the frozen semantics, graphics manifest, and
 source-bound static worker graph. Local Chrome interaction/offline gates pass;
-detailed sprite refinement is still slow, GPU evidence and a full graphical
-native binary remain open, and this branch has not replaced the public Bend
+detailed sprite refinement is still slow, native visual parity and a full
+graphical binary remain open, and this branch has not replaced the public Bend
 preview. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 

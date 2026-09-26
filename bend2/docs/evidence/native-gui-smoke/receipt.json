@@ -1,0 +1,44 @@
+{
+  "schema": "rift-bend-native-window-smoke/1",
+  "dateUtc": "2026-09-24T11:08:27Z",
+  "entry": "bend2/NativeSmoke.bend",
+  "entrySha256": "a897262a9d948cfc697fbeb721e4cad4c27a019cd68c8d6c91dbe872c0e39dfa",
+  "toolchain": {
+    "bendVersion": "2.0.27",
+    "bendCommit": "d37909174ebd664338ae3194799a9e0899dedd51",
+    "bunVersion": "1.4.2",
+    "compiler": "Ubuntu 24.04 WSL2 clang-18 18.1.3",
+    "newBuildDependencies": "libx11-dev plus seven apt dependencies; zero packages upgraded, no ALSA"
+  },
+  "emittedC": {
+    "bytes": 130603,
+    "sha256": "c5d3ac992069119454a325dd334605bc37d69505216a6ae0ebd67f95919e2b18"
+  },
+  "elf": {
+    "kind": "Linux x86-64 PIE ELF",
+    "bytes": 1112448,
+    "sha256": "2fbe7d50f8e0091a41e517344cfd04cc71cb66ce2ee11244adc26bd98fc0fd59",
+    "clangFlags": "-std=c11 -O2 -pthread -lX11 -lm",
+    "clangExit": 0,
+    "linkedX11": true
+  },
+  "wslg": {
+    "display": ":0",
+    "windowTitle": "Bend Native Smoke",
+    "visibleWindow": true,
+    "clientWidth": 256,
+    "clientHeight": 256,
+    "expectedAndObservedCenterRgb": [255, 128, 51],
+    "pixelObserverExit": 0,
+    "wmDeleteSupportedAndSent": true,
+    "applicationExit": 0,
+    "result": "clean_wm_close_after_verified_frame",
+    "screenshot": "window.png",
+    "screenshotSha256": "f40d1429426c8d045fd7ab08473b2f5939ed803940ea603c0e8f2585317996b5"
+  },
+  "localEvidence": {
+    "build": ".artifacts/bend2/native-smoke-minimal-20260924-043844575/run-20260924-044620306/",
+    "runtime": ".artifacts/bend2/native-smoke-verify-20260924-045245706/run-20260924-050813627/"
+  },
+  "scope": "Actual Bend Window/Image C emission, Linux ELF build and visible X11 runtime with a clean close. This is a minimal native graphics checkpoint; the full Rift Chess graphical Native.bend has not emitted C or built. Audio and File effects are not exercised by this smoke."
+}

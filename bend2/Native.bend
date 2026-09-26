@@ -3,12 +3,24 @@ import ./Application.bend as Application
 import ./ui/Types.bend as T
 import ./lib/audio/Synthesis.bend as Synthesis
 
-# Native host state.  The Session is pure application data; Window and Audio
-# are affine Base handles and are returned by every operation before reuse.
+# Native State owns affine Window/Audio handles. Keep its large pure Session
+# behind a shared List cell so host-loop frames do not flatten it into captures.
+# StateBox and PacketBox below are private one-element carries across effects;
+# all constructors in this file build exactly one Cons. Empty or multi-item
+# carries are invariant failures, never substitute game states.
 type State is Type:
-  State{window: Window, session: Application.Session, audio: Maybe<Audio>,
+  State{window: Window, session_box: List<&2, Application.Session>, audio: Maybe<Audio>,
     +audio_pending: List<&2, F32>, alt_mask: U32, ctrl_mask: U32,
     pending: List<&2, T.Input>, width: U32, height: U32, stamp: Nat}
+
+def state_box(state: State) -> List<State>:
+  [state]
+
+def packet_box(packet: Application.Packet) -> List<&2, Application.Packet>:
+  [packet]
+
+def session_box(session: Application.Session) -> List<&2, Application.Session>:
+  [session]
 
 type Batch is Data:
   Batch{inputs: List<&2, T.Input>, alt_mask: U32, ctrl_mask: U32, closed: Bool}
@@ -820,6 +832,24 @@ def finish(window: Window, audio: Maybe<Audio>, +image: Image) -> IO(Unit):
     Unit <- close_audio(audio)
     Window.close(window)
 
+@unsafe
+def native_box_failure(window: Window, audio: Maybe<Audio>, +image: Image,
+  message: String) -> IO(Unit):
+  do IO<Unit>:
+    Unit <- IO.print_err(message)
+    finish(window, audio, image)
+
+@unsafe
+def native_missing_state_box() -> IO(Unit):
+  IO.print_err("Native loop invariant failed: StateBox must contain exactly one Cons.")
+
+@unsafe
+def native_missing_packet(state: State) -> IO(Unit):
+  State{window, _, audio, _, _, _, _, _, _, _} = state
+  do IO<Unit>:
+    Unit <- IO.print_err("Native loop invariant failed: PacketBox must contain exactly one Cons.")
+    finish(window, audio, Pix{0})
+
 def wait_when(idle: Bool, after: U32, next: IO(Unit)) -> IO(Unit):
   match idle:
     case True{}:
@@ -836,69 +866,115 @@ def wait_then(+after: U32, next: IO(Unit)) -> IO(Unit):
 # translated events.  Packet effects are intentionally handled by `loop` before
 # presentation, so boot and dispatch side effects share one path.
 @unsafe
+def frame_after_packet(+next: Application.Packet, next_window: Window,
+  next_alt_mask: U32, next_ctrl_mask: U32, audio: Maybe<Audio>,
+  +audio_pending: List<&2, F32>, width: U32, height: U32, now: Nat,
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
+  Application.Packet{+next_session, _, _, _, _, _, _, +after, _, _} = next
+  +next_session_cell = session_box(next_session)
+  +empty_pending : List<&2, T.Input> = []
+  next_state : State = State{next_window, next_session_cell, audio, audio_pending,
+    next_alt_mask, next_ctrl_mask, empty_pending, width, height, now}
+  wait_then(after, recur(state_box(next_state), packet_box(next)))
+
+@unsafe
+def frame_after_drop(next_box: List<&2, Application.Packet>, next_window: Window,
+  next_alt_mask: U32, next_ctrl_mask: U32, audio: Maybe<Audio>,
+  +audio_pending: List<&2, F32>, width: U32, height: U32,
+  now: Nat, recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
+  match next_box:
+    case +next <> Nil{}:
+      frame_after_packet(next, next_window, next_alt_mask, next_ctrl_mask, audio,
+        audio_pending, width, height, now, recur)
+    case Nil{}:
+      native_box_failure(next_window, audio, Pix{0},
+        "Native frame invariant failed: PacketBox was empty.")
+    case _:
+      native_box_failure(next_window, audio, Pix{0},
+        "Native frame invariant failed: PacketBox was not a singleton.")
+
+@unsafe
 def frame_next(next: Application.Packet, next_window: Window, displayed: Image,
   next_alt_mask: U32, next_ctrl_mask: U32, audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, width: U32, height: U32,
-  now: Nat, recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
-  Application.Packet{+next_session, _, _, _, _, _, _, +after, _, _} = next
-  +empty_pending : List<&2, T.Input> = []
-  next_state : State = State{next_window, next_session, audio, audio_pending,
-    next_alt_mask, next_ctrl_mask, empty_pending, width, height, now}
+  now: Nat, recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
+  +next_box = packet_box(next)
   do IO<Unit>:
     Unit <- IO.pure(Unit, Image.drop(displayed))
-    wait_then(after, recur(next_state, next))
+    frame_after_drop(next_box, next_window, next_alt_mask, next_ctrl_mask, audio,
+      audio_pending, width, height, now, recur)
 
 @unsafe
 def frame_choice(closed: Bool, next_window: Window, displayed: Image,
   inputs: List<&2, T.Input>, next_alt_mask: U32, next_ctrl_mask: U32,
-  session: Application.Session, audio: Maybe<Audio>,
+  session_cell: List<&2, Application.Session>, audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, pending: List<&2, T.Input>, width: U32, height: U32,
-  elapsed: U32, now: Nat, recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  elapsed: U32, now: Nat,
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   match closed:
     case True{}:
       finish(next_window, audio, displayed)
     case False{}:
       +with_pending = List.append(&2, T.Input, pending, inputs)
       +tick_inputs = List.append(&2, T.Input, with_pending, [T.Tick{elapsed}])
-      +next = Application.dispatch(tick_inputs, session)
+      frame_dispatch(session_cell, tick_inputs, next_window, displayed, next_alt_mask,
+        next_ctrl_mask, audio, audio_pending, width, height, now, recur)
+
+@unsafe
+def frame_dispatch(session_cell: List<&2, Application.Session>,
+  inputs: List<&2, T.Input>, next_window: Window, displayed: Image,
+  next_alt_mask: U32, next_ctrl_mask: U32, audio: Maybe<Audio>,
+  +audio_pending: List<&2, F32>, width: U32, height: U32, now: Nat,
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
+  match session_cell:
+    case +session <> Nil{}:
+      +next = Application.dispatch(inputs, session)
       frame_next(next, next_window, displayed, next_alt_mask, next_ctrl_mask, audio,
         audio_pending, width, height, now, recur)
+    case Nil{}:
+      native_box_failure(next_window, audio, displayed,
+        "Native frame invariant failed: SessionBox was empty.")
+    case _:
+      native_box_failure(next_window, audio, displayed,
+        "Native frame invariant failed: SessionBox was not a singleton.")
 
 @unsafe
 def frame_batch(batch: Batch, next_window: Window, displayed: Image,
-  session: Application.Session, audio: Maybe<Audio>,
+  session_cell: List<&2, Application.Session>, audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, pending: List<&2, T.Input>,
   width: U32, height: U32, elapsed: U32, now: Nat,
-  recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   Batch{inputs, next_alt_mask, next_ctrl_mask, closed} = batch
   frame_choice(closed, next_window, displayed, inputs, next_alt_mask, next_ctrl_mask,
-    session, audio, audio_pending, pending, width, height, elapsed, now, recur)
+    session_cell, audio, audio_pending, pending, width, height, elapsed, now, recur)
 
 @unsafe
-def frame_turn(session: Application.Session, audio: Maybe<Audio>,
+def frame_turn(session_cell: List<&2, Application.Session>, audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, alt_mask: U32, ctrl_mask: U32,
   pending: List<&2, T.Input>, width: U32, height: U32,
   shown: Window & Image & List<Event>, elapsed: U32, now: Nat,
-  recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   (next_window, displayed, native_events) = shown
   +batch = events(native_events, alt_mask, ctrl_mask)
-  frame_batch(batch, next_window, displayed, session, audio, audio_pending, pending,
+  frame_batch(batch, next_window, displayed, session_cell, audio, audio_pending, pending,
     width, height, elapsed, now, recur)
 
-def frame_clock(session: Application.Session, next_audio: Maybe<Audio>,
+def frame_clock(session_cell: List<&2, Application.Session>, next_audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, alt_mask: U32, ctrl_mask: U32,
   next_pending: List<&2, T.Input>, width: U32, height: U32,
   shown: Window & Image & List<Event>, stamp: Nat, +now: Nat,
-  recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   +elapsed = U32.min(240, U32.from_nat(Nat.sub(now, stamp)))
-  frame_turn(session, next_audio, audio_pending, alt_mask, ctrl_mask, next_pending, width,
+  frame_turn(session_cell, next_audio, audio_pending, alt_mask, ctrl_mask, next_pending, width,
     height, shown, elapsed, now, recur)
 
-def effect_choice(ending: Bool, window: Window, session: Application.Session,
+def effect_choice(ending: Bool, window: Window,
+  session_cell: List<&2, Application.Session>,
   alt_mask: U32, ctrl_mask: U32, pending: List<&2, T.Input>, width: U32, height: U32,
   +image: Image, next_audio: Maybe<Audio>,
   +audio_pending: List<&2, F32>, errors: List<&2, T.Input>,
-  stamp: Nat, recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  stamp: Nat,
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   match ending:
     case True{}:
       finish(window, next_audio, image)
@@ -907,41 +983,68 @@ def effect_choice(ending: Bool, window: Window, session: Application.Session,
       do IO<Unit>:
         shown : Window & Image & List<Event> <- Window.frame(window, image)
         now : Nat <- IO.now()
-        frame_clock(session, next_audio, audio_pending, alt_mask, ctrl_mask, next_pending,
+        frame_clock(session_cell, next_audio, audio_pending, alt_mask, ctrl_mask, next_pending,
           width, height, shown, stamp, now, recur)
 
-def pumped_effects(pumped: Pump, window: Window, session: Application.Session,
+def pumped_effects(pumped: Pump, window: Window,
+  session_cell: List<&2, Application.Session>,
   alt_mask: U32, ctrl_mask: U32, pending: List<&2, T.Input>, width: U32, height: U32,
   +image: Image, errors: List<&2, T.Input>, ending: Bool, stamp: Nat,
-  recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   Pump{next_audio, audio_pending} = pumped
-  effect_choice(ending, window, session, alt_mask, ctrl_mask, pending, width, height, image,
+  effect_choice(ending, window, session_cell, alt_mask, ctrl_mask, pending, width, height, image,
     next_audio, audio_pending, errors, stamp, recur)
 
-def loop_after_effects(window: Window, session: Application.Session, alt_mask: U32,
+def loop_after_effects(window: Window, session_cell: List<&2, Application.Session>, alt_mask: U32,
   ctrl_mask: U32, pending: List<&2, T.Input>, width: U32, height: U32, +image: Image,
-  stamp: Nat, applied: Effects, recur: State -> Application.Packet -> IO(Unit)) -> IO(Unit):
+  stamp: Nat, applied: Effects,
+  recur: List<State> -> List<&2, Application.Packet> -> IO(Unit)) -> IO(Unit):
   Effects{next_audio, errors, ending, +audio_pending, _} = applied
   do IO<Unit>:
     pumped : Pump <- pump_audio(next_audio, audio_pending)
-    pumped_effects(pumped, window, session, alt_mask, ctrl_mask, pending, width, height,
+    pumped_effects(pumped, window, session_cell, alt_mask, ctrl_mask, pending, width, height,
       image, errors, ending, stamp, recur)
 
 # The recursion is an intentionally unbounded host loop; all application state
 # transitions remain pure and checker-visible in Application.bend.
 @unsafe
-def loop(state: State, packet: Application.Packet) -> IO(Unit):
-  State{window, session, audio, +audio_pending, alt_mask, ctrl_mask, pending, width, height, stamp} = state
-  Application.Packet{_, effects, image, _, _, _, _, _, _, _} = packet
+def loop_live(state: State, +packet: Application.Packet) -> IO(Unit):
+  State{window, session_cell, audio, +audio_pending, alt_mask, ctrl_mask,
+    pending, width, height, stamp} = state
+  Application.Packet{_, +effects, +image, _, _, _, _, _, _, _} = packet
   do IO<Unit>:
     applied : Effects <- apply_effects(effects, audio, audio_pending)
-    loop_after_effects(window, session, alt_mask, ctrl_mask, pending, width, height, image,
+    loop_after_effects(window, session_cell, alt_mask, ctrl_mask, pending, width, height, image,
       stamp, applied, loop)
+
+@unsafe
+def loop_packet(state: State, packet_box: List<&2, Application.Packet>) -> IO(Unit):
+  match packet_box:
+    case +packet <> Nil{}:
+      loop_live(state, packet)
+    case Nil{}:
+      native_missing_packet(state)
+    case _:
+      native_missing_packet(state)
+
+# The only StateBox constructors are `state_box`; Nil and longer lists fail
+# loudly here instead of inventing a default state or a fake Packet transition.
+@unsafe
+def loop(state_box: List<State>, packet_box: List<&2, Application.Packet>) -> IO(Unit):
+  match state_box:
+    case state <> Nil{}:
+      loop_packet(state, packet_box)
+    case Nil{}:
+      native_missing_state_box()
+    case _:
+      native_missing_state_box()
 
 def start_ready(errors: List<&2, T.Input>, window: Window,
   +packet: Application.Packet, audio: Maybe<Audio>, stamp: Nat) -> IO(Unit):
-  Application.Packet{session, _, _, _, _, _, _, _, _, _} = packet
-  loop(State{window, session, audio, [], 0, 0, errors, 1024, 800, stamp}, packet)
+  Application.Packet{+session, _, _, _, _, _, _, _, _, _} = packet
+  +session_cell = session_box(session)
+  state: State = State{window, session_cell, audio, [], 0, 0, errors, 1024, 800, stamp}
+  loop(state_box(state), packet_box(packet))
 
 def start(boot: Boot, window: Window) -> IO(Unit):
   Boot{saved, prefs, errors} = boot

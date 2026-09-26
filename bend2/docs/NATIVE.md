@@ -1,5 +1,61 @@
 # Experimental graphical Native entrypoint
 
+This document's `Native.bend` behavior and 2026-09-23 emitter attempt are
+historical evidence for the first graphical adapter. They do not describe a
+working full-game native binary. The newer `NativeV2.bend` is an unreleased
+`App.run` composition of the Bend controller, `BoardScene`, and the same
+`MenuAA`/`FontPack` source used by the browser worker. Its native platform
+adapter remains unverified: no NativeV2 C or game ELF has been produced in this
+continuation. The pinned 2.0.27 toolchain has built and run a separate WSLg X11
+smoke ELF; WSL Clang 18 and X11 development headers are available. Neither the
+smoke nor the text CLI proves NativeV2's game, Audio/File effects, rendering
+parity, or idle CPU cost.
+
+## 2026-09-25 NativeV2 continuation
+
+The checker exposed and the source was corrected for repeated affine values,
+forward references to `tick`, `read_import_choice`, and `runtime_exit`, a
+repeated `slot` and `theme` use, and a typed `TickNext` construction. A later
+check then found duplicated `effect_inputs` in `tick_continue`; that binder was
+made reusable, but this last source fix has not been checked. The current
+MenuAA/font adapter edits below are also unchecked.
+
+The four recent whole-book checks reached peaks of 7.22, 7.17, 7.98, and 7.16
+GiB; their minimum free physical-memory readings were 0.03, 0.13, 0.37, and
+0.01 GiB on this 16 GiB Windows host. Logs and telemetry are in the ignored
+`.artifacts/bend2/native/2026-09-25/` directory. Do not rerun a whole NativeV2
+check or emit its C on this host without a different memory strategy. The
+previous NativeV2 C-emission attempt exceeded 480 seconds and produced no
+artifact; it predates these source fixes and the MenuAA adapter.
+
+The pinned Bend 2.0.27 native C compiler emits one book-local executable and does
+not support separately checked Bend C modules linked into one game binary, so
+every imported definition remains in the source-check closure. The first
+source-closure candidate is to separate the RGA2 sprite cluster from
+`BoardScene`: the `PieceSprites`/`PieceAssets` imports, sprite renderer and
+placement helpers around `fast_sprite_pieces512` / `fast_sprite_feedback_*`,
+and the page request/decode exports. A game-owned sibling module can hold that
+optional cluster while the browser helper and a future native path both import
+the same source. NativeV2 will need that module for visual parity, so this
+extraction alone is not a final memory reduction; the larger-host or
+legacy-renderer-split gate still needs measured evidence.
+An earlier WSL query during memory pressure failed with Windows error
+`0x800705aa`, which is contention evidence rather than a source defect.
+
+The read-only WSL capability probe found Ubuntu 24.04 x86_64 and Clang 18.1.3,
+but no `libasound2-dev`, ALSA header/library, or `pkg-config`. No package was
+installed. NativeV2 reaches Base `Audio.open`, whose pinned Linux effect uses
+ALSA; revisit that dependency only after a checked C artifact makes an ELF
+build practical. The older NativeSmoke ELF only exercises Window/X11.
+
+`NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
+capture shows a 256×256 flat top-down board with holes and piece silhouettes;
+the retained image is
+`.artifacts/bend2/native/2026-09-25/native-mini-after-white-shift.png`. The old
+ELF proved White d2–d4, Black d7–d5, a White hole shift, and Escape-to-zero
+exit, but it predates the source title change to “Rift Chess Experimental
+Native Mini.” Rebuild it before using that label as visible-window evidence.
+
 `bend2/Native.bend` is an experimental browser-independent graphical host for
 the Bend application facade. It uses only the pinned Base effects (`Window`, `File`, `Audio`,
 `IO.sleep` and `IO.print`) and the pure `Application.boot`/`dispatch` API. The
@@ -64,6 +120,64 @@ check passes, but full graphical C emission did not finish within the bounded
 the separate [supported text CLI](NATIVE_CLI.md) for the browser-independent C
 export. This file remains useful as the source-level graphical adapter and as
 preserved evidence for a future rendering-target investigation.
+
+## NativeV2 asset and recovery boundary
+
+`NativeV2.bend` composes the same Bend controller, `BoardScene`, `MenuAA`,
+`ChromeData`, `ChromePlan`, and `FontPack` used by the browser worker through
+Base `App.run`. It keeps separate board, motion-preview, base, control/dynamic
+chrome, and output images; the controller's presented input path owns square
+selection, while the native host forwards untransformed pointer coordinates
+for orbit. `MenuAA.base_chrome`, `controls_chrome`, `dynamic_chrome`, and
+`compose` now replace the older `ChromeRaster` calls. Native cache reuse calls
+the same `MenuAA.same_base` and `same_static` predicates as the browser worker;
+non-play modes route through `MenuAA.render` as the browser does. At startup the
+adapter reads the game-owned font path with a one-byte overlength sentinel, pads up to
+the decoder's 262,144-byte bound as a power-of-two `Array`, and calls the same
+Bend `MenuAA.load_font` decoder as the browser. Missing/rejected font bytes use
+the renderer's empty-font fallback and log a diagnostic.
+
+The native cache also retains the theme plate returned by the game-owned
+`Assets.asset_ids(theme)` request. It opens that request's `path` verbatim with
+Base `File.open` and reads `max_bytes` through `File.read_bytes`; the request
+bound includes the codec's overlength sentinel. Native code does not map theme
+IDs to filenames. If a plate is absent, unreadable, or rejected by the Bend
+decoder, the scene uses its procedural fallback and logs a nonfatal diagnostic.
+Both image and font paths are relative to the working directory containing the
+packaged `assets/` directory.
+
+The Bend2 v2 draft packager copies the requested runtime plates to
+`.artifacts/bend2/v2-preview/dist/assets/`. Launch the native executable with
+that `dist` directory as its current working directory so the unchanged
+`assets/...` request paths resolve. The ELF may live elsewhere and be launched
+by absolute path. This is the exact repository draft output path; another
+packaged output must likewise be the working directory containing its `assets`
+directory. Initial plate reading and decode are synchronous before the window
+opens, and a theme change performs one synchronous file read after closing
+Audio, then reopens Audio while preserving queued PCM. Startup and theme-switch
+latency have not yet been measured.
+
+NativeV2 also uses the alternating, sequence-framed `.b` journal for Save,
+Preferences, and Recovery. Its new `tests/native-v2-journal.mjs` gate exercises
+the Bend parser and target selection with a complete old record and an
+incomplete newer record, missing versus empty slots, retained damaged bytes,
+read errors, and slot rotation. That is a pure emitted-JS fixture: it does not
+kill a native process during `File.write`, verify a native restart, or test an
+OS-level read failure. Those native interruption/read-error cases remain a
+separate ELF gate and must run in an isolated `RIFT_CHESS_DATA_DIR` after the
+graphical binary exists.
+
+NativeV2 still uses BoardScene's fast procedural piece path. The browser may
+replace settled pieces with the asynchronous helper's game-owned RGA2
+`PieceSprites` pages; NativeV2 does not yet load those pages, so same-source
+module reuse is not rendered-output parity. The adapter changes above have not
+passed a whole-book check, emitted C, or run on WSLg. A checked source closure
+and practical C-emission result are prerequisites to the ELF and real-input
+gates before NativeV2 can be called a native game. Base X11 `Window.frame` traverses the visible pixel
+surface at its frame cadence even when a packet is unchanged, so actual native
+idle-CPU and pointer-latency measurements are required before any responsiveness
+claim. The older adapter below remains as compatibility and provenance until
+the replacement is executable and its recovery behavior is verified.
 
 ## Graphical emitter evidence
 
