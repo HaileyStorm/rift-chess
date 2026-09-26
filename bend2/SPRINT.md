@@ -468,8 +468,28 @@ and checksum checks; its [receipt](https://github.com/HaileyStorm/Coordination/i
 has the first/warm/preparation times. Its GPU attempt was correctly stopped
 before device execution because the runner omitted `BEND_CUDA`; no lease was
 granted. Commit `dc8af02` mirrors Bend's native CUDA build flags and requires
-the `.gpu` sidecar. An exact new CPU/device gate is queued after the native
-arity diagnostic. There is still no measured warm GPU comparison.
+the `.gpu` sidecar. The [exact device retry](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842986555)
+subsequently passed 25/25 CPU and 35/35 GPU case executions with first-frame
+pixel equality and matching 16-frame checksum. On the RTX 5090, 15 warm
+render-return calls at cuts/forks `7/7` totaled 347 ms, versus 26,533 ms at
+`3/1`; correct fork depth made the render phase about 76 times faster. The
+host checksum of the returned image simultaneously rose from 132 to 1,552 ms
+for those 15 frames. Four CPU workers at `7/7` took 426/18 ms for the same
+two phases. The device execution was monitored under a fresh released lease,
+but transfer/readback is not independently timed, the 15 subsequent frames
+have aggregate rather than per-pixel validation, and no game or browser GPU
+claim follows. A source-bound readback experiment is the next GPU gate; keep
+automatic GPU selection unpromoted.
+
+The native arity blocker is now cleared at the source level. At exact public
+commit `b3ffb3b`, Linux emitted the full `NativeV2` C source with both a
+diagnostic-only compiler and the clean pinned 2.0.27 compiler. The two
+14,331,202-byte outputs matched exactly, SHA-256
+`35ab959363d2464dacb89ffe52f962d2e50daf04853cd0cd861a333b2cb0c796`.
+The [receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843061869)
+reports a 32.22 GiB sampled peak RSS for the clean emit. A bounded CPU link,
+asset-loaded X11 launch and actual interaction/capture gate are next; no
+graphical native binary has yet been proven.
 
 The non-draft v2 browser preview is now [published](docs/evidence/v2-workers-hosted/README.md)
 from clean source `bfc069d` as build `f261f9d623e679d401f7`. All 21 hosted

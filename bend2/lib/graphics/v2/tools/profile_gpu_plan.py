@@ -261,7 +261,7 @@ def main() -> None:
                      "gpu_build": [str(binary), "--gpu-build"] if args.gpu else None},
         "host": metadata,
         "profiles": rows,
-        "limits": "One fixed RenderPlan command workload. Device transfer is inside render_return_ms; checksum_ms is host traversal. Not a browser or frame-rate claim.",
+        "limits": "One fixed RenderPlan command workload. GPU synchronization precedes render return, but managed-memory migration may occur during host checksum traversal. Not a browser or frame-rate claim.",
     }
     (out / "summary.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"ok": True, "summary": str(out / "summary.json"),

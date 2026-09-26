@@ -924,6 +924,17 @@ Bend releases:
   compare exact pixels, and time cold, warm-render and readback phases before
   using a GPU tier in a game. The [source-bound host receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842302700)
   identifies the one-line fixture edit, command and timing boundary.
+  A corrected CUDA-enabled, phase-separated [RTX 5090 pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842986555)
+  later verified actual device processes, 25 CPU and 35 device case executions,
+  first-frame pixel equality and 16-frame checksum equality. Increasing the
+  512-square fixture from cuts/forks `3/1` to `7/7` reduced 15 GPU warm
+  render-return calls from 26,533 to 347 ms, while host checksum traversal
+  rose from 132 to 1,552 ms. At `7/7` four CPU workers took 426/18 ms for
+  those phases. Fork shape plainly matters; returning and consuming pixels
+  remains the measured bottleneck. The pinned C runtime's GPU-preferred
+  managed pages make page migration plausible, but that transfer has not been
+  independently timed. Test it in isolation before changing the library or
+  selecting a GPU detail tier. This is a single fixture, not game frame time.
 - **Guard proofs and chess correctness are different evidence.** Independent
   review caught missing fresh-pawn attacks and EP-counter validation; reference
   lists and successor comparisons prevented freezing them.

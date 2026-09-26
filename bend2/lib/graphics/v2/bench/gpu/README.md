@@ -45,11 +45,13 @@ OS metadata, compiler version, and available `nvidia-smi` device identity in
 `summary.json`. The wall time includes process startup and is recorded only as
 context; comparisons use the in-process `IO.now()` phase measurements.
 
-`render_return_ms` includes everything needed for `Plan.render_offload` to
-return a usable `Image`, including any device-to-host transfer the runtime
-performs. Bend source cannot split that transfer from device execution without
-instrumenting the compiler/runtime. `checksum_ms` measures the separate
-host-side quadtree checksum after the image has returned. `serial_reference`
+`render_return_ms` includes work and synchronization until
+`Plan.render_offload` returns an `Image`. The pinned CUDA runtime uses
+GPU-preferred managed memory, so returning an image does not prove its pixels
+were migrated to the CPU; host access can fault pages during `checksum_ms`.
+These source timers cannot distinguish GPU compute, migrations, and CPU
+traversal by themselves. `checksum_ms` measures the host-side quadtree checksum
+after the image has returned. `serial_reference`
 time is also reported separately and is outside the render samples. The first
 offload timing includes first-use device/runtime initialization; the next 15
 calls are the warmed sequence.
@@ -60,3 +62,40 @@ browser frame benchmark or a general GPU performance claim. The JavaScript
 backend ignores `!`, and Windows has no upstream native target; use Linux/WSL
 for native measurements. No GPU result is produced by a source check or a
 `--gpu off` fallback run.
+
+## Two host traversals of the same returned image
+
+The separate `PlanReadback.bend` fixture keeps the 512-square, depth-9,
+64-command scene, cuts/forks `7/7`, 16 seeds and frozen checksum from the
+profile above. For each rendered image it times the first complete host-side
+quadtree checksum, calls `IO.now`, then times a second complete checksum of
+**that same image without another render**. It requires the two checksums to
+match on all 16 frames, exact first-frame pixels versus the serial renderer,
+and the frozen aggregate checksum. The companion runner uses the same clean-pin
+source-closure and CUDA-sidecar checks, with a smaller CPU/one, CPU/four,
+offload-fallback/four, and optional device/four sweep:
+
+```sh
+python3 bend2/lib/graphics/v2/tools/profile_gpu_readback.py \
+  --output .artifacts/gpu-readback/cpu-run --cc clang-19
+python3 bend2/lib/graphics/v2/tools/profile_gpu_readback.py \
+  --output .artifacts/gpu-readback/device-run --cc clang-19 --gpu
+```
+
+The GPU run needs a fresh device grant and installed CUDA development/runtime
+libraries. If first traversal is slow and the immediate second becomes fast,
+that supports first-touch migration as a source of the delay; it does not
+measure transfer time or prove that it is the only cause. A second traversal
+also changes subsequent GPU residency, so compare each first-versus-second
+pair inside the same iteration, rather than comparing this fixture's warmed
+frame times to the original one-checksum sweep. NVIDIA's [CUDA 13 managed-memory
+documentation](https://docs.nvidia.com/cuda/archive/13.0.3/cuda-driver-api/group__CUDA__UNIFIED.html)
+explains that device-preferred allocation can migrate on host access; the
+[Nsight Systems guide](https://docs.nvidia.com/nsight-systems/UserGuide/)
+describes CPU page faults and device-to-host managed-memory transfers as
+independent profiling evidence. The fixture passed a pinned Windows source
+check, emitted C from its source-bound closure, and ran all 16 rounds in the
+local WSL CPU/four route with matching first/second values and the frozen
+checksum; its two host traversals took about 2–4 ms each in that one run.
+The native CUDA device gate remains unrun. This is a falsifiable diagnostic,
+not a performance fix.

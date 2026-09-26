@@ -4,9 +4,9 @@ This document's `Native.bend` behavior and 2026-09-23 emitter attempt are
 historical evidence for the first graphical adapter. They do not describe a
 working full-game native binary. The newer `NativeV2.bend` is an unreleased
 `App.run` composition of the Bend controller, `BoardScene`, and the same
-`MenuAA`/`FontPack` source used by the browser worker. Its native platform
-adapter remains unverified: no NativeV2 C or game ELF has been produced in this
-continuation. The pinned 2.0.27 toolchain has built and run a separate WSLg X11
+`MenuAA`/`FontPack` source used by the browser worker. A clean pinned compiler
+has now emitted NativeV2 C after an internal controller refactor, but no game
+ELF or graphical interaction has yet been verified. The pinned 2.0.27 toolchain has built and run a separate WSLg X11
 smoke ELF; WSL Clang 18 and X11 development headers are available. Neither the
 smoke nor the text CLI proves NativeV2's game, Audio/File effects, rendering
 parity, or idle CPU cost.
@@ -70,7 +70,7 @@ unsafe/foreign definitions. The pinned C emission then failed after 159.089
 seconds with `an arity over 255`, at 28.08 GiB peak RSS. It produced no C
 artifact, so there is still no NativeV2 ELF or WSLg game interaction.
 
-The next arity investigation is diagnostic only. The existing
+The arity investigation was diagnostic only. The existing
 [`001-arity` downstream patch notes](../toolchain-patches/001-arity/README.md)
 document a fresh disposable compiler clone under ignored
 `.artifacts/bend2/toolchain-patches/arity/compiler`, pinned-HEAD verification,
@@ -82,8 +82,27 @@ diagnose NativeV2 by itself. A separate bounded one-shot NativeV2 emission
 through that disposable compiler is needed to identify the failing owner. The
 normal project wrapper and `native-c-emitter.mjs` are hard-bound to the pinned
 compiler; the diagnostic must import `bend.ts` and `comp.ts` from the isolated
-clone without changing the pin or game sources. No patched compiler run or
-toolchain change has been performed for this NativeV2 failure.
+clone without changing the pin or game sources. Its exact `6bc0510` run
+[identified](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842819949)
+`ApplicationControl.finish.dirty`: 255 captured words plus one result binder.
+The source then moved its frame-dependent dirty-render facts into a private
+helper, preserving the public controller API. Browser source-bound packet
+comparison and the extended local Chrome suite passed after that change.
+
+At public source commit `b3ffb3b`, a fresh Linux checkout passed the whole
+NativeV2 source check with the 29 expected foreign/unsafe definitions. The
+[bounded C retry](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843061869)
+emitted a 14,331,202-byte C file with the diagnostic compiler in 159.50 s
+(25.11 GiB sampled peak process-tree RSS). An independent emission with the
+**clean pinned compiler** succeeded in 159.24 s (32.22 GiB sampled peak);
+both files had identical bytes and SHA-256
+`35ab959363d2464dacb89ffe52f962d2e50daf04853cd0cd861a333b2cb0c796`.
+The checked source imported the revised `ApplicationControl` while the top-level
+`NativeV2.bend` bytes remained unchanged. This establishes source/C emission,
+not a loadable ELF, asset/file/audio/window behavior, native rendering parity,
+or interactive acceptance. The C artifact stays on the Linux host. Its next
+gate is a CPU link with X11/ALSA dependencies and a real X11 interaction probe;
+the exact request is [recorded here](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5843072359).
 
 `NativeMini.bend` remains a diagnostic, not a parity target. Its prior WSLg
 capture shows a 256×256 flat top-down board with holes and piece silhouettes;
@@ -215,10 +234,9 @@ browser. Camera motion uses the browser's 128px underlay and
 `fast_camera512` preview path; any missing or rejected page set falls back to
 `fast_prepare*`. Native loading is synchronous at startup while the browser
 helper is asynchronous, so startup latency and transition timing still differ.
-This is source-level path reuse only: the adapter changes have not passed a
-whole-book check, emitted C, or run on WSLg, so no rendered parity claim is
-established. A checked source closure and practical C-emission result are
-prerequisites to the ELF and real-input gates before NativeV2 can be called a
+This is source-level path reuse only: the adapter has passed whole-book check
+and emitted C, but has not linked or run on a real X11 display, so no rendered
+parity claim is established. The ELF and real-input gates remain before NativeV2 can be called a
 native game. Base X11 `Window.frame` traverses the visible pixel
 surface at its frame cadence even when a packet is unchanged, so actual native
 idle-CPU and pointer-latency measurements are required before any responsiveness
@@ -249,8 +267,9 @@ clang-18 -std=c11 -Wall -Wextra -Werror -fsyntax-only bend2/tests/native-v2-wslg
 ```
 
 This did not link or run the observer, launch NativeV2, produce captures, or
-validate native input. The gate remains unrun until a C artifact exists; NativeV2
-currently has no emitted C because the pinned emitter rejects its over-255 arity.
+validate native input. The C artifact now exists on the Linux executor after
+the `b3ffb3b` source refactor; the observer remains unrun pending an ELF and
+a usable X11 display.
 
 ## Graphical emitter evidence
 

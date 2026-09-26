@@ -95,11 +95,52 @@ with the `!` CPU fallback on four. Cuts 7/forks 5 took 752, 733, 387 and
 541 ms respectively in those same routes; preparation was 1–4 ms at the
 clock's resolution. These are one host pilot, not stable medians or game frames.
 
-The pilot's device build was stopped before execution: its Clang command
+The first pilot's device build was stopped before execution: its Clang command
 omitted Bend's `BEND_CUDA` define, so `gpu_probe()` would choose CPU fallback.
 The coordinator grant was only queued/denied and no device workload ran. In
-source commit `dc8af02`, the runner now mirrors the pinned CLI's CUDA include,
-library, define and link flags, and requires a `.gpu` sidecar. That correction
-has passed Python syntax review but has not yet passed a new device gate. The
-[benchmark README](bench/gpu/README.md) states its phases and reproduction
-commands; the library renderer and Laws/Proofs were not changed.
+source commit `dc8af02`, the runner was corrected to mirror the pinned CLI's
+CUDA flags and require a `.gpu` sidecar. The original CPU-only receipt remains
+CPU evidence; it was not reclassified as a device result.
+
+### Phase-separated RTX 5090 device pilot
+
+The [corrected Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5842986555)
+used a clean 2.0.27 pin, Clang 19.1.1 and CUDA 13.0 on an RTX 5090. A fresh,
+monitored coordinator lease covered one pilot and was released. The generated
+CUDA binary carried `-DBEND_CUDA=1` and a `.gpu` sidecar; `nvidia-smi` observed
+its processes (498–502 MiB). All 25 CPU and 35 device case executions matched
+the serial first-frame pixels and the 16-frame checksum `2162379048`. This is
+actual device execution, unlike the first instrumented CPU-only pilot.
+
+Each case prepared one exact 512-square, 64-command scene, rendered its first
+frame, then performed 15 warm render/checksum rounds. The following are **one
+run**, in milliseconds; warm columns are the sums of 15 calls. `cuts/forks`
+controls spatial subdivision and the depth of explicit `!` work, respectively.
+
+| Four-worker route | Cuts/forks | First render/checksum | 15 warm render/checksum |
+| --- | ---: | ---: | ---: |
+| CPU | 3/1 | 43/1 | 414/9 |
+| GPU | 3/1 | 1769/8 | 26533/132 |
+| CPU | 7/3 | 26/0 | 408/12 |
+| GPU | 7/3 | 132/12 | 1974/255 |
+| CPU | 7/5 | 25/1 | 389/13 |
+| GPU | 7/5 | 54/21 | 766/400 |
+| CPU | 7/7 | 36/1 | 426/18 |
+| GPU | 7/7 | 23/93 | 347/1552 |
+
+At cuts/forks `7/7`, GPU warm render-return averaged 23.1 ms instead of the
+historical `3/1` case's 1768.9 ms: the insufficient fork depth explained much
+of the earlier result. But host checksum traversal rose to 103.5 ms per frame,
+versus 1.2 ms on four CPU workers. The two measured GPU phases together still
+averaged about 126.6 ms, versus 29.6 ms on the CPU route at `7/7`. Render-return
+includes device synchronization but need not include deferred page migration;
+checksum measures host traversal of
+the returned image. The pinned C runtime uses GPU-preferred managed allocation;
+device-to-host page migration is a plausible explanation for the expensive
+checksum, **not** an independently measured transfer time or established cause.
+Next isolate that boundary with a source-bound transfer/readback probe before
+changing automatic detail policy or library code. Exact pixels were compared
+only for the first frame of each case; the remaining 15 were checked by a
+32-bit aggregate checksum. These timings say nothing about browser frames or
+the full game. The [benchmark README](bench/gpu/README.md) defines the fixture;
+the library renderer and Laws/Proofs were not changed.
