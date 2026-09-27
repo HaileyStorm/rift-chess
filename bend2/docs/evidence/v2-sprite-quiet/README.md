@@ -1,6 +1,7 @@
-# Browser sprite quiet-window checkpoint (local, unpublished)
+# Browser sprite quiet-window checkpoint
 
-The clean 2.0.27 toolchain remains pinned. This browser-only draft makes a
+The clean 2.0.27 toolchain remains pinned. Initially trialed in a browser-only
+draft and now published as a clean preview, this change makes a
 settled camera-view change wait 450 ms before dispatching the expensive
 sprite-helper job. It requires the same theme, board/hole placement and Shift
 marks; topology changes, cold boot and ordinary moves dispatch immediately.
@@ -50,8 +51,8 @@ Its final run receipt is under
 `.artifacts/bend2/v2-preview/scenarios/sprite-camera-only-r3-20260927/`.
 After the source checkpoint commit, a non-draft build repeated the same
 content version with `sourceDirty: false`, including the frozen semantic,
-graphics and source-attestation gates. It was not deployed or re-playtested
-as a distinct hosted release; identical content hashes bind it to the local
-rendered draft tests.
-This is local browser evidence, not owner visual acceptance, native runtime
-parity, publication, or proof of a large WOW/art improvement.
+graphics and source-attestation gates. The clean version was subsequently
+[published and re-playtested](../v2-sprite-quiet-hosted/README.md) on the
+separate Pages preview. This local diagnostic is not a controlled latency
+benchmark, owner visual acceptance, native runtime parity, or proof of a
+large WOW/art improvement.

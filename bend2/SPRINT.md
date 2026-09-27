@@ -622,7 +622,7 @@ This source is not published; the full native checker timed out locally,
 and owner WOW/turntable art, new-source CPU/GUI/PCM/restart and 2.0.28 gates
 remain open.
 
-## Successor candidate pin and sprite responsiveness (unpublished)
+## Successor candidate pin and sprite responsiveness
 
 The clean 2.0.27 pin remains authoritative. A disposable, ordered 2.0.28
 candidate revealed an upstream identity-alias false rejection of frozen
@@ -672,7 +672,13 @@ all 13 checks, including a settled Shift Undo with `quietWindowMs: 0`, with
 zero browser errors. See the [local evidence](docs/evidence/v2-sprite-quiet/README.md).
 The committed non-draft browser build repeated the identical content version
 `ad9b34c4ac0da2d7cd32` with `sourceDirty: false` after the frozen semantic,
-graphics and attestation checks. It remains unpublished.
+graphics and attestation checks. The separate free Pages preview now serves
+that clean build: 22 public files match the manifest/local/Pages bytes and
+the hosted Chrome extended scenario passed all 13 groups with zero browser
+errors, including offline move, PCM, portrait and immediate Shift Undo
+refinement. The original TypeScript site baseline remained unchanged. See
+the [hosted receipt](docs/evidence/v2-sprite-quiet-hosted/README.md).
+This is a working browser preview, not owner WOW or release acceptance.
 The Linux package request remains bound to older published source and is not
 new-source native acceptance.
 A read-only Windows package preflight checks the current pin, source closure
