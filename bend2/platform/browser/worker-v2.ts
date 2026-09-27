@@ -293,11 +293,11 @@ function render(packet: any): any {
         menuControls));
   }
   if (!request.frame) throw new Error('Missing Bend frame request');
-  // A depth-9 Bend preview is a 512 board at standard tier. At enhanced tier
-  // Canvas.embed_at interprets that same immutable tree at depth 10, giving
-  // exact nearest-2 pixels (the independent four-view finite test checks it).
+  // Motion keeps depth-8 Bend pixels from the 256px preview. The aligned
+  // 512px/1024px board slots interpret that tree at depth 9/10, giving exact
+  // nearest-2/nearest-4 pixels (the multi-layout finite test checks both).
   const board = timed('pointer', () => request.motion
-    ? scene.fast_camera512(frame, motionUnderlay)
+    ? scene.fast_camera256_for_512(frame, motionUnderlay)
     : scene[`fast_pointer${suffix}`](frame, prepared));
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)

@@ -166,6 +166,13 @@ try {
   assert.ok(qualityProbes.every(event => event.sampleCount === 8 && event.measuredScale === 1));
   const frames = await page.evaluate(() => window.__frames);
   const refinements = await page.evaluate(() => window.__refinements);
+  if (process.env.BEND_EXPECT_COMPACT_MOTION === '1') {
+    const fullMotion = frames.filter(frame => frame.kinds.includes('PointerMove') && frame.dirty &&
+      frame.pixelStats.visited > 50000);
+    assert.ok(fullMotion.length >= 1, 'a real pointer drag presented the 256px Bend motion image');
+    assert.ok(fullMotion.every(frame => frame.pixelStats.visited < 150000),
+      'the 512px board slot reused the compact 256px motion tree');
+  }
   console.log(JSON.stringify({ ok: true, url, initial, mobile,
     refinements,
     qualityProbes: qualityProbes.map(({ physicalEdge, sampleCount, measuredScale,

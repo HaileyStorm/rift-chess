@@ -601,3 +601,21 @@ the accepted source retains the higher-detail motion path. The still-slow
 sprite refinement after rapid view changes and the broader WOW target remain
 open. The clean 2.0.27 native package retest is waiting for the Linux host's
 requested cgroup topology diagnostic before a fresh source-bound CPU build.
+
+## Successor local motion checkpoint (unpublished)
+
+The successor holds a fresh scoped claim after verified predecessor release.
+The CPU-only Linux package retry is bound to published source `6721cf0` and
+remains pending; it must not be treated as native parity for later source.
+The browser-only compact motion tree keeps accepted 256px piece/hole detail
+while avoiding an explicit 256-to-512 quadtree expansion. Native
+`fast_camera512` stays explicit. Twelve full-frame finite comparisons across
+desktop, enhanced and portrait output passed 60,817,408 exact bytes. An
+interleaved local JS A/B reduced full median/p90 from 57.53/95.08 to
+42.68/63.27 ms; one real Chrome orbit saw 366,145 to 154,769 visited nodes,
+with byte-identical motion and settled captures. All 12 extended local
+rendered scenario groups passed. See the
+[local receipt](docs/evidence/v2-motion-compact/README.md) for limits.
+This source is not published; the full native checker timed out locally,
+and owner WOW/turntable art, new-source CPU/GUI/PCM/restart and 2.0.28 gates
+remain open.

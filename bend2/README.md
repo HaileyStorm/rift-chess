@@ -9,25 +9,26 @@ opponent scoring, projection, picking, sprites, menus, bitmap fonts, input polic
 record codec and audio synthesis are written in Bend 2. The browser adapter only
 transports events and explicit IO effects, copies Bend pixels to Canvas and Bend
 PCM samples to Web Audio, and mirrors Bend controls for assistive technology.
-`Native.bend` expresses a browser-independent pixel application with Base
-Window, Audio and File effects, but its 2.0.27 C emission hit the compiler's
-generated arity limit. A reduced `NativeMini.bend` has built and played in
-WSLg; it uses the real position kernel but a separate 256px diagnostic renderer.
-It is not the shared-source visual native game. The smaller `NativeCLI.bend`
-is a browser-independent text game over the same Bend rules and record codec.
-It now emits C, builds as a WSL Linux ELF, and has a real file-backed playthrough.
+The older `Native.bend` graphical emitter hit a compiler arity limit; that is
+historical, not the present `NativeV2.bend` status. The shared-source NativeV2
+has emitted and run as a Linux X11 CPU ELF, with separate CUDA-window, PCM-route
+and saved-game restart checkpoints. Those older binaries predate the current
+published camera rail and do not prove native parity for later source. The
+smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
+playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link currently serves the earlier release. The current
-`codex/visual-overhaul` source has a **local v2 preview** with a board-first
+The public Bend link serves build `f61152159a6331b9db2d` from clean source
+`6721cf0`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
 and a separate Bend-rendered sprite helper. Run
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
 and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
-The non-draft build verifies the frozen semantics, graphics manifest, and
-source-bound static worker graph. Local Chrome interaction/offline gates pass;
-detailed sprite refinement is still slow, native visual parity and a full
-graphical binary remain open, and this branch has not replaced the public Bend
-preview. See
+The next [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
+is local and unpublished; it preserves 256px motion detail while reducing the
+browser tree's allocation. Non-draft builds verify the frozen semantic and
+graphics manifests and source-bound worker graph. Native parity for the
+current source, rapid detailed sprite refinement, multi-angle art, owner visual
+acceptance and Bend 2.0.28 remain open. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 
 ## Start here

@@ -1413,13 +1413,20 @@ def fast_camera128(frame: Scene.Frame, underlay128: Image) -> Image:
 def fast_camera256(frame: Scene.Frame, underlay256: Image) -> Image:
   fast_camera(8n, 256, frame, underlay256)
 
-def fast_camera512(+frame: Scene.Frame, underlay128: Image) -> Image:
+# The browser's aligned 512px board slot may interpret this depth-8 tree at
+# depth 9, yielding exact nearest-neighbor 2x pixels without allocating four
+# fresh leaves for every 256px pixel. Keep the explicit 512px form below for
+# native Window.frame and callers whose source depth is 9.
+def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
   +small_ground = fast_ground(7n,128,underlay128,frame)
   +ground = nearest2(7n,small_ground)
   +context = context_for(8n,256,frame)
   +camera = Camera.basis(Scene.frame_view(frame))
   +pieces = camera_piece_layers(Camera.depth_order(camera),context,ground)
-  nearest2(8n,fast_camera_feedback(context,pieces))
+  fast_camera_feedback(context,pieces)
+
+def fast_camera512(frame: Scene.Frame, underlay128: Image) -> Image:
+  nearest2(8n,fast_camera256_for_512(frame,underlay128))
 
 # Tier 2 keeps the same responsive preview while its viewport doubles.
 def fast_camera1024(frame: Scene.Frame, underlay128: Image) -> Image:
