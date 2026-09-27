@@ -420,6 +420,20 @@ try {
   receipt.metrics.portrait = portrait;
   receipt.checks.push('Portrait layout exposes board/settings controls and Black selection toggles off');
 
+  if (extended) {
+    const beforeShiftUndo = await page.evaluate(() => window.__refinements.length);
+    await control(3);
+    await waitMenu(8);
+    await control(48);
+    await commandCount(2);
+    await page.waitForFunction(before => window.__refinements.length > before,
+      beforeShiftUndo, { timeout: 60000 });
+    const undoRefinement = await page.evaluate(() => window.__refinements.at(-1));
+    assert.equal(undoRefinement.quietWindowMs, 0,
+      'topology-changing Shift Undo must not inherit the camera quiet window');
+    receipt.checks.push('A settled Shift Undo refines immediately, without camera debounce');
+  }
+
   assert.deepEqual(receipt.errors, []);
   receipt.ok = true;
 } catch (error) {

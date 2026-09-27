@@ -1,0 +1,12 @@
+diff --git a/bend2/bend.ts b/bend2/bend.ts
+--- a/bend2/bend.ts
++++ b/bend2/bend.ts
+@@ -1867,7 +1867,7 @@ export function parse_reso(p: Parse, k: Name): Name {
+   let q = parse_qual(p, k);
+   if (dot !== -1 && k.slice(0, dot) in p.al) {
+     q = p.al[k.slice(0, dot)] + k.slice(dot);
+-    if ((q in p.book.tlds || q in p.book.ctrs) && (k in p.book.tlds || k in p.book.ctrs)) {
++    if (q !== k && (q in p.book.tlds || q in p.book.ctrs) && (k in p.book.tlds || k in p.book.ctrs)) {
+       parse_fail(p, "an unambiguous name (the alias " + k.slice(0, dot) + " shadows " + k + ")");
+     }
+   }

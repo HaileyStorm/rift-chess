@@ -1368,6 +1368,14 @@ def sprite_same_placement(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
   Bool.and(sprite_position_equal(Scene.frame_position(a),Scene.frame_position(b)),
     sprite_view_equal(Scene.frame_view(a),Scene.frame_view(b)))
 
+# Only a changed camera with unchanged board/hole placement and Shift marks
+# may defer its expensive sprite pass. Ground invalidation also covers a
+# changed topology, which must not inherit the camera quiet window.
+def sprite_camera_only_change(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
+  Bool.and(sprite_position_equal(Scene.frame_position(a),Scene.frame_position(b)),
+    Bool.and(sprite_board_equal(Scene.frame_shifts(a),Scene.frame_shifts(b)),
+      Bool.not(sprite_view_equal(Scene.frame_view(a),Scene.frame_view(b)))))
+
 # Motion-only board image: the caller retains a theme-specific underlay, while
 # this path rebuilds the exact projected hole mask and draws compact, distinct
 # chess silhouettes plus stable game-state cues. Hover and capture pulses are

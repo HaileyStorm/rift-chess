@@ -1,8 +1,8 @@
 # Bend 2 downstream patch stack
 
 Patches 001–004 originated against the clean upstream Bend 2.0.27 commit
-`d37909174ebd664338ae3194799a9e0899dedd51`; 005 is an isolated Bend
-2.0.28 compatibility candidate that replays after reviewed rebases of 001/002.
+`d37909174ebd664338ae3194799a9e0899dedd51`; 005 and 006 are isolated
+Bend 2.0.28 compatibility candidates after reviewed rebases of 001/002.
 The pinned compiler at
 `.artifacts/toolchains/bend` must remain clean. Each patch has its own test,
 receipt, and maintenance notes; no patch is an accepted replacement for the
@@ -15,6 +15,7 @@ project toolchain merely because it applies or passes a small fixture.
 | 003 | [Join-capture boxing](003-join-boxing/README.md) (experimental) | Optional compiler optimization; capture-only, with raw wide returns still rejected and GPU/full Native unverified. |
 | 004 | [Web Worker backend](004-web-workers/README.md) | Separate async JavaScript library output, source require/never policies, static module hosting and an explicit multi-artifact HTML bundle; replay after 001+002. |
 | 005 | [Windows import-path compatibility](005-windows-import-path/README.md) (candidate, unaccepted) | Native filesystem paths, canonical local-only library fence, Windows file-ID alias reuse and explicit cross-volume rejection; replay after 001+adapted 002 on 2.0.28. |
+| 006 | [Identity-alias correction](006-alias-equality/README.md) (candidate, unaccepted) | Preserve 2.0.28's genuine alias-shadow rejections while allowing one written/resolved key; replay after 001+002+005+004. |
 
 The final 001+002 combination passes [the required stack gate](stack-receipt.json)
 with byte-identical successful C and JS. The separate

@@ -6,6 +6,8 @@ import { chromium } from 'playwright';
 
 const url = process.env.BEND_TEST_URL || 'http://127.0.0.1:4185/';
 const out = process.env.BEND_BURST_OUT || '.artifacts/bend2/v2-preview/sprite-burst';
+const clicks = Number(process.env.BEND_BURST_CLICKS || 6);
+assert.ok(Number.isSafeInteger(clicks) && clicks >= 1 && clicks <= 6);
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
@@ -82,9 +84,9 @@ try {
   const initial = await page.evaluate(() => window.__shown.view);
   const before = await page.evaluate(() => ({ at: performance.now(), frames: window.__frames.length,
     refinements: window.__refinements.length }));
-  for (let i = 0; i < 6; i++) await control(14);
+  for (let i = 0; i < clicks; i++) await control(14);
   const sentAt = await page.evaluate(() => performance.now());
-  const expectedYaw = (initial.yaw + 90) % 360;
+  const expectedYaw = (initial.yaw + clicks * 15) % 360;
   await page.waitForFunction(yaw => window.__shown?.view?.yaw === yaw &&
     document.querySelector('canvas')?.getAttribute('aria-busy') === 'false',
   expectedYaw, { timeout: 90000 });
@@ -137,7 +139,7 @@ try {
   const build = await page.evaluate(async () => (await (await fetch('./build.json')).json()));
   const receipt = { ok: true, url, buildVersion: build.version,
     sourceRevision: build.sourceRevision, sourceDirty: build.sourceDirty,
-    draft: build.draft, initial, expectedYaw, ...result, motion, errors };
+    draft: build.draft, clicks, initial, expectedYaw, ...result, motion, errors };
   await writeFile(`${out}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
   console.log(JSON.stringify(receipt));
 } finally {

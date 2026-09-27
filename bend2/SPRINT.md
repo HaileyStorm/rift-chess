@@ -621,3 +621,35 @@ The non-draft browser build was repeated from clean commit `70837ad` with
 This source is not published; the full native checker timed out locally,
 and owner WOW/turntable art, new-source CPU/GUI/PCM/restart and 2.0.28 gates
 remain open.
+
+## Successor candidate pin and sprite responsiveness (unpublished)
+
+The clean 2.0.27 pin remains authoritative. A disposable, ordered 2.0.28
+candidate revealed an upstream identity-alias false rejection of frozen
+`ArithmeticLaws.bend`. Unadopted patch 006 limits its new conflict guard to
+distinct keys. Eight positive/negative fixtures passed. A finalized,
+unchanged-input aggregate validated all 1,584 frozen v2 terms with no holes
+or tainted roots; a candidate-only exact constructor-tag bridge then passed
+the unchanged 14-position/223-successor reference differential. The
+[candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
+receipts and lists the mutation, graphics, full-browser, Linux/native,
+performance and reviewed-amendment gates still outstanding. No toolchain
+pin or frozen dependency moved.
+
+Two six-click local Chrome camera bursts exposed 1.8–2.0 seconds from sprite
+dispatch to helper start, including cloning/scheduling and stale helper work;
+it is not a pure transfer measurement. A 450 ms quiet window for settled
+camera-only view changes reduced the observed last-input-to-refinement from
+about 4.94–5.44 to 4.46–4.70 seconds in those runs, while one isolated click
+became slower (hosted old-source 2.97 versus draft 3.66 seconds in one
+comparison). The timing samples use different source/host load and are not
+a controlled benchmark. Ground topology changes, including a settled Shift
+Undo, take the immediate path. This browser-only scheduler is a modest
+responsiveness trade-off, not a sprite-render throughput or visual WOW fix.
+On the corrected draft, a fresh six-click Chrome run refined after 4.06
+seconds from the last click with `quietWindowMs: 450`; the settled PNG exactly
+matched the earlier immediate run. The extended local rendered suite passed
+all 13 checks, including a settled Shift Undo with `quietWindowMs: 0`, with
+zero browser errors. See the [local evidence](docs/evidence/v2-sprite-quiet/README.md).
+The Linux package request remains bound to older published source and is not
+new-source native acceptance.

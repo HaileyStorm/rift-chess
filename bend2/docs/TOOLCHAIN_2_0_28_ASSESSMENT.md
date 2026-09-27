@@ -121,3 +121,20 @@ measurements, and independent final review remain. Switching now would also
 invalidate the published source-bound worker artifacts and the in-flight
 2.0.27 native package pilot. Remove the old pin only through the guide's
 reviewed amendment and a clean, reproducible replacement build.
+
+**Successor local candidate gate on 2026-09-27:** upstream's 2.0.28 alias
+guard falsely rejects unchanged frozen `ArithmeticLaws.bend` when a sibling
+import alias and its canonical module key are identical. Unadopted
+[patch 006](../toolchain-patches/006-alias-equality/README.md) adds only a
+`q !== k` condition; eight candidate fixtures pass, including the positive
+value `7` and preserved genuine alias/function/constructor collision
+negatives. Independent source review found no blocking ambiguity in this
+one-key exception. Under that disposable stack the full 1,584-term v2
+aggregate passed ownership and the unsafe/foreign walk with zero holes or
+tainted roots, using a finalized unchanged-input runner and no network
+fetches. A candidate-only 2.0.28 tag bridge then passed all 14 canonical
+positions and 223 independent reference successors while the frozen
+semantic-v2 manifest and loaded source closure matched exact bytes. These
+are source proof and finite differential evidence, **not** mutation, browser,
+native, GPU, runtime parity or pin-amendment acceptance. The original
+2.0.27 pin and in-flight older-source Linux package request stay intact.

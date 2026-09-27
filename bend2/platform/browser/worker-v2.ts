@@ -43,7 +43,12 @@ let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
 let spriteHelper: Worker | null = null, spriteHello = false, spriteGeneration = 0, spriteTaskId = 0;
 let spritePending: { id: number; generation: number; frame: any; theme: number;
-  revision: number; at: number } | null = null;
+  revision: number; at: number; epoch: number; quietWindowMs: number } | null = null;
+// A rapid sequence of settled camera commands otherwise starts an expensive
+// helper render for an intermediate view before the next input arrives.
+const CAMERA_QUIET_MS = 450;
+let spriteQueued: { frame: any; theme: number; revision: number } | null = null;
+let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
@@ -163,9 +168,16 @@ function spriteFault(message: string): void {
   self.postMessage({ kind: 'fault', id: lastHostId, message: `Bend sprite worker: ${message}` });
 }
 
+function clearSpriteQueue(): void {
+  if (spriteTimer !== null) clearTimeout(spriteTimer);
+  spriteTimer = null;
+  spriteQueued = null;
+}
+
 function disposeSprite(): void {
   spriteGeneration++;
   spritePending = null;
+  clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
   spriteTheme = null;
@@ -211,7 +223,15 @@ function ensureSpriteHelper(): void {
       spriteLayer = message.image;
       spriteFrame = pending.frame;
       spriteTheme = pending.theme;
-      spriteMetrics = { ...message.metrics, roundTripMs: performance.now() - pending.at };
+      const received = performance.now();
+      const epoch = performance.timeOrigin + received;
+      spriteMetrics = { ...message.metrics,
+        // These spans include structured cloning/scheduling and the serialized
+        // receiver callback respectively; neither is a pure transfer metric.
+        dispatchToStartMs: message.metrics.startedEpochMs - pending.epoch,
+        sendToAcceptanceMs: epoch - message.metrics.sendEpochMs,
+        quietWindowMs: pending.quietWindowMs,
+        roundTripMs: received - pending.at };
       const refined = api.refine(session);
       if (refined.presentation.revision !== pending.revision ||
           !scene.sprite_same_placement(pending.frame, refined.snapshot.frame))
@@ -222,22 +242,52 @@ function ensureSpriteHelper(): void {
   });
 }
 
+function startSpriteJob(frame: any, theme: number, revision: number,
+  quietWindowMs = 0): void {
+  const at = performance.now();
+  const pending = { id: ++spriteTaskId, generation: ++spriteGeneration,
+    frame, theme, revision, at, epoch: performance.timeOrigin + at, quietWindowMs };
+  spritePending = pending;
+  spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
+    id: pending.id, generation: pending.generation, theme, frame });
+}
+
 function scheduleSprite(packet: any): void {
   if ((packet.render.boardSize !== 512 && packet.render.boardSize !== 1024) ||
-      packet.render.motion || packet.snapshot.moving) return;
+      packet.render.motion || packet.snapshot.moving) {
+    clearSpriteQueue();
+    return;
+  }
   const frame = packet.snapshot.frame, theme = packet.render.theme;
   if (spriteLayer && spriteTheme === theme && spriteFrame &&
-      scene.sprite_same_placement(spriteFrame, frame)) return;
+      scene.sprite_same_placement(spriteFrame, frame)) {
+    clearSpriteQueue();
+    return;
+  }
   ensureSpriteHelper();
   if (!spriteHello) return;
   if (spritePending && spritePending.theme === theme &&
       spritePending.revision === packet.presentation.revision &&
       scene.sprite_same_placement(spritePending.frame, frame)) return;
-  const pending = { id: ++spriteTaskId, generation: ++spriteGeneration,
-    frame, theme, revision: packet.presentation.revision, at: performance.now() };
-  spritePending = pending;
-  spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
-    id: pending.id, generation: pending.generation, theme, frame });
+  if (spriteQueued && spriteQueued.theme === theme &&
+      spriteQueued.revision === packet.presentation.revision &&
+      scene.sprite_same_placement(spriteQueued.frame, frame)) return;
+  clearSpriteQueue();
+  if (spriteLayer && spriteFrame && spriteTheme === theme && packet.render.ground &&
+      scene.sprite_camera_only_change(spriteFrame, frame)) {
+    spriteQueued = { frame, theme, revision: packet.presentation.revision };
+    spriteTimer = setTimeout(() => {
+      const queued = spriteQueued, current = latestPacket;
+      clearSpriteQueue();
+      if (!queued || !current || current.render.motion || current.snapshot.moving ||
+          current.render.theme !== queued.theme ||
+          current.presentation.revision !== queued.revision ||
+          !scene.sprite_same_placement(queued.frame, current.snapshot.frame)) return;
+      startSpriteJob(queued.frame, queued.theme, queued.revision, CAMERA_QUIET_MS);
+    }, CAMERA_QUIET_MS);
+    return;
+  }
+  startSpriteJob(frame, theme, packet.presentation.revision);
 }
 
 function render(packet: any): any {

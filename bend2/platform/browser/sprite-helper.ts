@@ -29,6 +29,7 @@ type SpriteJob = {
 type Timings = {
   fetchMs: number; decodeMs: number; underlayMs: number;
   groundMs: number; spritesMs: number; workerMs: number;
+  startedEpochMs: number; sendEpochMs: number;
 };
 
 type Scope = {
@@ -146,7 +147,8 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
     generationIds.add(request.id);
 
     const metrics: Timings = { fetchMs: 0, decodeMs: 0, underlayMs: 0,
-      groundMs: 0, spritesMs: 0, workerMs: 0 };
+      groundMs: 0, spritesMs: 0, workerMs: 0,
+      startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
       await ensureAssets(request.theme, metrics);
       if (request.generation !== generation) { stale(request); return; }
@@ -163,6 +165,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       const image = board.fast_sprite_pieces512(request.frame, pieces, ground);
       metrics.spritesMs = now() - spriteAt;
       metrics.workerMs = now() - started;
+      metrics.sendEpochMs = performance.timeOrigin + now();
 
       // The caller measures its synchronous postMessage cost and end-to-end
       // round-trip. This post sends exactly one immutable Bend Image; sending
