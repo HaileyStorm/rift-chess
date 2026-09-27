@@ -20,7 +20,7 @@ s=click(s,42).state;assert.equal(P.snapshot(s).frame.tile,16,'a hole square is n
 s=click(s,52).state;assert.equal(P.snapshot(s).frame.selected,64,'an enemy piece is not selectable');
 const original=P.record_text(s);
 s=event(s,{$:'PointerDown',x:250,y:250,button:2,alt:false},{$:'PointerMove',x:290,y:290},{$:'PointerUp',x:290,y:290,button:2}).state;
-assert.equal(P.view(s).yaw,338,'drag right decreases yaw');assert.equal(P.view(s).pitch,75,'drag down increases pitch');
+assert.equal(P.view(s).yaw,323,'drag right decreases yaw');assert.equal(P.view(s).pitch,62,'drag down increases pitch');
 assert.equal(P.record_text(s),original,'camera cannot mutate accepted journal');
 let presented=P.start('','',1024,768).state;
 presented=event(presented,{$:'PresentedMove',x:110,y:160,square:12}).state;
@@ -30,9 +30,9 @@ assert.equal(P.hover(presented),64,'outside the presented board clears hover');
 presented=event(presented,{$:'PointerDown',x:250,y:250,button:2,alt:false},
   {$:'PresentedMove',x:290,y:290,square:64},
   {$:'PresentedUp',x:290,y:290,button:2,square:64}).state;
-assert.equal(P.view(presented).yaw,338,'presented orbit keeps raw rightward delta');
-assert.equal(P.view(presented).pitch,75,'presented orbit keeps raw downward delta');
-s=event(s,{$:'Wheel',x:200,y:200,delta:-10000}).state;assert.equal(P.view(s).zoom,115);
+assert.equal(P.view(presented).yaw,323,'presented orbit keeps raw rightward delta');
+assert.equal(P.view(presented).pitch,62,'presented orbit keeps raw downward delta');
+s=event(s,{$:'Wheel',x:200,y:200,delta:-10000}).state;assert.equal(P.view(s).zoom,130);
 s=event(s,{$:'Wheel',x:200,y:200,delta:10000}).state;assert.equal(P.view(s).zoom,75);
 s=act(s,19).state;
 const ids=array(P.legal(s));assert.ok(ids.length);

@@ -294,12 +294,28 @@ def context_bar(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
   +bar = panel(depth,size,x,y,w,50,15,raised(theme),line(theme),image)
   paint_label(depth,size,title(menu),U32.add(x,20),U32.add(y,12),ink(theme),fonts,bar)
 
+def camera_panel(+depth: Nat,+size: U32,+theme: U32,
+  +fonts: FontPack.Book,image: Image) -> Image:
+  +card = panel(depth,size,776,80,232,410,16,raised(theme),line(theme),image)
+  +heading = paint_heading(depth,size,"VIEW",792,100,ink(theme),fonts,card)
+  +divider = rule(depth,size,792,148,200,accent(theme),176,heading)
+  +orbit = paint_label(depth,size,"Drag to orbit",792,446,
+    muted(theme),fonts,divider)
+  paint_label(depth,size,"Wheel to zoom",792,466,muted(theme),fonts,orbit)
+
+def camera_panel_for(mobile: Bool,+depth: Nat,+size: U32,+menu: U32,
+  +theme: U32,+plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
+  match mobile:
+    case True{}: modal(depth,size,menu,theme,plan,fonts,image)
+    case False{}: camera_panel(depth,size,theme,fonts,image)
+
 def panel_for(+menu: U32,+depth: Nat,+size: U32,+theme: U32,
   +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
   match menu:
     case 0: image
     case 3: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
     case 7: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
+    case 11: camera_panel_for(Plan.plan_mobile(plan),depth,size,menu,theme,plan,fonts,image)
     case _: modal(depth,size,menu,theme,plan,fonts,image)
 
 def action_label(+id: U32,+original: String) -> String:
@@ -308,6 +324,15 @@ def action_label(+id: U32,+original: String) -> String:
     case 2: "New"
     case 27: "Help"
     case 28: "Close"
+    case 11: "Front"
+    case 12: "Top"
+    case 13: "Left"
+    case 14: "Right"
+    case 15: "Up"
+    case 16: "Down"
+    case 17: "In +"
+    case 18: "Out -"
+    case 19: "Reset"
     case 56: "View"
     case 57: "Match"
     case 53: "Move hints"

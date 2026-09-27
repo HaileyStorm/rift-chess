@@ -132,7 +132,7 @@ def pointer_up_presented(orbiting: Bool, +s: S.State,
 
 def wheel_view(v: Camera.View, delta: F32) -> Camera.View:
   match v:
-    case Camera.View{yaw, pitch, zoom}: Camera.View{yaw, pitch, F32.to_u32(F32.clamp(F32.sub(U32.to_f32(zoom), F32.mul(delta, 0.025)), 75.0, 115.0))}
+    case Camera.View{yaw, pitch, zoom}: Camera.View{yaw, pitch, F32.to_u32(F32.clamp(F32.sub(U32.to_f32(zoom), F32.mul(delta, 0.025)), 75.0, 130.0))}
 
 def key_arrow(alt: Bool, +s: S.State, control: U32, +square: U32) -> S.Update:
   match alt:

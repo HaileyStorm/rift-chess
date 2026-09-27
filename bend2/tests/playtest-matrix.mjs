@@ -688,7 +688,7 @@ await scenario('camera', DESKTOP, async t => {
   for (let i = 0; i < 12; i++) await t.control(16);
   t.check((await t.shown()).view.pitch === 35, 'DOWN clamps pitch at 35', JSON.stringify((await t.shown()).view));
   for (let i = 0; i < 8; i++) await t.control(17);
-  t.check((await t.shown()).view.zoom === 115, 'ZOOM+ clamps at 115');
+  t.check((await t.shown()).view.zoom === 130, 'ZOOM+ clamps at 130');
   await pick('low-pitch-max-zoom');
   for (let i = 0; i < 12; i++) await t.control(15);
   t.check((await t.shown()).view.pitch === 90, 'UP clamps pitch at 90');

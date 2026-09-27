@@ -48,7 +48,7 @@ const PI = f32(3.14159265);
 
 function normalized(v: ViewValue): ViewValue {
   return view(((v.yaw % 360) + 360) % 360, Math.max(35, Math.min(90, v.pitch)),
-    Math.max(75, Math.min(115, v.zoom)));
+    Math.max(75, Math.min(130, v.zoom)));
 }
 
 function reference(v: ViewValue, file: number, row: number): { x: number; y: number } {
@@ -98,13 +98,13 @@ const fallback = Camera.default_view() as any;
 check(fallback.$ === 'View' && fallback.yaw === 345 && fallback.pitch === 52 && fallback.zoom === 115,
   'default camera view');
 const clamped = Camera.normalize(view(721, 12, 500)) as any;
-check(clamped.yaw === 1 && clamped.pitch === 35 && clamped.zoom === 115, 'view normalization');
+check(clamped.yaw === 1 && clamped.pitch === 35 && clamped.zoom === 130, 'view normalization');
 
 const views = [
   view(0, 35, 75), view(0, 65, 100), view(0, 90, 115),
   view(45, 35, 100), view(90, 65, 100), view(135, 90, 75),
   view(180, 35, 115), view(225, 65, 100), view(270, 90, 100),
-  view(315, 35, 75), view(359, 90, 115),
+  view(315, 35, 75), view(359, 90, 115), view(345, 52, 130),
 ];
 const samples = [[0, 0], [3.5, 3.5], [7, 7], [-0.485, 7.485], [2.25, 5.75]];
 

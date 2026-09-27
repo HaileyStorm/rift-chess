@@ -64,15 +64,27 @@ def contextual(+mobile: Bool, +menu: U32, +id: U32) -> P.Rect:
     case 54: Bool.pick(P.Rect,mobile,P.Rect{176,650,152,42},P.Rect{408,592,140,38})
     case _: Bool.pick(P.Rect,mobile,play.mobile(id),play.desktop(id))
 
-def dialog(+mobile: Bool, +id: U32, +ordinal: U32) -> P.Rect:
+def camera_dialog.desktop(+id: U32,+ordinal: U32) -> P.Rect:
   match id:
-    case 28: Bool.pick(P.Rect,mobile,P.Rect{424,648,72,38},P.Rect{686,112,70,36})
+    case 28: P.Rect{932,96,68,32}
     case _:
-      +col = U32.mod(ordinal,3)
-      +row = U32.div(ordinal,3)
-      Bool.pick(P.Rect,mobile,
-        P.Rect{U32.add(24,U32.mul(col,160)),U32.add(700,U32.mul(row,54)),144,44},
-        P.Rect{U32.add(288,U32.mul(col,152)),U32.add(194,U32.mul(row,60)),136,46})
+      +col = U32.mod(ordinal,2)
+      +row = U32.div(ordinal,2)
+      P.Rect{U32.add(788,U32.mul(col,108)),
+        U32.add(170,U32.mul(row,55)),104,42}
+
+def dialog(+mobile: Bool,+menu: U32,+id: U32,+ordinal: U32) -> P.Rect:
+  match mobile menu:
+    case False{} 11: camera_dialog.desktop(id,ordinal)
+    case _ _:
+      match id:
+        case 28: Bool.pick(P.Rect,mobile,P.Rect{424,648,72,38},P.Rect{686,112,70,36})
+        case _:
+          +col = U32.mod(ordinal,3)
+          +row = U32.div(ordinal,3)
+          Bool.pick(P.Rect,mobile,
+            P.Rect{U32.add(24,U32.mul(col,160)),U32.add(700,U32.mul(row,54)),144,44},
+            P.Rect{U32.add(288,U32.mul(col,152)),U32.add(194,U32.mul(row,60)),136,46})
 
 def bounds.menu(+mobile: Bool, +menu: U32, +id: U32,
   +destination_ordinal: U32, +dialog_ordinal: U32) -> P.Rect:
@@ -83,7 +95,7 @@ def bounds.menu(+mobile: Bool, +menu: U32, +id: U32,
     case 3: contextual(mobile,menu,id)
     case 7: Bool.pick(P.Rect,P.dest_id(id),destination(mobile,menu,destination_ordinal),
       contextual(mobile,menu,id))
-    case _: dialog(mobile,id,dialog_ordinal)
+    case _: dialog(mobile,menu,id,dialog_ordinal)
 
 def bounds(+mobile: Bool, +menu: U32, +id: U32,
   +destination_ordinal: U32, +dialog_ordinal: U32) -> P.Rect:

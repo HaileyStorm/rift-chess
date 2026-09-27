@@ -20,15 +20,20 @@ for(const [opener,menu,expected] of [[56,11,[28,11,12,13,14,15,16,17,18,19]],
   assert.equal(p.presentation.menu,menu);
   assert.deepEqual(ids(p),expected);
   assert.ok(control(p,28).bounds.x>650);
+  if(menu===11){
+    assert.ok(control(p,28).bounds.x>p.plan.board.x+p.plan.board.width,
+      'desktop camera drawer keeps its controls beside the board');
+    assert.deepEqual(control(p,17).bounds,{$:'Rect',x:788,y:335,width:104,height:42});
+  }
   p=api.dispatch_at_web(list([{$:'Activate',id:28}]),p.presentation,p.session);
   assert.equal(p.presentation.menu,0);
 }
 p=api.dispatch_at_web(list([{$:'PointerDown',x:700,y:602,button:0,alt:false}]),
   p.presentation,p.session);
 assert.equal(p.presentation.menu,11,'painted View bounds must be clickable');
-p=api.dispatch_at_web(list([{$:'PointerDown',x:700,y:120,button:0,alt:false}]),
+p=api.dispatch_at_web(list([{$:'PointerDown',x:966,y:112,button:0,alt:false}]),
   p.presentation,p.session);
-assert.equal(p.presentation.menu,0,'planned Close bounds must dismiss modal');
+assert.equal(p.presentation.menu,0,'planned Close bounds must dismiss the camera drawer');
 const mobile=api.boot_reads('','',true,true,520,1024);
 assert.deepEqual(mobile.plan.board,{$:'Rect',x:0,y:112,width:512,height:512});
 assert.equal(control(mobile,56).bounds.y,700);

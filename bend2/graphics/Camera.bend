@@ -18,7 +18,7 @@ def default_view() -> View:
 def normalize(view: View) -> View:
   match view:
     case View{yaw, pitch, zoom}:
-      View{U32.mod(yaw, 360), U32.clamp(pitch, 35, 90), U32.clamp(zoom, 75, 115)}
+      View{U32.mod(yaw, 360), U32.clamp(pitch, 35, 90), U32.clamp(zoom, 75, 130)}
 
 def radians(degrees: U32) -> F32:
   Ortho.radians(U32.to_f32(degrees))
