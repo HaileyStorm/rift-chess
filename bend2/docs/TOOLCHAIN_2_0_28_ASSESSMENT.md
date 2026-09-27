@@ -135,6 +135,10 @@ tainted roots, using a finalized unchanged-input runner and no network
 fetches. A candidate-only 2.0.28 tag bridge then passed all 14 canonical
 positions and 223 independent reference successors while the frozen
 semantic-v2 manifest and loaded source closure matched exact bytes. These
-are source proof and finite differential evidence, **not** mutation, browser,
+are source proof and finite differential evidence, **not** browser,
 native, GPU, runtime parity or pin-amendment acceptance. The original
 2.0.27 pin and in-flight older-source Linux package request stay intact.
+Six candidate-only mutation controls subsequently passed with clean positive
+proofs and deliberately wrong rules rejected; the immutable run receipt is
+bound in the patch 006 notes. This is a negative-control check, not a new
+native or browser result under 2.0.28.

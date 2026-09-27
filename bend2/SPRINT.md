@@ -630,9 +630,10 @@ candidate revealed an upstream identity-alias false rejection of frozen
 distinct keys. Eight positive/negative fixtures passed. A finalized,
 unchanged-input aggregate validated all 1,584 frozen v2 terms with no holes
 or tainted roots; a candidate-only exact constructor-tag bridge then passed
-the unchanged 14-position/223-successor reference differential. The
-[candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
-receipts and lists the mutation, graphics, full-browser, Linux/native,
+the unchanged 14-position/223-successor reference differential. Six copied-core
+mutation controls also passed positive and deliberately incorrect proof checks.
+The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
+receipts and lists the graphics, full-browser, Linux/native,
 performance and reviewed-amendment gates still outstanding. No toolchain
 pin or frozen dependency moved.
 

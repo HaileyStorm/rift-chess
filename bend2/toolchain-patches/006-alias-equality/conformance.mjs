@@ -93,13 +93,19 @@ const receipt = { schema: 'rift-bend-2028-candidate-finite-conformance/1',
   compiler, candidateTag: fixtureReceipt.baselineTag, patchSha256,
   fixtureReceiptSha256, loaderSha256, runnerSha256,
   adapterSha256,
-  compiler: 'disposable 2.0.28 001+002+005+004+006 alias trial, bound by loader-2028.ts',
+  compilerStack: 'disposable 2.0.28 001+002+005+004+006 alias trial, bound by loader-2028.ts',
   elapsedMs: Date.now() - started, status: run.status, error: run.error?.message ?? null,
   stdout, stderr, unchanged, passed,
   scope: '14-position/223-successor reference differential via compiled Bend JS; not proof, browser, native or pin acceptance' };
 const output = path.join(root, '.artifacts/bend2/toolchain-patches/alias-equality-2028-conformance');
 fs.mkdirSync(output, { recursive: true });
 const file = path.join(output, 'receipt.json');
+if (fs.existsSync(file)) {
+  const prior = fs.readFileSync(file);
+  const archive = path.join(output, `receipt-${sha(prior)}.json`);
+  if (fs.existsSync(archive)) assert.equal(sha(fs.readFileSync(archive)), sha(prior));
+  else fs.writeFileSync(archive, prior, { flag: 'wx' });
+}
 fs.writeFileSync(file, JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify({ file, passed, elapsedMs: receipt.elapsedMs,
   status: run.status, error: receipt.error, verdict, stderr: stderr.slice(0, 600) }));

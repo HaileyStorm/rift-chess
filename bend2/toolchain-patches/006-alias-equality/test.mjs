@@ -76,6 +76,12 @@ const receipt = { schema: 'rift-bend-2028-alias-equality-fixtures/1',
 const output = path.join(root, '.artifacts/bend2/toolchain-patches/alias-equality-2028-fixtures');
 fs.mkdirSync(output, { recursive: true });
 const file = path.join(output, 'receipt.json');
+if (fs.existsSync(file)) {
+  const prior = fs.readFileSync(file);
+  const archive = path.join(output, `receipt-${sha(prior)}.json`);
+  if (fs.existsSync(archive)) assert.equal(sha(fs.readFileSync(archive)), sha(prior));
+  else fs.writeFileSync(archive, prior, { flag: 'wx' });
+}
 fs.writeFileSync(file, JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify({ file, passed: receipt.passed, cases: fixtures.length,
   patchSha256: receipt.patchSha256 }));
