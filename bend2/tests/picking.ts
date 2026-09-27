@@ -95,7 +95,7 @@ const check = (condition: unknown, message: string): void => {
 };
 
 const fallback = Camera.default_view() as any;
-check(fallback.$ === 'View' && fallback.yaw === 345 && fallback.pitch === 52 && fallback.zoom === 115,
+check(fallback.$ === 'View' && fallback.yaw === 345 && fallback.pitch === 67 && fallback.zoom === 115,
   'default camera view');
 const clamped = Camera.normalize(view(721, 12, 500)) as any;
 check(clamped.yaw === 1 && clamped.pitch === 35 && clamped.zoom === 130, 'view normalization');

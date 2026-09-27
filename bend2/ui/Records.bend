@@ -56,9 +56,16 @@ def get_angle(v: Maybe<&2, Json.Value>) -> U32:
     case Some{Json.Number{value, _}}: F32.to_u32(wrap_degrees(value))
     case _: 0
 
+# A saved copy of the old factory angle should receive the new composition;
+# all other persisted user angles remain their own choices.
+def migrate_legacy_default(v: Camera.View) -> Camera.View:
+  match v:
+    case Camera.View{345,52,115}: Camera.default_view()
+    case other: Camera.normalize(other)
+
 def get_view(v: Maybe<&2, Json.Value>) -> Camera.View:
   match v:
-    case Some{+j}: Camera.normalize(Camera.View{get_angle(Json.field(j, "yaw")), get_num(Json.field(j, "pitch"), 65), get_num(Json.field(j, "zoom"), 100)})
+    case Some{+j}: migrate_legacy_default(Camera.View{get_angle(Json.field(j, "yaw")), get_num(Json.field(j, "pitch"), 65), get_num(Json.field(j, "zoom"), 100)})
     case _: Camera.default_view()
 
 # Missing or malformed fields fall back individually; layout and draw policy

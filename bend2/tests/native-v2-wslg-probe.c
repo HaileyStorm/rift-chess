@@ -180,7 +180,7 @@ static uint64_t differing_pixels(XImage* a, XImage* b,
 
 static void square_center(int file, int rank, int piece_body, int* x, int* y) {
   const double yaw = 345.0 * 3.14159265358979323846 / 180.0;
-  const double pitch = 52.0 * 3.14159265358979323846 / 180.0;
+  const double pitch = 67.0 * 3.14159265358979323846 / 180.0;
   const double cosine = cos(yaw), sine = sin(yaw);
   const double scale = 45.0 * 1.15 / (fabs(cosine) + fabs(sine));
   const double u = (double)file - 3.5;
@@ -385,7 +385,7 @@ int main(int argc, char** argv) {
   }
   uint64_t initial_hash = pixel_hash(initial);
 
-  /* Default camera (yaw 345, pitch 52, zoom 115), compact desktop board rect
+  /* Default camera (yaw 345, pitch 67, zoom 115), compact desktop board rect
      (256,64,512,512). Match browser-v2-scenarios: piece-body clicks sit 8px
      above each square center. g1 is a White knight; h3 is legal and non-hole
      in both supported starting hole layouts. */

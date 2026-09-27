@@ -22,7 +22,10 @@ EXPECTED_NATIVE_V2_C_SHA256 = "35ab959363d2464dacb89ffe52f962d2e50daf04853cd0cd8
 MIN_CPU_CLANG = 14
 MIN_CUDA_CLANG = 19
 EMIT_TIMEOUT_MS = 600_000
-EMIT_MEMORY_FLOOR = 40 * 1024**3
+EMIT_MEMORY_FLOOR = 88 * 1024**3
+EMIT_MEMORY_PEAK_KIB = 72_346_644
+EMIT_MEMORY_PEAK_SOURCE_REVISION = "f8a7fbf"
+EMIT_MEMORY_PEAK_EVIDENCE = "Linux CPU emission report comment 5858004336"
 EXPECTED_ART_IDS = {"observatory-astral", "observatory-stone"}
 EXPECTED_PACKAGE_ASSETS = {
     "assets/LICENSES.md",
@@ -402,7 +405,7 @@ def output_directory(root: Path, requested: str | None, *, cuda: bool) -> Path:
     return output
 
 
-def cgroup_v2_headroom(root: Path, relative: str) -> int | None:
+def cgroup_v2_memory_accounting(root: Path, relative: str) -> dict[str, Any]:
     parts = Path(relative.lstrip("/")).parts
     if any(part in {"..", "."} for part in parts):
         raise BuildError("invalid cgroup v2 path in /proc/self/cgroup.")
@@ -412,8 +415,13 @@ def cgroup_v2_headroom(root: Path, relative: str) -> int | None:
     except ValueError as exc:
         raise BuildError("cgroup v2 path escapes its mount.") from exc
     available: int | None = None
+    limiting_ancestor: dict[str, Any] | None = None
+    ancestors: list[dict[str, Any]] = []
     current_path = leaf
     while True:
+        relative_path = "/" + current_path.relative_to(root).as_posix()
+        if relative_path == "/.":
+            relative_path = "/"
         # Linux cgroup v2 does not expose memory.max/current on the hierarchy
         # root. Accept that one missing limit only when this really is a v2
         # root with the memory controller; every non-root ancestor must have
@@ -425,32 +433,57 @@ def cgroup_v2_headroom(root: Path, relative: str) -> int | None:
                 raise BuildError(f"cannot verify cgroup v2 root controller: {exc}") from exc
             if "memory" not in controllers:
                 raise BuildError("cgroup v2 root has no memory controller; cannot bound NativeV2 emission.")
-            return available
+            ancestors.append({"path": relative_path, "state": "controller-root-without-memory.max"})
+            return {
+                "processPath": "/" + "/".join(parts) if parts else "/",
+                "visibleAncestorHeadroomBytes": available,
+                "limitingAncestor": limiting_ancestor,
+                "ancestors": ancestors,
+            }
         try:
             limit_text = (current_path / "memory.max").read_text(encoding="ascii").strip()
-            if limit_text != "max":
+            if limit_text == "max":
+                ancestors.append({"path": relative_path, "state": "unlimited"})
+            else:
                 limit = int(limit_text)
                 current = int((current_path / "memory.current").read_text(encoding="ascii").strip())
                 if limit < 0 or current < 0:
                     raise ValueError("negative memory accounting")
                 headroom = max(0, limit - current)
-                available = headroom if available is None else min(available, headroom)
+                row = {
+                    "path": relative_path,
+                    "state": "finite",
+                    "memoryMaxBytes": limit,
+                    "memoryCurrentBytes": current,
+                    "headroomBytes": headroom,
+                }
+                ancestors.append(row)
+                if available is None or headroom < available:
+                    available = headroom
+                    limiting_ancestor = row
         except (OSError, ValueError) as exc:
             raise BuildError(f"cannot establish cgroup v2 headroom at {current_path}: {exc}") from exc
         if current_path == root:
-            return available
+            return {
+                "processPath": "/" + "/".join(parts) if parts else "/",
+                "visibleAncestorHeadroomBytes": available,
+                "limitingAncestor": limiting_ancestor,
+                "ancestors": ancestors,
+            }
         current_path = current_path.parent
 
 
-def linux_memory_available(
+def linux_memory_snapshot(
     proc_root: Path = Path("/proc"), cgroup_root: Path = Path("/sys/fs/cgroup")
-) -> int:
+) -> dict[str, Any]:
     try:
-        memory = {}
+        available_values = []
         for line in (proc_root / "meminfo").read_text(encoding="ascii").splitlines():
             if line.startswith("MemAvailable:"):
-                memory["available"] = int(line.split()[1]) * 1024
-        available = memory["available"]
+                available_values.append(int(line.split()[1]) * 1024)
+        if len(available_values) != 1:
+            raise ValueError("expected exactly one MemAvailable line")
+        host_available = available_values[0]
     except (OSError, ValueError, IndexError, KeyError) as exc:
         raise BuildError(f"cannot read Linux MemAvailable before NativeV2 emission: {exc}") from exc
 
@@ -461,10 +494,79 @@ def linux_memory_available(
     entries = [line.split(":", 2)[2] for line in cg_lines if line.startswith("0::")]
     if len(entries) != 1:
         raise BuildError("NativeV2 memory preflight requires one readable cgroup v2 process path.")
-    headroom = cgroup_v2_headroom(cgroup_root, entries[0])
-    if headroom is not None:
-        available = min(available, headroom)
-    return available
+    cgroup = cgroup_v2_memory_accounting(cgroup_root, entries[0])
+    cgroup_available = cgroup["visibleAncestorHeadroomBytes"]
+    available = min(host_available, cgroup_available) if cgroup_available is not None else host_available
+    if cgroup_available is not None and cgroup_available <= host_available:
+        limiting_source = f"cgroup-v2 ancestor {cgroup['limitingAncestor']['path']}"
+    else:
+        limiting_source = "host /proc/meminfo MemAvailable"
+    return {
+        "hostMemAvailableBytes": host_available,
+        "cgroupV2": cgroup,
+        "availableBytes": available,
+        "limitingSource": limiting_source,
+    }
+
+
+def emission_memory_sample(
+    phase: str,
+    proc_root: Path = Path("/proc"),
+    cgroup_root: Path = Path("/sys/fs/cgroup"),
+) -> dict[str, Any]:
+    snapshot = linux_memory_snapshot(proc_root, cgroup_root)
+    available = snapshot["availableBytes"]
+    return {
+        "phase": phase,
+        "sampledAtUtc": datetime.now(timezone.utc).isoformat(),
+        "floorBytes": EMIT_MEMORY_FLOOR,
+        "availableBytes": available,
+        "admitted": available >= EMIT_MEMORY_FLOOR,
+        **snapshot,
+    }
+
+
+def record_immediate_emission_memory_check(
+    admission: dict[str, Any],
+    proc_root: Path = Path("/proc"),
+    cgroup_root: Path = Path("/sys/fs/cgroup"),
+) -> dict[str, Any]:
+    phase = "immediately-before-c-emission"
+    try:
+        sample = emission_memory_sample(phase, proc_root, cgroup_root)
+    except BuildError as exc:
+        # Preserve the failed attempt before propagating so build()'s normal
+        # failure receipt can distinguish unreadable accounting from low RAM.
+        sample = {
+            "phase": phase,
+            "attemptedAtUtc": datetime.now(timezone.utc).isoformat(),
+            "floorBytes": EMIT_MEMORY_FLOOR,
+            "availableBytes": None,
+            "admitted": False,
+            "error": {
+                "kind": "unreadable-memory-accounting",
+                "message": str(exc),
+            },
+        }
+        admission["immediatelyBeforeCEmissionSample"] = sample
+        raise
+    admission["immediatelyBeforeCEmissionSample"] = sample
+    require_emission_memory(sample["availableBytes"])
+    return sample
+
+
+def emission_memory_policy() -> dict[str, Any]:
+    return {
+        "floorBytes": EMIT_MEMORY_FLOOR,
+        "floorGiB": EMIT_MEMORY_FLOOR // 1024**3,
+        "minimumMultipleOfObservedPeak": 1.25,
+        "observedPeak": {
+            "kib": EMIT_MEMORY_PEAK_KIB,
+            "sourceRevision": EMIT_MEMORY_PEAK_SOURCE_REVISION,
+            "evidence": EMIT_MEMORY_PEAK_EVIDENCE,
+            "historicalNotThisPackage": True,
+        },
+    }
 
 
 def require_emission_memory(available: int) -> None:
@@ -472,7 +574,8 @@ def require_emission_memory(available: int) -> None:
         gib = available / 1024**3
         raise BuildError(
             f"only {gib:.1f} GiB is available under host/cgroup limits; NativeV2 C emission requires at least "
-            f"{EMIT_MEMORY_FLOOR / 1024**3:.0f} GiB for the recorded 32.22 GiB peak."
+            f"{EMIT_MEMORY_FLOOR / 1024**3:.0f} GiB, based on the historical 72,346,644 KiB Linux peak "
+            f"at source revision {EMIT_MEMORY_PEAK_SOURCE_REVISION}."
         )
 
 
@@ -616,12 +719,14 @@ def preflight(root: Path, args: argparse.Namespace) -> dict[str, Any]:
         raise BuildError("CUDA packaging requires Linux; Windows is preflight-only.")
     if not args.preflight and sys.platform != "linux":
         raise BuildError("NativeV2 ELF packaging requires Linux; this Windows command made no changes.")
-    available = None
-    if not args.preflight and sys.platform == "linux":
+    memory_admission = None
+    if sys.platform == "linux":
         if not Path("/proc").is_dir():
             raise BuildError("Linux /proc is required for the bounded emission memory preflight.")
-        available = linux_memory_available()
-        require_emission_memory(available)
+        phase = "read-only-preflight" if args.preflight else "build-preflight"
+        memory_admission = emission_memory_sample(phase)
+        if not args.preflight:
+            require_emission_memory(memory_admission["availableBytes"])
     compiler = verify_compiler(root)
     compiler_root = root / ".artifacts" / "toolchains" / "bend"
     closure = source_closure(root, compiler_root)
@@ -676,7 +781,13 @@ def preflight(root: Path, args: argparse.Namespace) -> dict[str, Any]:
         "verifiedInputSha256": hashes,
         "output": str(output),
         "emissionMemoryFloorBytes": EMIT_MEMORY_FLOOR,
-        "emissionMemoryAvailableBytes": available,
+        "emissionMemoryAvailableBytes": (
+            memory_admission["availableBytes"] if memory_admission is not None else None
+        ),
+        "emissionMemoryAdmission": {
+            "policy": emission_memory_policy(),
+            "initialSample": memory_admission,
+        },
     }
 
 
@@ -830,6 +941,7 @@ def write_failure(output: Path, phase: str, error: str, plan: dict[str, Any]) ->
                     "sourceRevision": plan.get("sourceRevision"),
                     "compiler": plan.get("compiler"),
                     "verifiedInputSha256": plan.get("verifiedInputSha256"),
+                    "emissionMemoryAdmission": plan.get("emissionMemoryAdmission"),
                 }
             ),
         )
@@ -881,6 +993,11 @@ def build(root: Path, args: argparse.Namespace, plan: dict[str, Any]) -> dict[st
 
         phase = "c-emission"
         c_source = output / "NativeV2.c"
+        # The initial preflight sample can become stale while packaging and
+        # source-checking. Re-read host and every visible cgroup ancestor after
+        # source verification, immediately before asking Bend to emit C.
+        emission_memory_admission = plan["emissionMemoryAdmission"]
+        record_immediate_emission_memory_check(emission_memory_admission)
         emission = run_step(
             "pinned NativeV2 C emission",
             [
@@ -1016,6 +1133,7 @@ def build(root: Path, args: argparse.Namespace, plan: dict[str, Any]) -> dict[st
                 "matches": len(c_bytes) == EXPECTED_NATIVE_V2_C_BYTES
                 and c_digest == EXPECTED_NATIVE_V2_C_SHA256,
             },
+            "emissionMemoryAdmission": emission_memory_admission,
             "verifiedInputSha256": plan["verifiedInputSha256"],
             "sourceManifests": manifest_hashes,
             "packageFiles": staged_files,

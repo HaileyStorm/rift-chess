@@ -13,7 +13,7 @@ type Basis is Data:
     scale: F32, cx: F32, cy: F32}
 
 def default_view() -> View:
-  View{345, 52, 115}
+  View{345, 67, 115}
 
 def normalize(view: View) -> View:
   match view:

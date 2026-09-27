@@ -14,7 +14,8 @@ must not contain pixels for the current or previous pieces.
 Sprites remain screen-facing at every camera yaw and pitch. Their anchors use
 the same projected board centers and interpolated motion points as the proxy
 scene; draw order follows `Camera.depth_order`. Each sprite's axis-aligned quad
-uses 1.16 of the projected board pitch for width and 1.48 for height. Rift
+uses 1.16 of the projected board pitch for width and 1.35 for height, with a
+small screen-down base shift so pieces sit forward on their squares. Rift
 holes suppress both current and dying sprites. Captured art drifts upward and
 fades during the first half of the existing 16-step action transition. The
 atlas is fixed-front artwork, so this renderer does not claim true 3D rotation

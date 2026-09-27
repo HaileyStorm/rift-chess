@@ -33,7 +33,7 @@ const layouts = [
   { name: 'portrait', packet: portrait, width: 512, height: 1024 },
 ];
 const views = [
-  { $: 'View', yaw: 345, pitch: 52, zoom: 115 },
+  { $: 'View', yaw: 345, pitch: 67, zoom: 115 },
   { $: 'View', yaw: 0, pitch: 35, zoom: 130 },
   { $: 'View', yaw: 75, pitch: 90, zoom: 75 },
   { $: 'View', yaw: 180, pitch: 55, zoom: 100 },

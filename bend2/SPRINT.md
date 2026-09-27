@@ -738,6 +738,45 @@ routed PipeWire PCM samples. This is host-reported evidence for that older
 source, not a local re-verification or parity for the edge checkpoint.
 With that pilot closed, one [new-source CPU-only retest](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5857865924)
 was requested against `f8a7fbf` with exact pin, script and BoardScene hashes.
-Its Linux preflight/package/GUI/PCM/restart result is pending; no CUDA/GPU
-grant or run follows from either request. The Windows read-only preflight
-reports `buildPermitted: false` and produced no native artifact.
+The [Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858004336)
+reported a successful CPU package at that exact clean source/tree and pinned
+2.0.27 compiler: X11 select/deselect, g1-h3, close/relaunch with the Black-to-move
+journal, and nonzero routed 48 kHz PipeWire PCM. Its package receipt SHA-256 is
+`feba58957d303f4c0bc61c25314dd8cf20e05c978d0c5930b0f314c8324c29aa`;
+the ELF SHA-256 is
+`65ca689d61d56c18f74560ec0c5059bb241455613b9da892e48ae6eb2f321cd2`.
+This is host-reported, source-bound CPU evidence, not local root execution,
+human audio acceptance, or GPU parity. The build's 72,346,644 KiB peak RSS
+(about 69 GiB) also invalidated the prior 40 GiB emission floor. The interim
+guard is now 88 GiB, with initial and just-before-C-emission host/visible-cgroup
+samples in the receipt and fail-closed records; seven deterministic tests pass.
+It is protective, not a future-run guarantee. No CUDA/GPU lease was granted.
+
+## Camera, piece grounding and single-owner exposed faces: local draft
+
+The owner still saw missing edge faces, high/tall pieces and back-rank overlap.
+The settled board now has one topology-aware wall owner instead of overpainting
+those walls with generic fixed tile sides. Fine seams mark all four tile tops;
+outer/rift lips and real vertical walls remain conditional on absent neighbors.
+The default camera is yaw 345°, pitch 67° (was 52°), pieces are 1.35 projected
+pitch high (was 1.48), their visual base shifts 0.10 sprite widths down, and a
+small low-opacity contact shadow sits behind each settled authored sprite.
+The exact old persisted factory view migrates to the new default on load;
+custom angles remain unchanged.
+Camera extrusion is scaled to keep side depth legible at the steeper pitch.
+The compact active-orbit path still uses flat ground and has not gained walls.
+
+The pinned checker, five-yaw oblique plus four-cardinal settled wall/topology
+test, picking checks, sprite/grounding and saved-view migration tests pass.
+A source-dirty draft build `f2369ed40dae326d895e` was visually inspected at
+default, 330° diagonal and Front views in Chrome; a real persisted-old-view
+reload produced the new default. Its extended local Chrome scenario passed all 13 groups
+with zero page errors (including interaction, offline, PCM, Shift/Undo and
+portrait). This is a local visual candidate, not yet a clean/hosted build,
+owner acceptance, or source-parity native run. See the
+[composition evidence](docs/evidence/v2-composition/README.md). The previous
+`f8a7fbf` CPU result does not validate these changed camera/scene bytes.
+Windows preflight still reports `buildPermitted: false` and emits no native ELF.
+The native X11 click probe and the timing fixture were also updated to project
+the new default angle before a new-source Linux pilot; they have not yet been
+executed on that host.

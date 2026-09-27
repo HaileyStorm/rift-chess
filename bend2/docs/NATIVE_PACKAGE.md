@@ -14,14 +14,35 @@ Bun path names the Windows package, so point BUN_BIN at an already available
 Linux Bun 1.4.2 executable. The script sets BEND_NO_TELEMETRY=1 for every
 compiler command.
 
-NativeV2 C emission previously used 32.22 GiB peak RSS. A build refuses to
-start unless at least 40 GiB remains available under the host memory report
-and every **visible** finite limit in its cgroup v2 ancestor chain. A host
-without readable cgroup v2 accounting fails closed. A cgroup namespace may
-hide a stricter parent outside its visible hierarchy, so this local check
+The earlier 32.22 GiB estimate is superseded for admission purposes. Linux
+report comment `5858004336` measured a 72,346,644 KiB CPU C-emission peak
+(about 68.995 GiB) for source revision `f8a7fbf`. That is historical evidence
+for a different source, not a measurement of this package or a prediction of
+the next run. Pending a fresh measurement for the current source, the interim
+admission floor is 88 GiB: at least 1.25 times that reported peak, rounded up
+with additional headroom.
+
+A build samples host `MemAvailable` and every visible finite limit in the
+process's cgroup v2 ancestor chain before packaging, then samples again after
+the source check and exact source verification immediately before C emission.
+Both samples must show at least 88 GiB under the minimum of host availability
+and visible cgroup headroom. The build fails closed if `/proc`, the process's
+cgroup-v2 path, or required ancestor accounting is unreadable. The sample
+records its phase, UTC timestamp, host bytes, cgroup ancestor limits/current
+usage, computed minimum, and limiting source in the `emissionMemoryAdmission`
+object in preflight JSON and in the package receipt. If the second sample is
+below the floor, `failure.json` retains its measured values; if accounting is
+unreadable, it retains a structured failed-attempt record with phase, time,
+floor, and error alongside the initial admission evidence.
+
+A read-only Linux `--preflight` reports its current sample and whether the
+floor is met, but does not reject the diagnostic preflight solely for low
+headroom. Windows `--preflight` cannot sample Linux memory. A cgroup namespace
+may hide a stricter parent outside its visible hierarchy, so this local check
 alone cannot certify that ancestor's headroom; the Linux host must report its
 actual mount and process-cgroup topology for the pilot. This is a protective
-floor, not a guarantee that other processes will not consume memory.
+floor, not a guarantee that other processes will not consume memory after the
+sample.
 The actual [cgroup v2 root has no `memory.max` file](https://cdn.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#memory-interface-files).
 The guard treats only that verified controller root as unlimited; unreadable
 non-root ancestors still fail closed, and host `MemAvailable` always applies.
@@ -144,10 +165,13 @@ are copied into the package.
 
 The package receipt binds the files produced by this workflow; it does not
 promise byte-identical ELF output across different Clang or system-library
-builds. The historical C checkpoint comparison is diagnostic; the import
-closure and emitted C hashes bind this package to its actual source. The
-previous Linux NativeV2 CPU window, move, save/restart, and routed nonzero PCM
-results are recorded in NATIVE.md. They remain separate from any package
+builds. Its memory-admission samples establish only that the configured host
+and visible cgroup sources met the floor at those two instants; they do not
+turn the historical peak into current-run evidence or guarantee memory will
+remain available. The historical C checkpoint comparison is diagnostic; the
+import closure and emitted C hashes bind this package to its actual source.
+The previous Linux NativeV2 CPU window, move, save/restart, and routed nonzero
+PCM results are recorded in NATIVE.md. They remain separate from any package
 build: rerun the bounded Linux interaction and audio checks against the
 receipt-bound package before claiming that this package passed those gates.
 No Windows native target is supported by the pinned compiler.

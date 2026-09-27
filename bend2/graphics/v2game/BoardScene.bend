@@ -305,16 +305,30 @@ def underlay1024() -> Image:
   underlay1024_theme(0)
 
 def extrusion(+size: U32, +basis: Camera.Basis) -> F32:
-  F32.mul(F32.mul(U32.to_f32(Camera.extrusion(basis)), 4.0),
+  F32.mul(F32.mul(U32.to_f32(Camera.extrusion(basis)), 5.0),
     physical_scale(size))
 
-def tile.with_corners(show: Bool, +depth: Nat, +size: U32, square: U32,
-  +camera: Camera.Basis, theme: U32, corners: Corners,
+def seam_inset(+point: Quad.Point, +center: Quad.Point) -> Quad.Point:
+  Quad.Point{F32.lerp(point_x(point), point_x(center), 0.05),
+    F32.lerp(point_y(point), point_y(center), 0.05)}
+
+def tile.with_corners(+depth: Nat, +size: U32,
+  corners: Corners, style: RaisedFacet.Surface,
   image: Image) -> Image:
-  match corners:
-    case Corners{+p00, +p10, +p11, +p01}:
-      RaisedFacet.draw_cell(show, depth, size, p00, p10, p11, p01,
-        0.0, extrusion(size, camera), surface(square, theme), image)
+  match corners style:
+    case Corners{+p00, +p10, +p11, +p01}
+      RaisedFacet.Surface{top,side,+edge,shadow,glint}:
+      +face = Facet.draw(depth,size,Quad.make(p00,p10,p11,p01),top,255,image)
+      +center: Quad.Point = Quad.Point{F32.mul(F32.add(point_x(p00),point_x(p11)),0.5),
+        F32.mul(F32.add(point_y(p00),point_y(p11)),0.5)}
+      +q00 = seam_inset(p00,center)
+      +q10 = seam_inset(p10,center)
+      +q11 = seam_inset(p11,center)
+      +q01 = seam_inset(p01,center)
+      +up = Facet.draw(depth,size,Quad.make(p00,p10,q10,q00),edge,175,face)
+      +right = Facet.draw(depth,size,Quad.make(p10,p11,q11,q10),edge,175,up)
+      +down = Facet.draw(depth,size,Quad.make(p11,p01,q01,q11),edge,175,right)
+      Facet.draw(depth,size,Quad.make(p01,p00,q00,q01),edge,175,down)
 
 def center_point(+a: Quad.Point, +b: Quad.Point) -> Quad.Point:
   Quad.Point{F32.mul(F32.add(point_x(a), point_x(b)), 0.5),
@@ -352,6 +366,16 @@ def rim_edge(show: Bool, +depth: Nat, +size: U32, +a: Quad.Point,
 def wall_drop(+point: Quad.Point, drop: F32) -> Quad.Point:
   match point:
     case Quad.Point{x,y}: Quad.Point{x,F32.add(y,drop)}
+
+def tile_shadow(+depth: Nat, +size: U32, +corners: Corners,
+  +drop: F32, +style: RaisedFacet.Surface, image: Image) -> Image:
+  match corners style:
+    case Corners{+p00,+p10,+p11,+p01}
+      RaisedFacet.Surface{top,side,edge,shadow,glint}:
+      +offset = F32.add(drop, 7.0)
+      Facet.draw(depth,size,Quad.make(wall_drop(p00,offset),
+        wall_drop(p10,offset),wall_drop(p11,offset),wall_drop(p01,offset)),
+        shadow,92,image)
 
 def wall_edge(show: Bool, +depth: Nat, +size: U32, +a: Quad.Point,
   +b: Quad.Point, +drop: F32, color: U32, image: Image) -> Image:
@@ -487,9 +511,10 @@ def tile(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
             previous, +holes, action, +theme}:
           +corners = square_corners(size, camera,
             Model.file_of(square), Model.rank_of(square))
-          +walls = cutout_walls(square,depth,size,holes,theme,corners,camera,image)
-          +tiled = tile.with_corners(True{}, depth, size, square, camera,
-            theme, corners, walls)
+          +style = surface(square,theme)
+          +shade = tile_shadow(depth,size,corners,extrusion(size,camera),style,image)
+          +walls = cutout_walls(square,depth,size,holes,theme,corners,camera,shade)
+          +tiled = tile.with_corners(depth, size, corners, style, walls)
           cutout_rim(square, depth, size, holes, theme, corners, tiled)
 
 def progress(frame: Scene.Frame) -> U32:
@@ -1245,13 +1270,14 @@ def sprite_width(+size: U32, camera: Camera.Basis) -> F32:
   F32.mul(sprite_board_pitch(size, camera), 1.16)
 
 def sprite_height(+size: U32, camera: Camera.Basis) -> F32:
-  F32.mul(sprite_board_pitch(size, camera), 1.48)
+  F32.mul(sprite_board_pitch(size, camera), 1.35)
 
 def sprite_matrix(+width: F32, +height: F32, center: Quad.Point) -> Transform.Matrix:
   match center:
     case Quad.Point{+x, +y}:
       Transform.Matrix{width, 0.0, 0.0, height,
-        F32.sub(x, F32.div(width, 2.0)), F32.sub(y, height)}
+        F32.sub(x, F32.div(width, 2.0)),
+        F32.sub(F32.add(y, F32.mul(width, 0.10)), height)}
 
 def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
   match kind:
@@ -1266,6 +1292,23 @@ def sprite_piece_side(code: U32) -> PieceSprites.Side:
   Bool.pick(PieceSprites.Side, Model.is_white(code),
     PieceSprites.Ivory{}, PieceSprites.Navy{})
 
+# A low, translucent footprint sits behind the existing alpha-cut artwork.
+# Its dimensions follow the same screen-facing sprite width and base shift,
+# leaving the source atlas and the fast motion silhouettes untouched.
+def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
+  +center: Quad.Point, image: Image) -> Image:
+  match center:
+    case Quad.Point{+x,+y}:
+      +radius = F32.mul(width, 0.18)
+      +half_height = F32.mul(width, 0.045)
+      +base = F32.add(y, F32.mul(width, 0.04))
+      Rounded.draw(depth,size,
+        Shapes.Pos{Ortho.pixel(F32.sub(x,radius))},
+        Shapes.Pos{Ortho.pixel(F32.sub(base,half_height))},
+        Shapes.Pos{Ortho.pixel(F32.add(x,radius))},
+        Shapes.Pos{Ortho.pixel(F32.add(base,half_height))},
+        U32.max(1,Ortho.pixel(F32.mul(width,0.025))), 727076, 48, image)
+
 def sprite_piece_at(show: Bool, +square: U32, +code: U32,
   +context: Context, +pieces: PieceSprites.Pieces, image: Image) -> Image:
   match show context:
@@ -1275,11 +1318,12 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +source = motion_source(Model.decode(action), square)
       +center = interpolated_point(size, camera, source, square,
         progress(frame))
-      +matrix = sprite_matrix(sprite_width(size, camera),
-        sprite_height(size, camera), center)
+      +width = sprite_width(size, camera)
+      +matrix = sprite_matrix(width, sprite_height(size, camera), center)
+      +contact = sprite_contact_shadow(depth,size,width,center,image)
       PieceSprites.draw(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
-        Rect.screen(size), image)
+        Rect.screen(size), contact)
 
 def sprite_opacity(+age: U32) -> U32:
   U32.sub(255, U32.mul(U32.min(age, 7), 32))

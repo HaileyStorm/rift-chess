@@ -85,19 +85,12 @@ function wallColorPixels(image:Image,closed:Image,quad:any[],topQuad:any[],color
   }
   return found;
 }
-function predictedWallColors(square:number,edge:string,yaw:number):number[] {
-  const style=material(square),raw=edge==='rank-up'||edge==='rank-down'?style.side:style.shadow;
-  // BoardScene inserts the edge wall before RaisedFacet's cast-shadow pass.
-  // Where that translated shadow overlaps, it computes Color.over(shadow,wall,92).
-  const colors=[raw,Color.over(style.shadow,raw,92)];
-  // At the yaw-270/file-left overlap, the settled painter also blends the
-  // retained side material over the shadow band at opacity 160 before the
-  // optional cast-shadow pass. Restrict acceptance to those exact compositions.
-  if(yaw===270&&edge==='file-left') {
-    const sideOverShadow=Color.over(style.side,style.shadow,160);
-    colors.push(sideOverShadow,Color.over(style.shadow,sideOverShadow,92));
-  }
-  return [...new Set(colors)];
+function predictedWallColors(square:number,edge:string):number[] {
+  const style=material(square);
+  // The topology-aware wall now paints after the cast shadow. No unconditional
+  // generic slab face can cover or recolor an exposed side afterward.
+  return [edge==='rank-up'||edge==='rank-down'?
+    style.side:Color.over(style.side,style.shadow,160)];
 }
 function insideInsetQuad(x:number,y:number,points:any[],margin:number):boolean {
   let area=0;
@@ -165,7 +158,7 @@ const sharedLip=BoardScene.cutout_rim(sharedSquare,depth,size,0,theme,
 assert.deepEqual(sharedWalls,underlay,'no wall across four shared present edges');
 assert.deepEqual(sharedLip,underlay,'no exposed lip across four shared present edges');
 
-// Outer-board wall and lip use the existing camera extrusion and tile material.
+// Outer-board wall and lip use the camera extrusion and tile material.
 const outerSquare=Model.sq(3,7),outerCorners=corners(outerSquare);
 const drop=BoardScene.extrusion(size,camera);
 const outerWalls=BoardScene.cutout_walls(outerSquare,depth,size,0,theme,
@@ -210,7 +203,7 @@ const byEdge={
   'rank-down':{a:'p11',b:'p01'},'file-left':{a:'p01',b:'p00'},
 } as const;
 for(const yaw of [0,90,180,270]) {
-  const orbitView={$:'View',yaw,pitch:52,zoom:115},
+  const orbitView={$:'View',yaw,pitch:67,zoom:115},
     orbitCamera=Camera.basis(orbitView),
     opened=BoardScene.ground_prepared(
       BoardScene.context_for(renderDepth,renderSize,frame(neighbors,orbitView)),underlay) as Image,
@@ -226,7 +219,7 @@ for(const yaw of [0,90,180,270]) {
     const wallQuad=[a,b,down(b),down(a)],topQuad=[orbitCorners.p00,
       orbitCorners.p10,orbitCorners.p11,orbitCorners.p01];
     const changed=visibleWallChange(opened,closed,wallQuad,topQuad,renderSize);
-    const predicted=predictedWallColors(testCase.square,testCase.edge,yaw);
+    const predicted=predictedWallColors(testCase.square,testCase.edge);
     const colorPixels=wallColorPixels(opened,closed,wallQuad,topQuad,predicted,renderSize);
     edgePixels.push({yaw,edge:testCase.edge,changed,colorPixels,
       predictedColors:predicted.map(color=>`#${color.toString(16).padStart(6,'0')}`)});
@@ -237,7 +230,7 @@ console.log(JSON.stringify({edgePixels}));
 // Mask the full projected 2x2 missing aperture. The intentional side/rim band
 // may occupy its perimeter; the core, inset beyond extrusion and cast shadow,
 // must remain the caller's underlay at every sampled pixel.
-const apertureView={$:'View',yaw:0,pitch:52,zoom:115};
+const apertureView={$:'View',yaw:0,pitch:67,zoom:115};
 const apertureCamera=Camera.basis(apertureView);
 const apertureGround=BoardScene.ground_prepared(
   BoardScene.context_for(depth,size,frame(neighbors,apertureView)),underlay) as Image;
@@ -291,6 +284,48 @@ for(const yaw of [0,90,180,270]) {
   }
 }
 
-console.log(JSON.stringify({ok:true,topologyChecks:19,edgePixels,
+// The default view and intermediate turns must retain real, topology-aware
+// wall material; the cardinal checks alone can miss foreshortened side faces.
+const obliquePixels:Array<{yaw:number;edge:string;changed:number;colorPixels:number}>=[];
+for(const yaw of [45,135,225,315,345]) {
+  const orbitView={$:'View',yaw,pitch:67,zoom:115};
+  const orbitCamera=Camera.basis(orbitView);
+  const opened=BoardScene.ground_prepared(
+    BoardScene.context_for(renderDepth,renderSize,frame(neighbors,orbitView)),underlay) as Image;
+  const closed=BoardScene.ground_prepared(
+    BoardScene.context_for(renderDepth,renderSize,frame(0,orbitView)),underlay) as Image;
+  for(const testCase of facingEdges) {
+    const orbitCorners=corners(testCase.square,orbitCamera,renderSize);
+    const orbitDrop=BoardScene.extrusion(renderSize,orbitCamera);
+    const points=byEdge[testCase.edge as keyof typeof byEdge];
+    const a=orbitCorners[points.a as keyof typeof orbitCorners];
+    const b=orbitCorners[points.b as keyof typeof orbitCorners];
+    const down=(p:any)=>({x:p.x,y:p.y+orbitDrop});
+    const wallQuad=[a,b,down(b),down(a)];
+    const topQuad=[orbitCorners.p00,orbitCorners.p10,orbitCorners.p11,orbitCorners.p01];
+    obliquePixels.push({yaw,edge:testCase.edge,
+      changed:visibleWallChange(opened,closed,wallQuad,topQuad,renderSize),
+      colorPixels:wallColorPixels(opened,closed,wallQuad,topQuad,
+        predictedWallColors(testCase.square,testCase.edge),renderSize)});
+  }
+}
+console.log(JSON.stringify({obliquePixels}));
+for(const [yaw,visible] of [
+  [45,['rank-down','file-right']],
+  [135,['file-right','rank-up']],
+  [225,['rank-up','file-left']],
+  [315,['rank-down','file-left']],
+  [345,['rank-down','file-left']],
+] as const) {
+  for(const edge of ['rank-up','file-right','rank-down','file-left']) {
+    const pixels=obliquePixels.find(item=>item.yaw===yaw&&item.edge===edge)!;
+    if(visible.some(value=>value===edge))
+      assert.ok(pixels.colorPixels>0,`${edge} has exposed material at yaw ${yaw}`);
+    else
+      assert.equal(pixels.colorPixels,0,`${edge} back face stays occluded at yaw ${yaw}`);
+  }
+}
+
+console.log(JSON.stringify({ok:true,topologyChecks:19,edgePixels,obliquePixels,
   aperturePixels,apertureCorePixels,adjacentTopPixels,
-  scope:'Per-facing-edge settled wall checks at four cardinal yaw; full aperture core underlay and adjacent present-tile top masks; fast orbit pass remains flat and unchanged.'}));
+  scope:'Per-facing-edge settled wall checks at four cardinal and five oblique yaws; full aperture core underlay and adjacent present-tile top masks; fast orbit pass remains flat and unchanged.'}));

@@ -54,7 +54,8 @@ def center_y(square: U32, camera: Camera.Basis) -> U32:
 
 def sprite_mid_y(+square: U32, +camera: Camera.Basis) -> U32:
   +center = board_center(square, camera)
-  Ortho.pixel(F32.sub(BoardScene.point_y(center),
+  Ortho.pixel(F32.sub(F32.add(BoardScene.point_y(center),
+      F32.mul(BoardScene.sprite_width(512, camera), 0.10)),
     F32.div(BoardScene.sprite_height(512, camera), 2.0)))
 
 def rendered(frame: Scene.Frame, +background: Image) -> Image:
@@ -97,6 +98,19 @@ def hovered_focus_is_lit() -> Bool:
     U32.sub(center_y(square, camera), 1), image)
   U32.is_ne(sample, Color.rgb(1, 2, 3))
 
+def contact_shadow_is_bounded() -> Bool:
+  +square: U32 = 18
+  +camera = Camera.basis(Camera.default_view())
+  +center = board_center(square,camera)
+  +width = BoardScene.sprite_width(512,camera)
+  +background: Image = Pix{Color.rgb(180,190,200)}
+  +image = BoardScene.sprite_contact_shadow(9n,512,width,center,background)
+  +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.04)))
+  +foot = Pixel.sample_xy(9n,center_x(square,camera),base,image)
+  +outside = Pixel.sample_xy(9n,U32.add(center_x(square,camera),48),base,image)
+  Bool.and(U32.is_ne(foot,Color.rgb(180,190,200)),
+    U32.is_eq(outside,Color.rgb(180,190,200)))
+
 def report(check: Bool, +pass: String, +fail: String) -> IO(Unit):
   match check:
     case True{}: IO.print(pass)
@@ -115,6 +129,10 @@ def main() -> IO(Unit):
         report(selected_focus_is_lit(),
           "PASS: selected piece receives an always-on gold plinth halo",
           "Selected piece halo did not change its expected pixel"),
-        _ => report(hovered_focus_is_lit(),
-          "PASS: hovered piece receives a distinct focus rim",
-          "Hovered piece focus rim did not change its expected pixel"))))
+        _ => IO.bind(Unit, Unit,
+          report(hovered_focus_is_lit(),
+            "PASS: hovered piece receives a distinct focus rim",
+            "Hovered piece focus rim did not change its expected pixel"),
+          _ => report(contact_shadow_is_bounded(),
+            "PASS: subtle contact shadow remains beneath the piece base",
+            "Piece contact shadow is absent or spills outside its footprint")))))

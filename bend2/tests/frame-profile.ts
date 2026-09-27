@@ -9,6 +9,7 @@ import V from '../ui/View.bend';
 import Layout from '../ui/Layout.bend';
 import S from '../graphics/Scene.bend';
 import C from '../ui/Codec.bend';
+import Camera from '../graphics/Camera.bend';
 
 const nil = { $: 'Nil' };
 const list = (xs: any[]) => xs.reduceRight((tail, head) => ({ $: 'Con', head, tail }), nil);
@@ -24,13 +25,15 @@ function measure(run: () => unknown, samples: number, warm = 3) {
 }
 
 // Square centre under the oblique default camera, desktop board at y 128.
+const defaultView = Camera.default_view();
 const centre = (square: number, lift = 16) => {
-  const yaw = 345 * Math.PI / 180;
-  const scale = 45 * 1.15 / (Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw)));
+  const yaw = defaultView.yaw * Math.PI / 180;
+  const scale = 45 * defaultView.zoom / 100 /
+    (Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw)));
   const u = square % 8 - 3.5, r = 3.5 - Math.floor(square / 8);
   return {
     x: Math.round(256 + scale * (Math.cos(yaw) * u - Math.sin(yaw) * r)),
-    y: Math.round(128 + 274 + scale * Math.sin(52 * Math.PI / 180) *
+    y: Math.round(128 + 274 + scale * Math.sin(defaultView.pitch * Math.PI / 180) *
       (Math.sin(yaw) * u + Math.cos(yaw) * r) - lift),
   };
 };
@@ -44,6 +47,7 @@ const orbiting = A.dispatch(list([{ $: 'PointerDown', x: 250, y: 400, button: 2,
 const state = P.start('', '', 1024, 768).state;
 const selectedState = selected.program;
 const snap = P.snapshot(selectedState);
+if (snap.frame.selected !== 6) throw new Error('selected timing fixture did not select g1');
 const background = S.background();
 const board = S.render_on(false, background, snap.frame);
 const controls = Layout.controls(snap);
