@@ -671,3 +671,13 @@ new-source native acceptance.
 A read-only Windows package preflight checks the current pin, source closure
 and asset hashes but reports `buildPermitted: false`; it emits no C or ELF and
 does not advance the Linux CPU/GUI/PCM/restart gate.
+
+The [multi-angle art study](docs/evidence/v2-turntable-study/README.md)
+inspected a transparent, image-generated rear-quarter white knight and an
+offline-rendered CC BY 4.0 3D set: twelve meshes at four yaw angles in real
+Chrome, including a gold-base accent variant and board-scale contact sheets.
+The mesh set has coherent turntable silhouettes but is plainer and lower
+contrast on pale squares than the authored gold/navy atlas; the generated
+knight did not rotate consistently enough to extrapolate to twelve pieces.
+Neither candidate is integrated, published or owner accepted. The original
+source and three RGA pages remain authoritative.
