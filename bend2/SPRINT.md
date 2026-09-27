@@ -632,8 +632,13 @@ unchanged-input aggregate validated all 1,584 frozen v2 terms with no holes
 or tainted roots; a candidate-only exact constructor-tag bridge then passed
 the unchanged 14-position/223-successor reference differential. Six copied-core
 mutation controls also passed positive and deliberately incorrect proof checks.
+The 2.0.28 candidate subsequently passed all eight graphics/grid8 proof
+entry points, 5,874 independent core-library checks and 1,088 annulus
+samples with a source-bound, candidate-only constructor-tag bridge. Direct
+`Shapes` and books importing `Shapes` require different TS-side tags in
+2.0.28; production host/cross-book ABI parity remains unverified.
 The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
-receipts and lists the graphics, full-browser, Linux/native,
+receipts and lists the broader graphics matrix, full-browser, Linux/native,
 performance and reviewed-amendment gates still outstanding. No toolchain
 pin or frozen dependency moved.
 

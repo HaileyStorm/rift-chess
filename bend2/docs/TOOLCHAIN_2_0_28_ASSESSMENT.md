@@ -142,3 +142,11 @@ Six candidate-only mutation controls subsequently passed with clean positive
 proofs and deliberately wrong rules rejected; the immutable run receipt is
 bound in the patch 006 notes. This is a negative-control check, not a new
 native or browser result under 2.0.28.
+Eight graphics/grid8 proof entry points and the 5,874-case core library
+reference passed against the candidate with the frozen v1 graphics manifest
+verified. The unmodified TypeScript test initially exposed changed constructor
+tags at the JS boundary; a candidate-only exact tag bridge restored the
+unchanged pixel oracle, including 1,088 annulus samples. The patch 006 notes
+bind the final receipt and explain why cross-book/application ABI parity is
+still open. No production host or frozen specification was altered for this
+candidate check.

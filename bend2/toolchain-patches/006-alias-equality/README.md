@@ -93,11 +93,29 @@ at `.artifacts/bend2/toolchain-patches/alias-equality-2028-mutations/2026-09-27T
 The earlier full receipt remains preserved at its original run directory
 (SHA-256 `23e80c8a637bf17edeff3eaebba3719e351b7dc0a45e7bc9c324ad1c2216ad6f`)
 but is not the promoted mutation gate.
+
+The [candidate graphics gate](graphics-check.mjs) checks all eight discovered
+graphics/grid8 `PROOF.bend` entry points, the frozen v1 graphics source manifest,
+and 83 loaded graphics source files. The unchanged pinned 2.0.27 path and the
+disposable 2.0.28 candidate each pass 5,874 independent core-library checks
+and 1,088 annulus pixel comparisons. An unadapted candidate test first failed
+at a clipped-annulus pixel because 2.0.28's separately emitted `Ring` book
+expects host-authored `Shapes.Neg/Pos`, whereas a directly emitted `Shapes`
+book expects bare `Neg/Pos`. The [candidate-only bridge](graphics-loader-2028.ts)
+changes only the three test call sites that pass `Coord` into books importing
+`Shapes` (Ring, Rounded, Stamp), bound to the exact unchanged test source;
+it does not change a Bend Law or pixel expectation. Independent review found
+no finite-gate false pass, but this does **not** establish general cross-book
+ABI compatibility. The final ignored receipt SHA-256 is
+`bbe20257ede9b391c7ff0fb90d7a495d17991d71500178c3fadfdc0c071c9ce8`
+at `.artifacts/bend2/toolchain-patches/alias-equality-2028-graphics/receipt-1790482211002-5cfeebbe-29d6-462d-a179-929106f092f6.json`.
+It also records the graphics v1 source-freeze SHA-256
+`5b19540c3f98a1b325302b9896e1558da15fe469054c3bd95750eff0ca5c7d6e`.
 The original 2.0.27 interop and frozen fixtures were not edited.
 
 Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
-graphics library proof/test checks, the current application
-build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
+the broader graphics matrix and cross-book constructor ABI, the current
+application build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
 parity, measured runtime behavior and independent final review. Any pin move
 must use the Local Bend Guide's frozen-dependency amendment, preserving old
 bytes and receipts.
