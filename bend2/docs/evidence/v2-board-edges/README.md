@@ -55,6 +55,26 @@ These few variable-load samples overlap and do not establish a throughput
 improvement or a stable latency regression; an earlier edited run under
 concurrent work was much slower and remains preserved separately.
 
-This is an unpublished local draft, not owner WOW acceptance, a native/GPU
-benchmark, or a 2.0.28 pin change. The original TypeScript game and the
-existing public Bend preview are unchanged at this checkpoint.
+After the source commit, the non-draft build from clean revision
+`f8a7fbf911271cc297055f03656c9c790b307670` repeated the same content
+version `85397955504c1bb54d3a`. The separate Pages repository published it
+at commit `27cee629933dae456af95c5ace1f37a834a309ea`. All 21 manifest files
+plus `build.json` matched local, staged and live bytes; JavaScript module MIME
+was valid and the two original TypeScript-site baseline files retained their
+hashes. The public verification receipt is
+`.artifacts/bend2/publication/2026-09-27T16-55-59-064Z-c5dfa3f6/receipt.json`
+(SHA-256 `63317c1ab2fb1d0e02ab40211e9d621ca7f65aa0c9426cafc418a4205587cb53`).
+The first verification immediately after push saw the old deployment and
+failed; its receipt is preserved, not silently promoted.
+
+The extended real Chrome scenario then ran against
+<https://haileystorm.github.io/rift-chess-bend2/>. It bound the served
+`build.json` bytes to the clean local manifest and passed all 13 groups with
+zero browser errors, including cold offline play, PCM, Shift/Undo and portrait.
+Hosted receipt:
+`.artifacts/bend2/v2-preview/scenarios/hosted-board-edges-8539-27cee62-20260927/receipt.json`
+(SHA-256 `08fa40d85edbdd7c665428a40628f45e32f1250a31bc9214c43c0bf64c4895a7`).
+The inspected hosted initial PNG is byte-identical to the local draft capture
+(SHA-256 `70af479e01001b2277cda0d22f222abf04aad8568250f208110879bbf94bb021`).
+This is a playable browser preview, not owner WOW acceptance, native/GPU
+parity, or a 2.0.28 pin change. The original TypeScript game is unchanged.

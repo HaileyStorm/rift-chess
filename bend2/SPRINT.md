@@ -689,8 +689,8 @@ errors, including offline move, PCM, portrait and immediate Shift Undo
 refinement. The original TypeScript site baseline remained unchanged. See
 the [hosted receipt](docs/evidence/v2-sprite-quiet-hosted/README.md).
 This is a working browser preview, not owner WOW or release acceptance.
-The Linux package request remains bound to older published source and is not
-new-source native acceptance.
+At that checkpoint the Linux package request was bound to older published
+source and was not new-source native acceptance.
 A read-only Windows package preflight checks the current pin, source closure
 and asset hashes but reports `buildPermitted: false`; it emits no C or ELF and
 does not advance the Linux CPU/GUI/PCM/restart gate.
@@ -712,7 +712,7 @@ finite-domain precondition were not justified by that evidence. Its source
 and test were restored/removed without changing the game; the ignored
 `.artifacts/bend2/axis-trial/README.md` preserves the rejected measurements.
 
-## Exposed tile edges: local draft
+## Exposed tile edges: hosted browser preview
 
 The owner noticed the missing outer and rift-facing tile depth. The settled
 Bend scene now draws conditional vertical faces and a stronger lip only where
@@ -723,6 +723,21 @@ orbit and portrait Chrome captures were inspected, and the extended local
 scenario passed all 13 groups with zero page errors. Two paired old/new
 six-click bursts had overlapping helper and last-input latency ranges; they
 are small variable-load diagnostics, not a performance acceptance benchmark.
-See the [local edge evidence](docs/evidence/v2-board-edges/README.md).
-This draft has not yet been published or accepted by the owner; the native,
-GPU and 2.0.28 gates remain separate.
+The clean non-draft build repeated the exact draft content version
+`85397955504c1bb54d3a` at source `f8a7fbf`, and the separate Pages preview
+now serves it at deployment commit `27cee62`. All 22 live files matched the
+manifest and the hosted extended Chrome scenario passed all 13 groups with
+zero browser errors; the original TypeScript site baseline remained unchanged.
+See the [edge evidence](docs/evidence/v2-board-edges/README.md). Owner WOW
+acceptance and native/GPU parity remain open, and 2.0.28 stays unadopted.
+
+The Linux host [reported](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5857698304)
+a CPU-only NativeV2 package at earlier clean source `6721cf0`: exact C/ELF
+and package hashes, real X11 selection/move/close, saved-game relaunch and
+routed PipeWire PCM samples. This is host-reported evidence for that older
+source, not a local re-verification or parity for the edge checkpoint.
+With that pilot closed, one [new-source CPU-only retest](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5857865924)
+was requested against `f8a7fbf` with exact pin, script and BoardScene hashes.
+Its Linux preflight/package/GUI/PCM/restart result is pending; no CUDA/GPU
+grant or run follows from either request. The Windows read-only preflight
+reports `buildPermitted: false` and produced no native artifact.
