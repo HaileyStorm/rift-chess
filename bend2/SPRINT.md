@@ -616,6 +616,8 @@ interleaved local JS A/B reduced full median/p90 from 57.53/95.08 to
 with byte-identical motion and settled captures. All 12 extended local
 rendered scenario groups passed. See the
 [local receipt](docs/evidence/v2-motion-compact/README.md) for limits.
+The non-draft browser build was repeated from clean commit `70837ad` with
+`sourceDirty: false`, and the content version stayed `ca7fea3cb1fd6afd95df`.
 This source is not published; the full native checker timed out locally,
 and owner WOW/turntable art, new-source CPU/GUI/PCM/restart and 2.0.28 gates
 remain open.

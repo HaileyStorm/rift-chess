@@ -15,6 +15,14 @@ The explicit `fast_camera512` remains for `NativeV2` and callers requiring a
 depth-9 tree. Bend still owns pixels and input/picking; frozen Laws/Proofs and
 the generic graphics library are unchanged.
 
+After commit `70837ad3ebbfcfda41a23e591292e829d92f65fc`, a fresh
+non-draft build retained version `ca7fea3cb1fd6afd95df` and recorded that
+exact source revision with `sourceDirty: false`. A clean-build real browser
+burst passed after the test witness was corrected to ignore non-dirty replies
+whose pixel counters refer to an earlier frame; its ignored receipt is at
+`.artifacts/bend2/v2-preview/sprite-burst-clean-70837ad-r2/receipt.json`.
+The test-only correction does not change any published browser asset bytes.
+
 Evidence on this Windows Chrome/selected-JS host:
 
 - `node bend2/tests/browser-v2-motion-extent.mjs` compared **60,817,408**
@@ -59,8 +67,8 @@ Evidence on this Windows Chrome/selected-JS host:
   invariant review found no confirmed pixel defect and its initially missing
   orbit, enhanced and portrait witnesses were added before this receipt.
 
-Open gates: clean committed-source build/retest, new-source Linux package and
-GUI/PCM/restart parity, broader browser/device latency, consistent multi-angle
+Open gates: new-source Linux package and GUI/PCM/restart parity,
+broader browser/device latency, consistent multi-angle
 piece art, owner WOW acceptance, and Bend 2.0.28 review/amendment. The pending
 CPU-only Linux package retry requested in Coordination issue 1 comment
 5851264158 is bound to older source `6721cf0`; its eventual result cannot be

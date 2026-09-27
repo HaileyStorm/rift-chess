@@ -31,7 +31,8 @@ await page.addInitScript(() => {
         window.__frames.push({ at: performance.now(), id: frame.id,
           after: frame.after, pixelMs: frame.pixelMs, renderMs: frame.renderMs,
           portMs: frame.portMs, view: frame.presentation?.view,
-          kinds: request?.kinds || [], pixelStats: frame.pixelStats });
+          kinds: request?.kinds || [], dirty: !!(frame.image || frame.bitmap),
+          pixelStats: frame.pixelStats });
         this.requests.delete(frame.id);
         if (frame.image || frame.bitmap) window.__shown = frame.presentation;
       });
@@ -115,11 +116,11 @@ try {
     await page.waitForTimeout(20);
   }
   await page.waitForFunction(start => window.__frames.slice(start).some(frame =>
-    frame.kinds.includes('PointerMove') && frame.pixelMs > 0 &&
+    frame.kinds.includes('PointerMove') && frame.dirty &&
       frame.pixelStats?.visited > 50000),
   orbitStart.frames, { timeout: 30000 });
   const motion = await page.evaluate(start => window.__frames.slice(start)
-    .filter(frame => frame.kinds.includes('PointerMove') && frame.pixelMs > 0 &&
+    .filter(frame => frame.kinds.includes('PointerMove') && frame.dirty &&
       frame.pixelStats?.visited > 50000),
   orbitStart.frames);
   assert.ok(motion.length > 0);
