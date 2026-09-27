@@ -752,7 +752,7 @@ guard is now 88 GiB, with initial and just-before-C-emission host/visible-cgroup
 samples in the receipt and fail-closed records; seven deterministic tests pass.
 It is protective, not a future-run guarantee. No CUDA/GPU lease was granted.
 
-## Camera, piece grounding and single-owner exposed faces: local draft
+## Camera, piece grounding and single-owner exposed faces: hosted preview
 
 The owner still saw missing edge faces, high/tall pieces and back-rank overlap.
 The settled board now has one topology-aware wall owner instead of overpainting
@@ -772,11 +772,18 @@ A source-dirty draft build `f2369ed40dae326d895e` was visually inspected at
 default, 330° diagonal and Front views in Chrome; a real persisted-old-view
 reload produced the new default. Its extended local Chrome scenario passed all 13 groups
 with zero page errors (including interaction, offline, PCM, Shift/Undo and
-portrait). This is a local visual candidate, not yet a clean/hosted build,
-owner acceptance, or source-parity native run. See the
+portrait). The clean non-draft build at `4f6e52f` repeated the same content
+version. The separate Pages preview published it at `233d892`; all 22 live
+files and the two original TypeScript-site baseline files matched, and the
+hosted real Chrome scenario passed all 13 groups with zero page errors.
+The first immediate public verification observed the previous deployment and
+is preserved as a failed receipt. This is a playable browser preview, not
+owner acceptance or source-parity native/GPU evidence. See the
 [composition evidence](docs/evidence/v2-composition/README.md). The previous
 `f8a7fbf` CPU result does not validate these changed camera/scene bytes.
 Windows preflight still reports `buildPermitted: false` and emits no native ELF.
 The native X11 click probe and the timing fixture were also updated to project
 the new default angle before a new-source Linux pilot; they have not yet been
-executed on that host.
+executed on that host. One [CPU-only new-source request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858608451)
+is bound to clean commit `4f6e52f`, tree `e3b0354`, the 88 GiB guard and
+exact camera/scene/probe hashes; no CUDA/GPU grant follows from it.

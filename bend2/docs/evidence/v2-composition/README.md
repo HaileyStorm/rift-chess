@@ -66,4 +66,38 @@ The native probe still awaits its Linux package run.
 The older [Linux report](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858004336)
 binds only the prior published `f8a7fbf` source, not this candidate. The
 new 88 GiB native admission guard is pending a new-source Linux run. No GPU
-grant, CUDA execution, 2.0.28 pin amendment or clean hosted build is claimed.
+grant, CUDA execution or 2.0.28 pin amendment is claimed.
+
+## Clean publication and remaining gates
+
+After commit `4f6e52f2e93ac5c925c0348682e55bace4e7ffcf` (tree
+`e3b0354678a6d7bbfae9b170d627bde35271ac2a`), the non-draft 2.0.27
+browser build repeated the draft content version `f2369ed40dae326d895e`.
+Its `build.json` SHA-256 is
+`eddff4ee97e16d29a747b63de6a9db54f4b07890664e8c7eb999776f23aaccc7`.
+The separate free [Pages preview](https://haileystorm.github.io/rift-chess-bend2/)
+published this build at commit `233d8920aecd776a121beb8a4fd1cf5152c1a30e`.
+The first byte check immediately after push saw the old deployment and failed;
+the preserved receipt is under
+`.artifacts/bend2/publication/2026-09-27T18-32-48-442Z-e722a1b2/`.
+The subsequent
+`.artifacts/bend2/publication/2026-09-27T18-34-47-724Z-ad226db7/receipt.json`
+(SHA-256 `9b8b8b382b886905375d8b1918e025f4d2bc889aa393635e92153dc2236a6f26`)
+verified all 21 manifest-listed assets plus `build.json`, module MIME, and
+two unchanged files from the original TypeScript site. Historical hashed
+assets and CLI exports in the Pages checkout were retained for returning
+clients and provenance.
+
+The hosted extended Chrome scenario bound served `build.json` bytes to the
+clean local manifest and passed all 13 groups with zero browser errors,
+including offline, PCM, Shift/Undo, promotion and portrait. Receipt:
+`.artifacts/bend2/v2-preview/scenarios/hosted-composition-f236-233d892-20260927/receipt.json`
+(SHA-256 `88dc9241804ef9717012adc7ca78420ccc24581b6e9f0f4c7275aea3d6ad8be2`).
+The hosted desktop initial capture SHA-256
+`e0f4f125954f6dee919cbe735141254c9ce718ffe71949d09f39a44e1b85cf93`
+is byte-identical to the visually reviewed draft. This establishes a public
+playable browser checkpoint, not owner subjective approval, a new-source
+native CPU result, GPU parity, or a packaged desktop release. One
+[new-source CPU-only Linux request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858608451)
+binds the clean commit, tree, builder, scene, camera, preferences, X11 probe
+and pin hashes; it explicitly excludes CUDA and GPU probing.
