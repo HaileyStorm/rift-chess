@@ -129,10 +129,32 @@ The current host and presented-input queue use bare tags, including exact
 `PointerMove` coalescing. A future boundary adaptation must preserve that
 queue policy and cover every host-authored input and cross-book return; an
 `Activate`-only production rewrite would hide rather than solve the migration.
+
+A [candidate-only browser ABI adapter](browser-abi-2028.ts) and
+[selected-book gate](browser-abi-check.mjs) now probe eleven actual host/port
+inputs after bare-tag queue coalescing; six Controller effect envelope tags;
+Controller Frame into BoardScene and chrome data/plan into MenuAA; the separate
+plate and piece AssetResponse constructors; and BotAdapter's position
+constructor table. The probe uses candidate-emitted Controller, BoardScene
+and MenuAA functions, but does **not** execute the Bot worker or a browser.
+Artwork's potentially 786,437-node byte list is passed through by identity.
+An initial green prototype receipt had two review defects: it recursed through
+unbounded history and used inherited JavaScript tag lookup. The corrected
+adapter validates ChromeData's exact schema, preserves a 1,200-entry history
+by identity, rejects inherited/prototype-sensitive/accessor keys, and passes
+the source-bound repeat with 89 unchanged inputs. Final ignored receipt
+SHA-256 `4da1ac45913df8b7e55e8e0d2eec61e108da938ec43fc172c58e5985b0756a07`
+at `.artifacts/bend2/toolchain-patches/alias-equality-2028-browser-abi/receipt-1790515770087-e6aef552-3dbc-461a-b838-c731e7c838c9.json`.
+The earlier weaker receipt remains preserved in the same directory, SHA-256
+`ad58e107da76608382c8b97add8064a27d5324bcc5872739b12cf8b98250300f`.
+Neither is candidate application/browser acceptance or a pin-amendment gate;
+success-path large asset decode, every event's semantic behavior, effects from
+real packets, bot runtime, offline hosting and native parity remain open.
 The original 2.0.27 interop and frozen fixtures were not edited.
 
 Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
-the broader graphics matrix and systematic cross-book/host constructor ABI, the current
+the broader graphics matrix and actual candidate browser integration of the
+systematic cross-book/host ABI, the current
 application build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
 parity, measured runtime behavior and independent final review. Any pin move
 must use the Local Bend Guide's frozen-dependency amendment, preserving old

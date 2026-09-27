@@ -160,3 +160,9 @@ any pin move.
 Keep the host queue's exact bare-tag `PointerMove` coalescing semantics when
 choosing the translation boundary; a worker-dispatch adapter is a hypothesis,
 not yet tested or adopted.
+A disposable adapter now passes a source-bound selected-book diagnostic across
+the eleven host input names, effect envelopes, Controller→BoardScene/MenuAA
+values, separate asset responses and BotAdapter's position constructor table.
+The patch 006 notes bind the repaired receipt and review-found history/key
+safety fixes. The production host still sends bare tags; no candidate browser
+build, runtime bot, full asset decode or rendered acceptance follows from this.

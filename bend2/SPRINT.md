@@ -643,6 +643,13 @@ host's bare `Activate` is ignored by the candidate, whereas
 not merely a hypothetical graphics-test difference.
 Any adapter must preserve the host input queue's bare `PointerMove`
 coalescing while covering all input variants and cross-book values.
+A disposable 2.0.28 adapter now passes bounded selected-book constructor
+probes for all eleven host input names, effect envelopes, Controller Frame and
+MenuAA chrome values, and both resource response types. Its corrected gate
+preserves a 1,200-entry history and large byte list by identity and rejects
+prototype-sensitive tags. The actual browser/worker code is unchanged and
+still needs full candidate build, interactive/offline tests, bot and successful
+asset/audio boundary checks before any pin amendment.
 The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
 receipts and lists the broader graphics matrix, full-browser, Linux/native,
 performance and reviewed-amendment gates still outstanding. No toolchain
@@ -681,3 +688,10 @@ contrast on pale squares than the authored gold/navy atlas; the generated
 knight did not rotate consistently enough to extrapolate to twelve pieces.
 Neither candidate is integrated, published or owner accepted. The original
 source and three RGA pages remain authoritative.
+
+An opt-in diagonal RgbaAffine trial matched 84 full Image trees, but its
+seven-pair 256px timing did not repeat: 1.37× in one run, 0.97× in an
+independent repeat under different host load. The duplicated traversal and
+finite-domain precondition were not justified by that evidence. Its source
+and test were restored/removed without changing the game; the ignored
+`.artifacts/bend2/axis-trial/README.md` preserves the rejected measurements.
