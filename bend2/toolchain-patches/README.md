@@ -38,10 +38,16 @@ project wrapper; native GUI and device validation remain open.
    reason to force or silently drop a hunk. Rebase one patch at a time and
    record the old/new source and patch hashes. On 2.0.28, replay candidate 005
    only after the reviewed 001 and adapted 002 sources; rebase 004 separately.
-   The current 005 candidate's reconstructed pre-005 source hashes differ from
-   the earlier adapted-002 snapshot; reconcile that difference in a fresh
-   full-stack replay. Do not infer 2.0.28 acceptance from 005's narrow
-   Windows fixture.
+The earlier pre-005 hash discrepancy was reconciled by the
+[fresh 001→002→005→004 replay](002-layout/rebase-2028/LOCAL_RECEIPT.md).
+The [ordered 2.0.28 replay](replay-2028-stack.mjs) additionally applies
+006 after the isolated compiler and worker-test adapters. Its
+[receipt](../docs/evidence/toolchain-2028-stack/README.md) binds the source,
+seven patch inputs and 107/107 local worker gate. This is source/test
+composition, not a pin acceptance or native/GPU parity. Bend 2.0.32's
+[new release assessment](../docs/evidence/toolchain-2032-scout/README.md)
+is separate: do not transfer 2.0.28 patch applicability or test evidence
+to that newer compiler.
 3. Run each patch's deterministic fixtures on the isolated compiler. For the
    required 001+002 combination, run `node bend2/toolchain-patches/verify-stack.mjs
    <disposable-compiler-directory>` after 001's fixture generator; the exact
