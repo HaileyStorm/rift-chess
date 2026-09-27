@@ -591,9 +591,11 @@ artifacts and is not a consistent twelve-piece turntable.
 
 The [local camera rail checkpoint](docs/evidence/v2-camera-rail/README.md)
 keeps the desktop board visible while View is open and makes Zoom+ work from
-the default view through 130%. Its source-bound draft passed the extended
-12-group Chrome game scenario, focused input/menu checks and actual rendered
-inspection. A paired 128-pixel drag preview measured faster than 256-pixel
+the default view through 130%. Clean build `f61152159a6331b9db2d` at source
+`6721cf0` was published and its 21 asset hashes and four worker MIME types
+matched the public URL; the hosted extended 12-group Chrome game scenario
+passed. Focused input/menu checks and actual rendered inspection also passed.
+A paired 128-pixel drag preview measured faster than 256-pixel
 pieces but visibly damaged silhouette and void clarity, so it was reverted;
 the accepted source retains the higher-detail motion path. The still-slow
 sprite refinement after rapid view changes and the broader WOW target remain
