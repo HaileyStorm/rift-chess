@@ -647,9 +647,14 @@ A disposable 2.0.28 adapter now passes bounded selected-book constructor
 probes for all eleven host input names, effect envelopes, Controller Frame and
 MenuAA chrome values, and both resource response types. Its corrected gate
 preserves a 1,200-entry history and large byte list by identity and rejects
-prototype-sensitive tags. The actual browser/worker code is unchanged and
-still needs full candidate build, interactive/offline tests, bot and successful
-asset/audio boundary checks before any pin amendment.
+prototype-sensitive tags. The actual production browser/worker code is unchanged.
+A nonce-private 2.0.28 draft then emitted Controller, BoardScene and MenuAA,
+and a source-bound four-group real Chrome hotseat smoke passed boot, sprite
+refinement, Preferences open/close and e2–e4 with post-move refinement.
+The candidate bundle deliberately lacks a bot worker; the full interactive
+and offline matrix, bot runtime, import/audio effects and native gates remain
+required before any pin amendment. See the
+[candidate browser receipt](docs/evidence/browser-2028-candidate/README.md).
 The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
 receipts and lists the broader graphics matrix, full-browser, Linux/native,
 performance and reviewed-amendment gates still outstanding. No toolchain

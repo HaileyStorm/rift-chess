@@ -150,11 +150,15 @@ The earlier weaker receipt remains preserved in the same directory, SHA-256
 Neither is candidate application/browser acceptance or a pin-amendment gate;
 success-path large asset decode, every event's semantic behavior, effects from
 real packets, bot runtime, offline hosting and native parity remain open.
-The original 2.0.27 interop and frozen fixtures were not edited.
+The original 2.0.27 interop and frozen fixtures were not edited. A later
+[nonce-private candidate browser build and four-group Chrome smoke](../../docs/evidence/browser-2028-candidate/README.md)
+cover real hotseat boot, sprite refinement, menu input and one move under
+the systematic bridge. This does not retroactively turn the selected-book
+probe into full browser or bot acceptance.
 
 Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
-the broader graphics matrix and actual candidate browser integration of the
-systematic cross-book/host ABI, the current
+the broader graphics matrix and completion of actual candidate browser integration
+of the systematic cross-book/host ABI, the current
 application build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
 parity, measured runtime behavior and independent final review. Any pin move
 must use the Local Bend Guide's frozen-dependency amendment, preserving old

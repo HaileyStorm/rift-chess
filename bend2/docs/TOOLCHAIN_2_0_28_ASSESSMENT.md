@@ -158,11 +158,28 @@ tag. The patch 006 receipt binds that contrast; a systematic host and
 cross-book compatibility rule plus rendered game tests are required before
 any pin move.
 Keep the host queue's exact bare-tag `PointerMove` coalescing semantics when
-choosing the translation boundary; a worker-dispatch adapter is a hypothesis,
-not yet tested or adopted.
+choosing the translation boundary; at this checkpoint a worker-dispatch
+adapter was a hypothesis, not yet tested or adopted. The subsequent isolated
+trial below exercises that boundary without changing the production host.
 A disposable adapter now passes a source-bound selected-book diagnostic across
 the eleven host input names, effect envelopes, Controller→BoardScene/MenuAA
 values, separate asset responses and BotAdapter's position constructor table.
 The patch 006 notes bind the repaired receipt and review-found history/key
-safety fixes. The production host still sends bare tags; no candidate browser
-build, runtime bot, full asset decode or rendered acceptance follows from this.
+safety fixes. The production host still sends bare tags; no browser or bot
+acceptance follows from this selected-book diagnostic alone.
+
+**Isolated candidate browser trial on 2026-09-27:** a new nonce-private
+driver copied the candidate compiler, applied exact 006 only to the copy,
+emitted Controller/BoardScene/MenuAA, and used source-hash/unique-anchor
+in-memory transforms at the browser worker and sprite-helper ABI seams.
+The candidate draft is not the pinned or published bundle and explicitly
+omits BotAdapter. Its successful build binds 96 source inputs and 16 static
+files. A first real Chrome hotseat smoke passed four groups with zero recorded
+page/console errors: boot and asset-backed sprite refinement, menu input,
+e2–e4 turn advance and post-move refinement. Independent review found an
+initial smoke provenance gap; the promoted repeat verifies the build receipt
+and all static file hashes before and after, binds the smoke script, and
+preserves the earlier receipts. See the
+[bounded evidence](evidence/browser-2028-candidate/README.md). This does not
+replay the full ordered compiler patch stack independently or close bot,
+offline, all input/effect paths, native/GPU, performance or pin-amendment gates.
