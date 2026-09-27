@@ -651,5 +651,8 @@ seconds from the last click with `quietWindowMs: 450`; the settled PNG exactly
 matched the earlier immediate run. The extended local rendered suite passed
 all 13 checks, including a settled Shift Undo with `quietWindowMs: 0`, with
 zero browser errors. See the [local evidence](docs/evidence/v2-sprite-quiet/README.md).
+The committed non-draft browser build repeated the identical content version
+`ad9b34c4ac0da2d7cd32` with `sourceDirty: false` after the frozen semantic,
+graphics and attestation checks. It remains unpublished.
 The Linux package request remains bound to older published source and is not
 new-source native acceptance.

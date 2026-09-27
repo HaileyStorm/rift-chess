@@ -48,5 +48,10 @@ checks Shift, its settled Undo, portrait controls, offline play, PCM and the
 other game flows; the Undo refinement must report `quietWindowMs: 0`.
 Its final run receipt is under
 `.artifacts/bend2/v2-preview/scenarios/sprite-camera-only-r3-20260927/`.
+After the source checkpoint commit, a non-draft build repeated the same
+content version with `sourceDirty: false`, including the frozen semantic,
+graphics and source-attestation gates. It was not deployed or re-playtested
+as a distinct hosted release; identical content hashes bind it to the local
+rendered draft tests.
 This is local browser evidence, not owner visual acceptance, native runtime
 parity, publication, or proof of a large WOW/art improvement.
