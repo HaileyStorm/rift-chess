@@ -796,3 +796,42 @@ Four sampled camera/migrated-preference captures matched pinned 2.0.27 PNG
 bytes. See the [candidate evidence](docs/evidence/browser-2028-candidate/README.md#current-published-visual-source-trial).
 This is local candidate compatibility evidence, not a reviewed pin move,
 native CPU/GPU parity or owner visual acceptance.
+
+## Source-bound Linux composition result and active-orbit wall draft
+
+The [Linux response](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858793813)
+to the new-source request passed at exact clean `4f6e52f`, tree `e3b0354`,
+all six requested source/pin SHA-256 checks and Bend 2.0.27. One CPU package
+build took 462.89 seconds with 38,316,064 KiB peak RSS after the 88 GiB
+host/cgroup guard admitted it. The receipt-bound ELF passed real X.Org :1
+g1 select/deselect, g1-h3, close and relaunch with Black to move; a PipeWire
+HDMI sink monitor captured 12,762 nonzero move samples against idle silence.
+This closes the requested CPU/window/routed-PCM host probe for that published
+source, not physical audibility, saved-old-view migration, GPU/Windows-native
+parity, or owner acceptance. Exact hashes and limits are in the
+[composition evidence](docs/evidence/v2-composition/README.md).
+
+An unshipped local draft now adds camera-facing exposed walls to the compact
+active-orbit ground without a second full top pass. An independent review
+found no confirmed mask/geometry bug and prompted stronger absolute palette
+checks. The nine-yaw and 288-view sweep, 160 near-cardinal/hole/theme
+variants, 27,260 present top centers, 13-group real Chrome scenario, real
+held-pointer capture, compact pixel equivalence, source checker, TypeScript
+check and 62/62 root tests pass. The active-orbit image has visible rift and
+outer side bands during drag, but retains coarse temporary sprites. It is
+still a dirty local candidate; see the
+[motion-wall evidence](docs/evidence/v2-motion-walls/README.md). No Linux
+result applies to these changed scene bytes until a fresh exact-source run.
+
+## Bend 2.0.32 release triage
+
+The [official 2.0.32 changelog](https://github.com/bendlang/bend/blob/main/CHANGELOG.md)
+introduces a new proof verdict/kernel path, a faster JS `Nat` and call lane
+since 2.0.29, an `IO.args()` positional break, native input changes and F32
+alignment. The tag was observed at `573002f01ec6c52416d44489543f69a9625facf8`.
+The isolated 2.0.28 patch stack now has a reproducible
+[107/107 worker gate](docs/evidence/toolchain-2028-stack/README.md), but that
+does not transfer to 2.0.32 or accept either pin. The running application
+remains on 2.0.27. A separate 2.0.32 checkout/rebase and full frozen
+proof/browser/native gate review would precede any amendment; see the
+[release triage](docs/evidence/toolchain-2032-scout/README.md).

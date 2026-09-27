@@ -39,12 +39,12 @@ function corners(square:number,basis:any=camera,canvasSize=size):any {
   return BoardScene.square_corners(canvasSize,basis,
     Model.file_of(square),Model.rank_of(square));
 }
-function frame(holes:number,viewArg:any=view):any {
+function frame(holes:number,viewArg:any=view,themeArg=theme):any {
   const board=list(Array(64).fill(0));
   const position={$:'Pos',board,holes,side:yes,rights:0,ep:64,epPawn:64,quiet:0n,full:1n};
   return {$:'Frame',position,previous:position,selected:64,hovered:64,
     targets:emptyList,tile:64,tileTargets:emptyList,lastAction:21760,
-    progress:16,theme,view:viewArg,shifts:emptyList,check:64};
+    progress:16,theme:themeArg,view:viewArg,shifts:emptyList,check:64};
 }
 function insideQuad(x:number,y:number,points:any[]):boolean {
   let positive=false,negative=false;
@@ -326,6 +326,152 @@ for(const [yaw,visible] of [
   }
 }
 
-console.log(JSON.stringify({ok:true,topologyChecks:19,edgePixels,obliquePixels,
-  aperturePixels,apertureCorePixels,adjacentTopPixels,
-  scope:'Per-facing-edge settled wall checks at four cardinal and five oblique yaws; full aperture core underlay and adjacent present-tile top masks; fast orbit pass remains flat and unchanged.'}));
+// The low-resolution orbit board is already painted before its cheap wall
+// overlay. Check that only camera-facing exposed rift faces survive, rather
+// than letting back faces spill over the flat neighboring top surfaces.
+const motionPixels:Array<{yaw:number;edge:string;colorPixels:number}>=[];
+let motionAdjacentTopPixels=0;
+let composedMotionTopPixels=0;
+const motionSpills:Array<{yaw:number;square:number;count:number}>=[];
+const composedMotionSpills:Array<{yaw:number;square:number;count:number}>=[];
+const motionRing=[
+  Model.sq(1,1),Model.sq(2,1),Model.sq(3,1),Model.sq(4,1),
+  Model.sq(1,2),Model.sq(4,2),Model.sq(1,3),Model.sq(4,3),
+  Model.sq(1,4),Model.sq(2,4),Model.sq(3,4),Model.sq(4,4),
+];
+const motionTopSamples=[...motionRing,
+  Model.sq(0,0),Model.sq(3,0),Model.sq(7,0),Model.sq(0,3),
+  Model.sq(7,3),Model.sq(0,7),Model.sq(3,7),Model.sq(7,7)];
+let absoluteTopCenters=0;
+function checkAbsoluteTops(image:Image,holes:number,orbitView:any,themeArg:number):void {
+  const basis=Camera.basis(orbitView),colors=BoardScene.palette(themeArg);
+  for(let square=0;square<64;square++) {
+    if(!Model.present(holes,square))continue;
+    const {p00,p11}=corners(square,basis,128);
+    const x=Math.floor((p00.x+p11.x)/2),y=Math.floor((p00.y+p11.y)/2);
+    assert.ok(x>=0&&x<128&&y>=0&&y<128,
+      `present tile center remains in frame: square ${square}`);
+    const row=7-Model.rank_of(square);
+    const expected=(Model.file_of(square)+row)%2===0?colors.light_top:colors.dark_top;
+    assert.equal(sample(image,128,x,y),expected,
+      `absolute top color: square ${square}, holes ${holes}, view ${JSON.stringify(orbitView)}, theme ${themeArg}`);
+    absoluteTopCenters++;
+  }
+}
+for(const [yaw,visible] of [
+  [0,['rank-down']], [90,['file-right']],
+  [180,['rank-up']], [270,['file-left']],
+  [45,['rank-down','file-right']],
+  [135,['file-right','rank-up']],
+  [225,['rank-up','file-left']],
+  [315,['rank-down','file-left']],
+  [345,['rank-down','file-left']],
+] as const) {
+  const orbitView={$:'View',yaw,pitch:67,zoom:115};
+  const orbitCamera=Camera.basis(orbitView);
+  const motionSize=128;
+  const opened=BoardScene.fast_ground(7n,motionSize,underlay,
+    frame(neighbors,orbitView)) as Image;
+  const closed=BoardScene.fast_ground(7n,motionSize,underlay,
+    frame(0,orbitView)) as Image;
+  checkAbsoluteTops(opened,neighbors,orbitView,theme);
+  for(const testCase of facingEdges) {
+    const orbitCorners=corners(testCase.square,orbitCamera,motionSize);
+    const orbitDrop=BoardScene.extrusion(motionSize,orbitCamera);
+    const points=byEdge[testCase.edge as keyof typeof byEdge];
+    const a=orbitCorners[points.a as keyof typeof orbitCorners];
+    const b=orbitCorners[points.b as keyof typeof orbitCorners];
+    const down=(p:any)=>({x:p.x,y:p.y+orbitDrop});
+    const wallQuad=[a,b,down(b),down(a)];
+    const topQuad=[orbitCorners.p00,orbitCorners.p10,orbitCorners.p11,orbitCorners.p01];
+    const colorPixels=wallColorPixels(opened,closed,wallQuad,topQuad,
+      predictedWallColors(testCase.square,testCase.edge),motionSize);
+    motionPixels.push({yaw,edge:testCase.edge,colorPixels});
+    if(visible.some(value=>value===testCase.edge))
+      assert.ok(colorPixels>0,`${testCase.edge} motion wall survives at yaw ${yaw}`);
+    else
+      assert.equal(colorPixels,0,`${testCase.edge} motion back face stays hidden at yaw ${yaw}`);
+  }
+  for(const square of motionTopSamples) {
+    const tileCorners=corners(square,orbitCamera,motionSize);
+    const quad=[tileCorners.p00,tileCorners.p10,tileCorners.p11,tileCorners.p01];
+    let spills=0;
+    const count=maskPixels(opened,quad,0.5,(color,x,y)=>{
+      if(color!==sample(closed,motionSize,x,y))spills++;
+    },motionSize);
+    assert.ok(count>0,`motion adjacent tile ${square} has an inset core at yaw ${yaw}`);
+    if(spills)motionSpills.push({yaw,square,count:spills});
+    motionAdjacentTopPixels+=count;
+  }
+  if(yaw===45||yaw===345) {
+    // The browser's aligned 512px board slot expands the 128px ground by
+    // exact nearest-neighbor steps; check the resulting rift-corner band.
+    const open512=BoardScene.nearest2(8n,BoardScene.nearest2(7n,opened)) as Image;
+    const closed512=BoardScene.nearest2(8n,BoardScene.nearest2(7n,closed)) as Image;
+    for(const square of motionTopSamples) {
+      const tileCorners=corners(square,orbitCamera,size);
+      const quad=[tileCorners.p00,tileCorners.p10,tileCorners.p11,tileCorners.p01];
+      let spills=0;
+      const count=maskPixels(open512,quad,6,(color,x,y)=>{
+        if(color!==sample(closed512,size,x,y))spills++;
+      },size);
+      assert.ok(count>0,`expanded tile ${square} has a visible top at yaw ${yaw}`);
+      if(spills)composedMotionSpills.push({yaw,square,count:spills});
+      composedMotionTopPixels+=count;
+    }
+  }
+}
+const sweepSpills:Array<{yaw:number;pitch:number;zoom:number;square:number;count:number}>=[];
+if(process.env.BEND_MOTION_SWEEP==='1')for(const pitch of [35,52,67,90])
+for(const zoom of [75,115,130])for(let yaw=0;yaw<360;yaw+=15) {
+  const orbitView={$:'View',yaw,pitch,zoom};
+  const orbitCamera=Camera.basis(orbitView);
+  const opened=BoardScene.fast_ground(7n,128,underlay,frame(neighbors,orbitView)) as Image;
+  const closed=BoardScene.fast_ground(7n,128,underlay,frame(0,orbitView)) as Image;
+  checkAbsoluteTops(opened,neighbors,orbitView,theme);
+  for(const square of motionTopSamples) {
+    const tileCorners=corners(square,orbitCamera,128);
+    const quad=[tileCorners.p00,tileCorners.p10,tileCorners.p11,tileCorners.p01];
+    let spills=0;
+    maskPixels(opened,quad,0.5,(color,x,y)=>{
+      if(color!==sample(closed,128,x,y))spills++;
+    },128);
+    if(spills)sweepSpills.push({yaw,pitch,zoom,square,count:spills});
+  }
+}
+// Near-cardinal facing thresholds and edge/corner rifts in both palettes.
+let variantViews=0;
+for(const yaw of [88,89,90,91,92,178,179,180,181,182,268,269,270,271,272,
+  358,359,0,1,2])for(const holes of [Model.macro_mask(0),
+  Model.macro_mask(10),Model.macro_mask(15),
+  Model.macro_mask(0)|Model.macro_mask(15)])for(const themeArg of [0,1]) {
+  const orbitView={$:'View',yaw,pitch:52,zoom:115};
+  const image=BoardScene.fast_ground(7n,128,underlay,
+    frame(holes,orbitView,themeArg)) as Image;
+  checkAbsoluteTops(image,holes,orbitView,themeArg);
+  variantViews++;
+}
+console.log(JSON.stringify({motionSpills,composedMotionSpills,
+  sweepViews:process.env.BEND_MOTION_SWEEP==='1'?288:0,sweepSpills:sweepSpills.slice(0,16),
+  sweepSpillCount:sweepSpills.length,variantViews,absoluteTopCenters}));
+assert.deepEqual(motionSpills,[],'motion walls cannot cover sampled present rift or perimeter tops');
+assert.deepEqual(composedMotionSpills,[],'expanded motion walls cannot cover sampled present tops');
+assert.deepEqual(sweepSpills,[],'orbit wall clipping cannot cover a present top across the camera sweep');
+if(process.env.BEND_MOTION_BENCH==='1') {
+  const orbitView={$:'View',yaw:345,pitch:67,zoom:115};
+  const draw=()=>BoardScene.fast_ground(7n,128,underlay,frame(neighbors,orbitView));
+  for(let i=0;i<5;i++)draw();
+  const times:number[]=[];
+  for(let i=0;i<25;i++) {
+    const start=performance.now();
+    draw();
+    times.push(performance.now()-start);
+  }
+  times.sort((a,b)=>a-b);
+  console.log(JSON.stringify({motionBench:'warm JS tree construction, 128px, yaw345/pitch67/zoom115',
+    medianMs:times[12],p90Ms:times[22],minMs:times[0],maxMs:times[24]}));
+}
+
+console.log(JSON.stringify({ok:true,topologyChecks:19,edgePixels,obliquePixels,motionPixels,
+  aperturePixels,apertureCorePixels,adjacentTopPixels,motionAdjacentTopPixels,composedMotionTopPixels,
+  scope:'Per-facing-edge settled wall checks at four cardinal and five oblique yaws; nine low-resolution orbit wall/top checks including diagonal rift corners; full aperture core underlay and adjacent present-tile top masks.'}));

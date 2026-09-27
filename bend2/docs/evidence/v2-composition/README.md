@@ -57,16 +57,26 @@ offline move, PCM, Shift/Undo and portrait. Receipt:
 The BoardScene source SHA-256 at this draft is
 `2b91706e5ac875f1c2027c56dfe92c954b74b979da013a30f210c494aee9224f`.
 The native X11 g1/h3 click probe and the CPU timing fixture now derive or use
-the 67° default rather than 52°; only the latter's selected fixture was
-executed locally. The finite compact-motion test compared 60,817,408 emitted
+the 67° default rather than 52°. The finite compact-motion test compared 60,817,408 emitted
 bytes across four angles and three layouts with exact equality; its
 same-process timings are diagnostics, not a native or browser frame budget.
-The native probe still awaits its Linux package run.
 
 The older [Linux report](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858004336)
-binds only the prior published `f8a7fbf` source, not this candidate. The
-new 88 GiB native admission guard is pending a new-source Linux run. No GPU
-grant, CUDA execution or 2.0.28 pin amendment is claimed.
+binds only the prior published `f8a7fbf` source. The subsequent
+[new-source result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858793813)
+binds clean `4f6e52f`, tree `e3b0354` and all six requested file pins. The
+88 GiB guard admitted the host after read-only, initial and just-before-C
+emission measurements; one CPU package build passed in 462.89 seconds with
+38,316,064 KiB measured peak RSS. Package receipt SHA-256 is
+`4dc1e2e04e14f0934a2bdb69329aeed199ce6db6b610e48dd4fbe11a5747cf5d`,
+ELF SHA-256 `708ead8b1c274a45cb6321eed40295785a7879bd86592544af621ea0a3b1ab48`.
+On real X.Org :1, g1 select/deselect, g1-h3, close and a fresh-data relaunch
+with Black to move passed. The existing PipeWire sink monitor captured idle
+silence and 12,762 nonzero move samples at 48 kHz stereo s16, without clips.
+This is host-reported CPU/window/routed-PCM evidence for that published
+source, not physical audibility, saved-old-view migration, a Windows-native
+run, GPU parity or owner visual acceptance. No CUDA/GPU grant or compiler pin
+amendment is claimed.
 
 ## Clean publication and remaining gates
 

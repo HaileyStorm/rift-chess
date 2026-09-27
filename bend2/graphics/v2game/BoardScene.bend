@@ -18,6 +18,7 @@ import ../../lib/graphics/v2/Transform2D.bend as Transform
 import ../../lib/grid8/SpatialBoard.bend as SpatialBoard
 import ../../lib/grid8/SpatialFast.bend as SpatialFast
 import ./PieceArt.bend as PieceArt
+import ./MotionWall.bend as MotionWall
 import ./Assets.bend as Assets
 import ../../lib/graphics/v2/Color.bend as Color
 import ./PieceSprites.bend as PieceSprites
@@ -439,8 +440,8 @@ def palette_edge(colors: SpatialBoard.Palette) -> U32:
 def rim_color(theme: U32) -> U32:
   palette_edge(palette(theme))
 
-# Settled board only: the low-latency orbit pass intentionally keeps flat
-# presence tiles and is replaced by this detailed ground after motion ends.
+# Settled board uses full topology-aware faces and lips. The low-latency orbit
+# path keeps flat tile tops but adds only camera-facing exposed wall facets.
 def cutout_wall_edges(+file: U32, +rank: U32, +holes: U32,
   corners: Corners, +depth: Nat, +size: U32, +drop: F32,
   +style: RaisedFacet.Surface, image: Image) -> Image:
@@ -462,6 +463,57 @@ def cutout_walls(+square: U32, +depth: Nat, +size: U32,
   +camera: Camera.Basis, image: Image) -> Image:
   cutout_wall_edges(Model.file_of(square),Model.rank_of(square),holes,
     corners,depth,size,extrusion(size,camera),surface(square,theme),image)
+
+# The compact orbit image paints camera-facing exposed walls over its flat
+# top pass, clipping wall pixels against the identical affine presence mask.
+def motion_wall_edge(show: Bool, +depth: Nat, +size: U32,
+  +a: Quad.Point, +b: Quad.Point, +drop: F32,
+  +inverse: SpatialFast.Inverse, +mask: Board.Mask,
+  color: U32, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}:
+      MotionWall.draw(depth,size,Quad.make(a,b,wall_drop(b,drop),
+        wall_drop(a,drop)),inverse,mask,color,image)
+
+def motion_wall_edges(+file: U32, +rank: U32, +holes: U32,
+  corners: Corners, camera: Camera.Basis, +depth: Nat, +size: U32,
+  +drop: F32, +inverse: SpatialFast.Inverse, +mask: Board.Mask,
+  style: RaisedFacet.Surface, image: Image) -> Image:
+  match corners camera style:
+    case Corners{+p00,+p10,+p11,+p01}
+      Camera.Basis{+cosYaw,+sinYaw,sinPitch,cosPitch,scale,cx,cy}
+      RaisedFacet.Surface{top,+side,edge,shadow,glint}:
+      +shade = Color.over(side,shadow,160)
+      +up = motion_wall_edge(Bool.and(F32.is_lt(cosYaw,F32.neg(0.02)),
+        missing_rank_up(file,rank,holes)),depth,size,p00,p10,drop,inverse,mask,side,image)
+      +right = motion_wall_edge(Bool.and(F32.is_gt(sinYaw,0.02),
+        missing_file_right(file,rank,holes)),depth,size,p10,p11,drop,inverse,mask,shade,up)
+      +down = motion_wall_edge(Bool.and(F32.is_gt(cosYaw,0.02),
+        missing_rank_down(file,rank,holes)),depth,size,p11,p01,drop,inverse,mask,side,right)
+      motion_wall_edge(Bool.and(F32.is_lt(sinYaw,F32.neg(0.02)),
+        missing_file_left(file,rank,holes)),depth,size,p01,p00,drop,inverse,mask,shade,down)
+
+def motion_wall_tile(show: Bool, +square: U32, +c: Context,
+  +inverse: SpatialFast.Inverse, +mask: Board.Mask,
+  image: Image) -> Image:
+  match show c:
+    case False{} _: image
+    case True{} Context{depth,+size,frame,+camera,board,oldBoard,
+        previous,+holes,action,+theme}:
+      +file = Model.file_of(square)
+      +rank = Model.rank_of(square)
+      +corners = square_corners(size,camera,file,rank)
+      motion_wall_edges(file,rank,holes,corners,camera,depth,size,
+        extrusion(size,camera),inverse,mask,surface(square,theme),image)
+
+def motion_wall_tiles(order: List<&2,U32>, +c: Context, +holes: U32,
+  +inverse: SpatialFast.Inverse, +mask: Board.Mask, image: Image) -> Image:
+  match order:
+    case Nil{}: image
+    case +square <> rest:
+      +tiled = motion_wall_tile(Model.present(holes,square),square,c,inverse,mask,image)
+      motion_wall_tiles(rest,c,holes,inverse,mask,tiled)
 
 def cutout_rim_edges(+file: U32, +rank: U32, +holes: U32,
   corners: Corners, +depth: Nat, +size: U32, +color: U32,
@@ -1193,8 +1245,10 @@ def fast_ground.context(base: Image, +context: Context) -> Image:
   match context:
     case Context{depth, +size, frame, +camera, board, oldBoard,
         previous, +holes, action, +theme}:
-      SpatialFast.draw(depth, size, fast_affine(size, camera),
+      +tops = SpatialFast.draw(depth, size, fast_affine(size, camera),
         presence_mask(holes), palette(theme), base)
+      motion_wall_tiles(Camera.depth_order(camera),context,holes,
+        SpatialFast.invert(fast_affine(size,camera)),presence_mask(holes),tops)
 
 # This ground is independent of occupancy, selection, targets and animation.
 # Cache it while camera basis, holes, theme and tier stay unchanged; compose
