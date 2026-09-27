@@ -150,3 +150,13 @@ unchanged pixel oracle, including 1,088 annulus samples. The patch 006 notes
 bind the final receipt and explain why cross-book/application ABI parity is
 still open. No production host or frozen specification was altered for this
 candidate check.
+The production-facing controller has a separate observed ABI counterexample:
+unchanged host `Activate` is ignored by candidate `ApplicationControl`, whose
+emitted input constructor is `ui/Types.Activate`. An exact tagged diagnostic
+opens the View menu, but the actual browser host still sends the old bare
+tag. The patch 006 receipt binds that contrast; a systematic host and
+cross-book compatibility rule plus rendered game tests are required before
+any pin move.
+Keep the host queue's exact bare-tag `PointerMove` coalescing semantics when
+choosing the translation boundary; a worker-dispatch adapter is a hypothesis,
+not yet tested or adopted.

@@ -637,6 +637,12 @@ entry points, 5,874 independent core-library checks and 1,088 annulus
 samples with a source-bound, candidate-only constructor-tag bridge. Direct
 `Shapes` and books importing `Shapes` require different TS-side tags in
 2.0.28; production host/cross-book ABI parity remains unverified.
+A source-bound one-event controller probe confirms that the unchanged browser
+host's bare `Activate` is ignored by the candidate, whereas
+`ui/Types.Activate` opens View. This is an observed host ABI migration gate,
+not merely a hypothetical graphics-test difference.
+Any adapter must preserve the host input queue's bare `PointerMove`
+coalescing while covering all input variants and cross-book values.
 The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
 receipts and lists the broader graphics matrix, full-browser, Linux/native,
 performance and reviewed-amendment gates still outstanding. No toolchain
@@ -662,3 +668,6 @@ The committed non-draft browser build repeated the identical content version
 graphics and attestation checks. It remains unpublished.
 The Linux package request remains bound to older published source and is not
 new-source native acceptance.
+A read-only Windows package preflight checks the current pin, source closure
+and asset hashes but reports `buildPermitted: false`; it emits no C or ELF and
+does not advance the Linux CPU/GUI/PCM/restart gate.

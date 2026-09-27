@@ -111,10 +111,28 @@ ABI compatibility. The final ignored receipt SHA-256 is
 at `.artifacts/bend2/toolchain-patches/alias-equality-2028-graphics/receipt-1790482211002-5cfeebbe-29d6-462d-a179-929106f092f6.json`.
 It also records the graphics v1 source-freeze SHA-256
 `5b19540c3f98a1b325302b9896e1558da15fe469054c3bd95750eff0ca5c7d6e`.
+
+The [controller ABI probe](controller-abi-check.mjs) demonstrates the same
+boundary in production-facing input. Emitted candidate `ApplicationControl`
+names the constructor `ui/Types.Activate`. The pinned 2.0.27 controller opens
+the View menu with host-authored bare `Activate` (menu 0 → 11); the candidate
+ignores that unchanged event (0 → 0), while exact `ui/Types.Activate` restores
+the same transition (0 → 11). The source-bound, local-only receipt binds 43
+inputs and all compiler bytes: SHA-256
+`4305a80a0c5a561aaea64cad8dc7fc1037ca635e7ca0ef134e049c46897fb53d`
+at `.artifacts/bend2/toolchain-patches/alias-equality-2028-controller-abi/receipt-1790483671861-ca868d86-4167-49ca-9adb-cc09231c3b8e.json`.
+The first receipt attempt timed out at a 120-second diagnostic bound during
+pinned compilation and produced no verdict; the completed repeat used a
+300-second per-process bound. This is a one-event ABI counterexample, not a
+full host input mapping or candidate browser acceptance.
+The current host and presented-input queue use bare tags, including exact
+`PointerMove` coalescing. A future boundary adaptation must preserve that
+queue policy and cover every host-authored input and cross-book return; an
+`Activate`-only production rewrite would hide rather than solve the migration.
 The original 2.0.27 interop and frozen fixtures were not edited.
 
 Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
-the broader graphics matrix and cross-book constructor ABI, the current
+the broader graphics matrix and systematic cross-book/host constructor ABI, the current
 application build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
 parity, measured runtime behavior and independent final review. Any pin move
 must use the Local Bend Guide's frozen-dependency amendment, preserving old
