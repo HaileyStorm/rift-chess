@@ -99,3 +99,43 @@ published 2.0.28 build, Linux native parity, a GPU benchmark, full device
 coverage, or a reviewed pin amendment. The BotAdapter bundle above precedes
 the later board-edge source edit; its source-closure binding must not be
 reinterpreted as coverage of that newer scene.
+
+## Current published visual-source trial
+
+After the clean 2.0.27 visual preview source commit `4f6e52f`, a new
+nonce-private 2.0.28+006 candidate was built from clean main HEAD
+`e3e8f3ddb904285e13b093502a8710cc6d8eed05` (the later commit only adds
+publication evidence). The candidate driver conservatively marks every run
+`draft: true, sourceDirty: true`; this does not assert the main checkout is
+dirty. It does not write the pinned compiler, normal build or published site.
+Run root:
+`.artifacts/bend2/toolchain-patches/browser-2028-candidate/run-1790534551076-db18c563-001c-4a7c-8329-806cfb070330/`.
+Build version `e03b14a30ebcf59973a8`, `build.json` SHA-256
+`8b8533d0c16497d45e33544e193b5ae7b1529c3fd3c34731f04d58ef356556e5`,
+build receipt SHA-256
+`28eed190c9b1d4644ef9b582fd07dcdf133b4fc8ed63d5c98978ab4f09b85997`.
+All 21 manifest files matched after the run. The real Chrome hotseat matrix
+passed all 13 groups with served build bytes bound, zero errors, offline
+move, PCM, Shift/Undo, promotion and portrait. Receipt SHA-256
+`00a04f2a064f42a1ba250df2487e92b48e9efbc8be1d4c752dfe22dba697e969`
+at `scenarios/final-visual-hotseat-20260927/receipt.json` under that run.
+
+The candidate composition capture at `composition/receipt.json` (SHA-256
+`2a66191512528d62006b39e905ef219524c859468e9c8dc557b74e620c6a8baa`)
+passed the default, 330°, Front and old-saved-default reload views. All four
+PNG hashes matched the corresponding pinned 2.0.27 clean source captures,
+including default SHA-256
+`e0f4f125954f6dee919cbe735141254c9ce718ffe71949d09f39a44e1b85cf93`.
+This is finite rendered-pixel parity at those views, not every frame or device.
+
+A fresh diagnostic-only bot re-bundle from that exact candidate lives under
+`run-1790534821546-dcf083d9-37f0-471e-bab2-2f36c557a637/`, version
+`1dc38b836d17f8b83a12`. Its receipt SHA-256 is
+`500b2d2ce68c8f2d8db6b0ce0b34fc42de59eb8489c18ed7a44f3e7d9057b37f`.
+The strict Chrome online and cold-offline route receipt SHA-256 is
+`70a8ed570e7a802674fd98fc3bb72e6b3dceae355d7fabd740fdb2890af0fa48`.
+Each phase recorded `session-ready → choose → applied`, no fallback,
+`completed: 1`, `remoteJobs: 3`, `requiredWitnesses: 1`, legal choice 20065,
+and persisted `bot_apply_at` revision 1→2; 18 module requests were observed.
+This is still instrumented candidate-only proof, not the unchanged production
+worker, a pin amendment, native/GPU parity or owner acceptance.

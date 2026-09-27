@@ -787,3 +787,12 @@ the new default angle before a new-source Linux pilot; they have not yet been
 executed on that host. One [CPU-only new-source request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5858608451)
 is bound to clean commit `4f6e52f`, tree `e3b0354`, the 88 GiB guard and
 exact camera/scene/probe hashes; no CUDA/GPU grant follows from it.
+
+The separately isolated 2.0.28+006 candidate was repeated against this
+published visual source without touching the pinned toolchain. Its draft
+hotseat bundle passed all 13 real Chrome groups, and its diagnostic bot route
+passed strict worker-only online and cold-offline checks with zero fallback.
+Four sampled camera/migrated-preference captures matched pinned 2.0.27 PNG
+bytes. See the [candidate evidence](docs/evidence/browser-2028-candidate/README.md#current-published-visual-source-trial).
+This is local candidate compatibility evidence, not a reviewed pin move,
+native CPU/GPU parity or owner visual acceptance.

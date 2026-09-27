@@ -196,3 +196,13 @@ predecessor host/worker bundles. The
 [candidate evidence](evidence/browser-2028-candidate/README.md) binds the
 receipts and limits. This is an instrumented local probe, not the unchanged
 production host or full migration acceptance.
+
+The final published visual source also passed a new nonce-private 2.0.28
+candidate build with the actual BotAdapter bundle, the full 13-group local
+Chrome hotseat matrix, and a strict instrumented online/offline bot route.
+Default, 330°, Front and migrated-old-default screenshots were byte-identical
+to the pinned 2.0.27 render at those four sampled views. Its
+[current-source receipts](evidence/browser-2028-candidate/README.md#current-published-visual-source-trial)
+remain local candidate evidence. They do not establish an unchanged
+production ABI, native CPU/GPU compatibility, complete patch-stack replay,
+or authorization to move the pinned compiler.
