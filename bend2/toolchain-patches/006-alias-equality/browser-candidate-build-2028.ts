@@ -14,6 +14,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { BunPlugin } from 'bun';
 import { moduleSpecs } from '../../tools/selected-modules.mjs';
+import { bindWorkerLibrary, compilerSourceTreeHash } from '../../tools/emit-worker-libs.mjs';
 import { candidateBridgePlugin, candidateBridgeEvidence } from './browser-abi-transform-2028.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -375,6 +376,8 @@ async function main(): Promise<void> {
   }
 
   if (typeof Bun === 'undefined') throw new Error('Run the candidate builder with the pinned Bun 1.4.2 runtime.');
+  const pinMetadata = JSON.parse(fs.readFileSync(path.join(root, 'bend2/TOOLCHAIN.json'), 'utf8'));
+  assert.equal(Bun.version, pinMetadata.bunVersion, 'Candidate application build must use the pinned Bun runtime');
   const { nonce, runRoot, dist } = prepareRun();
   const cache = path.join(runRoot, 'selected-js');
   const compilerRoot = path.join(runRoot, 'compiler');
@@ -386,7 +389,7 @@ async function main(): Promise<void> {
     status: 'running', sourceRevision: readGitHead(root), sourceDirty: true,
     sourceDirtyMeaning: 'Conservative mutable-workspace claim; no clean-source assertion is made.',
     candidateCompiler: null, sourceInputs: null, emittedBooks: [], browserBridge: null,
-    buildFiles: null, bot: { status: 'missing', reason: 'Candidate BotAdapter worker library was not emitted; hotseat smoke only.' },
+    buildFiles: null, bot: { status: 'pending' },
     network: { BEND_NO_TELEMETRY: '1', BEND_HUB: 'http://127.0.0.1:9', packageCache: 'nonce-private empty directory' },
     dist,
   };
@@ -399,7 +402,11 @@ async function main(): Promise<void> {
     receipt.candidateCompiler = stack;
     const sourceRevision = readGitHead(root);
     receipt.sourceRevision = sourceRevision;
-    const bendEntries = selectedNames.map((name) => moduleSpecs[name].entry);
+    const bendEntries = [...selectedNames.map((name) => moduleSpecs[name].entry),
+      'bend2/platform/worker/BotAdapter.bend'];
+    const toolchainPinPath = path.join(root, 'bend2/TOOLCHAIN.json');
+    const toolchainPin = JSON.parse(fs.readFileSync(toolchainPinPath, 'utf8'));
+    assert.equal(Bun.version, toolchainPin.bunVersion, 'Candidate worker emission must use the pinned Bun runtime');
     const bendInputs = sourceClosure(bendEntries);
     const browserEntries = [
       'bend2/platform/browser/host.ts',
@@ -407,7 +414,11 @@ async function main(): Promise<void> {
       'bend2/platform/browser/sprite-helper.ts',
       'bend2/toolchain-patches/006-alias-equality/browser-abi-transform-2028.ts',
       'bend2/toolchain-patches/006-alias-equality/browser-abi-2028.ts',
+      'bend2/toolchain-patches/006-alias-equality/browser-candidate-bot-smoke-2028.mjs',
       'bend2/tools/selected-modules.mjs',
+      'bend2/tools/emit-worker-libs.mjs',
+      'bend2/TOOLCHAIN.json',
+      'bend2/tests/bot-worker-bootstrap.mjs',
       rel(driverPath),
     ];
     const browserInputs = browserSourceClosure(browserEntries);
@@ -470,15 +481,92 @@ async function main(): Promise<void> {
       console.log(JSON.stringify({ phase: 'selected-book-emitted', ...record }));
     }
     receipt.emittedBooks = emittedBooks;
+    const workerCompilerSourceTreeSha256 = compilerSourceTreeHash(compilerRoot);
     const cacheManifest = {
       schema: 'rift-bend-2028-candidate-selected-cache/1',
-      compiler: { baseCommit: upstreamCommit, sourceTreeSha256: mapDigest(privateAfter006), patch006Sha256: aliasPatchSha256 },
+      compiler: { baseCommit: upstreamCommit, sourceTreeSha256: mapDigest(privateAfter006),
+        workerContractSourceTreeSha256: workerCompilerSourceTreeSha256, patch006Sha256: aliasPatchSha256 },
       books: emittedBooks,
     };
     fs.writeFileSync(path.join(cache, 'manifest.json'), `${JSON.stringify(cacheManifest, null, 2)}\n`, { flag: 'wx' });
 
+    // Use the candidate compiler's reviewed static-worker CLI and the same
+    // exact five-artifact/source-binding contract as emit-worker-libs.mjs.
+    const rawBotDir = path.join(runRoot, 'bot-library-raw');
+    const botEntry = path.join(root, 'bend2/platform/worker/BotAdapter.bend');
+    const workerCompile = spawnSync(process.execPath, [path.join(privateBendDir, 'main.ts'), botEntry,
+      '--web-workers=required-only', '--web-policy=strict', '--web-exports=choose', '-o', rawBotDir], {
+      cwd: privateBendDir,
+      env: { ...process.env, BEND_NO_TELEMETRY: '1', BEND_HUB: 'http://127.0.0.1:9', BEND_LIB: emptyCandidateLib },
+      encoding: 'utf8', timeout: compileTimeoutMs, maxBuffer: 4 * 1024 * 1024, windowsHide: true,
+    });
+    if (workerCompile.error || workerCompile.status !== 0) {
+      const timedOut = (workerCompile.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT';
+      throw new Error(`Candidate 2.0.28 BotAdapter worker emission ${timedOut ? `exceeded ${compileTimeoutMs}ms bound` : `failed (status ${workerCompile.status})`}:\n` +
+        `${workerCompile.error?.message ?? ''}\n${(workerCompile.stderr || '').slice(-12000)}\n${(workerCompile.stdout || '').slice(-4000)}`);
+    }
+    const botManifest = JSON.parse(fs.readFileSync(path.join(rawBotDir, 'manifest.json'), 'utf8'));
+    assert.equal(botManifest.protocol, 1);
+    assert.equal(botManifest.backend, 'bend-web-workers-2');
+    assert.equal(botManifest.mode, 'required-only');
+    assert.equal(botManifest.policy, 'strict');
+    assert.deepEqual(Object.keys(botManifest.exports).sort(), ['choose']);
+    assert.equal(botManifest.functions[botManifest.exports.choose]?.name, 'choose');
+    assert.deepEqual(Object.keys(botManifest.artifacts).sort(), ['entry', 'manifest', 'program', 'runtime', 'worker']);
+    const botBinding = bindWorkerLibrary(rawBotDir, {
+      baseCommit: upstreamCommit, sourceTreeSha256: workerCompilerSourceTreeSha256,
+    });
+    const botBindingPath = path.join(rawBotDir, 'source-binding.json');
+    fs.writeFileSync(botBindingPath, `${JSON.stringify(botBinding, null, 2)}\n`, { flag: 'wx' });
+    const botBindingSha256 = readFileSha(botBindingPath);
+    receipt.bot = { status: 'emitted', manifest: botManifest, sourceBindingSha256: botBindingSha256,
+      compilerSourceTreeSha256: workerCompilerSourceTreeSha256,
+      command: ['<pinned-bun>', 'candidate/bend2/main.ts', 'bend2/platform/worker/BotAdapter.bend',
+        '--web-workers=required-only', '--web-policy=strict', '--web-exports=choose', '-o', 'nonce-private/bot-library-raw'],
+      stdout: (workerCompile.stdout || '').slice(-8000), stderr: (workerCompile.stderr || '').slice(-8000) };
+
     fs.mkdirSync(dist, { recursive: false });
     const files: Record<string, string> = Object.create(null);
+    const botOutputDirectory = path.join(dist, 'worker-libs/bot');
+    fs.mkdirSync(botOutputDirectory, { recursive: true });
+    for (const artifactName of Object.values(botManifest.artifacts).sort()) {
+      assert.equal(path.basename(artifactName), artifactName, 'Candidate bot artifact name is not a basename');
+      const bytes = fs.readFileSync(path.join(rawBotDir, artifactName));
+      files[`worker-libs/bot/${artifactName}`] = writePrivateFile(
+        dist, `worker-libs/bot/${artifactName}`, bytes);
+    }
+    const smokePath = path.join(root, 'bend2/toolchain-patches/006-alias-equality/browser-candidate-bot-smoke-2028.mjs');
+    const nodeVersion = spawnSync('node', ['--version'], { cwd: root, encoding: 'utf8', windowsHide: true });
+    assert.equal(nodeVersion.status, 0, nodeVersion.stderr);
+    assert.equal(nodeVersion.stdout.trim(), 'v24.12.0', 'Candidate bot smoke requires the observed Node 24.12.0 runtime');
+    const botSmoke = spawnSync('node', [smokePath, dist,
+      path.join(cache, 'controller.js'), runRoot, upstreamCommit,
+      workerCompilerSourceTreeSha256, botBindingPath], {
+      cwd: root,
+      env: { ...process.env, BEND_NO_TELEMETRY: '1', BEND_HUB: 'http://127.0.0.1:9', BEND_LIB: emptyCandidateLib },
+      encoding: 'utf8', timeout: compileTimeoutMs, maxBuffer: 4 * 1024 * 1024, windowsHide: true,
+    });
+    if (botSmoke.error || botSmoke.status !== 0) {
+      throw new Error(`Candidate BotAdapter warmup/call smoke failed (status ${botSmoke.status}):\n` +
+        `${botSmoke.error?.message ?? ''}\n${(botSmoke.stderr || '').slice(-12000)}\n${(botSmoke.stdout || '').slice(-8000)}`);
+    }
+    const botSmokeLine = (botSmoke.stdout || '').trim().split(/\r?\n/).filter(Boolean).at(-1);
+    assert.ok(botSmokeLine, 'Candidate bot smoke emitted no result record');
+    const botSmokeResult = JSON.parse(botSmokeLine);
+    assert.equal(botSmokeResult.status, 'success', botSmokeResult.failure ?? 'candidate worker smoke failed');
+    const botSmokeReceiptBytes = fs.readFileSync(botSmokeResult.receipt);
+    const botSmokeReceipt = JSON.parse(botSmokeReceiptBytes.toString('utf8'));
+    assert.equal(botSmokeReceipt.status, 'success');
+    assert.equal(botSmokeReceipt.nodeRuntime?.version, nodeVersion.stdout.trim());
+    assert.deepEqual(botSmokeReceipt.network.deniedFetches, []);
+    receipt.bot = { ...receipt.bot, status: 'candidate', available: true,
+      entry: './worker-libs/bot/index.mjs', sourceBindingSha256: botBindingSha256,
+      smokeReceipt: rel(botSmokeResult.receipt), smokeReceiptSha256: sha256(botSmokeReceiptBytes),
+      smoke: botSmokeReceipt.result, nodeRuntime: botSmokeReceipt.nodeRuntime,
+      files: Object.keys(botBinding.artifacts).sort() };
+    assert.equal(readFileSha(botBindingPath), botBindingSha256, 'Candidate worker source binding changed during smoke');
+    assert.equal(sha256(fs.readFileSync(smokePath)), sourceInputs[rel(smokePath)],
+      'Candidate bot smoke helper changed during run');
     const selected = selectedBookPlugin(cache);
     const common = { outdir: dist, target: 'browser' as const, format: 'esm' as const,
       naming: '[name]-[hash].[ext]', minify: true, sourcemap: 'none' as const, splitting: false,
@@ -552,15 +640,27 @@ async function main(): Promise<void> {
       compiler: {
         version: '2.0.28', upstreamTag: 'v2.0.28', baseCommit: upstreamCommit,
         orderedPatches: expectedPatchStack, sourceFiles: privateAfter006,
-        sourceTreeSha256: mapDigest(privateAfter006), patch006: { path: rel(aliasPatchPath), sha256: aliasPatchSha256,
+        sourceTreeSha256: mapDigest(privateAfter006),
+        workerContractSourceTreeSha256: workerCompilerSourceTreeSha256,
+        bunVersion: Bun.version,
+        patch006: { path: rel(aliasPatchPath), sha256: aliasPatchSha256,
           prePatchBendSha256: patchResult.before, postPatchBendSha256: patchResult.after,
           prePatchBendCanonicalSha256: patchResult.beforeCanonical,
           postPatchBendCanonicalSha256: patchResult.afterCanonical },
       },
       selectedBooks: emittedBooks,
       browserBridge: bridge,
-      bot: { status: 'missing', reason: 'Candidate BotAdapter worker library was not emitted; candidate build is for hotseat smoke only.' },
-      workerLibraries: { bot: { status: 'missing', available: false } },
+      bot: { status: 'candidate', available: true, entry: './worker-libs/bot/index.mjs',
+        sourceBindingSha256: botBindingSha256, smokeReceiptSha256: sha256(botSmokeReceiptBytes),
+        nodeRuntime: botSmokeReceipt.nodeRuntime,
+        protocol: botManifest.protocol, program: botManifest.program, backend: botManifest.backend,
+        mode: botManifest.mode, policy: botManifest.policy,
+        files: Object.keys(botBinding.artifacts).sort() },
+      workerLibraries: { bot: { status: 'candidate', available: true, entry: './worker-libs/bot/index.mjs',
+        sourceBindingSha256: botBindingSha256, program: botManifest.program,
+        nodeRuntime: botSmokeReceipt.nodeRuntime,
+        protocol: botManifest.protocol, backend: botManifest.backend, mode: botManifest.mode,
+        policy: botManifest.policy, files: Object.keys(botBinding.artifacts).sort() } },
       files: { ...sortedFiles, 'sw.js': files['sw.js'] },
     };
     fs.writeFileSync(path.join(dist, 'build.json'), `${JSON.stringify(candidate, null, 2)}\n`, { flag: 'wx' });

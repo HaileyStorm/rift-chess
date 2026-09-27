@@ -181,5 +181,18 @@ initial smoke provenance gap; the promoted repeat verifies the build receipt
 and all static file hashes before and after, binds the smoke script, and
 preserves the earlier receipts. See the
 [bounded evidence](evidence/browser-2028-candidate/README.md). This does not
-replay the full ordered compiler patch stack independently or close bot,
-offline, all input/effect paths, native/GPU, performance or pin-amendment gates.
+replay the full ordered compiler patch stack independently or close all
+input/effect paths, native/GPU, performance or pin-amendment gates.
+A subsequent hotseat run passed 13 local Chrome groups including offline
+play, PCM, import and portrait. Another nonce-private candidate emitted the
+actual BotAdapter worker library and passed a Node worker/serial comparison.
+Review caught a false-pass in an initial browser bot run: a saved bot reply
+could have come from serial fallback even though modules loaded. A corrected,
+source-bound diagnostic bundle instrumented the route and required ordered
+session-ready/choose/applied events, positive remote-work counters and zero
+fallback online and after cold offline reload. Both phases passed with the
+legal worker choice applied at revision 1→2; the final dist removed unused
+predecessor host/worker bundles. The
+[candidate evidence](evidence/browser-2028-candidate/README.md) binds the
+receipts and limits. This is an instrumented local probe, not the unchanged
+production host or full migration acceptance.

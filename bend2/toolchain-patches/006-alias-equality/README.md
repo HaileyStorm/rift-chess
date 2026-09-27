@@ -155,6 +155,14 @@ The original 2.0.27 interop and frozen fixtures were not edited. A later
 cover real hotseat boot, sprite refinement, menu input and one move under
 the systematic bridge. This does not retroactively turn the selected-book
 probe into full browser or bot acceptance.
+Later nonce-private candidate runs passed the extended local hotseat browser
+matrix and emitted a source-bound BotAdapter worker. A candidate-only strict
+diagnostic then established one real browser `choose`/`bot_apply_at` route
+online and after cold offline reload with no fallback, after a weaker
+two-command/module-fetch test was correctly demoted. The final diagnostic
+dist omits obsolete predecessor host/worker bundles. These are local draft
+gates, not pin migration or native/GPU acceptance; exact receipts and caveats
+are in the linked evidence.
 
 Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
 the broader graphics matrix and completion of actual candidate browser integration
