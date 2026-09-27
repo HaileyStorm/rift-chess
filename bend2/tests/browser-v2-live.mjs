@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
 const url = process.env.BEND_TEST_URL || 'http://127.0.0.1:4185/';
-const artifact = '.artifacts/bend2/v2-preview';
+const artifact = process.env.BEND_LIVE_ARTIFACT || '.artifacts/bend2/v2-preview';
 await mkdir(artifact, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });

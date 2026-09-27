@@ -651,9 +651,14 @@ prototype-sensitive tags. The actual production browser/worker code is unchanged
 A nonce-private 2.0.28 draft then emitted Controller, BoardScene and MenuAA,
 and a source-bound four-group real Chrome hotseat smoke passed boot, sprite
 refinement, Preferences open/close and e2–e4 with post-move refinement.
-The candidate bundle deliberately lacks a bot worker; the full interactive
-and offline matrix, bot runtime, import/audio effects and native gates remain
-required before any pin amendment. See the
+The first candidate bundle deliberately lacked a bot worker, but it later
+passed all 13 extended local hotseat Chrome groups. A separate nonce-private
+candidate then emitted a source-bound BotAdapter worker. Its Node worker
+smoke matched the serial scorer, and a strict instrumented Chrome diagnostic
+confirmed `choose` and `bot_apply_at` (no fallback) online and after a cold
+offline reload. This is not the uninstrumented production bundle, and the
+full migration, native, performance and reviewed-amendment gates remain
+required before any pin move. See the
 [candidate browser receipt](docs/evidence/browser-2028-candidate/README.md).
 The [candidate assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md) binds these
 receipts and lists the broader graphics matrix, full-browser, Linux/native,
@@ -706,3 +711,18 @@ independent repeat under different host load. The duplicated traversal and
 finite-domain precondition were not justified by that evidence. Its source
 and test were restored/removed without changing the game; the ignored
 `.artifacts/bend2/axis-trial/README.md` preserves the rejected measurements.
+
+## Exposed tile edges: local draft
+
+The owner noticed the missing outer and rift-facing tile depth. The settled
+Bend scene now draws conditional vertical faces and a stronger lip only where
+a present tile meets the board boundary or a missing neighbor; shared edges,
+the open rift center, picking and the compact motion pass remain unchanged.
+The pinned checker and a focused four-yaw pixel/topology gate pass. Default,
+orbit and portrait Chrome captures were inspected, and the extended local
+scenario passed all 13 groups with zero page errors. Two paired old/new
+six-click bursts had overlapping helper and last-input latency ranges; they
+are small variable-load diagnostics, not a performance acceptance benchmark.
+See the [local edge evidence](docs/evidence/v2-board-edges/README.md).
+This draft has not yet been published or accepted by the owner; the native,
+GPU and 2.0.28 gates remain separate.

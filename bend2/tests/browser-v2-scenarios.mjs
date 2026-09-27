@@ -1,26 +1,39 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { chromium } from 'playwright';
 
 const root = process.cwd();
 const url = process.env.BEND_TEST_URL || 'http://127.0.0.1:4185/';
-const buildPath = path.join(root, '.artifacts/bend2/v2-preview/dist/build.json');
-const build = JSON.parse(await fs.readFile(buildPath, 'utf8'));
+const buildPath = process.env.BEND_SCENARIO_BUILD_JSON ||
+  path.join(root, '.artifacts/bend2/v2-preview/dist/build.json');
+const buildBytes = await fs.readFile(buildPath);
+const build = JSON.parse(buildBytes.toString('utf8'));
+const buildSha256 = crypto.createHash('sha256').update(buildBytes).digest('hex');
 const expectedBuild = process.env.BEND_EXPECTED_BUILD;
 if (expectedBuild && build.version !== expectedBuild) {
   throw new Error(`Served build mismatch: expected ${expectedBuild}, local bundle is ${build.version}`);
 }
 const run = process.env.BEND_SCENARIO_RUN || new Date().toISOString().replace(/[:.]/g, '-');
-const out = path.join(root, '.artifacts/bend2/v2-preview/scenarios', run);
+const scenarioRoot = process.env.BEND_SCENARIO_OUTPUT_ROOT ||
+  path.join(root, '.artifacts/bend2/v2-preview/scenarios');
+const out = path.join(scenarioRoot, run);
 await fs.mkdir(out, { recursive: true });
 const extended = process.env.BEND_V2_EXTENDED === '1';
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await context.newPage();
+if (process.env.BEND_SCENARIO_BIND_BUILD === '1') {
+  const response = await page.request.get(new URL('build.json', url).href, { timeout: 30000 });
+  assert.equal(response.status(), 200, 'served build manifest is available');
+  assert.deepEqual(await response.body(), buildBytes,
+    'served build manifest must exactly match the selected local manifest');
+}
 const receipt = {
   schema: 'rift-bend-v2-browser-scenarios/1', at: new Date().toISOString(), url,
   buildVersion: build.version, buildSourceRevision: build.sourceRevision,
+  buildSha256, servedBuildBound: process.env.BEND_SCENARIO_BIND_BUILD === '1',
   extended, checks: [], captures: [], errors: [], metrics: {}, ok: false,
 };
 

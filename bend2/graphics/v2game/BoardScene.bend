@@ -349,10 +349,32 @@ def rim_edge(show: Bool, +depth: Nat, +size: U32, +a: Quad.Point,
     case True{}: Facet.draw(depth, size, Quad.make(a, b, inner_b, inner_a),
       color, opacity, image)
 
+def wall_drop(+point: Quad.Point, drop: F32) -> Quad.Point:
+  match point:
+    case Quad.Point{x,y}: Quad.Point{x,F32.add(y,drop)}
+
+def wall_edge(show: Bool, +depth: Nat, +size: U32, +a: Quad.Point,
+  +b: Quad.Point, +drop: F32, color: U32, image: Image) -> Image:
+  match show:
+    case False{}: image
+    case True{}:
+      +down_a = wall_drop(a,drop)
+      +down_b = wall_drop(b,drop)
+      Facet.draw(depth,size,Quad.make(a,b,down_b,down_a),color,255,image)
+
+def wall_side(style: RaisedFacet.Surface) -> U32:
+  match style:
+    case RaisedFacet.Surface{top,side,edge,shadow,glint}: side
+
+def wall_shadow(style: RaisedFacet.Surface) -> U32:
+  match style:
+    case RaisedFacet.Surface{top,side,edge,shadow,glint}:
+      Color.over(side,shadow,160)
+
 def missing_file_left_case(edge: Bool, +file: U32, rank: U32,
   holes: U32) -> Bool:
   match edge:
-    case True{}: False{}
+    case True{}: True{}
     case False{}: Bool.not(Model.present(holes, Model.sq(U32.sub(file, 1), rank)))
 
 def missing_file_left(+file: U32, rank: U32, holes: U32) -> Bool:
@@ -362,7 +384,7 @@ def missing_file_right_case(edge: Bool, +file: U32, rank: U32,
   holes: U32) -> Bool:
   match edge:
     case True{}: Bool.not(Model.present(holes, Model.sq(U32.add(file, 1), rank)))
-    case False{}: False{}
+    case False{}: True{}
 
 def missing_file_right(+file: U32, rank: U32, holes: U32) -> Bool:
   missing_file_right_case(U32.is_lt(file, 7), file, rank, holes)
@@ -370,7 +392,7 @@ def missing_file_right(+file: U32, rank: U32, holes: U32) -> Bool:
 def missing_rank_down_case(edge: Bool, file: U32, +rank: U32,
   holes: U32) -> Bool:
   match edge:
-    case True{}: False{}
+    case True{}: True{}
     case False{}: Bool.not(Model.present(holes, Model.sq(file, U32.sub(rank, 1))))
 
 def missing_rank_down(file: U32, +rank: U32, holes: U32) -> Bool:
@@ -380,7 +402,7 @@ def missing_rank_up_case(edge: Bool, file: U32, +rank: U32,
   holes: U32) -> Bool:
   match edge:
     case True{}: Bool.not(Model.present(holes, Model.sq(file, U32.add(rank, 1))))
-    case False{}: False{}
+    case False{}: True{}
 
 def missing_rank_up(file: U32, +rank: U32, holes: U32) -> Bool:
   missing_rank_up_case(U32.is_lt(rank, 7), file, rank, holes)
@@ -392,6 +414,30 @@ def palette_edge(colors: SpatialBoard.Palette) -> U32:
 
 def rim_color(theme: U32) -> U32:
   palette_edge(palette(theme))
+
+# Settled board only: the low-latency orbit pass intentionally keeps flat
+# presence tiles and is replaced by this detailed ground after motion ends.
+def cutout_wall_edges(+file: U32, +rank: U32, +holes: U32,
+  corners: Corners, +depth: Nat, +size: U32, +drop: F32,
+  +style: RaisedFacet.Surface, image: Image) -> Image:
+  match corners:
+    case Corners{+p00,+p10,+p11,+p01}:
+      +side = wall_side(style)
+      +shadow = wall_shadow(style)
+      +up = wall_edge(missing_rank_up(file,rank,holes),depth,size,
+        p00,p10,drop,side,image)
+      +right = wall_edge(missing_file_right(file,rank,holes),depth,size,
+        p10,p11,drop,shadow,up)
+      +down = wall_edge(missing_rank_down(file,rank,holes),depth,size,
+        p11,p01,drop,side,right)
+      wall_edge(missing_file_left(file,rank,holes),depth,size,
+        p01,p00,drop,shadow,down)
+
+def cutout_walls(+square: U32, +depth: Nat, +size: U32,
+  +holes: U32, +theme: U32, corners: Corners,
+  +camera: Camera.Basis, image: Image) -> Image:
+  cutout_wall_edges(Model.file_of(square),Model.rank_of(square),holes,
+    corners,depth,size,extrusion(size,camera),surface(square,theme),image)
 
 def cutout_rim_edges(+file: U32, +rank: U32, +holes: U32,
   corners: Corners, +depth: Nat, +size: U32, +color: U32,
@@ -415,7 +461,7 @@ def cutout_rim_edges(+file: U32, +rank: U32, +holes: U32,
 def cutout_rim(+square: U32, +depth: Nat, +size: U32,
   +holes: U32, +theme: U32, corners: Corners, image: Image) -> Image:
   cutout_rim_edges(Model.file_of(square), Model.rank_of(square), holes,
-    corners, depth, size, rim_color(theme), 84, image)
+    corners, depth, size, rim_color(theme), 184, image)
 
 def outline_corners(corners: Corners, +depth: Nat, +size: U32,
   color: U32, opacity: U32, image: Image) -> Image:
@@ -441,8 +487,9 @@ def tile(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
             previous, +holes, action, +theme}:
           +corners = square_corners(size, camera,
             Model.file_of(square), Model.rank_of(square))
+          +walls = cutout_walls(square,depth,size,holes,theme,corners,camera,image)
           +tiled = tile.with_corners(True{}, depth, size, square, camera,
-            theme, corners, image)
+            theme, corners, walls)
           cutout_rim(square, depth, size, holes, theme, corners, tiled)
 
 def progress(frame: Scene.Frame) -> U32:
