@@ -818,10 +818,19 @@ checks. The nine-yaw and 288-view sweep, 160 near-cardinal/hole/theme
 variants, 27,260 present top centers, 13-group real Chrome scenario, real
 held-pointer capture, compact pixel equivalence, source checker, TypeScript
 check and 62/62 root tests pass. The active-orbit image has visible rift and
-outer side bands during drag, but retains coarse temporary sprites. It is
-still a dirty local candidate; see the
-[motion-wall evidence](docs/evidence/v2-motion-walls/README.md). No Linux
-result applies to these changed scene bytes until a fresh exact-source run.
+outer side bands during drag, but retains coarse temporary sprites. The
+clean non-draft build at `68411c4` repeated draft version `4ac79468f49425b6fec3`;
+the separate Pages preview published it at `2252b0a`. All 22 live files and
+two original TypeScript-site baseline files matched, and the hosted real
+Chrome scenario passed all 13 groups with zero errors. The first immediate
+public check saw the previous deployment and is retained as failed evidence.
+See the [motion-wall evidence](docs/evidence/v2-motion-walls/README.md).
+No Linux result applies to these changed scene bytes until a fresh
+exact-source run; public browser playability is not owner acceptance.
+One [CPU-only native retest request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860391255)
+is bound to `68411c4`, the new `MotionWall` hash and the 88 GiB guard.
+The existing quiet follow-up now watches that request, not the completed
+composition result; no duplicate run or GPU grant is implied.
 
 ## Bend 2.0.32 release triage
 

@@ -45,8 +45,40 @@ SHA-256 `7e06e0802c1015095db2d9a2731b88918e632c87d32e098924180fe64f77633e`.
 The compact-vs-expanded composed image gate matched 60,817,408 bytes;
 root TypeScript checking and 62/62 original app tests passed.
 
-This draft has not been published, run on Linux native CPU/GPU, or approved
-by the owner. One warm selected-JS 128px ground-construction sample had
+At this draft checkpoint it had not been published, run on Linux native
+CPU/GPU, or approved by the owner. One warm selected-JS 128px ground-construction sample had
 median 33.16 ms and p90 50.23 ms across 25 iterations; it is not a stable
 browser frame budget. The exact earlier Linux result applies only to the
 older published composition source `4f6e52f`.
+
+## Clean build and hosted preview
+
+After source commit `68411c4a6103dd88560cbf71dd5d5812df97a872`
+(tree `c2193270a28dff5476cefe9f304d593e8d177aa6`), the clean
+non-draft pinned-2.0.27 build reproduced the exact draft content version
+`4ac79468f49425b6fec3` with `sourceDirty: false`. Its `build.json`
+SHA-256 is `c9a049cd6fa9e67c93ebe9e24b0172161d7e2ff0e2240e2e58f4351b9b1e4bab`.
+The separate free [Bend browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+now serves Pages commit `2252b0ae89bcb9bb5098cd6bae86d17a55ce983b`.
+Older hashed assets were retained for previous visitors. The first public
+check ran before Pages finished and saw the old deployment; its failed
+receipt is preserved at
+`.artifacts/bend2/publication/2026-09-27T22-15-28-045Z-f68850ad/`.
+The subsequent ignored receipt
+`.artifacts/bend2/publication/2026-09-27T22-16-09-158Z-6e84e22e/receipt.json`
+(SHA-256 `26d9fc146c1728c0fc8869459124bff111dff777828192af2753a36664187532`)
+verified all 22 manifest-listed live files and two unchanged original
+TypeScript-site baseline files. The hosted real Chrome scenario bound
+served `build.json` to the clean local manifest and passed all 13 groups
+with zero errors, including offline, PCM, themes, Shift, promotion and
+portrait. Its ignored receipt is
+`.artifacts/bend2/v2-preview/scenarios/hosted-orbit-mask-4ac-2252b0a-20260927/receipt.json`
+(SHA-256 `56a5905961d36423f7b41aeac46c39633386bb700bafe54dc9e4aa673bd2f63e`).
+The hosted initial desktop PNG is byte-identical to the prior settled
+composition capture. These are public-browser facts, not the owner's
+subjective approval, native source-parity, or GPU performance.
+One [CPU-only Linux retest request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860391255)
+now binds exact clean source `68411c4`, its tree, new `MotionWall` and scene
+hashes, builder/pin/camera/record/probe bytes, the 88 GiB admission gate and
+one fresh native package/X.Org/PCM/restart probe. It explicitly excludes
+CUDA/GPU and a 2.0.32 pin move; no response has been treated as acceptance.
