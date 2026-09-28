@@ -307,3 +307,9 @@ checker migration if necessary). Either path changes the authorized pin
 strategy and needs the owner's choice; neither makes the candidate's browser,
 CPU or finite proof receipts canonical or closes the separate GPU and visual
 acceptance gates.
+
+The subsequent [current-source CUDA pilot](evidence/native-2028-gpu/README.md)
+proved an actual leased RTX 5090 process but **failed** the original 250 ms
+GPU-on deselection, while CPU/off passed. Its lease and host claim were
+closed. The requested observer-only timing diagnostic remains separate from
+acceptance; it cannot cure the canonical pin incompatibility above.

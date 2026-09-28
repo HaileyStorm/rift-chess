@@ -1071,3 +1071,18 @@ inspected; the detailed frame arrived 4,677.9 ms after the first frame in
 that cold sample. The artwork route is functional, but rapid visual readiness
 and owner acceptance are still open. This test-only change does not alter the
 published/native source bound to the pending GPU request.
+The additional real Front-preset capture is now part of that narrow gate:
+the authored back rank still projects into part of the pawn rank, so the
+piece-height/placement concern has not been declared resolved. A visual
+source change would need a fresh clean browser/native/GPU source binding;
+this capture and test change do not silently transfer the `c30d312` device
+request to a later build.
+
+The [exact-c30 leased CUDA pilot](docs/evidence/native-2028-gpu/README.md)
+reported actual RTX 5090 execution and matched held/settled orbit, but
+**failed** the original 250 ms GPU-on second-click deselection where CPU/off
+passed. Its lease was withdrawn and denied, and its claim released. A fresh
+[observer-only timing request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5867368799)
+is open on the retained ELF/sidecar; it is not a second acceptance attempt.
+Default GPU-off and the failed gate remain in force. A final visual-source
+change would also need a fresh exact-source device gate after a reviewed fix.

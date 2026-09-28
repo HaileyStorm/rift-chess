@@ -199,3 +199,11 @@ passed under two fresh 88 GiB memory admissions. Its host-local receipt and
 C/ELF hashes are retained in the linked evidence. This result is CPU-only;
 it neither repairs the earlier 2.0.27 GPU-on deselection failure nor changes
 the pinned toolchain or this builder's default-off contract.
+
+The [exact-c30 2.0.28+006 CUDA-on pilot](evidence/native-2028-gpu/README.md)
+reused that CPU C under a fresh, subsequently withdrawn GPU lease. Actual RTX
+5090 device execution and matching held/settled orbit were observed, but the
+original 250 ms second-click deselection still failed only with explicit
+`--gpu on`. CPU/off passed. No automatic retry or slower acceptance cadence
+followed. The launcher stays default-off, and the separate timing diagnostic
+is not GPU acceptance.

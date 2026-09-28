@@ -156,17 +156,22 @@ async function scenario(name, viewport, body) {
       const fault = await page.evaluate(() => window.__fault);
       if (fault) throw new ScriptError(`Bend runtime fault: ${fault}`);
     },
-    async refined(timeout = 90000) {
-      await page.waitForFunction(() => window.__fault || window.__refinements.length > 0, null, { timeout });
+    async refined(afterCount = 0, timeout = 90000) {
+      await page.waitForFunction(count => window.__fault || window.__refinements.length > count,
+        afterCount, { timeout });
       const state = await page.evaluate(() => ({ fault: window.__fault,
         initial: window.__frames.find(frame => frame.dirty)?.at,
-        refined: window.__refinements[0] }));
+        lastFrame: window.__frames.at(-1)?.at,
+        refined: window.__refinements.at(-1) }));
       if (state.fault) throw new ScriptError(`Bend sprite refinement fault: ${state.fault}`);
       t.check(state.refined.dirty && state.refined.spriteMetrics &&
         Number.isFinite(state.refined.spriteMetrics.spritesMs),
       'Detailed Bend sprite refinement replaced the initial frame', JSON.stringify(state.refined));
-      result.timings.spriteRefinement = { afterInitialMs: state.initial == null ? null :
-        +(state.refined.at - state.initial).toFixed(1), metrics: state.refined.spriteMetrics };
+      result.timings[afterCount === 0 ? 'spriteRefinement' : 'spriteFrontRefinement'] = {
+        afterInitialMs: afterCount > 0 || state.initial == null ? null :
+          +(state.refined.at - state.initial).toFixed(1),
+        afterFrameMs: state.lastFrame == null ? null : +(state.refined.at - state.lastFrame).toFixed(1),
+        metrics: state.refined.spriteMetrics };
     },
     async change(action) {
       const id = await page.evaluate(() => window.__reply?.id || 0);
@@ -442,6 +447,11 @@ await scenario('desktop-start', DESKTOP, async t => {
   await t.shot('start', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], controls: [1, 3, 11], pageShot: true });
   await t.refined();
   await t.shot('start-refined', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], pageShot: true });
+  const refinements = await t.page.evaluate(() => window.__refinements.length);
+  await t.control(56); await t.control(11); // Front view, not just the default oblique.
+  await t.refined(refinements);
+  await t.shot('front-refined', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6')] });
+  await t.control(28);
   const ids = (await t.controls()).map(c => c.id);
   t.check([1, 2, 27, 3, 5, 47, 55, 56, 57].every(id => ids.includes(id)), 'Top bar and compact play controls are presented', ids.join(','));
   await t.control(2); await t.shot('new-match-menu', { controls: [29, 30, 33, 35] });

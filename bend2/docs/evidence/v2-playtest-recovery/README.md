@@ -124,3 +124,18 @@ and 1,624.2 ms sprite drawing). This is a conspicuous placeholder interval,
 not a responsive-startup pass or a distribution/owner visual verdict. The
 new assertion is a narrow regression gate; the full matrix was not rerun on
 the changed test driver.
+
+A follow-up exact-build-bound hosted Chrome run exercised the named **Front**
+view after a second genuine sprite refinement, then closed View and completed
+the original layout-C checks. All checks passed with zero defects. Its ignored
+`front-refined-final-20260928/summary.json` is SHA-256
+`812eda0882af68a7e621b07d1250e3015c22bd0a7d96c7cd8a113ab7bf261b0a`;
+the scenario result is
+`968486360f8783a8de6000ab9ff1276e22d1bbc616244b4c70cb0701750604cf`.
+The visually inspected `03-front-refined-L1.png` is SHA-256
+`7937bb85a00dae3925e2681c3f3d7dc0f566e6bf8b99daacc9d07635c54bed9b`.
+It shows both ranks and the exposed court edges, but the tall screen-facing
+back-rank art still occupies some of the adjacent pawn rank in this preset.
+The front-view refinement followed its last first-pass frame by 3,352.2 ms
+in this sample. These captures support a precise visual adjustment trial;
+they are not owner acceptance or a frame-budget pass.
