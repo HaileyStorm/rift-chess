@@ -13,22 +13,24 @@ The older `Native.bend` graphical emitter hit a compiler arity limit; that is
 historical, not the present `NativeV2.bend` status. The shared-source NativeV2
 has emitted and run as a Linux X11 CPU ELF, with separate CUDA-window, PCM-route
 and saved-game restart checkpoints. Those older binaries predate the current
-published camera rail and do not prove native parity for later source. The
+published piece/wall scene and do not prove native parity for later source. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link serves build `f61152159a6331b9db2d` from clean source
-`6721cf0`, with a board-first
+The public Bend link serves build `57e13ede9386bf486be8` from clean source
+`041932b`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
 and a separate Bend-rendered sprite helper. Run
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
 and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
-The next [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
-is local and unpublished; it preserves 256px motion detail while reducing the
-browser tree's allocation. Non-draft builds verify the frozen semantic and
-graphics manifests and source-bound worker graph. Native parity for the
-current source, rapid detailed sprite refinement, multi-angle art, owner visual
-acceptance and Bend 2.0.28 remain open. See
+The [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
+is historical; the current preview also has clipped camera-facing wall faces,
+shorter and lower-set authored pieces, and warmer exposed sides. The
+[hosted visual receipt](docs/evidence/v2-piece-wall-trial/README.md#clean-build-and-hosted-preview)
+binds its source, live bytes and real Chrome playtest. Non-draft builds verify
+the frozen semantic and graphics manifests and source-bound worker graph.
+Native parity for the current source, owner visual acceptance and Bend 2.0.28
+pin review remain open. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 
 ## Start here
