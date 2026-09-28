@@ -102,7 +102,9 @@ const instrument = () => {
           window.__sounds.push({ samples: pcm.length, peak: Math.max(...pcm.map(Math.abs)), finite: pcm.every(Number.isFinite) });
         }
         const request = this.requests.get(m.id);
-        window.__frames.push({ ms: m.renderMs, portMs: m.portMs, dirty: !!m.image, kinds: request?.kinds || [],
+        window.__frames.push({ ms: m.renderMs, portMs: m.portMs, treeMs: m.treeMs,
+          traversalMs: m.traversalMs, sceneTimes: m.sceneTimes, pixelStats: m.pixelStats,
+          dirty: !!m.image, kinds: request?.kinds || [],
           latency: request ? performance.now() - request.at : null });
         window.__reply = { id: m.id, after: m.after, renderMs: m.renderMs };
         if (m.image) {
@@ -385,6 +387,14 @@ async function scenario(name, viewport, body) {
       const stats = describe(frames.filter(f => f.dirty).map(f => f.ms));
       stats.port = describe(frames.filter(f => f.dirty).map(f => f.portMs));
       stats.slowest = frames.slice().sort((a, b) => b.ms - a.ms).slice(0, 4).map(f => `${f.ms.toFixed(0)}:${f.kinds.join('+')}`);
+      stats.phases = Object.fromEntries(['treeMs', 'traversalMs', 'latency'].map(key =>
+        [key, describe(frames.filter(f => f.dirty && Number.isFinite(f[key])).map(f => f[key]))]));
+      stats.slowestDetail = frames.slice().sort((a, b) => b.ms - a.ms).slice(0, 4).map(f => ({
+        kinds: f.kinds, dispatchMs: +f.ms.toFixed(1), portMs: +f.portMs.toFixed(1),
+        treeMs: +f.treeMs.toFixed(1), traversalMs: +f.traversalMs.toFixed(1),
+        sceneTimes: f.sceneTimes, visitedPixels: f.pixelStats?.visited,
+        replyMs: f.latency == null ? null : +f.latency.toFixed(1),
+      }));
       result.timings[tag] = stats;
       return stats;
     },

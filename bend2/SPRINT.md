@@ -1016,3 +1016,13 @@ samples, compiler/asset closure, at most one C/ELF attempt, and only then
 bounded X.Org/PCM/restart probes. The [append-only SHA correction](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865920136)
 must be read with it before heavy work. No CPU-candidate result follows from
 this request; the earlier 72.538 GiB stop remains evidence for its own attempt.
+
+A [current-source latency phase diagnostic](docs/evidence/v2-latency-phase/README.md)
+separates hosted post-move Tick computation from pixel preparation and menu
+composition. One 42-frame move sample had 1204.7 ms p95 pre-port work and
+245 ms p95 port work; an eight-frame menu sample reached 718.8 ms p95 port
+time, with a slow composition around 589 ms. Same-position Bun calls found
+~1.11 s median frozen match command and ~0.62 s successor legal enumeration,
+consistent with repeated legal work in the command/refresh path. These are
+bounded diagnostics, not browser performance acceptance or permission to
+weaken frozen dependencies or native parallel shape.
