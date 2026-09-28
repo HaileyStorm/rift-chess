@@ -1399,5 +1399,13 @@ invalidates a held touch immediately on resize, before a pending worker
 replan replies, without opening a stale chooser or sending an unpaired release.
 The focused fake-host event sequence, existing picker/queue controls, and two
 exact-draft-build-bound real-Chrome touch scenarios pass; the original
-TypeScript game remains 62/62 with a clean type check. The browser evidence
-does not yet establish a clean hosted release or a physical-touchscreen gate.
+TypeScript game remains 62/62 with a clean type check. At that draft
+checkpoint, a clean hosted release and physical-touchscreen gate remained.
+
+The [clean Import repair publication](docs/evidence/v2-import-gesture/README.md#clean-build-and-hosted-preview)
+is now live at separate Pages commit `99fec1f` from source `a92c7e9`.
+The live byte verifier matched 22 Bend files and both original baselines;
+three exact-build-bound local and hosted touch/mobile scenarios passed with
+zero defects. The previous 24-scenario hosted matrix binds older host bytes,
+so broad reliability and native GPU-on parity are not inferred from this
+focused browser release.
