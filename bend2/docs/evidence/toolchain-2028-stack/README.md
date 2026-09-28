@@ -34,3 +34,56 @@ zero-direct-provider command path is not network instrumentation. It does
 not establish the full frozen proof, graphics, browser, native CPU/GPU,
 owner, or pin-amendment gates. The later 2.0.32 release has material JS and
 proof changes and requires a new, separate replay and review.
+
+## Final-stack proof attempt and 647-case differential
+
+The candidate proof runner now accepts an exact final replay receipt SHA and
+verifies the reviewed unique clone, patch/gate logs and inputs, pinned
+semantic-v2 manifest, exact 56-file import set and unchanged source bytes.
+The strengthened preflight-only mode passes, but does not invoke a proof.
+Its first final-clone attempt, before those later preflight hardenings
+(ignored receipt
+`.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028/receipt-1790549693571.json`,
+SHA-256 `29825fce3a47856d1c4281fd0be17547c9297932baf3c6abab1c9001a7e69759`)
+loaded all 1,584 terms, then exceeded the 900-second validation bound before
+a checker verdict. The replay receipt, compiler, frozen inputs and runner
+remained unchanged. This is a failed timing sample, not a Law counterexample
+or a passing proof. An earlier source-equivalent, shorter-path candidate
+copy passed its aggregate check in 410.5 seconds, but its receipt cannot
+silently replace this failed final-clone run.
+
+The original final-clone 647-case matrix command also hit its 120-second
+baseline-child bound; it saved an empty diagnostic log but no report. Root
+then ran the same unchanged matrix source
+(`regression_matrix.mjs` SHA-256
+`f8013d71eb1987bee945d990bb1720abd54811f92ada19592e04c303d9d770ee`)
+as two separately supervised lanes against the exact 005 baseline and final
+replay clone. Both completed with 647 unique files in parse/check/compile/
+proof/show/comptime; their saved JSON files are byte-identical, SHA-256
+`0b1476052255c11fe11633c80ab08491d3c01c0f97d393c3d1ccd547b7112fa5`.
+They and their per-file progress logs are ignored under
+`.artifacts/bend2/toolchain-patches/matrix-final-2028-20260927T170413718/`.
+The baseline's three compiler canonical hashes matched the recorded 005
+stage, and all 28 final compiler/test files still matched the final replay
+receipt after the run. This is a zero-difference observation in a finite
+parser/checker/normalized JS+C emission matrix. The saved lane JSON and
+path-only progress logs do not independently bind runtime, fixture bytes,
+compiler bytes or invocation at execution time; a source-bound supervised
+repeat was needed before promotion. The matrix executes no fixture program
+and does not cure the aggregate proof timeout or prove native/GPU parity.
+
+The subsequent [source-bound wrapper](../../../toolchain-patches/verify-final-matrix-2028.mjs)
+ran those two unchanged clone-local matrix lanes separately, with fresh
+Node processes, sanitized local-only configuration, 300-second bounds,
+progress and immutable unique logs/receipt. The successful ignored receipt
+is `.artifacts/bend2/toolchain-patches/final-matrix-2028/2026-09-27T23-42-27-116Z-38732-0d6d5dfc-5238-4197-83cf-00ae46db63db/receipt.json`,
+SHA-256 `ed6a609d14a09f1b9f34a9c1c7b5d9f3f9f34ecea967c2e9f80846e58fc73c08`.
+It pins the final replay receipt, upstream commit/tree, 28 final compiler/
+test files, canonical 005 baseline compiler, exact 647 fixture paths and
+byte hashes, matrix script and Node executable. Baseline and final lanes
+exited 0 in 116,613 and 109,915 ms respectively, each reached 647/647
+progress rows, and all 647 serialized rows were byte-identical. Inputs and
+fixture bytes matched their pre-run hashes after both lanes. No provider
+network monitor was used: the wrapper sets a loopback-only hub and invokes
+no provider command. This is a finite compiler differential, not a proof
+verdict, execution of fixture programs, native device or release acceptance.
