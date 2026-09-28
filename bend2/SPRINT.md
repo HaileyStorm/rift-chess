@@ -1386,6 +1386,12 @@ checked closures and promise lists matched, and small selected C and JS
 fixtures were byte-identical. The v1 `verify-library --check` also passed all four checks
 after the staging path was corrected. The v2 graphics checker remains the active historical caller;
 no new library manifest, full library gates or 2.0.28 pin are claimed.
+The later [isolated 2.0.28 graphics adapter seam](toolchain-patches/graphics-v3/README.md#isolated-2028006-adapter-seam)
+source-binds that same final replay snapshot, enumerates candidate Base plus
+both fixture files, emits pinned candidate C/JS, executes both selected JS
+exports and checks sibling-Law rejection/acceptance. An independent review
+found no narrow provenance blocker. These small source fixtures do not
+exercise the graphics library proofs, native C execution or the amendment.
 
 A separate [draft versioned Bun loader](toolchain-patches/loader-v3/README.md)
 preserves the frozen semantic-v2 loader while replacing its removed ownership
