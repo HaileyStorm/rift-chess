@@ -288,7 +288,9 @@ def modal(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
 
 def context_bar(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
   +mobile: Bool,+fonts: FontPack.Book,image: Image) -> Image:
-  +y = Bool.pick(U32,mobile,752,526)
+  # The portrait MOVES grid can occupy seven rows through y=886. Keep its
+  # heading below those destinations, next to the relocated Close control.
+  +y = Bool.pick(U32,mobile,Bool.pick(U32,U32.is_eq(menu,7),900,752),526)
   +x = Bool.pick(U32,mobile,12,242)
   +w = Bool.pick(U32,mobile,488,540)
   +bar = panel(depth,size,x,y,w,50,15,raised(theme),line(theme),image)

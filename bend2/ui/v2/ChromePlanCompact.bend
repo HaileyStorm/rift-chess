@@ -58,7 +58,9 @@ def destination(+mobile: Bool, +menu: U32, +ordinal: U32) -> P.Rect:
 
 def contextual(+mobile: Bool, +menu: U32, +id: U32) -> P.Rect:
   match id:
-    case 28: Bool.pick(P.Rect,mobile,P.Rect{432,638,64,32},P.Rect{862,450,70,30})
+    case 28: Bool.pick(P.Rect,mobile,
+      Bool.pick(P.Rect,U32.is_eq(menu,7),P.Rect{424,909,72,38},P.Rect{432,638,64,32}),
+      P.Rect{862,450,70,30})
     case 44: Bool.pick(P.Rect,mobile,P.Rect{16,764,480,40},P.Rect{396,592,232,38})
     case 53: Bool.pick(P.Rect,mobile,P.Rect{16,650,152,42},P.Rect{260,592,140,38})
     case 54: Bool.pick(P.Rect,mobile,P.Rect{176,650,152,42},P.Rect{408,592,140,38})

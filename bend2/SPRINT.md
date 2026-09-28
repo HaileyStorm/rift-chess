@@ -956,3 +956,15 @@ then verified that the overflow opener exposes legal moves, while selection,
 Shift, camera, and the existing Chrome hotseat suite passed their bounded
 checks. This source is newer than the Linux requests and published preview;
 the native, full playtest, hosted and owner visual gates remain open.
+
+The initial compact source was subsequently built clean and published in the
+separate [Bend preview](https://haileystorm.github.io/rift-chess-bend2/): all
+22 manifest files and two original-site baseline files matched live bytes,
+and the hosted extended Chrome suite passed 13 groups. The
+[evidence record](docs/evidence/v2-compact-overflow/README.md#clean-build-and-hosted-preview)
+preserves the pre-deployment failed probe. An inspected mobile screenshot
+then exposed Close and heading overlap in the 27-destination MOVES grid.
+A small [portrait spacing follow-up](docs/evidence/v2-compact-overflow/README.md#portrait-menu-spacing-follow-up)
+passes its focused geometry check and source-bound local rendered mobile and
+hotseat tests, but is still draft. Neither public browser result nor this
+newer draft closes native/GPU, 2.0.28 pin, full playtest, or owner visual gates.
