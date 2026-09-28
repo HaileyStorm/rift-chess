@@ -46,8 +46,36 @@ or cross-hashed them. Tracked game source, frozen Laws and the clean pinned
 This is a terminal **failed GPU-on pilot**, not an intermittent pass. No
 automatic retry or slower acceptance cadence was run. A separate
 [observer-only timing diagnostic](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5867368799)
-has been requested against those exact retained bytes under a *new* lease and
-claim. It may locate the delay but cannot retroactively pass the 250 ms gate;
-its result has not arrived. The previous 2.0.27 observer trace is a lead, not
-current-source causal proof. A reviewed repair and fresh original-cadence
-GPU-on acceptance remain necessary.
+was requested against those exact retained bytes under a *new* lease and
+claim. It could not retroactively pass the 250 ms gate;
+the previous 2.0.27 observer trace is a lead, not current-source causal
+proof. A reviewed repair and fresh original-cadence GPU-on acceptance remain
+necessary.
+
+## Observer-only diagnostic stopped before GPU use
+
+The [one-shot Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868217172)
+for that timing request stopped on its **first CPU-untraced episode**. Its
+in-process XRes/ctypes window-ownership check used a different X authority
+than the private one given to `xwininfo` and the child observer. The resulting
+MIT-MAGIC-COOKIE rejection prevented opening the disposable X.Org display.
+No ROI samples, CUDA-on episode or new timing attribution were produced. This
+is a harness authentication failure, not an application or CUDA result.
+
+The host reports a fresh initially authorizing lease was withdrawn and
+post-withdraw validation denied; the exact output claim was released and its
+owned display/process fixture was absent at close. Host-local blocker JSON
+SHA-256 is `1ae671d15f9b54676e374d032e60314e319e487f4ee5cc3f0d37193fb029faa5`,
+diagnostic result `b2bc44ffcf53eb8e636662998b9fff78d129d90041a5ee90b7fb822d5cc26a2a`,
+lease closure `45c86167ed1531b64317c2e07e2a0886f6d99b7fd3bafc48e53849ba9fb048c2`,
+and claim release `40188c6033434a397561ca6e4ccc978b204de0467eca617c1184b694a1b36399`.
+Those bytes remain host-local and untransferred. The earlier 250 ms GPU-on
+failure is unchanged.
+
+A separate [CPU-only harness-auth preflight](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868415046)
+was requested after the queued new-source CPU package gate closes. It requires
+a wrong-cookie negative and private-cookie XRes positive with locally scoped
+authority, and explicitly forbids device use or an automatic timing retry.
+Only after that result is reviewed can a new source-bound GPU diagnostic be
+considered under a fresh claim and lease. This request itself is not a fix or
+execution evidence.

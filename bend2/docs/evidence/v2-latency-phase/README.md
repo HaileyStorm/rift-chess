@@ -50,3 +50,32 @@ reference differential and rendered interaction checks, and remeasure actual
 browser and native paths. The menu composition cost is a separate UI-image
 reuse question; any cache change needs pixel and input parity, not just a
 microbenchmark.
+
+## Rejected cold sprite scheduling prototypes
+
+The published piece-art route still spends several seconds between its first
+playable proxy frame and the detailed sprite refinement. Two reversible,
+ignored local drafts tested early creation of the independent sprite helper
+(version `64cbed268d8f2c23787a`) and an additional source-bound page prewarm
+before its first frame job (version `1810c0cb84f5b183773e`). The three
+early-helper start summaries are retained under
+`.artifacts/bend2/playtest-stage2/sprite-worker-early*-20260928/`; the first
+has SHA-256 `5228cd0469a177099e41e39cc19b9b2d6594f68a8085fbcfa64de457f66d9080`.
+The three prewarm summaries are under
+`.artifacts/bend2/playtest-stage2/sprite-prewarm*-20260928/`; the first has
+SHA-256 `83260f648d833c60e4df474bcd358cbd9daedb79b3b5bfd9ec358e72549524c9`.
+The prewarm protocol passed a real Node worker test (correct source, one
+fetch/decode, malformed-source denial), and all three local rendered starts
+passed; the early-helper draft also passed the 13-group local Chrome suite.
+
+Observed navigation-to-refined medians were about 8.69 s (two published-code
+local samples), 7.75 s (three early-helper samples), and 7.55 s (three
+prewarm samples), with substantial cold-run variation. Prewarm did not
+remove the roughly 3.6–4.0 s proxy-to-detail interval. Neither tiny sample
+is a controlled performance proof; the extra prewarm protocol/lifecycle
+state was not justified. Both prototypes were reverted with `apply_patch`;
+tracked source is clean, the clean selected module and exact published
+`build.json` bytes were restored, and the 22+2 hosted-file verifier passed.
+No startup-speed claim or new release follows. Further work should attack
+the measured full scene composition/decode/render path without degrading
+authored edges or the first playable frame.

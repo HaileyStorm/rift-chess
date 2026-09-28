@@ -1111,3 +1111,12 @@ for the published proportions passed 13 local Chrome groups and a focused
 Front/default rendered check. Seven sampled PNGs matched the live 2.0.27
 preview byte-for-byte. This neither resolves the pristine-upstream/frozen
 checker pin blockers nor transfers the older CPU/GPU host receipts.
+
+The [c30 observer-only GPU timing reply](docs/evidence/native-2028-gpu/README.md#observer-only-diagnostic-stopped-before-gpu-use)
+stopped before any device episode because its in-process XRes check used a
+different X authority from its private X.Org child tools. Its fresh lease and
+claim were closed; it produced no current-source timing result. The original
+250 ms GPU-on deselection failure remains authoritative. A later CPU-only
+harness-auth preflight was requested **after** the queued cafc934 native CPU
+gate closes, with no GPU retry authority; await its exact receipt before any
+new leased device diagnostic.
