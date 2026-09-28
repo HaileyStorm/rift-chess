@@ -876,9 +876,14 @@ binds both successful 647/647 lanes, compiler/fixture/runtime inputs and
 unchanged pre/post bytes; it is still only a finite differential. A new exact-replay
 frozen v2 proof attempt loaded 1,584 terms but timed out at 900 seconds
 before validation returned, with inputs unchanged. Preserve that failure;
-neither matrix equality nor the earlier separate candidate proof is a
-passing final-stack aggregate proof. The pin remains 2.0.27, with 2.0.28
-native/host ABI/amendment gates still open.
+neither matrix equality nor the earlier separate candidate proof substituted
+for it. A later short-path copy of the exact final replay's 95-file Bend source
+tree passed a hardened, source-bound aggregate check: 1,584 terms, zero holes,
+zero taint and zero denied fetches, with frozen closure, full-tree digest and
+pre/post bytes verified. The successful [candidate receipt](docs/evidence/toolchain-2028-stack/README.md#final-stack-proof-attempt-and-647-case-differential)
+does not erase the timed-out sample, supply canonical pinned proof evidence or
+approve the pin. The pin remains 2.0.27, with 2.0.28 native/host ABI/amendment
+gates still open.
 
 A new [current orbit-wall source candidate](docs/evidence/browser-2028-candidate/README.md#current-orbit-wall-visual-source-trial)
 passed 13 local Chrome hotseat groups, a held-orbit capture whose motion and
@@ -886,4 +891,11 @@ settled PNGs exactly matched the pinned 2.0.27 source, and a separate strict
 online/cold-offline bot-worker diagnostic with no fallback. This candidate
 remains nonce-private, draft, and instrumented; it uses a source-equivalent
 compiler copy rather than the final replay checkout and does not turn the
-timed-out proof or native/GPU/pin gates green.
+earlier timed-out proof sample or native/GPU/pin gates green. The later
+short-path final-stack aggregate proof is separate candidate evidence.
+
+The September 26 `05b-warm-court.png` is a historical pre-wall capture, not
+the current rendering. A later same-sequence local Chrome capture shows the
+outer drop and some rift-wall shading; the owner finds it much closer, while
+the rifts still read too flat at that angle. Keep face legibility, piece
+footing/height, row separation and owner visual acceptance open.

@@ -182,6 +182,7 @@ still an instrumented candidate route, not an unchanged production bundle.
 The candidate build derives from the 004-stage copy plus exact patch 006;
 the later final-clone source replay and 647-case matrix bind equivalent
 canonical compiler source, but this bundle did not execute directly from
-that exact replay clone. The aggregate final-clone proof timed out, and
-candidate-native/GPU/host ABI promotion and reviewed pin amendment remain
-open. Keep the public 2.0.27 preview authoritative.
+that exact replay clone. The direct final-clone aggregate proof timed out;
+a later full-tree-pinned short-path snapshot passed the candidate aggregate
+proof separately. Candidate-native/GPU/host ABI promotion and reviewed pin
+amendment remain open. Keep the public 2.0.27 preview authoritative.

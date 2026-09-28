@@ -52,6 +52,24 @@ or a passing proof. An earlier source-equivalent, shorter-path candidate
 copy passed its aggregate check in 410.5 seconds, but its receipt cannot
 silently replace this failed final-clone run.
 
+The final replay's full 95-file `bend2` source tree was subsequently copied
+into a canonical, nonce-private short-path snapshot. The runner now rejects
+symlinks/special entries and pins its sorted path-and-byte-hash manifest to
+`2ac802f1c362e80ba1198cb9a98dc867e28a4750f2e284edfa5af99c15e92c46`;
+it compares the snapshot against the exact reviewed replay clone before and
+after checking, in addition to the immutable frozen 56-source closure. A
+pre-hardening attempt passed in 391,405 ms (ignored receipt
+`receipt-1790556264434.json`, SHA-256
+`89e5cc27493e91912263f24e78ca19f48010f5d8ba047a3932fc1e9206cc6223`),
+but that runner had not yet pinned the entire tree and could omit a specially
+named file. The hardened repeat passed with 1,584 terms, zero holes, zero
+tainted terms and zero denied fetches in 495,064 ms. Its ignored receipt is
+`.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028/receipt-1790556899370.json`,
+SHA-256 `9e7cf3c066b3f2513f0941f4ad597f83ee07763ca36e74a084958d33a2d9e359`;
+source, compiler, runner and replay/snapshot bindings remained unchanged.
+This is a candidate aggregate proof on the isolated final 2.0.28+006 stack,
+not the canonical pinned proof, native/browser acceptance or a pin amendment.
+
 The original final-clone 647-case matrix command also hit its 120-second
 baseline-child bound; it saved an empty diagnostic log but no report. Root
 then ran the same unchanged matrix source

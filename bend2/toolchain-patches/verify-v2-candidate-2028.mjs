@@ -14,18 +14,25 @@ const baseline = path.join(root, '.artifacts/bend2/toolchain-patches/fresh-2028-
 const replayIndex = process.argv.indexOf('--replay-receipt');
 const replayPath = replayIndex < 0 ? null : path.resolve(process.argv[replayIndex + 1] ?? '');
 const expectedReceiptSha = replayIndex < 0 ? null : process.argv[replayIndex + 2];
+const snapshotIndex = process.argv.indexOf('--compiler-snapshot');
+const snapshotPath = snapshotIndex < 0 ? null : path.resolve(process.argv[snapshotIndex + 1] ?? '');
 const aliasTrial = process.argv.includes('--alias-equality-trial') || replayPath !== null;
 const replay = replayPath === null ? null : JSON.parse(fs.readFileSync(replayPath, 'utf8'));
-const candidate = replay
-  ? path.resolve(root, replay.clone)
+const replayClone = replay ? path.resolve(root, replay.clone) : null;
+const candidate = snapshotPath ?? (replay
+  ? replayClone
   : aliasTrial ? path.join(root, '.artifacts/bend2/toolchain-patches/alias-equality-2028')
-    : baseline;
+    : baseline);
 const entry = path.join(root, 'bend2/core/v2/CHECK.bend');
 const semanticManifestPath = path.join(root, 'bend2/laws/semantic-v2.json');
 const expectedSemanticManifestSha = 'c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf';
 const expectedProofClosureNamesSha = '4acca1af0927befabf25e52678750e6552b7e5d900e35c0f0400e16fe805cf3a';
 const expectedTag = 'bc178404f4778704fa5584a73fcdf72bcdf9f32c';
 const reviewedReplayReceiptSha = 'a71ce32941c74abef1762bebb30d8526f115fc905bbb084722b3d6a4b2d7af01';
+const reviewedReplayBendTree = {
+  files: 95,
+  sha256: '2ac802f1c362e80ba1198cb9a98dc867e28a4750f2e284edfa5af99c15e92c46',
+};
 const expectedCanonical = {
   'bend.ts': 'c90ace39dbbbc1b6b4fd7e5bb9604b64968fcf00d0a39c20e46ac8059088ec56',
   'comp.ts': '49c40305ef96f91187cc5eb8fceac02cbf2c4992cbdee4819ec7c0fd3ee8887b',
@@ -60,10 +67,39 @@ function inputClosure(file, found = new Set()) {
   return found;
 }
 
+function compilerFiles(directory, prefix = '') {
+  const result = Object.create(null);
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const name = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const file = path.join(directory, entry.name);
+    assert.ok(!entry.isSymbolicLink(), `compiler snapshot contains a symlink: ${file}`);
+    if (entry.isDirectory()) Object.assign(result, compilerFiles(file, name));
+    else {
+      assert.ok(entry.isFile(), `compiler snapshot contains a special entry: ${file}`);
+      result[name] = sha(fs.readFileSync(file));
+    }
+  }
+  return result;
+}
+
+function snapshotCompiler(replaySource, snapshot) {
+  const source = compilerFiles(path.join(replaySource, 'bend2'));
+  const copied = compilerFiles(path.join(snapshot, 'bend2'));
+  assert.deepEqual(copied, source, 'short compiler snapshot differs from final replay Bend source');
+  const sortedEntries = Object.entries(source).sort(([a], [b]) => a.localeCompare(b));
+  const binding = { files: Object.keys(source).length,
+    sha256: sha(Buffer.from(JSON.stringify(sortedEntries), 'utf8')) };
+  assert.deepEqual(binding, reviewedReplayBendTree,
+    'Bend compiler source tree differs from the reviewed final replay');
+  return binding;
+}
+
 if (isMainThread) {
   process.env.BEND_NO_TELEMETRY = '1';
   process.env.BEND_HUB = 'http://127.0.0.1:9';
   const runnerSha256 = sha(fs.readFileSync(fileURLToPath(import.meta.url)));
+  let snapshotBinding = null;
+  assert.ok(!snapshotPath || replay, 'short compiler snapshot requires a reviewed final replay');
   if (replay) {
     const replayParent = path.join(root, '.artifacts/bend2/toolchain-patches/replay-2028-stack');
     assert.match(expectedReceiptSha ?? '', /^[0-9a-f]{64}$/, 'pass exact receipt SHA-256');
@@ -104,12 +140,12 @@ if (isMainThread) {
     assert.deepEqual(replay.workerGate.after, replay.workerGate.before,
       'replay worker gate changed its source inputs');
     assert.equal(Object.keys(replay.workerGate.before).length, 38);
-    assert.equal(candidate, fs.realpathSync(candidate), 'replay clone must be canonical');
-    assert.equal(path.dirname(candidate), path.dirname(replayPath),
+    assert.equal(replayClone, fs.realpathSync(replayClone), 'replay clone must be canonical');
+    assert.equal(path.dirname(replayClone), path.dirname(replayPath),
       'replay clone and receipt must share their unique run directory');
-    assert.equal(path.basename(candidate), 'compiler');
+    assert.equal(path.basename(replayClone), 'compiler');
     for (const [file, record] of Object.entries(replay.workerGate.before)) {
-      const actual = path.join(candidate, ...file.split('/'));
+      const actual = path.join(replayClone, ...file.split('/'));
       assert.equal(record.sha256, sha(fs.readFileSync(actual)), `worker gate input drifted: ${file}`);
     }
     for (const stream of ['stdout', 'stderr']) {
@@ -128,8 +164,18 @@ if (isMainThread) {
       else assert.equal(bytes.length, 0, 'replay worker gate wrote stderr');
     }
     for (const [file, record] of Object.entries(replay.final.files)) {
-      const actual = path.join(candidate, ...file.split('/'));
+      const actual = path.join(replayClone, ...file.split('/'));
       assert.equal(record.sha256, sha(fs.readFileSync(actual)), `final replay file drifted: ${file}`);
+    }
+    if (snapshotPath) {
+      const parent = path.join(root, '.artifacts/bend2/toolchain-patches');
+      assert.equal(fs.realpathSync(candidate), candidate, 'short compiler snapshot must be canonical');
+      assert.equal(path.dirname(candidate), parent, 'short compiler snapshot escaped isolated artifacts');
+      assert.match(path.basename(candidate), /^final-2028-proof-[A-Za-z0-9-]+$/,
+        'short compiler snapshot needs a unique named directory');
+      assert.deepEqual(fs.readdirSync(candidate), ['bend2'],
+        'short compiler snapshot must contain only the Bend source tree');
+      snapshotBinding = snapshotCompiler(replayClone, candidate);
     }
   }
   const runtime = JSON.parse(fs.readFileSync(path.join(root, 'bend2/core/v2/proof-runtime.json')));
@@ -181,6 +227,8 @@ if (isMainThread) {
   inputs['candidate/base.bend'] = sha(fs.readFileSync(path.join(candidate, 'bend2/base.bend')));
   if (process.argv.includes('--preflight-only')) {
     console.log(JSON.stringify({ ok: true, candidate: relative(candidate),
+      replayClone: replayClone ? relative(replayClone) : null,
+      compilerSnapshot: snapshotBinding,
       finalStackReplay: Boolean(replay), replayReceiptSha256: expectedReceiptSha,
       semanticManifestSha256: expectedSemanticManifestSha,
       proofClosureNamesSha256: expectedProofClosureNamesSha,
@@ -215,9 +263,17 @@ if (isMainThread) {
       sha(fs.readFileSync(path.join(candidate, 'bend2', name))) === record.sha256);
     const runnerUnchanged = sha(fs.readFileSync(fileURLToPath(import.meta.url))) === runnerSha256;
     const replayReceiptUnchanged = !replay || sha(fs.readFileSync(replayPath)) === expectedReceiptSha;
+    const replayCloneUnchanged = !replay || Object.entries(replay.final.files).every(([name, record]) =>
+      sha(fs.readFileSync(path.join(replayClone, ...name.split('/')))) === record.sha256);
+    let compilerSnapshotUnchanged = true;
+    try {
+      if (snapshotBinding)
+        assert.deepEqual(snapshotCompiler(replayClone, candidate), snapshotBinding);
+    } catch { compilerSnapshotUnchanged = false; }
     const semanticManifestUnchanged = sha(fs.readFileSync(semanticManifestPath)) === expectedSemanticManifestSha;
     if (!inputsUnchanged || !compilerUnchanged || !runnerUnchanged ||
-        !replayReceiptUnchanged || !semanticManifestUnchanged)
+        !replayReceiptUnchanged || !replayCloneUnchanged ||
+        !compilerSnapshotUnchanged || !semanticManifestUnchanged)
       result = { ...result, ok: false, error: 'Proof inputs, compiler or runner changed during the attempt' };
     const receipt = { schema: 'rift-bend-v2-candidate-2028-check/1', aliasEqualityTrial: aliasTrial,
       finalStackReplay: Boolean(replay), replayReceiptSha256: expectedReceiptSha,
@@ -227,8 +283,12 @@ if (isMainThread) {
       compiler, inputs, runtime: runtime.runtime.sha256, runnerSha256,
       semanticManifestSha256: expectedSemanticManifestSha,
       proofClosureNamesSha256: expectedProofClosureNamesSha,
+      compilerSnapshot: snapshotBinding,
+      candidateCompiler: relative(candidate),
+      replayClone: replayClone ? relative(replayClone) : null,
       inputsUnchanged, compilerUnchanged, runnerUnchanged,
-      replayReceiptUnchanged, semanticManifestUnchanged,
+      replayReceiptUnchanged, replayCloneUnchanged,
+      compilerSnapshotUnchanged, semanticManifestUnchanged,
       elapsedMs: Date.now() - started, lastPhase, result,
       scope: 'Frozen v2 aggregate source terms and unsafe/foreign dependency walk on disposable 2.0.28 stack; no semantic amendment, conformance, native or browser claim' };
     const file = path.join(output, `receipt-${Date.now()}.json`);

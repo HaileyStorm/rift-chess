@@ -1,5 +1,13 @@
 # Oblique court and selection publication — 2026-09-26
 
+Historical checkpoint: these PNGs are immutable September 26 captures, before
+the September 27 exposed-wall work. In particular, `05b-warm-court.png` visibly
+lacks legible side faces around the rifts and parts of the perimeter. Do not
+use it to assess the current board or infer that every exposed face is fixed.
+The later warm-court candidate capture is retained under ignored
+`.artifacts/bend2/v2-preview/scenarios/candidate-orbit-29085-20260927/`;
+its openings still read too flat at this angle and need visual follow-up.
+
 The [separate Bend game](https://haileystorm.github.io/rift-chess-bend2/)
 serves build `316b07717192e7d6d5bb` from clean source
 `66af0570e3814b0d0be5b4411c198ffb7fa149cd` (Bend 2.0.27). The
