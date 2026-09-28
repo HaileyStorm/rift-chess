@@ -1377,7 +1377,7 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +width = sprite_width(size, camera)
       +matrix = sprite_matrix(width, sprite_height(size, camera), center)
       +contact = sprite_contact_shadow(depth,size,width,center,image)
-      PieceSprites.draw(depth, size, pieces, sprite_piece_side(code),
+      PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
         Rect.screen(size), contact)
 
@@ -1403,7 +1403,7 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
       +matrix = sprite_matrix(sprite_width(size, camera),
         sprite_height(size, camera), center)
       +code = Model.board_get(oldBoard, square)
-      PieceSprites.draw(depth, size, pieces, sprite_piece_side(code),
+      PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix,
         sprite_opacity(age), Rect.screen(size), image)
 

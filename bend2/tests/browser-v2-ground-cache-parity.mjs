@@ -84,6 +84,7 @@ async function sample(label, url, directory) {
     await page.goto(url, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.__shown && window.__refinements.length > 0,
       null, { timeout: 60000 });
+    const initialMetrics = await page.evaluate(() => window.__refinements.at(-1));
     const initial = await page.locator('canvas').screenshot({ path: path.join(output, `${label}-start.png`) });
     const before = await page.evaluate(() => window.__refinements.length);
     const from = await squarePoint(page, 4, 1, true);
@@ -113,7 +114,8 @@ async function sample(label, url, directory) {
     assert.deepEqual(errors, [], `${label} browser errors`);
     return { buildVersion: build.version, buildSha256: sha(local), sourceRevision: build.sourceRevision,
       assetsVerified,
-      initialSha256: sha(initial), movedSha256: sha(moved), frontSha256: sha(front), metrics, viewMetrics,
+      initialSha256: sha(initial), movedSha256: sha(moved), frontSha256: sha(front),
+      initialMetrics, metrics, viewMetrics,
       initial, moved, front };
   } finally { await context.close(); }
 }
@@ -127,7 +129,9 @@ try {
     results[label] = await sample(label, url, directory);
   const before = results.baseline, after = results.candidate;
   assert.notEqual(before.buildVersion, after.buildVersion, 'Compare two distinct built source sets');
-  assert.equal(before.metrics.groundCacheHit, undefined,
+  if (process.env.BEND_ALLOW_BASELINE_CACHE === '1')
+    assert.equal(before.metrics.groundCacheHit, 1, 'Cached baseline did not reuse ground');
+  else assert.equal(before.metrics.groundCacheHit, undefined,
     'Baseline must be the uncached helper, not another candidate build');
   assert.deepEqual(after.initial, before.initial, 'First detailed canvas changed');
   assert.deepEqual(after.moved, before.moved, 'Same-view e2e4 detailed canvas changed');
@@ -138,11 +142,17 @@ try {
     baseline: { version: before.buildVersion, sourceRevision: before.sourceRevision,
       assetsVerified: before.assetsVerified,
       buildSha256: before.buildSha256, groundMs: before.metrics.groundMs,
-      workerMs: before.metrics.workerMs, roundTripMs: before.metrics.roundTripMs },
+      spritesMs: before.metrics.spritesMs,
+      workerMs: before.metrics.workerMs, roundTripMs: before.metrics.roundTripMs,
+      initialSpritesMs: before.initialMetrics.spritesMs,
+      frontSpritesMs: before.viewMetrics.spritesMs },
     candidate: { version: after.buildVersion, sourceRevision: after.sourceRevision,
       assetsVerified: after.assetsVerified,
       buildSha256: after.buildSha256, groundMs: after.metrics.groundMs,
+      spritesMs: after.metrics.spritesMs,
       workerMs: after.metrics.workerMs, roundTripMs: after.metrics.roundTripMs,
+      initialSpritesMs: after.initialMetrics.spritesMs,
+      frontSpritesMs: after.viewMetrics.spritesMs,
       groundCacheHit: after.metrics.groundCacheHit,
       changedViewGroundCacheHit: after.viewMetrics.groundCacheHit },
     initialSha256: after.initialSha256, movedSha256: after.movedSha256,

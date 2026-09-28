@@ -8,6 +8,7 @@ import ../../lib/graphics/v2/RgbaAffine.bend as RgbaAffine
 import ../../lib/graphics/v2/Transform2D.bend as Transform
 import ../../lib/graphics/v2/Rect.bend as Rect
 import ../../lib/graphics/v2/assets/RgbaImage.bend as RgbaImage
+import ./SpriteBounds.bend as Bounds
 
 type Side is Data:
   Ivory{}
@@ -135,3 +136,74 @@ def draw(+target_depth: Nat, +target_size: U32, +pieces: Pieces,
   +source = texture(pieces, side, kind)
   RgbaAffine.draw(target_depth, target_size, RgbaAffine.prepare(matrix),
     source, Sample.Linear{}, opacity, clip, target)
+
+# A game-only fixed-facing fast path. Bounds are derived from the actual
+# decoded alpha mask, including synthetic/changed valid pages. The two-texel
+# source and two-pixel destination margins retain Linear's neighbor support;
+# arbitrary non-axis-aligned/negative matrices use the original full clip.
+def clip_low(value: F32) -> U32:
+  F32.to_u32(F32.max(F32.floor(F32.sub(value,2.0)),0.0))
+
+def clip_high(value: F32) -> U32:
+  F32.to_u32(F32.max(F32.ceil(F32.add(value,2.0)),0.0))
+
+def alpha_clip(bounds: Rect.Box,matrix: Transform.Matrix,
+  +source_size: U32, clip: Rect.Box) -> Rect.Box:
+  match bounds matrix:
+    case Rect.Box{+left,+top,+right,+bottom}
+      Transform.Matrix{+a,b,c,+d,+tx,+ty}:
+      +lx = U32.sub(left,U32.min(left,2))
+      +tyy = U32.sub(top,U32.min(top,2))
+      +rx = U32.min(source_size,U32.add(right,2))
+      +by = U32.min(source_size,U32.add(bottom,2))
+      Rect.intersect(clip,Rect.Box{
+        clip_low(F32.add(tx,F32.mul(a,F32.div(U32.to_f32(lx),U32.to_f32(source_size))))),
+        clip_low(F32.add(ty,F32.mul(d,F32.div(U32.to_f32(tyy),U32.to_f32(source_size))))),
+        clip_high(F32.add(tx,F32.mul(a,F32.div(U32.to_f32(rx),U32.to_f32(source_size))))),
+        clip_high(F32.add(ty,F32.mul(d,F32.div(U32.to_f32(by),U32.to_f32(source_size)))))})
+
+def axis_valid(matrix: Transform.Matrix) -> Bool:
+  match matrix:
+    case Transform.Matrix{a,b,c,d,tx,ty}:
+      Bool.and(Bool.and(F32.is_eq(b,0.0),F32.is_eq(c,0.0)),
+        Bool.and(F32.is_gt(a,0.0),F32.is_gt(d,0.0)))
+
+def source_valid(source: Sample.Texture) -> Bool:
+  match source:
+    case Sample.Texture{depth,+size,colors,mask}:
+      Bool.and(U32.is_ne(size,0),U32.is_eq(size,U32.shln(1,depth)))
+
+def draw_axis_bounds(empty: Bool,+target_depth: Nat,+target_size: U32,
+  +source: Sample.Texture,+matrix: Transform.Matrix,+bounds: Rect.Box,
+  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  match empty:
+    case True{}: target
+    case False{}: RgbaAffine.draw(target_depth,target_size,
+      RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,
+      alpha_clip(bounds,matrix,Sample.size(source),clip),target)
+
+def draw_axis_case(valid: Bool,+target_depth: Nat,+target_size: U32,
+  +source: Sample.Texture,+matrix: Transform.Matrix,
+  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  match valid:
+    case False{}: RgbaAffine.draw(target_depth,target_size,
+      RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,clip,target)
+    case True{}:
+      +bounds = Bounds.bounds(source)
+      draw_axis_bounds(Rect.is_empty(bounds),target_depth,target_size,
+        source,matrix,bounds,opacity,clip,target)
+
+def draw_axis_visible(visible: Bool,+target_depth: Nat,+target_size: U32,
+  +source: Sample.Texture,+matrix: Transform.Matrix,
+  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  match visible:
+    case False{}: target
+    case True{}: draw_axis_case(Bool.and(axis_valid(matrix),source_valid(source)),
+      target_depth,target_size,source,matrix,opacity,clip,target)
+
+def draw_axis_aligned(+target_depth: Nat,+target_size: U32,+pieces: Pieces,
+  side: Side,kind: PieceKind,+matrix: Transform.Matrix,+opacity: U32,
+  +clip: Rect.Box,target: Image) -> Image:
+  +source = texture(pieces,side,kind)
+  draw_axis_visible(Bool.and(U32.is_ne(opacity,0),Bool.not(Rect.is_empty(clip))),
+    target_depth,target_size,source,matrix,opacity,clip,target)

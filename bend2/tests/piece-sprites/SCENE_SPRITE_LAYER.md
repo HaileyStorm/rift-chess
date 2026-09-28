@@ -14,8 +14,8 @@ must not contain pixels for the current or previous pieces.
 Sprites remain screen-facing at every camera yaw and pitch. Their anchors use
 the same projected board centers and interpolated motion points as the proxy
 scene; draw order follows `Camera.depth_order`. Each sprite's axis-aligned quad
-uses 1.16 of the projected board pitch for width and 1.22 for height, with a
-0.16-width screen-down base shift so pieces sit forward on their squares. Rift
+uses 1.16 of the projected board pitch for width and 1.04 for height, with a
+0.22-width screen-down base shift so pieces sit forward on their squares. Rift
 holes suppress both current and dying sprites. Captured art drifts upward and
 fades during the first half of the existing 16-step action transition. The
 atlas is fixed-front artwork, so this renderer does not claim true 3D rotation
@@ -53,6 +53,19 @@ deterministic. It checks Model-side and kind mapping, sprite projection,
 hole-suppression, and selected/hovered focus pixels. It does not replace a
 visual review with the authored atlas.
 
+The game-only alpha-bounded draw derives its clip from each texture's actual
+mask. Positive axis-aligned, power-of-two-size textures take this path; other
+matrices or inconsistent texture metadata retain the generic affine draw.
+`sprite-bounds.ts` checks the twelve decoded source sprites against raw RGBA
+alpha and covers arbitrary masks. `axis-clip.ts` compares every output pixel
+between bounded and generic drawing across the source sprites, nonuniform
+backgrounds, clips, scales, transparent masks, and fallback conditions:
+
+```powershell
+node bend2/tools/bend.mjs --run bend2/tests/piece-sprites/sprite-bounds.ts
+node bend2/tools/bend.mjs --run bend2/tests/piece-sprites/axis-clip.ts
+```
+
 Measure the full starting position with the standard 128-pixel sprite pages
 and this host's pinned Bun runtime:
 
@@ -66,7 +79,8 @@ $pages = @(
 node bend2/tools/bend.mjs bend2/tests/piece-sprites/BoardSceneSpriteBench.bend -- $pages
 ```
 
-The benchmark times a fresh 32-piece sprite pass plus a traversal of the
+The following historical benchmark predates alpha-bounded drawing. It timed a
+fresh 32-piece sprite pass plus a traversal of the
 resulting depth-9 image tree. It measures CPU-side Bend evaluation on this
 Windows host, not browser presentation, GPU use, or the cached pointer-only
 feedback pass. One 10-trial run produced 78,693 output-tree nodes each time.
