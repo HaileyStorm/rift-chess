@@ -43,3 +43,37 @@ package and failed GPU pilot bind **older** BoardScene bytes; neither validates
 this changed source. Clean build, hosted publication, current-source native
 CPU/GUI/PCM/restart, repaired GPU-on original-cadence behavior and owner visual
 acceptance remain separate gates.
+
+## Clean build and published preview
+
+Commit `cafc934d41b4e2511043634267904c002a824197` produced a clean,
+non-draft Bend 2.0.27 v2-preview build with `sourceDirty: false`. Its content
+version remains `817dfa63932dd6ccf4b4`, and its 21-file generated asset map
+is byte-identical to the tested draft; only build metadata changed. Clean
+`build.json` SHA-256 is
+`40a49368c1bebaec3882b61e131dca99bf517da11735fcf1dcb320440449dfea`.
+The clean-bound local rendered start/Front scenario passed with zero defects.
+
+The separate [Bend browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+advanced to Pages commit `8005a07e6ebe46300019aac3081cb3d9084dee08`.
+After Pages reported `built`, the ignored publication receipt
+`.artifacts/bend2/publication/2026-09-28T09-59-54-427Z-c138ca20/receipt.json`
+(SHA-256 `49ad9925c6fab99529f08a90baad428cf4d533bacd3f745b93a8d7b2bc24853f`)
+matched all 22 live Bend files and both unchanged original-site baselines.
+The hosted exact-build-bound start/Front scenario passed (summary SHA-256
+`097d3ddfb30557de2bd3bd80e79c4e37b112b85cf9507329e2147ff8633d4f32`);
+the final oblique and Front PNG bytes matched the inspected local trial exactly.
+All 13 hosted extended Chrome groups then passed, including offline worker
+refinement, rendered input, both themes, promotion, PCM, Shift/Undo and
+portrait, with zero page/console errors (receipt SHA-256
+`8c8ba1ea2ffd957e941a4112ce244cc50810a818cc628469085d329b30ed9d69`).
+This closes publication and the scoped browser gates, **not** current-source
+native CPU/GPU parity, responsive startup, a pin amendment, packaged desktop
+release or owner visual/audio acceptance.
+
+A [new-source CPU-only Linux retest](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5867789285)
+has been requested for exact `cafc934`/tree
+`fbb83789a7f25f77b9e363882979f58531f03d66`, after the separate
+older-source GPU timing diagnostic closes. It requires fresh two-sample
+88 GiB admission, one bounded C/ELF package, original-cadence X.Org input,
+routed PCM and save/restart; the request is not a result or GPU grant.
