@@ -118,12 +118,16 @@ const instrument = () => {
   };
 };
 
-const DESKTOP_REGIONS = [
-  { name: 'board', x: 0, y: 124, w: 516, h: 520, scale: 2 }, { name: 'pane', x: 556, y: 124, w: 448, h: 668, scale: 2 },
-  { name: 'top', x: 0, y: 0, w: 1024, h: 72, scale: 2 }, { name: 'footer', x: 0, y: 640, w: 560, h: 40, scale: 3 }];
-const MOBILE_REGIONS = [
-  { name: 'board', x: 0, y: 60, w: 512, h: 520, scale: 2 }, { name: 'pane', x: 0, y: 600, w: 512, h: 424, scale: 2 },
-  { name: 'top', x: 0, y: 0, w: 512, h: 64, scale: 3 }, { name: 'footer', x: 0, y: 576, w: 512, h: 30, scale: 3 }];
+function captureRegions(shown) {
+  const { board, stage, width, height } = shown.plan;
+  const footerY = board.y + board.height;
+  return [
+    { name: 'board', x: board.x, y: board.y, w: board.width, h: board.height, scale: 2 },
+    { name: 'stage', x: stage.x, y: stage.y, w: stage.width, h: stage.height, scale: 2 },
+    { name: 'top', x: 0, y: 0, w: width, h: board.y, scale: 2 },
+    { name: 'footer', x: 0, y: footerY, w: width, h: height - footerY, scale: 2 },
+  ];
+}
 
 class ScriptError extends Error {}
 
@@ -174,6 +178,14 @@ async function scenario(name, viewport, body) {
       if (!c.enabled) throw new ScriptError(`control ${id} (${c.label}) is disabled`);
       const p = await t.toPage(c.rect.x + c.rect.width / 2, c.rect.y + c.rect.height / 2);
       if (settle) await t.change(() => page.mouse.click(p.x, p.y)); else await page.mouse.click(p.x, p.y);
+    },
+    async matchControl(id) {
+      if ((await t.shown()).menu === 0) await t.control(57);
+      await t.control(id);
+    },
+    async viewControl(id) {
+      if ((await t.shown()).menu === 0) await t.control(56);
+      await t.control(id);
     },
     async has(id) { return (await t.controls()).some(c => c.id === id && c.enabled); },
     async clearSelection() {
@@ -250,7 +262,7 @@ async function scenario(name, viewport, body) {
       const a = decode(id), before = await t.commands(), group = Math.floor(id / 5);
       const overlays = await t.overlays(), listed = a.shift ? overlays.shifts : overlays.moves;
       if (!listed && via === 'control') throw new ScriptError(`${label(id)} via control needs TARGETS on`);
-      const source = a.shift ? `Selected tile ${'ABCD'[a.from % 4]}${Math.floor(a.from / 4) + 1}.` : `Selected ${sqName(a.from)}.`;
+      const source = a.shift ? `Selected tile ${'ABCD'[a.from % 4]}${Math.floor(a.from / 4) + 1}.` : ` ${sqName(a.from)}.`;
       const offered = async () => listed
         ? (await t.controls()).find(c => c.id >= 1000 && Math.floor((c.id - 1000) / 5) === group)
         : ((await t.summary()).includes(source) ? { id: 1000 + id } : undefined);
@@ -321,11 +333,13 @@ async function scenario(name, viewport, body) {
         const file = path.join(dir, `${String(++sequence).padStart(2, '0')}-${tag}-A${i}.png`);
         let png = Buffer.from(data.split(',')[1], 'base64');
         if (board) {
-          const mobile = (await t.shown()).mobile;
-          png = Buffer.from((await page.evaluate(({ data, y }) => new Promise(resolve => {
+          const boardRect = (await t.shown()).plan.board;
+          png = Buffer.from((await page.evaluate(({ data, boardRect }) => new Promise(resolve => {
             const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = 1024; c.height = 1024;
-              const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(img, 0, y, 512, 512, 0, 0, 1024, 1024); resolve(c.toDataURL()); };
-            img.src = data; }), { data, y: mobile ? 64 : 128 })).split(',')[1], 'base64');
+              const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+              g.drawImage(img, boardRect.x, boardRect.y, boardRect.width, boardRect.height, 0, 0, 1024, 1024);
+              resolve(c.toDataURL()); };
+            img.src = data; }), { data, boardRect })).split(',')[1], 'base64');
         }
         await fs.writeFile(file, png); names.push(path.basename(file));
       }
@@ -335,9 +349,11 @@ async function scenario(name, viewport, body) {
     /** Hierarchical capture: L1 canvas, L2 regions, L3 squares/controls/rects. */
     async shot(tag, { squares = [], controls = [], rects = [], pageShot = false } = {}) {
       const shown = await t.shown();
-      const regions = shown.mobile ? MOBILE_REGIONS : DESKTOP_REGIONS;
+      const regions = captureRegions(shown);
       const details = [];
-      for (const s of squares) { const c = t.canvasSquare(shown, s); details.push({ name: `sq-${sqName(s)}`, x: c.x - 36, y: c.y - 58, w: 72, h: 76, scale: 6 }); }
+      for (const s of squares) { const c = t.canvasSquare(shown, s), scale = shown.plan.scale;
+        details.push({ name: `sq-${sqName(s)}`, x: c.x - 36 * scale, y: c.y - 58 * scale,
+          w: 72 * scale, h: 76 * scale, scale: 6 }); }
       const all = await t.controls();
       for (const id of controls) { const c = all.find(c => c.id === id); if (c) details.push({ name: `ctl-${id}`, x: c.rect.x - 2, y: c.rect.y - 2, w: c.rect.width + 4, h: c.rect.height + 4, scale: 5 }); }
       details.push(...rects);
@@ -399,7 +415,7 @@ await scenario('desktop-start', DESKTOP, async t => {
   await t.verify('start');
   await t.shot('start', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], controls: [1, 3, 11], pageShot: true });
   const ids = (await t.controls()).map(c => c.id);
-  t.check([1, 2, 27, 3, 4, 5, 6, 7, 11, 19].every(id => ids.includes(id)), 'Top bar and play controls are presented', ids.join(','));
+  t.check([1, 2, 27, 3, 5, 47, 55, 56, 57].every(id => ids.includes(id)), 'Top bar and compact play controls are presented', ids.join(','));
   await t.control(2); await t.shot('new-match-menu', { controls: [29, 30, 33, 35] });
   await t.control(34); await t.control(29); await t.count(0);
   const game = await t.verify('layout C start');
@@ -411,18 +427,20 @@ await scenario('desktop-start', DESKTOP, async t => {
 await scenario('defaults', DESKTOP, async t => {
   await t.open({}, { targets: false });
   const board = () => t.page.evaluate(() => { const c = document.querySelector('canvas'), o = document.createElement('canvas');
-    o.width = 512; o.height = 512; o.getContext('2d').drawImage(c, 0, 128, 512, 512, 0, 0, 512, 512); return o.toDataURL(); });
+    const r = window.__shown.plan.board;
+    o.width = r.width; o.height = r.height; o.getContext('2d').drawImage(c, r.x, r.y, r.width, r.height, 0, 0, r.width, r.height);
+    return o.toDataURL(); });
   await t.shot('start', { squares: [sq('c3'), sq('a3'), sq('e3'), sq('c5')] });
   await t.clickSquare(sq('g1'), 16);
-  const listed = (await t.controls()).filter(c => c.id >= 1000 || c.id === 47);
-  t.check(listed.length === 0, 'TARGETS off: the pane lists no destinations', listed.map(c => c.label).join(','));
-  t.check((await t.summary()).includes('Selected g1.'), 'The selection is announced with TARGETS off', await t.summary());
+  const listed = (await t.controls()).filter(c => c.id >= 1000);
+  t.check(listed.length === 0, 'TARGETS off: the pane lists no destination buttons', listed.map(c => c.label).join(','));
+  t.check((await t.summary()).includes('White Knight g1.'), 'The selection is announced with TARGETS off', await t.summary());
   await t.shot('selected-targets-off', { squares: [sq('g1'), sq('f3'), sq('h3')] });
   await t.play(mv('g1', 'f3')); await t.play(mv('b8', 'a6'));
   await t.clickSquare(sq('e4'));
   t.check((await t.summary()).includes('Selected tile C2.'), 'An empty platform with a legal Shift is selectable');
   await t.shot('tile-targets-off', { squares: [sq('e3'), sq('c3')] });
-  await t.control(4);
+  await t.clearSelection();
   await t.control(1); await t.shot('settings-overlays', { controls: [53, 54] });
   const toggles = (await t.controls()).filter(c => c.id === 53 || c.id === 54).map(c => [c.id, c.active]);
   t.check(JSON.stringify(toggles) === '[[53,false],[54,true]]', 'TARGETS starts off and SHIFTS on', JSON.stringify(toggles));
@@ -430,7 +448,7 @@ await scenario('defaults', DESKTOP, async t => {
   await t.clickSquare(sq('f3'), 16);
   t.check(await t.has(1000 + mv('f3', 'e5')), 'TARGETS on lists destinations');
   await t.shot('selected-targets-on', { squares: [sq('f3'), sq('e5'), sq('g5'), sq('d4')] });
-  await t.control(4);
+  await t.clearSelection();
   const marked = await board();
   await t.control(1); await t.control(54); await t.control(28);
   t.check(marked !== await board(), 'SHIFTS off removes the Shift indicators from the board');
@@ -516,7 +534,7 @@ await scenario('hotseat-black-mates', DESKTOP, async t => {
   t.check(game?.outcome()?.reason === 'checkmate', 'Fool mate is checkmate');
   await t.shot('checkmate', { squares: [sq('e1'), sq('h4'), sq('f2')], controls: [3, 6, 7] });
   await t.clickSquare(sq('e2'), 16);
-  t.check(!(await t.has(4)), 'A finished game ignores board selection');
+  t.check(!(await t.summary()).includes('White Pawn e2'), 'A finished game ignores board selection');
   t.check(!(await t.has(6)) && !(await t.has(7)), 'Draw and resign are disabled after checkmate');
   await t.control(3); t.check((await t.shown()).menu === 8, 'Undo after mate asks for agreement');
   await t.shot('undo-request', { controls: [48, 28] });
@@ -536,12 +554,12 @@ await scenario('castle-en-passant', DESKTOP, async t => {
   await t.open();
   for (const id of [mv('e2', 'e4'), mv('e7', 'e5'), mv('g1', 'f3'), mv('g8', 'f6'), mv('f1', 'e2'), mv('f8', 'e7')]) await t.play(id);
   await t.clickSquare(sq('e1'), 16); await t.shot('king-castle-targets', { squares: [sq('e1'), sq('g1')] });
-  await t.control(4);
+  await t.clearSelection();
   await t.motion(true); await t.play(mv('e1', 'g1')); await t.saveMotion('white-castles', await t.motion(false));
   await t.play(mv('e8', 'g8'));
   await t.shot('both-castled', { squares: [sq('g1'), sq('f1'), sq('g8'), sq('f8')] });
   for (const id of [mv('h2', 'h4'), mv('a7', 'a6'), mv('h4', 'h5'), mv('g7', 'g5')]) await t.play(id);
-  await t.clickSquare(sq('h5'), 16); await t.shot('en-passant-target', { squares: [sq('h5'), sq('g6'), sq('g5')] }); await t.control(4);
+  await t.clickSquare(sq('h5'), 16); await t.shot('en-passant-target', { squares: [sq('h5'), sq('g6'), sq('g5')] }); await t.clearSelection();
   await t.motion(true); await t.play(mv('h5', 'g6')); await t.saveMotion('en-passant', await t.motion(false));
   await t.shot('en-passant-done', { squares: [sq('g6'), sq('g5')] });
   // Queenside castling on layout C.
@@ -599,7 +617,7 @@ await scenario('shift', DESKTOP, async t => {
   await t.shot('shift-checkmate', {});
 });
 
-await scenario('draws', DESKTOP, async t => {
+await scenario('draw-terminals', DESKTOP, async t => {
   await t.open();
   for (const [name, fixture] of Object.entries({ threefold: fixtures.threefold, stalemate: fixtures.stalemate,
     bareKings: fixtures.bareKings, progress100: fixtures.progress100, checkmate: fixtures.checkmate })) {
@@ -609,6 +627,10 @@ await scenario('draws', DESKTOP, async t => {
     t.check(game?.outcome()?.reason === fixture.outcome, `${name} reaches ${fixture.outcome}`);
     await t.shot(name, { controls: [3, 6, 7] });
   }
+});
+
+await scenario('draw-prompt', DESKTOP, async t => {
+  await t.open();
   const quiet = fixtures.progress100.actions;
   await t.upload(record('B', 0, quiet.slice(0, -1)));
   await t.play(quiet.at(-1));
@@ -620,24 +642,28 @@ await scenario('draws', DESKTOP, async t => {
   await t.control(45); t.check(await t.has(46), 'PREV pages back and enables NEXT');
   await t.shot('history-previous-page', {});
   await t.control(28);
+});
+
+await scenario('draw-actions', DESKTOP, async t => {
+  await t.open();
   // Hotseat agreement, decline, resignation.
   await t.control(2); await t.control(30); await t.control(33); await t.control(35); await t.control(29); await t.count(0);
   await t.play(mv('e2', 'e4'));
-  await t.control(6); await t.shot('offer-menu', { controls: [49, 50, 28] });
+  await t.matchControl(6); await t.shot('offer-menu', { controls: [49, 50, 28] });
   await t.control(50); await t.count(2); await t.shot('black-offered', { controls: [8, 9] });
-  await t.control(9); await t.count(3); await t.verify('declined');
-  await t.control(6); await t.control(49); await t.count(4); await t.control(8); await t.count(5);
+  await t.matchControl(9); await t.count(3); await t.verify('declined');
+  await t.matchControl(6); await t.control(49); await t.count(4); await t.matchControl(8); await t.count(5);
   await t.verify('agreed'); await t.shot('agreed', { controls: [3, 6] });
   await t.control(3); await t.control(48); await t.count(6); await t.verify('undo agreement');
-  await t.control(7); await t.shot('resign-menu', { controls: [51, 52, 42] });
+  await t.matchControl(7); await t.shot('resign-menu', { controls: [51, 52, 42] });
   await t.control(52); await t.control(42); await t.count(7); await t.verify('black resigned');
   await t.shot('resigned', {});
   // Bot mode: offer is answered by the bot; resignation confirms directly.
   await t.control(2); await t.control(31); await t.control(29); await t.count(0);
-  await t.control(6); await t.page.waitForTimeout(200); await t.ready();
+  await t.matchControl(6); await t.page.waitForTimeout(200); await t.ready();
   await t.verify('bot answered offer');
   await t.shot('bot-offer-answer', {});
-  await t.control(7); await t.control(42); await t.count((await t.commands())); await t.verify('bot-mode resignation');
+  await t.matchControl(7); await t.control(42); await t.count((await t.commands())); await t.verify('bot-mode resignation');
 });
 
 async function botGame(t, mode) {
@@ -659,7 +685,7 @@ async function botGame(t, mode) {
     } else t.check(game?.outcome(), 'Bot replies to every non-terminal human action', `commands ${before} -> ${plies}`);
     if (plies % 30 < 2) await t.shot(`ply-${plies}`, {});
   }
-  if (game && !game.outcome()) { await t.control(7); await t.control(42); game = await t.verify('resign at cap'); }
+  if (game && !game.outcome()) { await t.matchControl(7); await t.control(42); game = await t.verify('resign at cap'); }
   thinks.sort((a, b) => a - b);
   t.result.timings.botReplyFrameMs = { n: thinks.length, median: thinks[thinks.length >> 1], p95: thinks[Math.floor(thinks.length * 0.95)], max: thinks.at(-1) };
   t.result.outcome = game?.outcome();
@@ -678,9 +704,11 @@ await scenario('undo', DESKTOP, async t => {
   await t.control(2); await t.control(31); await t.control(29); await t.count(0);
   await t.play(mv('e2', 'e4')); await t.count(2);
   await t.control(3); await t.count(3); await t.verify('bot undo');
+  await t.control(57);
   t.check(await t.has(10), 'Bot undo pauses the bot and offers RESUME');
   await t.shot('bot-paused', { controls: [10, 3] });
   await t.page.reload({ waitUntil: 'networkidle' }); await t.ready();
+  await t.control(57);
   t.check(await t.has(10), 'Bot pause survives reload');
   await t.control(10); await t.count(4); await t.verify('bot resumed');
 });
@@ -770,7 +798,7 @@ await scenario('menus', DESKTOP, async t => {
   await t.control(44); t.check((await t.page.evaluate(() => window.__opened)).length === 1, 'ORIGINAL opens the published game');
   await t.control(28);
   await t.control(2); await t.control(33); await t.control(36); await t.control(29); await t.count(0);
-  t.check((await t.summary()).includes('Rift Chess. WHITE TO MOVE.'), 'New match starts');
+  t.check((await t.summary()).includes('Rift Chess. White to move.'), 'New match starts');
   await t.shot('auto-policy', { rects: [{ name: 'policy-line', x: 560, y: 180, w: 440, h: 30, scale: 3 }] });
   // Desktop overflow: find a reachable piece with more than 12 destinations.
   let found = null;
@@ -800,7 +828,7 @@ await scenario('menus', DESKTOP, async t => {
 await scenario('persistence', DESKTOP, async t => {
   await t.open();
   await t.play(mv('e2', 'e4')); await t.play(mv('e7', 'e5'));
-  await t.control(14); await t.control(1); await t.control(23); await t.control(28);
+  await t.viewControl(14); await t.control(28); await t.control(1); await t.control(23); await t.control(28);
   await t.clickSquare(sq('g1'), 16);
   const saved = await t.record(), view = (await t.shown()).view;
   await t.page.reload({ waitUntil: 'networkidle' }); await t.ready();
@@ -815,11 +843,12 @@ await scenario('persistence', DESKTOP, async t => {
   await t.control(43, { settle: false });
   t.check((await fs.readFile(await (await download).path(), 'utf8')).includes('"action":1'), 'RECOV downloads the original text');
   await t.page.waitForTimeout(100); await t.ready();
+  await t.control(28);
   await t.control(2); await t.control(29); await t.count(0);
   await t.page.evaluate(k => localStorage.setItem(k, 'not json at all'), PREFS);
   await t.page.reload({ waitUntil: 'networkidle' }); await t.ready();
   await t.shot('bad-preferences', {});
-  t.check((await t.summary()).includes('WHITE TO MOVE'), 'Garbage preferences fall back to defaults');
+  t.check((await t.summary()).includes('White to move'), 'Garbage preferences fall back to defaults');
   await t.page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await t.page.waitForFunction(() => navigator.serviceWorker.controller !== null);
   await t.context.setOffline(true); await t.page.reload({ waitUntil: 'domcontentloaded' }); await t.ready();

@@ -95,8 +95,8 @@ def result_text.for(outcome: U32, +meta: Types.Meta) -> String:
     case 5: "Draw repetition"
     case 6: "Draw quiet moves"
     case 7: "Draw agreed"
-    case 8: "Black resigned"
-    case 9: "White resigned"
+    case 8: "White resigned"
+    case 9: "Black resigned"
     case _:
       String.append(Bool.pick(String, Types.meta_turn(meta), "White", "Black"),
         Bool.pick(String, Types.meta_inCheck(meta), " to move check", " to move"))
@@ -164,4 +164,3 @@ def presentation(+snapshot: Types.Snapshot) -> ChromeData.Presentation:
     result_text(meta), match_mode(preferences), selected_text(snapshot),
     selection_hint(snapshot), Types.snapshot_history(snapshot),
     Types.panels_page(panels), Types.preferences_sound(preferences)}
-

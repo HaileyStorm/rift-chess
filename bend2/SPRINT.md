@@ -976,3 +976,15 @@ as did all 13 extended Chrome groups. The [receipt trail](docs/evidence/v2-compa
 preserves the draft and clean distinction. Owner board/aesthetic acceptance,
 the historical full playtest and new-source Linux native CPU/GPU evidence are
 still outstanding; 2.0.28 remains unadopted.
+
+The [stage-two playtest recovery](docs/evidence/v2-playtest-recovery/README.md)
+found two real compact-UI defects after updating obsolete test navigation:
+resignation status named the winner as the resigning side, and RESUME kept the
+Match rail open, preventing bot scheduling. Focused Bend checks and rendered
+reference play now pass both repairs. All 20 scenario names passed across six
+source-bound draft runs on the same 2.0.27 content version, including two
+complete bot games and both 304-action draw policies. The bound extended
+Chrome suite also passed. This is not yet a clean or hosted publication of
+the new source, and its slow bot/post-move frames keep responsiveness open.
+No browser result closes the new-source native CPU/GPU, 2.0.28 amendment, or
+owner visual gates.

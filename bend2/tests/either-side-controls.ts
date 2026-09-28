@@ -90,6 +90,16 @@ for(const mode of [1,2]){
   assert.deepEqual(commands(ended.state).at(-1),{$:'ResignCommand',expected:0,side:humanWhite});
 }
 
+const botTurn=positionWithTurn(false,JSON.stringify({mode:'bot',humanWhite:true,botPaused:false,sound:false}));
+const paused=P.menu(P.pause(botTurn,true),12);
+assert.equal(P.bot_ready(paused),false);
+assert.equal(Layout.enabled(10,P.snapshot(paused),false),true,'paused bot offers RESUME in Match rail');
+const resumed=act(paused,10).state;
+assert.equal(P.snapshot(resumed).panels.menu,0,'RESUME closes Match rail before bot work');
+assert.equal(P.snapshot(resumed).meta.botPaused,false);
+assert.equal(P.bot_ready(resumed),true,'RESUME re-arms the bot turn');
+assert.ok(P.after(resumed)>0,'RESUME schedules another frame');
+
 let offered=act(act(positionWithTurn(true),6).state,50);
 assert.equal(P.snapshot(offered.state).meta.offer,2);
 const accepted=act(offered.state,8);
