@@ -207,3 +207,11 @@ original 250 ms second-click deselection still failed only with explicit
 `--gpu on`. CPU/off passed. No automatic retry or slower acceptance cadence
 followed. The launcher stays default-off, and the separate timing diagnostic
 is not GPU acceptance.
+
+The subsequent [published-proportion CPU retest](evidence/native-2028-cpu/README.md#published-piece-proportion-source-retest)
+reports a one-attempt C/ELF package and the original 250 ms X.Org/PCM/restart
+checks passing for clean source `cafc934` after both fresh memory admissions.
+This supersedes c30 as the reported **CPU source-parity checkpoint** for the
+current browser visual bytes; the c30 GPU-on failure is still an independent
+failed device gate, not repaired by a newer CPU binary. The canonical pin
+and launcher default-off contract are unchanged.

@@ -1120,3 +1120,12 @@ claim were closed; it produced no current-source timing result. The original
 harness-auth preflight was requested **after** the queued cafc934 native CPU
 gate closes, with no GPU retry authority; await its exact receipt before any
 new leased device diagnostic.
+
+The [published piece-proportion CPU retest](docs/evidence/native-2028-cpu/README.md#published-piece-proportion-source-retest)
+then reported both fresh 88 GiB admissions passing, one source check/C
+emission/CPU ELF link, the original 250 ms X.Org selection/deselection and
+move, held/settled orbit, routed PCM and same-data-directory restart at
+exact `cafc934`. Its source-bound host-local receipts and claim release are
+retained; there was no CUDA work. This closes the **reported current visual
+source Linux CPU gate**, not GPU-on, physical audio, Windows-native, owner
+visual acceptance or the blocked compiler pin.

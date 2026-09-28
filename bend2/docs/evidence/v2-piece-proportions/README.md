@@ -38,11 +38,11 @@ its yaw 0/90/180/270 PNGs were visually inspected for exposed board/rift
 walls and piece position, not subjected to an exact-pixel acceptance oracle.
 The original TypeScript application still passed 62/62 tests and built.
 
-This is a draft visual checkpoint. The previous exact-`c30d312` Linux CPU
-package and failed GPU pilot bind **older** BoardScene bytes; neither validates
-this changed source. Clean build, hosted publication, current-source native
-CPU/GUI/PCM/restart, repaired GPU-on original-cadence behavior and owner visual
-acceptance remain separate gates.
+At this draft visual checkpoint, the previous exact-`c30d312` Linux CPU
+package and failed GPU pilot bound **older** BoardScene bytes; neither
+validated the changed source. Clean publication and a new-source CPU retest
+are recorded below. Repaired GPU-on original-cadence behavior and owner visual
+acceptance remain separate open gates.
 
 ## Clean build and published preview
 
@@ -77,6 +77,13 @@ has been requested for exact `cafc934`/tree
 older-source GPU timing diagnostic closes. It requires fresh two-sample
 88 GiB admission, one bounded C/ELF package, original-cadence X.Org input,
 routed PCM and save/restart; the request is not a result or GPU grant.
+
+The [one-attempt result](../native-2028-cpu/README.md#published-piece-proportion-source-retest)
+now reports a passing exact-source CPU C/ELF package, original-cadence
+X.Org input/orbit, routed PCM and same-directory restart after both fresh
+88 GiB admissions. This is host-local Linux synthetic/native evidence, not
+an independent Windows replay, physical audibility or a current-source GPU
+result. The separate GPU-auth harness preflight remains pending.
 
 ### Rejected nearest-filter speed trial
 
