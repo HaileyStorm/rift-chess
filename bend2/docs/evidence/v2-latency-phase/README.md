@@ -98,3 +98,22 @@ Changing the frozen legal-refresh path needs a separately reviewed
 implementation/proof version. Menu composition is a distinct implementation
 optimization that still needs exact pixel/input parity. Neither a relaxed
 frame threshold nor a GPU fixture speed claim closes these observations.
+
+### Rejected menu-shell reuse trial
+
+An isolated local draft added a Bend `render_from_base` entry and let the
+browser retain the exact `same_base` shell across menu transitions. It did
+not change the frozen rules or the published site. Version
+`c8c0366a008cef3957a3` has ignored draft build-manifest SHA-256
+`348a889721b5c2496931d15823d1dd17d8df16fce613e313b1b7c00cd859faa4`;
+the rendered local `perf` scenario passed with zero behavior defects (summary
+SHA-256 `7108a5f7868b022d5187b09c79b6db8c53c1890b7bb95428ba32747b23276152`).
+Eight menu frames still had 451.7 ms p95 image-tree work; one slow frame
+spent 384.8 ms in menu composition with **zero** shell construction. The
+dynamic panel/control path, not its reusable background shell, dominates
+this sample. The apparent difference from the hosted 486.7 ms tree p95 is
+not a controlled speedup. The draft was rejected and all three tracked
+source files restored byte-for-byte. The clean selected menu bundle and exact
+published `build.json` were restored; 22 Bend files plus two original-site
+baselines passed live verification again. Any future menu optimization must
+target Bend-owned panel/control work and demonstrate pixel/input parity.

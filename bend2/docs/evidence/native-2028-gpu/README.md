@@ -73,9 +73,37 @@ Those bytes remain host-local and untransferred. The earlier 250 ms GPU-on
 failure is unchanged.
 
 A separate [CPU-only harness-auth preflight](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868415046)
-was requested after the queued new-source CPU package gate closes. It requires
-a wrong-cookie negative and private-cookie XRes positive with locally scoped
-authority, and explicitly forbids device use or an automatic timing retry.
-Only after that result is reviewed can a new source-bound GPU diagnostic be
-considered under a fresh claim and lease. This request itself is not a fix or
-execution evidence.
+was requested after the new-source CPU package gate. It required a
+wrong-cookie negative and private-cookie XRes positive with locally scoped
+authority, and explicitly forbade device use or an automatic timing retry.
+Its actual stop is recorded below; no new source-bound GPU diagnostic is
+authorized by that request.
+
+## CPU-only auth preflight stopped at display readiness
+
+The [Linux preflight reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868785033)
+reports Xephyr starting, then readiness timing out before either XRes control.
+The fixture expected `Width:` and `Height:` from `xwininfo -root -tree`, but
+the installed command on an existing display omitted those fields;
+`xwininfo -root` included them. The disposable display's own query output
+and statuses were not retained, so a predicate error is plausible, but its
+connectivity/authentication remains unproved. The static XRes repair was
+not dynamically tested. There was no GPU lease, GPU-on process, application
+build, or timing retry. The host reports clean fixture teardown and exact
+claim release, SHA-256
+`944fe740a046d128670da161678236dc476680a6773ff12674f82d1915c412d3`.
+Host-local blocker/result SHA-256 values are
+`9f47076c2d349c9bbd86ef684ee47405d4680090539881f4a728010b15b2cb44`
+and `d1ebb95345086e638ea701e0496a79061f1e1d5cc1f2d7590e1051ca5482e214`.
+The reported harness before/after/diff hashes are
+`fd68db207305af24a213fc52f297830503524982efba4570d1d3bbd251886328`,
+`6de50af134dbe5cf62dd56c8f108a0719a624b504a6f8fb8b99fc93e8ea04062`,
+and `2539ba55445e532e42caeb4c576e16a7689f587e64f8624007971cf18aaae57c`.
+None was transferred for local code review.
+
+One [new CPU-only readiness/XRes request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868830136)
+requires `xwininfo -root` against the owned display with retained bounded
+output and exit status before the wrong/private-cookie controls. It requires
+a fresh narrow claim and grants no GPU authority; its result is pending. The
+original c30 GPU-on 250 ms failure remains the only completed device
+acceptance verdict; the later cafc visual source has no GPU result.

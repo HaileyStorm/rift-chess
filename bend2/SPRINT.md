@@ -1130,6 +1130,15 @@ retained; there was no CUDA work. This closes the **reported current visual
 source Linux CPU gate**, not GPU-on, physical audio, Windows-native, owner
 visual acceptance or the blocked compiler pin.
 
+The [CPU-only Xauthority preflight](docs/evidence/native-2028-gpu/README.md#cpu-only-auth-preflight-stopped-at-display-readiness)
+stopped before both XRes controls because the disposable Xephyr readiness
+predicate expected dimensions in `xwininfo -root -tree`, and its own output
+was not retained. No GPU use occurred and the fixture/claim were closed. A
+new one-shot [readiness/XRes request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5868830136)
+uses `xwininfo -root` and preserves exact sanitized output/status before any
+control; it does not authorize a GPU diagnostic. The 250 ms CUDA-on failure
+remains open.
+
 A [new exact-build-bound hosted latency sample](docs/evidence/v2-latency-phase/README.md#published-piece-proportion-performance-sample)
 on that visual source passed its interaction checks but still measured a
 1,248 ms p95 move reply and 508 ms p95 menu reply. The visual improvement
