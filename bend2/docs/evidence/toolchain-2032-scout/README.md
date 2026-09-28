@@ -32,8 +32,33 @@ Material migration deltas to test rather than assume:
 
 The next candidate should start in a separate ignored checkout at the
 exact 2.0.32 source. Rebase only still-needed patches one at a time,
-recording clean preimages and conflicts; rerun the full frozen proof,
-conformance, mutation, library, browser and native gates. Move the pin only
-through `LOCAL_BEND_GUIDE.md`'s reviewed amendment procedure. No upstream
+recording clean preimages and conflicts; design a versioned proof gate that
+preserves the old frozen inputs, then rerun conformance, mutations, library,
+browser and native gates. Move the pin only through a reviewed procedure
+consistent with `LOCAL_BEND_GUIDE.md`. No upstream
 publish, toolchain overwrite, installation or GPU lease follows from this
 triage.
+
+## Exact-tag alias and proof-interface check, 2026-09-28
+
+The official `v2.0.32` ref was rechecked at the same
+`573002f01ec6c52416d44489543f69a9625facf8` commit. Its
+[`parse_reso`](https://github.com/bendlang/bend/blob/573002f01ec6c52416d44489543f69a9625facf8/bend2/bend.ts#L1598-L1609)
+explicitly requires `q !== k` before reporting an alias-shadow collision.
+That is the identity-alias distinction supplied by candidate patch 006 on
+2.0.28; a 2.0.32 trial must verify the unchanged frozen source but should
+not blindly reapply 006. The
+[`book_owned` definition](https://github.com/bendlang/bend/blob/573002f01ec6c52416d44489543f69a9625facf8/bend2/comp.ts#L1359-L1370)
+is still private and takes one argument; the 2.0.32 source has no exported
+`SYNTH` marker. Frozen `bend2/core/v2/node-check.mjs` still imports the
+compiler directly from the canonical pinned path and calls
+`Comp.book_owned(book, Comp.SYNTH)`. Its exact bytes cannot be substituted by
+the current amendment contract. The CLI's newer verdict does not silently
+replace that frozen proof authority.
+
+Thus pristine 2.0.32 plausibly removes the **alias** blocker but not the
+**checker-interface** blocker. A reviewed, versioned proof-authority migration
+that preserves v2 Law/evidence bytes is required even if the owner chooses to
+assess 2.0.32 next. The current frozen `node-check.mjs` cannot be assumed to
+run unchanged on that release. This is source inspection only:
+no checkout, proof, mutation, browser, native or device gate was executed.

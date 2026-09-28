@@ -308,6 +308,14 @@ strategy and needs the owner's choice; neither makes the candidate's browser,
 CPU or finite proof receipts canonical or closes the separate GPU and visual
 acceptance gates.
 
+The [exact-tag 2.0.32 source check](evidence/toolchain-2032-scout/README.md#exact-tag-alias-and-proof-interface-check-2026-09-28)
+now narrows that alternative: upstream has the `q !== k` identity-alias fix,
+but `book_owned` remains private and `SYNTH` absent. A versioned proof-authority
+migration is required for 2.0.32 too; its clean tag does not make the frozen
+v2 checker or present five-receipt amendment pass. The remaining owner choice
+is which compiler target to assess through that reviewed migration, not
+whether proof authority can be silently skipped.
+
 The subsequent [current-source CUDA pilot](evidence/native-2028-gpu/README.md)
 proved an actual leased RTX 5090 process but **failed** the original 250 ms
 GPU-on deselection, while CPU/off passed. Its lease and host claim were

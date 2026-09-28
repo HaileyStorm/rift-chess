@@ -868,8 +868,11 @@ alignment. The tag was observed at `573002f01ec6c52416d44489543f69a9625facf8`.
 The isolated 2.0.28 patch stack now has a reproducible
 [107/107 worker gate](docs/evidence/toolchain-2028-stack/README.md), but that
 does not transfer to 2.0.32 or accept either pin. The running application
-remains on 2.0.27. A separate 2.0.32 checkout/rebase and full frozen
-proof/browser/native gate review would precede any amendment; see the
+remains on 2.0.27. Exact-tag source inspection found the identity-alias
+guard corrected upstream, but `book_owned` remains private and the frozen
+v2 checker still calls its removed export. A separate 2.0.32 checkout/rebase,
+reviewed versioned proof-authority path and full browser/native gates would
+precede any pin amendment; see the
 [release triage](docs/evidence/toolchain-2032-scout/README.md).
 
 The final replayed 2.0.28+006 clone also matched its exact 005 baseline
