@@ -910,6 +910,14 @@ shortens the settled sprites from 1.35 to 1.22 projected pitches, moves their
 visual base down by 0.16 rather than 0.10 sprite widths, aligns the contact
 shadow and tints exposed faces toward the existing brass edge. The full 288-view plus
 160-variant sampled wall/top sweep and 13-group Chrome hotseat matrix passed;
-same-sequence warm and four cardinal frames were inspected. This is a dirty
-draft on the unchanged 2.0.27 pin, not published, owner-approved or native
-source-matched. The older native CPU/GPU evidence does not transfer.
+same-sequence warm and four cardinal frames were inspected. The clean
+2.0.27 build reproduced the draft bytes, and the separate
+[hosted preview](docs/evidence/v2-piece-wall-trial/README.md#clean-build-and-hosted-preview)
+passed a 22-file byte check and all 13 real-Chrome scenario groups. Owner
+visual acceptance and new-source native CPU/GPU parity remain open; the
+older native evidence does not transfer.
+
+One [source-only Linux 2.0.28 feasibility request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5862769649)
+binds current commit `041932b` and the reviewed seven-patch order. It
+explicitly excludes heavy C emission, a GPU lease, pin move, host migration
+and claims of cross-host parity. No result is inferred from the request.
