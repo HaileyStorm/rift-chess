@@ -1506,6 +1506,15 @@ def sprite_view_equal(a: Camera.View,b: Camera.View) -> Bool:
     case Camera.View{ay,ap,az} Camera.View{by,bp,bz}:
       Bool.and(U32.is_eq(ay,by),Bool.and(U32.is_eq(ap,bp),U32.is_eq(az,bz)))
 
+# The settled ground reads the view, hole topology and theme, but not piece
+# occupancy or pointer feedback. Keep this cache decision in Bend rather than
+# teaching the browser transport which fields define a chess court.
+def sprite_same_ground(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
+  Bool.and(U32.is_eq(Scene.frame_theme(a),Scene.frame_theme(b)),
+    Bool.and(sprite_view_equal(Scene.frame_view(a),Scene.frame_view(b)),
+      U32.is_eq(Model.pos_holes(Scene.frame_position(a)),
+        Model.pos_holes(Scene.frame_position(b)))))
+
 def sprite_position_equal(a: Model.Position,b: Model.Position) -> Bool:
   match a b:
     case Model.Pos{ab,ah,_,_,_,_,_,_} Model.Pos{bb,bh,_,_,_,_,_,_}:

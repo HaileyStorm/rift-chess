@@ -1409,3 +1409,15 @@ three exact-build-bound local and hosted touch/mobile scenarios passed with
 zero defects. The previous 24-scenario hosted matrix binds older host bytes,
 so broad reliability and native GPU-on parity are not inferred from this
 focused browser release.
+
+A [one-entry settled-ground cache draft](docs/evidence/v2-ground-cache/README.md)
+keeps the cache decision in Bend and preserves the authored sprite filter,
+camera and immutable image path. Three paired local real-Chrome samples
+matched every canvas pixel at start, after e2–e4 and after Front; the
+same-view helper job skipped a roughly 0.6–1.4-second ground phase while a
+camera change missed the cache. This does not accelerate the first detailed
+frame. A six-scenario Vite-preview matrix had five passes and one offline
+failure reproduced on the clean baseline; the candidate persistence path
+passed under the project's normal server. NativeV2 source checking passed
+with known foreign effects, but current-source Linux C/ELF/GPU gates and
+clean hosted publication remain open.

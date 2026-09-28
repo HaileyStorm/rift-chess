@@ -162,12 +162,18 @@ async function scenario(name, viewport, body) {
   if (only.length && !only.includes(name)) return;
   const dir = path.join(root, name);
   await fs.mkdir(dir, { recursive: true });
-  const result = { name, checks: [], defects: [], shots: [], errors: [], timings: {} };
+  const result = { name, checks: [], defects: [], shots: [], errors: [], requestFailures: [], timings: {} };
   const context = await browser.newContext({ viewport, acceptDownloads: true,
     hasTouch: importGesture === 'touch' || name === 'touch-import-replan' });
   const page = await context.newPage();
   page.on('pageerror', error => result.errors.push(error.message));
   page.on('console', event => { if (event.type() === 'error') result.errors.push(event.text()); });
+  page.on('requestfailed', request => {
+    if (result.requestFailures.length >= 12) return;
+    const address = new URL(request.url());
+    result.requestFailures.push({ path: address.origin === new URL(url).origin ? address.pathname : '[external]',
+      reason: request.failure()?.errorText ?? 'unknown' });
+  });
   await page.addInitScript(instrument);
   let sequence = 0;
   let fileImportAttempts = 0;

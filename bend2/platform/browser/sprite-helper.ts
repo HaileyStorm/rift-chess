@@ -28,7 +28,7 @@ type SpriteJob = {
 
 type Timings = {
   fetchMs: number; decodeMs: number; underlayMs: number;
-  groundMs: number; spritesMs: number; workerMs: number;
+  groundMs: number; groundCacheHit: number; spritesMs: number; workerMs: number;
   startedEpochMs: number; sendEpochMs: number;
 };
 
@@ -59,6 +59,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   let plates: any = null, plateTheme: number | null = null, underlay: any = null;
   let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
+  let settledGround: any = null, groundFrame: any = null;
 
   scope.postMessage({ kind: 'hello', protocol: PROTOCOL, source });
 
@@ -89,7 +90,10 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   }
 
   async function ensureAssets(theme: number, metrics: Timings, supplied?: any): Promise<void> {
-    const missingPlates = plateTheme !== theme || !plates || !underlay;
+    // A newly supplied same-theme plate is a new immutable input, not a
+    // license to reuse the old underlay or its derived settled ground.
+    const missingPlates = plateTheme !== theme || !plates || !underlay ||
+      (supplied !== undefined && supplied !== plates);
     const missingPieces = !pieces;
     if (!missingPlates && !missingPieces) return;
 
@@ -130,6 +134,8 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       plates = nextPlates;
       underlay = nextUnderlay;
       plateTheme = theme;
+      settledGround = null;
+      groundFrame = null;
     }
     if (missingPieces) pieces = nextPieces;
   }
@@ -156,7 +162,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
     generationIds.add(request.id);
 
     const metrics: Timings = { fetchMs: 0, decodeMs: 0, underlayMs: 0,
-      groundMs: 0, spritesMs: 0, workerMs: 0,
+      groundMs: 0, groundCacheHit: 0, spritesMs: 0, workerMs: 0,
       startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
       await ensureAssets(request.theme, metrics,
@@ -167,12 +173,19 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
         const at = now();
         underlay = board.underlay512_asset(request.theme, plates);
         metrics.underlayMs = now() - at;
+        settledGround = null;
+        groundFrame = null;
       }
-      const groundAt = now();
-      const ground = board.settled_ground512(request.frame, underlay);
-      metrics.groundMs = now() - groundAt;
+      if (settledGround && groundFrame && board.sprite_same_ground(groundFrame, request.frame)) {
+        metrics.groundCacheHit = 1;
+      } else {
+        const groundAt = now();
+        settledGround = board.settled_ground512(request.frame, underlay);
+        groundFrame = request.frame;
+        metrics.groundMs = now() - groundAt;
+      }
       const spriteAt = now();
-      const image = board.fast_sprite_pieces512(request.frame, pieces, ground);
+      const image = board.fast_sprite_pieces512(request.frame, pieces, settledGround);
       metrics.spritesMs = now() - spriteAt;
       metrics.workerMs = now() - started;
       metrics.sendEpochMs = performance.timeOrigin + now();

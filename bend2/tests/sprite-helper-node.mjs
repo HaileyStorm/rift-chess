@@ -36,7 +36,7 @@ const bootstrap = `
 const { parentPort, workerData } = require('node:worker_threads');
 (async () => {
   const module = await import(require('node:url').pathToFileURL(workerData.entry).href);
-  const state = { calls: [], fetchGroups: [], delayNextFetch: false };
+  const state = { calls: [], fetchGroups: [], delayNextFetch: false, lastGround: null };
   const list = items => items.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' });
   const values = value => { const out = []; while (value?.$ === 'Con') { out.push(value.head); value = value.tail; } return out; };
   const scene = {
@@ -44,14 +44,19 @@ const { parentPort, workerData } = require('node:worker_threads');
     sprite_asset_ids() { return list([0, 1, 2].map(id => ({ id, path: 'assets/pieces-fast-' + id + '.rga', max_bytes: 32 }))); },
     load_plates(responses) { const item = values(responses)[0]; state.calls.push('decode-plate-' + item.id); return { theme: item.id }; },
     load_sprite_pages(responses) { state.calls.push('decode-sprites'); return { $: 'Some', value: { prepared: true } }; },
-    underlay512_asset(theme, plates) { state.calls.push('underlay-' + theme); return { theme, platesTheme: plates.theme }; },
-    settled_ground512(frame, underlay) { state.calls.push('ground-' + frame.marker); return { theme: underlay.theme, marker: frame.marker }; },
-    fast_sprite_pieces512(frame, pieces, ground) { state.calls.push('sprites-' + frame.marker); return { $: 'Pix', color: frame.theme + 1 }; },
+    underlay512_asset(theme, plates) { state.calls.push('underlay-' + theme); return {
+      theme, platePixel: plates?.astral?.pixels?.color ?? plates?.stone?.pixels?.color ?? -1 }; },
+    settled_ground512(frame, underlay) { state.calls.push('ground-' + frame.marker); return {
+      theme: underlay.theme, marker: frame.marker, platePixel: underlay.platePixel }; },
+    sprite_same_ground(a, b) { return a.theme === b.theme && a.groundKey === b.groundKey; },
+    fast_sprite_pieces512(frame, pieces, ground) { state.calls.push('sprites-' + frame.marker);
+      state.lastGround = ground; return { $: 'Pix', color: frame.theme + 1 }; },
   };
   const scope = {
     location: { href: 'http://localhost/worker.mjs' },
     addEventListener(_type, listener) { parentPort.on('message', data => listener({ data })); },
-    postMessage(message) { parentPort.postMessage({ ...message, testState: { calls: [...state.calls], fetchGroups: [...state.fetchGroups] } }); },
+    postMessage(message) { parentPort.postMessage({ ...message, testState: {
+      calls: [...state.calls], fetchGroups: [...state.fetchGroups], lastGround: state.lastGround } }); },
   };
   const loadAssets = async requests => {
     const entries = [...requests];
@@ -104,21 +109,33 @@ test('static sprite helper validates source/theme and retains Bend assets across
   assert.match(wrongTheme.message, /frame\/theme mismatch/);
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 3, generation: 1,
-    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'first' } });
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'first', groundKey: 'court' } });
   const first = await waitFor(worker, message => message.kind === 'result' && message.id === 3);
   assert.deepEqual(first.image, { $: 'Pix', color: 1 }, 'the immutable Bend Image crosses a real worker structured-clone boundary');
   assert.deepEqual(first.testState.calls.slice(-3), ['underlay-0', 'ground-first', 'sprites-first'],
     'Bend underlay, ground, then sprite composition run in order');
   assert.equal(first.testState.fetchGroups.length, 2, 'first theme and sprite assets load in parallel groups');
   assert.ok(Object.values(first.metrics).every(Number.isFinite));
+  assert.equal(first.metrics.groundCacheHit, 0);
   assert.equal(first.source, token);
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 4, generation: 1,
-    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'cached' } });
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'cached', groundKey: 'court' } });
   const cached = await waitFor(worker, message => message.kind === 'result' && message.id === 4);
   assert.equal(cached.testState.fetchGroups.length, 2, 'same-theme plate, prepared sprites and underlay are retained');
   assert.equal(cached.metrics.fetchMs, 0);
   assert.equal(cached.metrics.decodeMs, 0);
+  assert.equal(cached.metrics.groundCacheHit, 1);
+  assert.equal(cached.metrics.groundMs, 0);
+  assert.ok(!cached.testState.calls.includes('ground-cached'),
+    'same-theme, same-view/topology occupancy changes reuse the immutable ground');
+
+  worker.postMessage({ kind: 'job', protocol: 1, id: 5, generation: 1,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'new-holes', groundKey: 'rift' } });
+  const changedGround = await waitFor(worker, message => message.kind === 'result' && message.id === 5);
+  assert.equal(changedGround.metrics.groundCacheHit, 0);
+  assert.ok(changedGround.testState.calls.includes('ground-new-holes'),
+    'a changed view or hole topology rebuilds ground');
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 4, generation: 1,
     source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'cached-2' } });
@@ -147,11 +164,22 @@ test('static sprite helper validates source/theme and retains Bend assets across
     'a Bend-decoded plate from the main worker avoids a second theme fetch/decode');
   assert.equal(shared.metrics.fetchMs, 0);
   assert.equal(shared.metrics.decodeMs, 0);
+  assert.equal(shared.testState.lastGround.platePixel, 7);
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 9, generation: 5,
     source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'wrong-shared' }, plates: supplied });
   const wrongShared = await waitFor(worker, message => message.kind === 'error' && message.id === 9);
   assert.match(wrongShared.message, /Invalid sprite helper job envelope/);
+
+  const newerPlate = { $: 'ObservatoryPlates', astral: { $: 'Missing' },
+    stone: { $: 'Ready', depth: 9, pixels: { $: 'Pix', color: 8 } } };
+  worker.postMessage({ kind: 'job', protocol: 1, id: 10, generation: 6,
+    source: token, theme: 1, frame: { $: 'Frame', theme: 1, marker: 'new-plate' }, plates: newerPlate });
+  const replaced = await waitFor(worker, message => message.kind === 'result' && message.id === 10);
+  assert.equal(replaced.metrics.groundCacheHit, 0,
+    'new same-theme plate invalidates the settled ground');
+  assert.equal(replaced.testState.lastGround.platePixel, 8,
+    'the new plate reaches the actual sprite-composition input');
 });
 
 test('a superseded first job retains its Bend plate without refetching it', async t => {

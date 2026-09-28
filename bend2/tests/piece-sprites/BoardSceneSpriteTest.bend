@@ -127,6 +127,27 @@ def front_rank_projection_is_compact() -> Bool:
     Bool.and(F32.is_ge(foot,F32.mul(pitch,0.24)),
       F32.is_le(foot,F32.mul(pitch,0.32))))
 
+def ground_frame(+square: U32, +holes: U32, +theme: U32,
+  view: Camera.View) -> Scene.Frame:
+  +board = Model.board_set(clear_board(64n, 0, Model.start_board()),
+    square, 10)
+  +position: Model.Position = Model.Pos{board, holes, True{}, 0,
+    64, 64, 0n, 1n}
+  Scene.Frame{position, position, 64, 64, Nil{}, 64, Nil{},
+    21760, 0, theme, view, Nil{}, 64}
+
+def settled_ground_cache_key_tracks_all_inputs() -> Bool:
+  +view: Camera.View = Camera.View{0,65,115}
+  +base = ground_frame(18,0,0,view)
+  +different_piece = ground_frame(19,0,0,view)
+  +different_holes = ground_frame(18,1,0,view)
+  +different_theme = ground_frame(18,0,1,view)
+  +different_view = ground_frame(18,0,0,Camera.View{5,65,115})
+  Bool.and(BoardScene.sprite_same_ground(base,different_piece),
+    Bool.and(Bool.not(BoardScene.sprite_same_ground(base,different_holes)),
+      Bool.and(Bool.not(BoardScene.sprite_same_ground(base,different_theme)),
+        Bool.not(BoardScene.sprite_same_ground(base,different_view)))))
+
 def report(check: Bool, +pass: String, +fail: String) -> IO(Unit):
   match check:
     case True{}: IO.print(pass)
@@ -153,6 +174,10 @@ def main() -> IO(Unit):
             report(contact_shadow_is_bounded(),
               "PASS: subtle contact shadow remains beneath the piece base",
               "Piece contact shadow is absent or spills outside its footprint"),
-            _ => report(front_rank_projection_is_compact(),
-              "PASS: Front sprite height and base fit the projected rank",
-              "Front sprite still projects too tall or too high"))))))
+            _ => IO.bind(Unit,Unit,
+              report(front_rank_projection_is_compact(),
+                "PASS: Front sprite height and base fit the projected rank",
+                "Front sprite still projects too tall or too high"),
+              _ => report(settled_ground_cache_key_tracks_all_inputs(),
+                "PASS: settled ground cache ignores occupancy but tracks view, holes and theme",
+                "Settled ground cache key misses a presentation input")))))))

@@ -24,6 +24,7 @@ export const moduleSpecs = Object.freeze({
       'fast_camera256_for_512', 'fast_camera512', 'fast_camera1024',
       'fast_sprite_pieces512', 'fast_feedback_on_pieces512',
       'fast_sprite_feedback_static512', 'sprite_same_placement',
+      'sprite_same_ground',
       'sprite_camera_only_change', 'nearest2'] }),
   chrome: Object.freeze({ entry: 'bend2/ui/v2/ChromeRaster.bend',
     exports: ['shell', 'overlay', 'compose'] }),
