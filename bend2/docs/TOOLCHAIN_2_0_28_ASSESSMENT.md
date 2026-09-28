@@ -206,3 +206,11 @@ to the pinned 2.0.27 render at those four sampled views. Its
 remain local candidate evidence. They do not establish an unchanged
 production ABI, native CPU/GPU compatibility, complete patch-stack replay,
 or authorization to move the pinned compiler.
+
+The later [published piece/wall visual source](evidence/browser-2028-candidate/README.md#current-published-piecewall-visual-source-trial)
+also passed an isolated candidate build, a 13-group local Chrome matrix and
+strict instrumented online/cold-offline bot routing. Five sampled frames
+matched the public 2.0.27 version byte-for-byte. A separate source-only
+[Linux feasibility request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5862769649)
+is pending for exact 2.0.28+006 patch application/native preflight; no native
+candidate, device, host parity or pin acceptance is inferred from that request.

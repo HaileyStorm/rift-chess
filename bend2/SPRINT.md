@@ -921,3 +921,9 @@ One [source-only Linux 2.0.28 feasibility request](https://github.com/HaileyStor
 binds current commit `041932b` and the reviewed seven-patch order. It
 explicitly excludes heavy C emission, a GPU lease, pin move, host migration
 and claims of cross-host parity. No result is inferred from the request.
+
+The now-published scene also passed a [nonce-private 2.0.28+006 browser candidate](docs/evidence/browser-2028-candidate/README.md#current-published-piecewall-visual-source-trial):
+13 local Chrome groups, an instrumented online/cold-offline bot-worker route
+with no fallback, and five sampled frame PNGs byte-identical to the public
+2.0.27 build. This does not replace the still-open native candidate, GPU,
+host ABI, amendment or owner visual gates.

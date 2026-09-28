@@ -186,3 +186,45 @@ that exact replay clone. The direct final-clone aggregate proof timed out;
 a later full-tree-pinned short-path snapshot passed the candidate aggregate
 proof separately. Candidate-native/GPU/host ABI promotion and reviewed pin
 amendment remain open. Keep the public 2.0.27 preview authoritative.
+
+## Current published piece/wall visual source trial
+
+After clean source commit `0cf3d101ee4f74cbaf10b221a99d660bc7e81926`
+(the game-scene bytes are the published `041932b` composition), a new
+nonce-private 2.0.28+006 candidate copied the reviewed 004-stage compiler,
+applied exact patch 006 and emitted the current Controller, BoardScene and
+MenuAA books. Run root:
+`.artifacts/bend2/toolchain-patches/browser-2028-candidate/run-current-piece-wall-20260928-0328-7d9e/`.
+The candidate build version is `bdac80195a7bb7902008`, `build.json`
+SHA-256 `d1ddd7e46304e78a50e01d459be288e12be1f385c39b11cb3285586ba9da10d6`,
+and source-bound build receipt SHA-256
+`347871f4452e2bd01855f7122d7d7654ca2afdd4b496fd37ceed58bbd3d85cad`.
+The driver conservatively records `sourceDirty: true` even on this clean
+checkout; the candidate is not the published or pinned build.
+
+Real local Chrome bound the served candidate manifest and passed all 13
+extended hotseat groups with zero page/console errors, including selection,
+both-color moves, themes, PCM, Shift/Undo, promotion and cold-offline move.
+The ignored scenario receipt SHA-256 is
+`51a3e577916ccfff1c63bdababe2eb77373ef29537c9b2712af91312097f1733`.
+Initial desktop, selected knight, both-color e4/e5, warm court and portrait
+PNGs are byte-identical to the exact-source hosted 2.0.27 captures; the warm
+PNG SHA-256 is
+`cb5cc53fbff79606ca5ae7fb1c41d4069412b7aa022a3b9b0b64efcbe60c96af`.
+Those five finite captures do not prove every frame or native behavior.
+
+A separate source-bound diagnostic re-bundle version
+`0490a471c98fb8339c54` has receipt SHA-256
+`41017b5865421fc1087c9b72f7658aa13528ff67f1b5fc1cb6728ae0e0092a26`.
+Its strict online/cold-offline Chrome bot-route receipt SHA-256
+`70be14b131846f49c7b3b76f8adf543426cb8400b0524c7ee59a5d74dacca4ac`
+recorded `session-ready → choose → applied`, no serial fallback, three
+remote jobs and one required witness in each phase, with legal choice 20065
+committed at revision 1→2. This remains an instrumented candidate, not the
+unchanged production worker. The candidate build derives from a reviewed
+004-stage copy plus exact patch 006; the final replay and 647-case matrix bind
+equivalent canonical compiler source, but these Chrome runs did not execute
+directly from that exact final replay clone. The final-stack aggregate proof
+has a separate full-tree-pinned short-path passing receipt. Candidate-native,
+GPU, complete host ABI migration, owner visual acceptance and the reviewed
+pin amendment remain open.
