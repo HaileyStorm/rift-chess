@@ -968,3 +968,11 @@ A small [portrait spacing follow-up](docs/evidence/v2-compact-overflow/README.md
 passes its focused geometry check and source-bound local rendered mobile and
 hotseat tests, but is still draft. Neither public browser result nor this
 newer draft closes native/GPU, 2.0.28 pin, full playtest, or owner visual gates.
+
+The portrait follow-up was subsequently built clean and published at Pages
+commit `e129a4b`, with exact live bytes for 22 Bend files and two preserved
+original-site baselines. Its hosted mobile MOVES/Close interaction passed,
+as did all 13 extended Chrome groups. The [receipt trail](docs/evidence/v2-compact-overflow/README.md#portrait-menu-spacing-follow-up)
+preserves the draft and clean distinction. Owner board/aesthetic acceptance,
+the historical full playtest and new-source Linux native CPU/GPU evidence are
+still outstanding; 2.0.28 remains unadopted.

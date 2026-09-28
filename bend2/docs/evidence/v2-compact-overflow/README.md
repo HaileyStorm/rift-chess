@@ -94,4 +94,26 @@ Its inspected `07-moves-panel-L1.png` (SHA-256
 shows the heading and Close below the visible destinations. The source-bound
 local Chrome hotseat suite also passed, receipt SHA-256
 `bb2ddad8555a55f38e104c4d78da65278b879b9999732bcda61acda7e5f2d035`.
-This follow-up remains draft until a clean build and publication check.
+At this checkpoint the follow-up was still draft, pending a clean build and
+publication check.
+
+Source commit `ac40e01743ea80e0e4488dca466a8ba3ee9d23fa` reproduced the
+same content version with `sourceDirty: false`, `draft: false` and clean
+manifest SHA-256
+`1607485fbd30167b85f3c8f8ef1cb1c663ed5a1f34442b2764d6a756bdc9754e`.
+The clean mobile run passed with zero defects (summary SHA-256
+`b393a48d4453c3853d8ed41ade40648306c7da58e8b97bbc68891b723336bce0`),
+as did the 13-group extended local browser run (receipt SHA-256
+`3a2b9f82c674c2ad8d58af3d9a3c8f9b3654e7cfcf6ab7ff94c90c1b7e8f8464`).
+The separate Pages preview advanced to
+`e129a4bfbe66a0a910d97ce77d6fc97e87890b0c`. After its Pages build
+reported `built`, the live byte verifier matched all 22 Bend manifest files
+and two original-site baselines (receipt SHA-256
+`8b0e255af6e28d512205a4904d1ec6b358a0e5b724605f440e940f707ab43132`).
+The hosted mobile MOVES/Close interaction passed with zero defects (summary
+SHA-256 `7e97e1660739a62ede2f4e614a37ad2d391fc0917dbb9cad307337ea5bc693c3`),
+and the hosted extended 13-group Chrome suite passed offline, PCM, promotion,
+Shift/Undo and portrait with no page or console errors (receipt SHA-256
+`56958e2f44e92cac64502b05ce984f6c01633729f4dfda5be6c8ff9f85b1a33c`).
+This is a verified browser preview, not the full historical playtest matrix,
+owner visual acceptance, native CPU/GPU parity, or a 2.0.28 pin amendment.
