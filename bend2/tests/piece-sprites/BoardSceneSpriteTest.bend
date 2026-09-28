@@ -55,7 +55,7 @@ def center_y(square: U32, camera: Camera.Basis) -> U32:
 def sprite_mid_y(+square: U32, +camera: Camera.Basis) -> U32:
   +center = board_center(square, camera)
   Ortho.pixel(F32.sub(F32.add(BoardScene.point_y(center),
-      F32.mul(BoardScene.sprite_width(512, camera), 0.10)),
+      F32.mul(BoardScene.sprite_width(512, camera), 0.16)),
     F32.div(BoardScene.sprite_height(512, camera), 2.0)))
 
 def rendered(frame: Scene.Frame, +background: Image) -> Image:
@@ -105,7 +105,7 @@ def contact_shadow_is_bounded() -> Bool:
   +width = BoardScene.sprite_width(512,camera)
   +background: Image = Pix{Color.rgb(180,190,200)}
   +image = BoardScene.sprite_contact_shadow(9n,512,width,center,background)
-  +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.04)))
+  +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.11)))
   +foot = Pixel.sample_xy(9n,center_x(square,camera),base,image)
   +outside = Pixel.sample_xy(9n,U32.add(center_x(square,camera),48),base,image)
   Bool.and(U32.is_ne(foot,Color.rgb(180,190,200)),

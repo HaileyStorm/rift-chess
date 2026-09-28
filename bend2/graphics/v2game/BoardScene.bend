@@ -389,12 +389,13 @@ def wall_edge(show: Bool, +depth: Nat, +size: U32, +a: Quad.Point,
 
 def wall_side(style: RaisedFacet.Surface) -> U32:
   match style:
-    case RaisedFacet.Surface{top,side,edge,shadow,glint}: side
+    case RaisedFacet.Surface{top,side,edge,shadow,glint}:
+      Color.over(edge,side,52)
 
 def wall_shadow(style: RaisedFacet.Surface) -> U32:
   match style:
     case RaisedFacet.Surface{top,side,edge,shadow,glint}:
-      Color.over(side,shadow,160)
+      Color.over(edge,Color.over(side,shadow,160),52)
 
 def missing_file_left_case(edge: Bool, +file: U32, rank: U32,
   holes: U32) -> Bool:
@@ -483,14 +484,15 @@ def motion_wall_edges(+file: U32, +rank: U32, +holes: U32,
   match corners camera style:
     case Corners{+p00,+p10,+p11,+p01}
       Camera.Basis{+cosYaw,+sinYaw,sinPitch,cosPitch,scale,cx,cy}
-      RaisedFacet.Surface{top,+side,edge,shadow,glint}:
-      +shade = Color.over(side,shadow,160)
+      RaisedFacet.Surface{top,+side,+edge,shadow,glint}:
+      +lit = Color.over(edge,side,52)
+      +shade = Color.over(edge,Color.over(side,shadow,160),52)
       +up = motion_wall_edge(Bool.and(F32.is_lt(cosYaw,F32.neg(0.02)),
-        missing_rank_up(file,rank,holes)),depth,size,p00,p10,drop,inverse,mask,side,image)
+        missing_rank_up(file,rank,holes)),depth,size,p00,p10,drop,inverse,mask,lit,image)
       +right = motion_wall_edge(Bool.and(F32.is_gt(sinYaw,0.02),
         missing_file_right(file,rank,holes)),depth,size,p10,p11,drop,inverse,mask,shade,up)
       +down = motion_wall_edge(Bool.and(F32.is_gt(cosYaw,0.02),
-        missing_rank_down(file,rank,holes)),depth,size,p11,p01,drop,inverse,mask,side,right)
+        missing_rank_down(file,rank,holes)),depth,size,p11,p01,drop,inverse,mask,lit,right)
       motion_wall_edge(Bool.and(F32.is_lt(sinYaw,F32.neg(0.02)),
         missing_file_left(file,rank,holes)),depth,size,p01,p00,drop,inverse,mask,shade,down)
 
@@ -1324,14 +1326,14 @@ def sprite_width(+size: U32, camera: Camera.Basis) -> F32:
   F32.mul(sprite_board_pitch(size, camera), 1.16)
 
 def sprite_height(+size: U32, camera: Camera.Basis) -> F32:
-  F32.mul(sprite_board_pitch(size, camera), 1.35)
+  F32.mul(sprite_board_pitch(size, camera), 1.22)
 
 def sprite_matrix(+width: F32, +height: F32, center: Quad.Point) -> Transform.Matrix:
   match center:
     case Quad.Point{+x, +y}:
       Transform.Matrix{width, 0.0, 0.0, height,
         F32.sub(x, F32.div(width, 2.0)),
-        F32.sub(F32.add(y, F32.mul(width, 0.10)), height)}
+        F32.sub(F32.add(y, F32.mul(width, 0.16)), height)}
 
 def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
   match kind:
@@ -1355,7 +1357,7 @@ def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
     case Quad.Point{+x,+y}:
       +radius = F32.mul(width, 0.18)
       +half_height = F32.mul(width, 0.045)
-      +base = F32.add(y, F32.mul(width, 0.04))
+      +base = F32.add(y, F32.mul(width, 0.11))
       Rounded.draw(depth,size,
         Shapes.Pos{Ortho.pixel(F32.sub(x,radius))},
         Shapes.Pos{Ortho.pixel(F32.sub(base,half_height))},

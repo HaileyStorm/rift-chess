@@ -88,9 +88,11 @@ function wallColorPixels(image:Image,closed:Image,quad:any[],topQuad:any[],color
 function predictedWallColors(square:number,edge:string):number[] {
   const style=material(square);
   // The topology-aware wall now paints after the cast shadow. No unconditional
-  // generic slab face can cover or recolor an exposed side afterward.
-  return [edge==='rank-up'||edge==='rank-down'?
-    style.side:Color.over(style.side,style.shadow,160)];
+  // generic slab face can cover or recolor an exposed side afterward. Predict
+  // from the material channels, not the scene's wall-color helper under test.
+  const base=edge==='rank-up'||edge==='rank-down'?
+    style.side:Color.over(style.side,style.shadow,160);
+  return [Color.over(style.edge,base,52)];
 }
 function insideInsetQuad(x:number,y:number,points:any[],margin:number):boolean {
   let area=0;
@@ -163,7 +165,7 @@ const outerSquare=Model.sq(3,7),outerCorners=corners(outerSquare);
 const drop=BoardScene.extrusion(size,camera);
 const outerWalls=BoardScene.cutout_walls(outerSquare,depth,size,0,theme,
   outerCorners,camera,underlay) as Image;
-const outerSide=material(outerSquare).side;
+const outerSide=predictedWallColors(outerSquare,'rank-up')[0];
 const [outerX,outerY]=wallPoint(outerCorners.p00,outerCorners.p10,drop);
 assert.ok(hasColorNear(outerWalls,outerX,outerY,outerSide),
   'outer exposed edge has a solid vertical wall facet');
@@ -183,7 +185,7 @@ const riftWalls=BoardScene.cutout_walls(riftSquare,depth,size,neighbors,theme,
   riftCorners,camera,underlay) as Image;
 const riftBaseline=BoardScene.cutout_walls(riftSquare,depth,size,0,theme,
   riftCorners,camera,underlay) as Image;
-const riftSide=material(riftSquare).side;
+const riftSide=predictedWallColors(riftSquare,'rank-up')[0];
 const [riftX,riftY]=wallPoint(riftCorners.p00,riftCorners.p10,drop);
 assert.ok(hasColorNear(riftWalls,riftX,riftY,riftSide),
   'rift-facing exposed edge has a vertical wall in the existing side material');

@@ -904,3 +904,12 @@ the current rendering. A later same-sequence local Chrome capture shows the
 outer drop and some rift-wall shading; the owner finds it much closer, while
 the rifts still read too flat at that angle. Keep face legibility, piece
 footing/height, row separation and owner visual acceptance open.
+
+A subsequent [local piece-footing and wall-tint trial](docs/evidence/v2-piece-wall-trial/README.md)
+shortens the settled sprites from 1.35 to 1.22 projected pitches, moves their
+visual base down by 0.16 rather than 0.10 sprite widths, aligns the contact
+shadow and tints exposed faces toward the existing brass edge. The full 288-view plus
+160-variant sampled wall/top sweep and 13-group Chrome hotseat matrix passed;
+same-sequence warm and four cardinal frames were inspected. This is a dirty
+draft on the unchanged 2.0.27 pin, not published, owner-approved or native
+source-matched. The older native CPU/GPU evidence does not transfer.
