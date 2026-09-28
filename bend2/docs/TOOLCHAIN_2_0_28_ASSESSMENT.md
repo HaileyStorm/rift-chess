@@ -212,5 +212,22 @@ also passed an isolated candidate build, a 13-group local Chrome matrix and
 strict instrumented online/cold-offline bot routing. Five sampled frames
 matched the public 2.0.27 version byte-for-byte. A separate source-only
 [Linux feasibility request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5862769649)
-is pending for exact 2.0.28+006 patch application/native preflight; no native
-candidate, device, host parity or pin acceptance is inferred from that request.
+asked for exact 2.0.28+006 patch application/native preflight; its result is
+recorded below and does not establish a native candidate, device, host parity
+or pin acceptance.
+
+The [Linux source-only result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863035581)
+for published source `041932b` reports clean seven-patch LF replay and a
+bounded NativeV2 check-only exit 0 in 8.82 seconds (3,339,084 KB peak RSS),
+with 29 definitions relying on unsafe or foreign code. The apparent 27-vs-28
+count differs only in categories on Windows: the reviewed replay has 27
+changed paths but records 28 final compiler/test inputs, including unchanged
+`bend2/base.bend` (SHA-256 `722a76eaa91732b3c50299f91769ae6ba97ad80705013209b816f5204536aebb`).
+The [Linux clarification](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863194840)
+asks that host to verify the same distinction; this local explanation is not
+cross-host byte parity. No C, ELF, GUI, PCM, restart or
+GPU execution follows from a source check. The separate
+[CPU-only candidate package request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863172636)
+requires a fresh claim, exact source/compiler closure, an 88 GiB two-sample
+memory admission and one bounded emission/link before runtime probes. Its
+request is not execution evidence or approval to move the pin.

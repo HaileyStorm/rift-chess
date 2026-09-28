@@ -920,10 +920,23 @@ older native evidence does not transfer.
 One [source-only Linux 2.0.28 feasibility request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5862769649)
 binds current commit `041932b` and the reviewed seven-patch order. It
 explicitly excludes heavy C emission, a GPU lease, pin move, host migration
-and claims of cross-host parity. No result is inferred from the request.
+and claims of cross-host parity. Its later result is recorded below rather
+than inferred from the request.
 
 The now-published scene also passed a [nonce-private 2.0.28+006 browser candidate](docs/evidence/browser-2028-candidate/README.md#current-published-piecewall-visual-source-trial):
 13 local Chrome groups, an instrumented online/cold-offline bot-worker route
 with no fallback, and five sampled frame PNGs byte-identical to the public
 2.0.27 build. This does not replace the still-open native candidate, GPU,
 host ABI, amendment or owner visual gates.
+
+The [Linux 2.0.28 source-only feasibility result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863035581)
+replayed seven reviewed patches on exact upstream source with LF files and
+passed a bounded check-only NativeV2 load on public visual source `041932b`.
+The apparent 27-vs-28 path count is a category distinction in the Windows
+replay: 27 changed paths, plus unchanged `base.bend` among 28 final input
+files. Linux was [asked to verify](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863194840)
+that distinction locally; no cross-host parity is inferred.
+A separate [CPU-only candidate package request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863172636)
+preserves the 88 GiB pre-emission guard, one bounded C/ELF attempt and fresh
+X.Org/PCM/restart probes only after the source/asset/compiler receipt binds.
+No native candidate result is inferred before that reply.
