@@ -129,3 +129,31 @@ pawn/back-rank separation while making the outside wall thickness less
 prominent. Retain the current 67° default pending owner preference rather
 than changing native/browser source for this marginal subjective trade-off.
 These screenshots do not prove every exposed/rift face or owner acceptance.
+
+## Paired front views from both sides, current hosted build
+
+The hosted `build.json` bytes still matched SHA-256
+`ce9a29f5067a9eca746502862aa8835193493dbf2ed1356d8988df80451d3c72`.
+A fresh real-Chrome probe opened View, selected exact Front (yaw 0°, pitch
+65°), captured 65°/70°/75° after successive Up actions, reset Front, then
+used twelve independently refined Right actions to reach yaw 180° and
+captured the same three pitches. The six detailed screenshots are ignored
+local evidence under `.artifacts/bend2/paired-front-probe-20260928/`:
+
+| View | PNG SHA-256 |
+| --- | --- |
+| White-facing 65° | `b2700a8b96be6e7cbbabf20f48edd86129401cd7096e08235b1107e0aa608823` |
+| White-facing 70° | `f631b5ec7a76c663460c73cd7132e4d5557f2f91447316b38467764d7b920af1` |
+| White-facing 75° | `810608e0f632844cf3f95ceec793672fd7b072a74bc530dfbb66c41f4bbcb229` |
+| Black-facing 65° | `574cdbccd8c4627abafaf68e6214fda79138cef1a2e2dcd351ce566bee68a57c` |
+| Black-facing 70° | `6b26ede379cfd1347d9e371cc584790e09e6943d89add68f0990da8eb83f57ab` |
+| Black-facing 75° | `081b9391ff02f654dcfb213d4887c953dacb43d4740f8b702997818722fabbd1` |
+
+The page had zero JavaScript errors and 19 detailed refinement events. At
+the straight Front orientations, 75° visibly opens more space between the
+near pawn and back-rank silhouettes on both sides; 70° is an intermediate
+step. The more top-down view also makes the board walls read shallower.
+These are view-control captures rather than a changed default, and neither
+pixel hashes nor my visual comparison constitute owner WOW acceptance.
+Retain the source/default pending the owner’s preference; any pitch change
+would need fresh browser and native source-bound checks.

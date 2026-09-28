@@ -1301,6 +1301,13 @@ depth; the existing default is retained pending owner visual preference.
 No screenshot substitutes for that acceptance or for a new-source native
 gate after any future camera change.
 
+A [paired Front comparison from both sides](docs/evidence/v2-piece-proportions/README.md#paired-front-views-from-both-sides-current-hosted-build)
+now binds six detailed 65°/70°/75° captures to the unchanged hosted build.
+At straight Front orientations, 75° separates near pawns from the back rank
+more clearly for White and Black, while making wall depth less apparent.
+This narrows the visual trade-off but does not change the default or replace
+owner acceptance and source-bound native/browser retesting after an edit.
+
 An optional [current-source menu-layer diagnostic](docs/evidence/v2-latency-phase/README.md#current-source-menu-layer-diagnostic-after-account-resumption)
 now separates a retained Preferences scrim, panel and rounded controls in a
 pixel-equal Bend specimen. The ten ordinary controls dominate this variable
