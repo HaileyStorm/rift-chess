@@ -82,7 +82,7 @@ const summary = { run, url, at: new Date().toISOString(), buildVersion: build.ve
   scenarios: [], defects: [], timings: {} };
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const instrument = () => {
-  window.__frames = []; window.__sounds = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
+  window.__frames = []; window.__refinements = []; window.__sounds = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
   const openWindow = window.open;
   window.open = (...args) => { window.__opened.push(String(args[0])); return null; };
   void openWindow;
@@ -96,13 +96,17 @@ const instrument = () => {
       this.addEventListener('message', event => {
         const m = event.data;
         if (m.kind === 'fault') window.__fault = m.message;
+        if (m.kind === 'refinement') {
+          window.__refinements.push({ at: performance.now(), dirty: !!m.image,
+            spriteMetrics: m.spriteMetrics, sceneTimes: m.sceneTimes });
+        }
         if (m.kind !== 'frame') return;
         for (const e of m.effects) if (e.$ === 'Sound') {
           const pcm = new Float32Array(e.samples);
           window.__sounds.push({ samples: pcm.length, peak: Math.max(...pcm.map(Math.abs)), finite: pcm.every(Number.isFinite) });
         }
         const request = this.requests.get(m.id);
-        window.__frames.push({ ms: m.renderMs, portMs: m.portMs, treeMs: m.treeMs,
+        window.__frames.push({ at: performance.now(), ms: m.renderMs, portMs: m.portMs, treeMs: m.treeMs,
           traversalMs: m.traversalMs, sceneTimes: m.sceneTimes, pixelStats: m.pixelStats,
           dirty: !!m.image, kinds: request?.kinds || [],
           latency: request ? performance.now() - request.at : null });
@@ -151,6 +155,18 @@ async function scenario(name, viewport, body) {
         && document.querySelector('canvas')?.getAttribute('aria-busy') === 'false' && window.__shown && window.__reply?.after === 0, null, { timeout });
       const fault = await page.evaluate(() => window.__fault);
       if (fault) throw new ScriptError(`Bend runtime fault: ${fault}`);
+    },
+    async refined(timeout = 90000) {
+      await page.waitForFunction(() => window.__fault || window.__refinements.length > 0, null, { timeout });
+      const state = await page.evaluate(() => ({ fault: window.__fault,
+        initial: window.__frames.find(frame => frame.dirty)?.at,
+        refined: window.__refinements[0] }));
+      if (state.fault) throw new ScriptError(`Bend sprite refinement fault: ${state.fault}`);
+      t.check(state.refined.dirty && state.refined.spriteMetrics &&
+        Number.isFinite(state.refined.spriteMetrics.spritesMs),
+      'Detailed Bend sprite refinement replaced the initial frame', JSON.stringify(state.refined));
+      result.timings.spriteRefinement = { afterInitialMs: state.initial == null ? null :
+        +(state.refined.at - state.initial).toFixed(1), metrics: state.refined.spriteMetrics };
     },
     async change(action) {
       const id = await page.evaluate(() => window.__reply?.id || 0);
@@ -424,6 +440,8 @@ await scenario('desktop-start', DESKTOP, async t => {
   await t.open();
   await t.verify('start');
   await t.shot('start', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], controls: [1, 3, 11], pageShot: true });
+  await t.refined();
+  await t.shot('start-refined', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], pageShot: true });
   const ids = (await t.controls()).map(c => c.id);
   t.check([1, 2, 27, 3, 5, 47, 55, 56, 57].every(id => ids.includes(id)), 'Top bar and compact play controls are presented', ids.join(','));
   await t.control(2); await t.shot('new-match-menu', { controls: [29, 30, 33, 35] });

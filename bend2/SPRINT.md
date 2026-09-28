@@ -1063,3 +1063,11 @@ with the patched candidate. Retain 2.0.27 and the candidate receipts pending
 an owner choice of a reviewed new proof-authority version or a fresh pristine
 upstream successor assessment. This does not affect the separately requested
 current-source GPU pilot.
+
+The hosted first-frame [sprite-refinement gate](docs/evidence/v2-playtest-recovery/README.md#initial-fallback-versus-detailed-sprite-refinement)
+now distinguishes coarse proxy pieces from the authored detailed artwork.
+An exact-build-bound Chrome start passed and both rendered states were
+inspected; the detailed frame arrived 4,677.9 ms after the first frame in
+that cold sample. The artwork route is functional, but rapid visual readiness
+and owner acceptance are still open. This test-only change does not alter the
+published/native source bound to the pending GPU request.

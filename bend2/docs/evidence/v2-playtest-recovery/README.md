@@ -95,3 +95,32 @@ the test's cleanup resignation was incorrectly accepted as a terminal game.
 The driver now resets the seed per game, records `naturalOutcome`, and treats
 a cap as a defect before cleanup. The source-bound [candidate follow-up](../browser-2028-candidate/README.md#deep-candidate-browser-replay)
 retains the misleading sample and a fresh-seed natural-checkmate rerun.
+
+## Initial fallback versus detailed sprite refinement
+
+The original `desktop-start` matrix capture sampled the first playable frame,
+which still uses Bend's fast proxy silhouettes. It was not a visual check of
+the authored chess artwork. The test now captures that frame separately,
+waits for a real `refinement` worker packet with a transferred image and
+finite sprite-render timing, then captures the detailed result. A fresh hosted
+Chrome run bound the exact served `build.json` to the local clean non-draft
+bytes (SHA-256
+`9300df6bd209c2f4c89e44f44d5e2b7282927ddf79653f9f1d7822569c89f29f`,
+content version `0e09e1d0e901b91b3d5f`, source `c30d312`) and passed the
+`desktop-start` scenario with zero defects. Its ignored
+`.artifacts/bend2/playtest-stage2/sprite-refinement-bound-20260928/summary.json`
+is SHA-256 `991532bcd0b40cde8862ea40639e7dd6a521db5b4eff5329226f73a78d0f10fd`;
+the scenario result is
+`1299b133b7e37f4be4b02b0fc16c4fd02ae677849180068cba6b5c724189498d`.
+
+The initial and refined full-canvas PNGs were visually inspected. Their
+respective SHA-256 values are
+`b0d205996f70477e61374df41e8c9237c49d2d36f6982c1cf85b75054c3387b9`
+and `b438ce62054b4579473856873d70f3ca0bb2b40980f4a66fff4246d7966b033d`.
+The detailed pieces and board rim do appear; they are not absent assets.
+In this one cold hosted sample the detailed packet arrived **4,677.9 ms
+after the first frame** (sprite worker 4,217.8 ms, including 1,410.6 ms decode
+and 1,624.2 ms sprite drawing). This is a conspicuous placeholder interval,
+not a responsive-startup pass or a distribution/owner visual verdict. The
+new assertion is a narrow regression gate; the full matrix was not rerun on
+the changed test driver.
