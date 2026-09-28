@@ -1,0 +1,19 @@
+{
+  "schema": "rift-bend-v3-proof-runtime-draft/1",
+  "runtime": {
+    "name": "Node.js",
+    "version": "v24.12.0",
+    "sha256": "2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "worker": {
+    "stackSizeMb": 64,
+    "maxOldGenerationSizeMb": 8192,
+    "execArgv": ["--no-warnings"]
+  },
+  "authoritySha256": "3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013",
+  "frozenSemanticV2Sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf",
+  "checker": "Clean TOOLCHAIN.json pin; Bend book_load/book_valid; empty selected JS emit enters compiler ownership guard; zero holes and whole-book unsafe/foreign dependency verdict from proof-authority.mjs",
+  "scope": "Draft next-version proof authority over unchanged frozen v2 source. Not a frozen manifest, accepted amendment, or 2.0.28 pin."
+}

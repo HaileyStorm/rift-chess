@@ -185,3 +185,41 @@ zero taint, all three negative controls, zero denied fetches, and unchanged
 fixture/input, runner, authority, compiler and replay bindings. This is an
 actual worker-import/source-binding smoke, deliberately **not** a frozen
 1,584-term aggregate run or a pin amendment.
+
+## Draft canonical-pin checker entry and seven-case smoke
+
+`core/v3/node-check.mjs` and `proof-runtime.json` are new draft files; frozen
+v2 checker/runtime/Law bytes remain untouched. The entry binds the current
+clean `TOOLCHAIN.json` checkout, the exact Node executable, its own runtime
+record and the draft authority module. It also binds the complete local
+Bend import closure before launch, checks the worker's actual `book_load`
+imports against that closure, and rechecks all those bytes after exit. For
+the frozen aggregate entry it additionally requires the exact semantic-v2
+manifest hash and every closure hash in that manifest. It loads and
+validates the book, enters the compiler's ownership guard through an empty
+selected emit and applies the whole-book verdict. Success prints only after
+a clean worker exit and the source closure, pin, checker, runtime, authority
+and compiler rechecks. It currently runs under the **2.0.27** canonical pin,
+not an accepted 2.0.28 migration.
+
+`node bend2/core/v3/test-node-check.mjs` passed seven exact-fixture cases:
+the positive 497-term book, frozen `graphics/PROOF.bend`, and a valid
+indented local import printed `All terms check.` at exit 0; TODO, reachable
+unsafe and reachable foreign fixtures exited 1 with distinct verdicts. An
+indented cached external import was denied before worker launch without
+provider contact. The test pins each
+fixture SHA-256 and verifies its bytes again after execution. This is a
+bounded real-source checker smoke; it does not cover the 1,584-term v2
+aggregate, all six law mutations, a versioned manifest/freeze, a five-receipt
+amendment or new-pin native/browser work.
+
+The aggregate `--preflight-only` path passed without running its proof:
+56 local Bend sources matched the frozen semantic-v2 manifest, with closure
+SHA-256 `dd78b631130bf7a79d2818e0763437b6879114bce608611451bd0e9692d50741`.
+The seven-case gate passed again after adding closure binding. Independent
+review identified entry-only hashing and indented/external import handling
+as P2 proof-boundary gaps. The parent now scans the same import prefix Bend
+accepts (including indentation), and the worker rejects every loaded path
+outside the expected project closure except exact compiler Base. These
+checks address those findings; no full aggregate verdict follows from this
+preflight.

@@ -1333,3 +1333,13 @@ the actual migration without claiming a frozen v3 manifest or canonical
 The bound [fixture-only worker smoke](docs/evidence/toolchain-2028-stack/README.md#candidate-proof-rejection-controls-on-a-real-bend-book)
 passed actual worker import/validation/negative controls without changing
 source. It is not a substitute for the full aggregate or canonical proof.
+
+A new [draft canonical-pin v3 checker](docs/evidence/toolchain-2028-stack/README.md#draft-canonical-pin-checker-entry-and-seven-case-smoke)
+now passes seven real Bend source cases under the still-clean 2.0.27 pin:
+positive fixture, frozen graphics proof and indented local import; specific
+TODO, reachable unsafe and reachable foreign rejections; and an external
+import denied before worker launch. Its success is emitted only after
+worker exit and post-run import-closure/pin checks. The aggregate's 56 frozen
+local imports passed exact semantic-v2 manifest preflight without running a
+proof. This is not the full v2 aggregate,
+reviewed v3 freeze, 2.0.28 pin, native GPU or visual acceptance.
