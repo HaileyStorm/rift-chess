@@ -79,3 +79,22 @@ tracked source is clean, the clean selected module and exact published
 No startup-speed claim or new release follows. Further work should attack
 the measured full scene composition/decode/render path without degrading
 authored edges or the first playable frame.
+
+## Published piece-proportion performance sample
+
+The clean hosted content version `817dfa63932dd6ccf4b4` ran the
+exact-build-bound real Chrome `perf` scenario with zero behavioral defects.
+Its ignored summary
+`.artifacts/bend2/playtest-stage2/piece-proportion-hosted-perf-20260928/summary.json`
+is SHA-256 `d71b64768c6348814427fb354ffc422ac3164ec5ffc8490feb5c77c2f8997790`.
+Among 42 recorded move-class frames, p95 worker dispatch was 1,018.4 ms,
+port/render 216.1 ms and request-to-reply 1,248.0 ms. Hover p95 reply was
+41.8 ms; selection 554.7 ms; orbit 264.5 ms. Eight menu-class frames had
+486.7 ms p95 image-tree work and 508.4 ms p95 reply. These are small,
+variable-load samples with batching and no guaranteed FPS; their phase p95
+values must not be added as one frame. The proportion edit did not remove
+the earlier source-bound legal-refresh and menu-composition bottlenecks.
+Changing the frozen legal-refresh path needs a separately reviewed
+implementation/proof version. Menu composition is a distinct implementation
+optimization that still needs exact pixel/input parity. Neither a relaxed
+frame threshold nor a GPU fixture speed claim closes these observations.

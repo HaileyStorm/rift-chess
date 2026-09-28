@@ -1129,3 +1129,9 @@ exact `cafc934`. Its source-bound host-local receipts and claim release are
 retained; there was no CUDA work. This closes the **reported current visual
 source Linux CPU gate**, not GPU-on, physical audio, Windows-native, owner
 visual acceptance or the blocked compiler pin.
+
+A [new exact-build-bound hosted latency sample](docs/evidence/v2-latency-phase/README.md#published-piece-proportion-performance-sample)
+on that visual source passed its interaction checks but still measured a
+1,248 ms p95 move reply and 508 ms p95 menu reply. The visual improvement
+is not a responsiveness pass; the frozen legal-refresh and separate chrome
+composition paths remain work rather than being hidden behind green UI tests.
