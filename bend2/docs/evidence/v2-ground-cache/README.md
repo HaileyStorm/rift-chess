@@ -73,4 +73,31 @@ warnings are the native IO/effects cone, not a pure proof. No new-source C/ELF
 package, Linux GUI/PCM/restart, original-cadence CUDA-on gate, physical
 audio, full 24-scenario run, clean publication or owner visual acceptance
 is inferred from this draft. The original full-window GPU-on 250 ms failure
-remains authoritative, and the retained Linux trace readout is pending.
+remains authoritative; at this draft checkpoint the retained Linux trace
+readout was pending.
+
+## Clean build and full local rendered matrix
+
+Commit `a7895fb7a989d6790eff5ed2c2f7ccea2aa06c7e` was pushed, and the
+unchanged selected browser files rebuilt without `--draft` on clean pinned
+Bend 2.0.27. The content version remained `3616886e4d25f31c6943`;
+`build.json` records `sourceDirty: false`, `draft: false` and SHA-256
+`0515bb18295ab10d9f2df7e3b75b206ad16d93e0f3144744a05a002308d5fd44`.
+The project's byte-serving local preview then passed all 24 scenarios and
+685 checks in one exact-build-bound real-Chrome process, with zero defects.
+The ignored full summary is
+`.artifacts/bend2/playtest-stage2/ground-cache-clean-full-20260928/summary.json`,
+SHA-256 `de5449fb67d26892cf1cbf798c05541dc5d6d1f281adc74015579a7cc7be9f06`.
+It includes both natural bot terminals, 304-action draw paths, offline
+persistence, import/cancel and camera/orbit behavior. One uninterrupted pass
+does not establish a reliability bound. The sampled move-class worker
+dispatch p95 was still 910.7 ms, so the whole interaction is not accepted
+as rapid. The prior Vite-preview failure and baseline differential above
+remain retained diagnostics; this result is specifically for the normal
+byte-serving route.
+
+The [later read-only Linux GPU trace readout](../native-2028-gpu/README.md#retained-c30-phase-trace-readout-no-paced-intervening-frames)
+found no paced unchanged frames in its 231.063 ms gap, but lacked CPU/
+reduction hooks and did not identify a cause. It binds the older c30 GPU
+source and does not accept this new BoardScene source. A fresh exact-source
+Linux CPU/native result and a reviewed GPU diagnosis remain outstanding.

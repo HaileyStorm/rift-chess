@@ -1421,3 +1421,19 @@ failure reproduced on the clean baseline; the candidate persistence path
 passed under the project's normal server. NativeV2 source checking passed
 with known foreign effects, but current-source Linux C/ELF/GPU gates and
 clean hosted publication remain open.
+
+The [read-only Linux C30 trace readout](docs/evidence/native-2028-gpu/README.md#retained-c30-phase-trace-readout-no-paced-intervening-frames)
+found no paced unchanged frame or observed blocking host call in the
+231.063 ms between four `bend_dev` launches ending and the changed
+`window_dev` launch. That interval remains unattributed because CPU
+reduction/frame boundaries and device completion were not traced. It is not
+a GPU-kernel duration or a visible-present timestamp. No new episode ran;
+the original full-window CUDA-on 250 ms failure remains terminal.
+
+The [clean ground-cache local build](docs/evidence/v2-ground-cache/README.md#clean-build-and-full-local-rendered-matrix)
+at source `a7895fb` retained the same browser asset version as its paired
+draft and passed the uninterrupted 24-scenario, 685-check real-Chrome matrix
+with zero defects on the project's normal byte-serving route. Move-class
+worker dispatch p95 still measured 910.7 ms in that sample, and first
+detailed art was not accelerated. No current-source Linux native package,
+GPU-on 250 ms repair, reviewed 2.0.28 pin or hosted cache release is inferred.

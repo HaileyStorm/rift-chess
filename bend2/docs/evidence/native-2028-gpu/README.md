@@ -284,7 +284,41 @@ full-window CUDA-on 250 ms deselection gate remains **terminal FAIL**;
 no GPU default, parity, speedup or acceptance follows.
 
 A [read-only retained-trace request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5876312618)
-asks Linux to enumerate intervening frames, pacing and X/CUDA host calls
+asked Linux to enumerate intervening frames, pacing and X/CUDA host calls
 between release and the changed launch. It authorizes no new device or CPU
-episode, lease, retry, source edit or acceptance claim. The gap remains
-unattributed unless the exact retained rows actually account for it.
+episode, lease, retry, source edit or acceptance claim. Its answer follows;
+the gap was not accounted for by those rows.
+
+## Retained C30 phase-trace readout: no paced intervening frames
+
+The [read-only Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5877800362)
+bound the unchanged c30 source, C, CUDA ELF and sidecar and inspected the
+retained 985-row CUDA-on trace (SHA-256
+`e48a91fd5e3b4ddd48a6f5af9a5cf6cdb7ec049d5f4b4347b069b8838222814b`).
+No new process, CPU/GPU run, lease, claim, edit or cleanup occurred. The
+second release reached XNextEvent at 0.329–0.330 ms. One selected-frame
+`window_dev` launch ran 0.338–0.346 ms, DtoH returned at 1.519 ms, and a
+single 11.439 ms `nanosleep` preceded selected-frame XPutImage/XFlush at
+13.136–13.824 ms. Four `bend_dev` launch calls then ended by 14.004 ms.
+
+The next captured hook was the changed-frame `window_dev` launch at
+245.067 ms: **231.063 ms with no traced intervening X submission, paced
+sleep or blocking host call spanning it**. Its DtoH returned at 254.196 ms;
+XPutImage/XFlush finished at 254.928 ms. External samples still showed
+selection through 250.141 ms and first showed the initial frame at
+275.115 ms. The trace lacks `window_frame` entry/exit, game/reduction CPU
+work, generic CUDA synchronization/device completion and compositor
+presentation. Thus the gap is still unattributed, not evidence of a 231 ms
+device kernel or repeated frame pacing; XFlush is submission, not visibility.
+Tracing perturbs timing.
+
+Host-local tracer SO SHA-256 is
+`54d5adb27d892db8a8341a1df5f5efa7f70cbc02d9ec3b01f208d524b3bca888`;
+the retained trace lives under
+`.artifacts/native-v2-2028-cuda-phase-allowlist-5874204027/runs/on-traced/phase-trace.tsv`
+on `hailey-ubu`. No private artifact was transferred or independently
+cross-hashed on Windows. The prior lease withdrawal/outbox denial, stopped
+target and released claim remain authoritative. The original full-window
+CUDA-on 250 ms gate remains **terminal FAIL**. A new CPU-work attribution
+probe would require separately reviewed exact hooks and fresh authority;
+this readout does not grant an acceptance retry.
