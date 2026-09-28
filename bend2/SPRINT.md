@@ -1317,3 +1317,10 @@ that frozen v2 `node-check.mjs` cannot be substituted by the ordinary tool
 amendment; a new reviewed proof-authority version must preserve all v2 bytes,
 retain whole-book TODO/unsafe/foreign rejection, and migrate three other
 active removed-API callers. This diagnostic is not a pin or proof amendment.
+
+The [candidate proof rejection follow-up](docs/evidence/toolchain-2028-stack/README.md#candidate-proof-rejection-controls-on-a-real-bend-book)
+now passes distinct TODO, reachable unsafe and reachable foreign mutations
+against a real 497-term Bend book on the reviewed isolated 2.0.28+006 tree.
+The aggregate worker uses that same verdict code, but its older 1,584-term
+receipt binds the previous runner and does not transfer. A full repeat is
+pending fresh Windows memory headroom; no frozen source or canonical pin moved.

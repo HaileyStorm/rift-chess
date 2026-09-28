@@ -94,7 +94,84 @@ function snapshotCompiler(replaySource, snapshot) {
   return binding;
 }
 
-if (isMainThread) {
+export function proofUses(Bend, book, own) {
+  const uses = Object.create(null), visited = new Set();
+  function refs(term, out) {
+    if (typeof term !== 'object' || term === null) return;
+    if ((term.$ === 'Ref' || term.$ === 'ADT') && term.k !== undefined) out.add(term.k);
+    for (const [field, value] of Object.entries(term)) if (field !== 's') refs(value, out);
+  }
+  for (const queue = own.slice(); queue.length;) {
+    const key = queue.pop(), term = book.tlds[key];
+    if (!term || visited.has(key)) continue;
+    visited.add(key);
+    const names = new Set();
+    for (const body of term.$ === 'ADT' ? term.c : [term]) refs(Bend.term_lower(body.T), names);
+    refs(term.$ === 'Def' ? term.e : undefined, names);
+    for (const ref of names) { (uses[ref] ??= []).push(key); queue.push(ref); }
+  }
+  return uses;
+}
+
+export function proofVerdict(Bend, book, graph = null) {
+  const holes = book.hols + book.open;
+  if (holes) throw Error(`${holes} TODO/open proof holes`);
+  const own = [...new Set(book.order.filter(key => book.tlds[key]?.b !== true))];
+  const unsafe = new Set(Object.keys(book.tlds).filter(key => book.tlds[key].u === true));
+  const foreign = new Set(Object.keys(book.tlds).filter(key => {
+    const term = book.tlds[key];
+    return term.i !== undefined && term.b !== true;
+  }));
+  const uses = unsafe.size || foreign.size ? graph ?? proofUses(Bend, book, own) : null;
+  function tainted(starters) {
+    for (const key of starters) uses[key]?.forEach(caller => starters.add(caller));
+    return own.filter(key => starters.has(key));
+  }
+  if (unsafe.size) {
+    const bad = tainted(unsafe);
+    if (bad.length) throw Error(`Proof depends on unsafe code: ${bad.join(', ')}`);
+  }
+  if (foreign.size) {
+    const bad = tainted(foreign);
+    if (bad.length) throw Error(`Proof depends on foreign code: ${bad.join(', ')}`);
+  }
+  return { holes, tainted: 0, own };
+}
+
+export function proofNegativeControls(Bend, book) {
+  const { own } = proofVerdict(Bend, book);
+  const uses = proofUses(Bend, book, own), ownSet = new Set(own);
+  const marked = own.find(key => book.tlds[key]?.$ === 'Def' &&
+    book.tlds[key].i === undefined && book.tlds[key].u !== true &&
+    uses[key]?.some(caller => caller !== key && ownSet.has(caller)));
+  if (!marked) throw Error('No reachable non-Base def for proof authority mutations');
+  const caller = uses[marked].find(key => key !== marked && ownSet.has(key));
+  const original = book.tlds[marked], originalHoles = book.hols;
+  try {
+    book.hols = originalHoles + 1;
+    assert.throws(() => proofVerdict(Bend, book, uses),
+      /1 TODO\/open proof holes/, 'TODO mutation was not specifically rejected');
+    book.hols = originalHoles;
+    book.tlds[marked] = { ...original, u: true };
+    assert.throws(() => proofVerdict(Bend, book, uses),
+      error => error.message.startsWith('Proof depends on unsafe code: ') &&
+        error.message.split(': ')[1].split(', ').includes(caller),
+      'reachable unsafe mutation was not rejected');
+    book.tlds[marked] = { ...original, i: ['synthetic-host'] };
+    assert.throws(() => proofVerdict(Bend, book, uses),
+      error => error.message.startsWith('Proof depends on foreign code: ') &&
+        error.message.split(': ')[1].split(', ').includes(caller),
+      'reachable foreign mutation was not rejected');
+  } finally {
+    book.hols = originalHoles;
+    book.tlds[marked] = original;
+  }
+  proofVerdict(Bend, book);
+  return { todo: true, reachableUnsafe: true, reachableForeign: true,
+    marked, caller };
+}
+
+if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   process.env.BEND_NO_TELEMETRY = '1';
   process.env.BEND_HUB = 'http://127.0.0.1:9';
   const runnerSha256 = sha(fs.readFileSync(fileURLToPath(import.meta.url)));
@@ -297,7 +374,7 @@ if (isMainThread) {
     if (!result.ok) process.exitCode = 1;
   });
   }
-} else {
+} else if (!isMainThread) {
   let Bend;
   let deniedFetches = 0;
   globalThis.fetch = async () => { deniedFetches++; throw Error('Candidate proof network fetch denied'); };
@@ -316,33 +393,11 @@ if (isMainThread) {
     // implementation or making any IO effect reachable.
     Comp.js_lib(book, [], [], { internal: true });
     parentPort.postMessage({ phase: 'owned', elapsedMs: Date.now() - started });
-    const holes = book.hols + book.open;
-    if (holes) throw Error(`${holes} TODO/open proof holes`);
-    const own = [...new Set(book.order.filter(key => book.tlds[key]?.b !== true))];
-    const bad = new Set(Object.keys(book.tlds).filter(key => {
-      const term = book.tlds[key];
-      return term.u === true || (term.i !== undefined && term.b !== true);
-    }));
-    const uses = Object.create(null), visited = new Set();
-    function refs(term, out) {
-      if (typeof term !== 'object' || term === null) return;
-      if ((term.$ === 'Ref' || term.$ === 'ADT') && term.k !== undefined) out.add(term.k);
-      for (const [field, value] of Object.entries(term)) if (field !== 's') refs(value, out);
-    }
-    for (const queue = bad.size === 0 ? [] : own.slice(); queue.length;) {
-      const key = queue.pop(), term = book.tlds[key];
-      if (!term || visited.has(key)) continue;
-      visited.add(key);
-      const names = new Set();
-      for (const body of term.$ === 'ADT' ? term.c : [term]) refs(Bend.term_lower(body.T), names);
-      refs(term.$ === 'Def' ? term.e : undefined, names);
-      for (const ref of names) { (uses[ref] ??= []).push(key); queue.push(ref); }
-    }
-    for (const key of bad) uses[key]?.forEach(ref => bad.add(ref));
-    const tainted = own.filter(key => bad.has(key));
-    if (tainted.length) throw Error(`Proof depends on unsafe/foreign code: ${tainted.join(', ')}`);
+    const { holes, tainted } = proofVerdict(Bend, book);
+    const negativeControls = proofNegativeControls(Bend, book);
     if (deniedFetches) throw Error(`${deniedFetches} remote fetch attempts denied`);
-    parentPort.postMessage({ ok: true, terms: book.order.length, holes, tainted: 0, deniedFetches });
+    parentPort.postMessage({ ok: true, terms: book.order.length, holes, tainted,
+      negativeControls, deniedFetches });
   } catch (error) {
     parentPort.postMessage({ ok: false, deniedFetches,
       error: error?.$ === 'Err' && Bend ? Bend.err_show(error) : error?.stack || String(error) });

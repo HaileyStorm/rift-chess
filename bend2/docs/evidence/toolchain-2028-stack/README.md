@@ -137,3 +137,29 @@ and `lib/graphics/v2/tools/actual_compiler.mjs` also call the removed exports
 and must be migrated or explicitly handled before a 2.0.28 pin. The new
 synthetic guard check is necessary but not sufficient for that migration;
 pin amendment and native/GPU/browser acceptance remain open.
+
+## Candidate proof rejection controls on a real Bend book
+
+The candidate verifier's whole-book TODO/unsafe/foreign verdict is now a
+shared export used by its aggregate worker and by the small tracked
+`proof-negative-2028.test.mjs` fixture. That test first binds the same exact
+95-file compiler tree as the ownership-guard test, then loads, validates and
+empty-emits `fixtures/proof-authority-negative-2028.bend` under the isolated
+candidate. The fixture's SHA-256 is
+`06d304ddeb723aca439615ba45d81322ce0d60142136e8c567ccf98b01f49e64`.
+Its 497-term book has `caller()` depending on `leaf()`. The unmodified book
+passes with zero holes/taint; temporary in-memory mutations independently
+add a TODO, mark `leaf` unsafe and mark it foreign. The TODO must fail with
+its hole count; unsafe and foreign must fail with distinct verdicts naming
+the reachable `caller`. The original book
+is restored and rechecked. `node` exited 0, all three negative controls
+passed, and zero fetch attempts were made. No source fixture or frozen term
+was mutated on disk.
+
+This improves the candidate proof-authority diagnostic, not the canonical
+proof or pin. The prior 1,584-term pass is bound to the **previous** runner
+hash and cannot certify the revised verifier. The full source-bound
+aggregate repeat is pending: the Windows host had about 6.0–6.3 GiB free
+physical memory when checked, below prudent headroom for the prior
+eight-minute proof worker with an 8 GiB old-generation cap. A fresh resource
+check and full receipt are required before promoting this candidate verdict.
