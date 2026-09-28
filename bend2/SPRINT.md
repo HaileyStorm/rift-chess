@@ -879,3 +879,11 @@ before validation returned, with inputs unchanged. Preserve that failure;
 neither matrix equality nor the earlier separate candidate proof is a
 passing final-stack aggregate proof. The pin remains 2.0.27, with 2.0.28
 native/host ABI/amendment gates still open.
+
+A new [current orbit-wall source candidate](docs/evidence/browser-2028-candidate/README.md#current-orbit-wall-visual-source-trial)
+passed 13 local Chrome hotseat groups, a held-orbit capture whose motion and
+settled PNGs exactly matched the pinned 2.0.27 source, and a separate strict
+online/cold-offline bot-worker diagnostic with no fallback. This candidate
+remains nonce-private, draft, and instrumented; it uses a source-equivalent
+compiler copy rather than the final replay checkout and does not turn the
+timed-out proof or native/GPU/pin gates green.

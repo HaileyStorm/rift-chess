@@ -139,3 +139,49 @@ Each phase recorded `session-ready → choose → applied`, no fallback,
 and persisted `bot_apply_at` revision 1→2; 18 module requests were observed.
 This is still instrumented candidate-only proof, not the unchanged production
 worker, a pin amendment, native/GPU parity or owner acceptance.
+
+## Current orbit-wall visual-source trial
+
+After clean source commit `18d9a8c9d494fc705755d1fee6481d79bbbd5054`
+(the game scene bytes remain the published `68411c4` composition), a fresh
+nonce-private 2.0.28+006 candidate copied the reviewed 004-stage compiler,
+applied exact patch 006 and emitted the current Controller, BoardScene and
+MenuAA books. `BoardScene`'s source closure includes `MotionWall.bend`;
+the scene selected-book source-closure SHA-256 is
+`75b3d81ac9edfafe48f31b07209cae8a6ce26d256b6524e8d5fdf0125897a7dd`.
+The candidate driver conservatively marks the draft `sourceDirty: true`
+even when the main source checkout is clean. Run root:
+`.artifacts/bend2/toolchain-patches/browser-2028-candidate/run-1790554560597-45af775d-1b3d-45d4-a3cf-8e0d5124cb8a/`.
+Build version `29085fc058e2095cbf11`, build manifest SHA-256
+`ca5c4e5d8b36d4d96bf1f760037156cef7953435d8e4f759df353d5e64b5f2e1`,
+receipt SHA-256 `2ad7fa18d0ee7b169d8049f13b742f1ad206671650e1db9e76aa7f1f4fae0eb1`.
+All 21 manifest files were source-bound locally; nothing was hosted or
+written to the pinned compiler/normal browser build.
+
+Real Chrome at `127.0.0.1:4190` bound served `build.json` to the candidate
+manifest and passed all 13 extended hotseat groups with zero errors, offline
+move, both-color actions, PCM, Shift/Undo, promotion and portrait. The
+scenario receipt SHA-256 is
+`c5807c8af881f042bfdf61a50563d84acafa4b5adf56a8cec1926ea077e50218`.
+A held-pointer browser probe also passed; its motion PNG SHA-256
+`e6e8ea3dac15d354844fca7998f27b6adeae1e5cacbb0e3319856995eff01831`
+and settled orbit PNG SHA-256
+`0da7e0106a7ca106f348a7d4fccf071fdca2a3f6de186f8e4ddf481df3b17ec9`
+are byte-identical to the pinned 2.0.27 local captures for this source.
+That finite pixel parity is not a browser latency or native/device claim.
+
+A separate source-bound diagnostic bot re-bundle from this exact candidate
+has version `0cfacb15177f3c5455b3`, receipt SHA-256
+`3061a492ebdf39f5e2d2bd6aef6241561fcc72542bc080eb0e11ccbb402acfe6`.
+The strict online/cold-offline Chrome route receipt SHA-256
+`5a8757df1281000b0988dbc3b37eb3569d53cf89fcf8a9bb548c6dca9bd7ba3a`
+recorded `session-ready → choose → applied`, no fallback, one completion,
+three remote jobs and one required witness in each phase, with legal choice
+20065 committed at revision 1→2; 18 module requests were observed. This is
+still an instrumented candidate route, not an unchanged production bundle.
+The candidate build derives from the 004-stage copy plus exact patch 006;
+the later final-clone source replay and 647-case matrix bind equivalent
+canonical compiler source, but this bundle did not execute directly from
+that exact replay clone. The aggregate final-clone proof timed out, and
+candidate-native/GPU/host ABI promotion and reviewed pin amendment remain
+open. Keep the public 2.0.27 preview authoritative.
