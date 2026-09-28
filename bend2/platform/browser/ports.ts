@@ -1,6 +1,15 @@
 // Platform IO only. Bend decides when, what, and why to save, load, or sound.
+export type PreparedPickFile = {
+  input: HTMLInputElement;
+  state: 'pending' | 'confirmed' | 'discarded';
+  changed: boolean;
+  consumed: boolean;
+  generation: number;
+};
+
 export class Ports {
   private audio: AudioContext | null = null;
+  private pickerGeneration = 0;
   constructor(private keys: string[], private deliver: (event: unknown) => void, private maxFileBytes: number) {}
   unlock(): void {
     this.audio ??= new AudioContext();
@@ -10,7 +19,38 @@ export class Ports {
     try { return { text: localStorage.getItem(this.keys[slot]) ?? '', ok: true }; }
     catch { return { text: '', ok: false }; }
   }
-  async execute(effect: any): Promise<void> {
+  preparePickFile(): PreparedPickFile | undefined {
+    const input = document.createElement('input'); input.type = 'file';
+    const prepared: PreparedPickFile = { input, state: 'pending', changed: false,
+      consumed: false, generation: ++this.pickerGeneration };
+    input.addEventListener('change', () => {
+      prepared.changed = true;
+      if (prepared.state === 'confirmed') void this.readPickedFile(prepared);
+    }, { once: true });
+    try { input.click(); }
+    catch { prepared.state = 'discarded'; return undefined; }
+    return prepared;
+  }
+  discardPickFile(prepared: PreparedPickFile): void {
+    if (prepared.state === 'pending') prepared.state = 'discarded';
+  }
+  cancelPickFiles(): void { this.pickerGeneration++; }
+  private async readPickedFile(prepared: PreparedPickFile): Promise<void> {
+    if (prepared.state !== 'confirmed' || !prepared.changed || prepared.consumed ||
+      prepared.generation !== this.pickerGeneration) return;
+    prepared.consumed = true;
+    try {
+      const file = prepared.input.files?.[0];
+      if (file && file.size > this.maxFileBytes) { this.deliver({ $: 'PortError', kind: 9001 }); return; }
+      if (file) {
+        const text = await file.text();
+        if (prepared.generation === this.pickerGeneration) this.deliver({ $: 'FileText', text });
+      }
+    } catch {
+      if (prepared.generation === this.pickerGeneration) this.deliver({ $: 'PortError', kind: 2 });
+    }
+  }
+  async execute(effect: any, prepared?: PreparedPickFile): Promise<void> {
     try {
       switch (effect.$) {
         case 'Store': localStorage.setItem(this.keys[effect.slot], effect.text); return;
@@ -21,15 +61,10 @@ export class Ports {
           setTimeout(() => URL.revokeObjectURL(link.href), 1000); return;
         }
         case 'PickFile': {
-          const input = document.createElement('input'); input.type = 'file';
-          input.addEventListener('change', async () => {
-            try {
-              const file = input.files?.[0];
-              if (file && file.size > this.maxFileBytes) { this.deliver({ $: 'PortError', kind: 9001 }); return; }
-              if (file) this.deliver({ $: 'FileText', text: await file.text() });
-            } catch { this.deliver({ $: 'PortError', kind: 2 }); }
-          }, { once: true });
-          input.click(); return;
+          if (!prepared) { this.deliver({ $: 'PortError', kind: 2 }); return; }
+          prepared.state = 'confirmed';
+          void this.readPickedFile(prepared);
+          return;
         }
         case 'Sound': {
           if (!this.audio || this.audio.state !== 'running') return;

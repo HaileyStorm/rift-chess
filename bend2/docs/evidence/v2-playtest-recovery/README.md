@@ -217,3 +217,75 @@ chooser times out (current driver SHA-256
 This intermittent import boundary remains open. Passing names across runs
 do not establish reliable portrait import, human acceptance, native/GPU
 parity, a frame budget, or the reviewed compiler pin.
+
+## Gesture-bound Import draft and controlled delay
+
+A separate *controlled* Chrome reproduction against the exact hosted
+`817dfa63932dd6ccf4b4` build delayed the second queued worker input by
+6,000 ms. Bend still returned `PickFile`, but the browser file-input click
+had `navigator.userActivation.isActive === false` and no chooser opened.
+The retained failed summary is
+`.artifacts/bend2/playtest-stage2/mobile-activation-delay-6000-20260928/summary.json`
+(SHA-256 `9816182f7451747cdb7d06ebd6918d84cac1ea63725f9a379d4fa25f4ead0b92`).
+This demonstrates one causal timing hazard; it does **not** retrospectively
+diagnose the earlier uninstrumented intermittent mobile failure.
+
+The browser-host draft now opens a provisional chooser during a currently
+presented enabled IMPORT gesture (mouse down, touch/pen release or accessible
+button click), associates it with the queued input and exact worker reply,
+and reads/delivers the selected file only if that reply contains Bend's
+`PickFile`. Unmatched/faulted/teardown selections are discarded; a newer
+Import invalidates an earlier asynchronous read. The existing Bend `FileText`
+validation and browser pre-read size limit remain in force. There is no
+effect-time duplicate chooser fallback. No chess Law or Bend compiler input
+was changed.
+
+The first local v2 draft (`6923de7ae7dd2b60a741`) passed the intentionally
+delayed two-import mobile route on mouse, touch and keyboard separately,
+with zero defects. The second provisional chooser clicked with activation
+active about 6.35, 6.49 and 6.34 seconds respectively before its matching
+`PickFile` effect. Summary SHA-256 values are respectively
+`f5bb6e33b0c58ae75a4367f274715d5d21d277e305d61a2ea0f9df813a34b791`,
+`7551f1984e12d83479cdacc74e9482095fa7849a3776f4150447f0804111a90d`,
+and `c4c3aa1aaf4047df8991051de35573ac0e3ffdc2e67a6d6293cbc669500f55a9`.
+They are ignored local draft runs under `.artifacts/bend2/playtest-stage2/`;
+they are not hosted publication or a reliability bound. On the later draft
+`0259b8b0cac093e21d0a`, defaults, menus, persistence and mobile also
+passed undelayed (summary SHA-256
+`1c0792d00ed6803f998c7557047291b091e25ebe4ae5d44a5fd4909f992b4841`).
+A deterministic port test passed selection before/after authorization,
+discard, cancellation, size rejection, supersession, fault invalidation and
+unmatched-effect no-duplicate-click. A focused real Chrome cancel/retry and
+stale-bounds scenario on draft `ce7e6ff0a2f0f79222dd` passed (summary SHA-256
+`38d2a0785110a8b75e9ae0c2dc76586ebf8d725312c5084d727c925256cb03f2`).
+Its first script run expected CLOSE after import had already closed Preferences;
+the raw red script summary is retained separately. That draft also
+passed all 13 extended Chrome groups with an exact served build-manifest
+binding, zero page errors and `ok: true`; retained receipt
+`.artifacts/bend2/v2-preview/scenarios/import-gesture-extended-draft-20260928/receipt.json`
+is SHA-256 `7be472279ad66cd57a50085f4c9966b0bfa1f7dfd071d7f6ac32e2750d0dd45a`.
+
+Independent review then found a touch hold/reflow edge: a release after a
+new presented frame could preopen a chooser unrelated to the held press.
+The host now binds a held touch/pen Import press to its presentation and
+requires the same presented Import bounds at release, otherwise discarding
+the gesture without a stray pointer-up. A first attempted reflow test went
+red because it checked the frame only *after* release; it did not establish
+that resize completed before the release and is retained as test-ordering
+evidence (summary SHA-256
+`31078d7149d7577cd0104d353b0565b533c51f25b4b630c8815e3bb86f0132c1`).
+The corrected scenario waits for a completed Resize frame between a trusted
+touch down and up. Three bounded runs on draft `c7056b49df1aa08b4048`
+passed with zero provisional clicks and zero `PickFile` effects, summary
+SHA-256 values `88e02b6af811b0c836715e4c68d2ee4b13ffb14248911a3af24023a8de12c48c`,
+`e8a2be8334762ec51dd755ca50c3bfa26d151a0a43e40756e7897f32c3552b33`,
+and `d50641d9aeb8b1146563f26539caf8e761029033cbda5252b84fac33ff4c580a`.
+An ordinary two-import touch scenario with the six-second second-input delay
+still passed after the guard (summary SHA-256
+`edb0c993ffab202c3b1094deccc8763fd133cdfe674e7ec6f8f39be424ab974a`).
+The 13-group draft receipt above predates only this small touch guard; the
+clean final-source browser gate remains open.
+
+Clean build/publication and owner acceptance remain to be assessed. A
+passing controlled delay and finite regression matrix do not establish a
+reliability bound on all users' browsers or explain the original failure.

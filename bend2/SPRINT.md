@@ -1171,3 +1171,27 @@ mobile repeats passed; a positive trace saw Bend `PickFile`, a browser file
 input click, and active transient user activation, but did not explain the
 failure. The driver now preserves bounded effect/click state on a future
 timeout. Reliable portrait import and responsiveness remain open.
+
+A controlled [gesture-bound Import investigation](docs/evidence/v2-playtest-recovery/README.md#gesture-bound-import-draft-and-controlled-delay)
+reproduced a missing chooser after delaying a worker input 6 seconds: Bend
+emitted `PickFile`, but the browser input click no longer had transient user
+activation. This is one mechanism, not a diagnosis of the earlier raw mobile
+timeout. A draft host-side handshake opens the provisional chooser on the
+enabled IMPORT gesture and only delivers a chosen file after the corresponding
+Bend `PickFile` effect. Separate delayed mouse, touch and keyboard mobile
+routes, undelayed defaults/menus/persistence/mobile, deterministic port guards,
+and a real cancel/retry/stale-bounds path passed locally. The exact-bound
+13-group extended Chrome suite also passed. The draft does not change frozen
+Laws and has not yet been published. A subsequent reviewed touch hold/reflow
+guard passed three ordered Chrome runs plus a delayed touch import; the full
+extended suite predates that last guard. Preserve the original failure and
+remeasure reliability after a clean build; GPU-on and reviewed toolchain pin
+remain independent gates.
+
+The [Linux CPU-only XRes positive control](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5870229954)
+subsequently passed private-cookie status 0 and exact owned-window PID match,
+with wrong-cookie denial and owned fixture teardown; its claim was released.
+It had no GPU lease/process or app build and does not cure the c30 250 ms
+CUDA-on deselection failure. A fresh source-bound device request needs a
+separate coherent lease and review after the current browser change is fixed
+to an exact revision.

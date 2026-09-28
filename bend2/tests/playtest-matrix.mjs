@@ -29,6 +29,8 @@ if (process.env.BEND_PLAYTEST_BUILD_JSON)
 const run = process.env.BEND_PLAYTEST_RUN || new Date().toISOString().replace(/[:.]/g, '-');
 const root = path.resolve('.artifacts/bend2/playtest-stage2', run);
 const only = (process.env.PLAYTEST_ONLY || '').split(',').filter(Boolean);
+const importGesture = process.env.BEND_IMPORT_GESTURE || 'canvas';
+assert.ok(['canvas', 'touch', 'keyboard'].includes(importGesture), 'unknown import gesture');
 const fixtures = JSON.parse(await fs.readFile(new URL('./fixtures/playtest-records.json', import.meta.url), 'utf8'));
 const SAVE = 'rift-bend-lab/save-v1', PREFS = 'rift-bend-lab/preferences-v1', RECOVERY = 'rift-bend-lab/recovery-v1';
 const DESKTOP = { width: 1280, height: 1050 }, PHONE = { width: 390, height: 844 };
@@ -84,6 +86,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const instrument = () => {
   window.__frames = []; window.__refinements = []; window.__sounds = []; window.__effects = [];
   window.__fileClicks = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
+  window.__delayedInputs = [];
   const openWindow = window.open;
   window.open = (...args) => { window.__opened.push(String(args[0])); return null; };
   void openWindow;
@@ -130,6 +133,13 @@ const instrument = () => {
     }
     postMessage(message, ...args) {
       this.requests.set(message.id, { at: performance.now(), kinds: (message.events || [{ $: message.kind }]).map(e => e.$) });
+      const delay = message.kind === 'events' ? window.__delayNextInputMs || 0 : 0;
+      if (delay) {
+        window.__delayNextInputMs = 0;
+        window.__delayedInputs.push({ id: message.id, at: performance.now(), delay, kinds: this.requests.get(message.id).kinds });
+        setTimeout(() => Native.prototype.postMessage.call(this, message, ...args), delay);
+        return;
+      }
       super.postMessage(message, ...args);
     }
   };
@@ -153,12 +163,14 @@ async function scenario(name, viewport, body) {
   const dir = path.join(root, name);
   await fs.mkdir(dir, { recursive: true });
   const result = { name, checks: [], defects: [], shots: [], errors: [], timings: {} };
-  const context = await browser.newContext({ viewport, acceptDownloads: true });
+  const context = await browser.newContext({ viewport, acceptDownloads: true,
+    hasTouch: importGesture === 'touch' || name === 'touch-import-replan' });
   const page = await context.newPage();
   page.on('pageerror', error => result.errors.push(error.message));
   page.on('console', event => { if (event.type() === 'error') result.errors.push(event.text()); });
   await page.addInitScript(instrument);
   let sequence = 0;
+  let fileImportAttempts = 0;
   const t = {
     page, context, dir, result,
     async ready(timeout = 90000) {
@@ -349,8 +361,24 @@ async function scenario(name, viewport, body) {
     },
     async upload(value, { wait = true } = {}) {
       if ((await t.shown()).menu !== 2) await t.control(1);
+      fileImportAttempts++;
+      const delay = Number(process.env.BEND_FILE_CHOOSER_DELAY_MS || 0);
+      if (fileImportAttempts === 2 && Number.isSafeInteger(delay) && delay > 0)
+        await page.evaluate(ms => { window.__delayNextInputMs = ms; }, delay);
+      const prior = await page.evaluate(() => ({
+        clicks: window.__fileClicks.length,
+        effects: window.__effects.filter(item => item.kind === 'PickFile').length,
+        frames: window.__frames.length,
+      }));
       const chooser = page.waitForEvent('filechooser');
-      await t.control(21, { settle: false });
+      if (importGesture === 'keyboard') {
+        await page.locator('[data-control="21"]').focus();
+        await page.keyboard.press('Enter');
+      } else if (importGesture === 'touch') {
+        const c = (await t.controls()).find(c => c.id === 21);
+        const p = await t.toPage(c.rect.x + c.rect.width / 2, c.rect.y + c.rect.height / 2);
+        await page.touchscreen.tap(p.x, p.y);
+      } else await t.control(21, { settle: false });
       let fileChooser;
       try { fileChooser = await chooser; }
       catch (error) {
@@ -358,23 +386,24 @@ async function scenario(name, viewport, body) {
           menu: window.__shown?.menu, revision: window.__shown?.revision,
           busy: document.querySelector('canvas')?.getAttribute('aria-busy'),
           fault: window.__fault, fileClicks: window.__fileClicks.slice(-3),
+          delayedInputs: window.__delayedInputs.slice(-2),
           effects: window.__effects.slice(-8), frames: window.__frames.slice(-5).map(f => ({ kinds: f.kinds, ms: f.ms })),
         }));
         throw new ScriptError(`File chooser did not open: ${JSON.stringify(diagnostic)}; ${error.message}`);
       }
-      const chooserRoute = await page.evaluate(() => ({
-        click: window.__fileClicks.at(-1) ?? null,
-        effect: window.__effects.filter(item => item.kind === 'PickFile').at(-1) ?? null,
-      }));
-      (result.timings.fileChoosers ??= []).push(chooserRoute);
-      t.check(!!chooserRoute.click && !!chooserRoute.effect,
-        'Bend PickFile effect reaches the browser file input', JSON.stringify(chooserRoute));
-      const before = await page.evaluate(() => window.__reply.id);
       await fileChooser.setFiles({ name: 'scenario.json', mimeType: 'application/json',
         buffer: Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)) });
-      await page.waitForFunction(before => window.__reply.id > before, before, { timeout: 60000 });
+      await page.waitForFunction(prior => window.__effects.filter(item => item.kind === 'PickFile').length > prior.effects &&
+        window.__frames.slice(prior.frames).some(frame => frame.kinds.includes('FileText')), prior, { timeout: 60000 });
       // Validation replays every command through the frozen kernel (about a second each).
       await t.ready(60000 + 1500 * (value.commands?.length ?? 0));
+      const chooserRoute = await page.evaluate(prior => ({
+        click: window.__fileClicks[prior.clicks] ?? null,
+        effect: window.__effects.filter(item => item.kind === 'PickFile')[prior.effects] ?? null,
+      }), prior);
+      (result.timings.fileChoosers ??= []).push(chooserRoute);
+      t.check(!!chooserRoute.click && !!chooserRoute.effect && chooserRoute.click.active,
+        'Gesture-bound file input is authorized by Bend PickFile', JSON.stringify(chooserRoute));
       if (wait && typeof value !== 'string') {
         const stored = await t.record();
         if (JSON.stringify(stored?.commands) !== JSON.stringify(value.commands))
@@ -950,6 +979,80 @@ await scenario('mobile', PHONE, async t => {
   await t.control(47); await t.shot('moves-panel', {});
   await t.control(28);
   await t.shot('after-close', {});
+});
+
+await scenario('import-gesture-guards', PHONE, async t => {
+  await t.open();
+  const clicks = () => t.page.evaluate(() => window.__fileClicks.length);
+  const first = await clicks();
+  await t.clickSquare(sq('g1'), 16);
+  t.check(await clicks() === first, 'A board gesture cannot open the Import chooser');
+  await t.control(1);
+  const c = (await t.controls()).find(control => control.id === 21 && control.enabled);
+  t.check(!!c, 'Import is enabled in Preferences');
+  const p = await t.toPage(c.rect.x + c.rect.width / 2, c.rect.y + c.rect.height / 2);
+  const chooser = t.page.waitForEvent('filechooser');
+  await t.page.mouse.click(p.x, p.y);
+  const canceled = await chooser;
+  await canceled.setFiles([]);
+  await t.ready();
+  t.check(await clicks() === first + 1, 'Cancel opens exactly one provisional chooser');
+  t.check((await t.record())?.commands.length === undefined || (await t.record()).commands.length === 0,
+    'Cancel leaves the match journal unchanged');
+  await t.upload(record('B', 0, [3980, 15560, 1155, 15885]));
+  t.check((await t.record()).commands.length === 4, 'Import works after cancellation');
+  if ((await t.shown()).menu !== 2) await t.control(1);
+  await t.control(28);
+  const after = await clicks();
+  await t.page.mouse.click(p.x, p.y);
+  await t.ready();
+  t.check(await clicks() === after, 'Old Import bounds do not open a chooser after the menu closes');
+});
+
+await scenario('touch-import-replan', PHONE, async t => {
+  await t.open();
+  await t.control(1);
+  await t.page.evaluate(() => {
+    window.__touchEvents = [];
+    for (const name of ['pointerdown', 'pointerup']) document.querySelector('canvas')
+      .addEventListener(name, event => {
+        if (name === 'pointerdown') window.__heldPresentation = window.__shown;
+        window.__touchEvents.push({ name, type: event.pointerType, trusted: event.isTrusted });
+      });
+  });
+  const before = await t.page.evaluate(() => ({ clicks: window.__fileClicks.length,
+    picks: window.__effects.filter(item => item.kind === 'PickFile').length,
+    frames: window.__frames.length }));
+  const importCenter = async () => {
+    const c = (await t.controls()).find(control => control.id === 21 && control.enabled);
+    return t.toPage(c.rect.x + c.rect.width / 2, c.rect.y + c.rect.height / 2);
+  };
+  const down = await importCenter();
+  const cdp = await t.context.newCDPSession(t.page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart',
+    touchPoints: [{ x: down.x, y: down.y, id: 1 }] });
+  await t.page.setViewportSize({ width: 430, height: 900 });
+  await t.page.waitForFunction(before => window.__frames.slice(before.frames)
+    .some(frame => frame.kinds.includes('Resize') && frame.dirty), before);
+  await t.ready();
+  const up = await importCenter();
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove',
+    touchPoints: [{ x: up.x, y: up.y, id: 1 }] });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+  await t.ready();
+  const after = await t.page.evaluate(() => ({ clicks: window.__fileClicks.length,
+    picks: window.__effects.filter(item => item.kind === 'PickFile').length,
+    changedPresentation: window.__shown !== window.__heldPresentation,
+    events: window.__touchEvents,
+    effects: window.__effects.slice(-4),
+    frames: window.__frames.slice(-7).map(frame => ({ at: frame.at, kinds: frame.kinds, dirty: frame.dirty })) }));
+  t.check(after.changedPresentation && after.events.length >= 2 &&
+    after.events[0].name === 'pointerdown' && after.events[0].type === 'touch' && after.events[0].trusted &&
+    after.events.at(-1).name === 'pointerup' && after.events.at(-1).trusted,
+    'A trusted touch press/release straddles a new presented frame', JSON.stringify(after));
+  t.check(after.clicks === before.clicks && after.picks === before.picks,
+    'A touch held across replan cannot open a stale Import chooser', JSON.stringify({ before, after }));
 });
 
 await scenario('resize', DESKTOP, async t => {

@@ -1,5 +1,5 @@
 // Generic transport for a Bend pixel application. All visible UI comes from Bend.
-import { Ports } from './ports';
+import { Ports, type PreparedPickFile } from './ports';
 import { PresentedInputQueue } from './input-queue';
 import { makeBrowserProfile, measureBrowserCapabilities, PROFILE_EVENT, queryMaxTextureEdge, RollingP90, type BrowserCapabilities } from './telemetry';
 declare const __BEND_WORKER__: string;
@@ -10,6 +10,11 @@ const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
 let ports: Ports;
 let presentation: unknown;
+let presentedControls: any[] = [];
+const queuedPickers = new WeakMap<object, PreparedPickFile>();
+const inflightPickers = new Map<number, PreparedPickFile[]>();
+const activePickers = new Set<PreparedPickFile>();
+let touchImport: { pointerId: number; input: any; shown: unknown } | null = null;
 let presentedTheme: number | null = null;
 let pendingRefinement: any = null;
 let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0, slow = 0;
@@ -58,8 +63,9 @@ function scheduleTextureProbe(): void {
   if (idle) idle(probe, { timeout: 2500 });
   else window.setTimeout(probe, 1000);
 }
-function send(input: any): void {
-  if (!presentation) return;
+function send(input: any, picker?: PreparedPickFile): void {
+  if (!presentation) { if (picker) ports?.discardPickFile(picker); return; }
+  if (picker) { queuedPickers.set(input, picker); activePickers.add(picker); }
   queue.enqueue(input, presentation);
   pump();
 }
@@ -71,6 +77,12 @@ function pump(): void {
   canvas.setAttribute('aria-busy', 'true');
   slow = window.setTimeout(() => { canvas.dataset.slow = 'true'; }, 150);
   const id = ++sequence;
+  const prepared = batch.events.flatMap(event => {
+    const picker = queuedPickers.get(event);
+    if (picker) queuedPickers.delete(event);
+    return picker ? [picker] : [];
+  });
+  if (prepared.length) inflightPickers.set(id, prepared);
   requestStarted.set(id, performance.now());
   worker.postMessage({ kind: 'events', id, events: batch.events, presentation: batch.presentation });
 }
@@ -96,7 +108,14 @@ function accessibility(items: any[]): void {
     let button = controls.querySelector<HTMLButtonElement>(`[data-control="${id}"]`);
     if (!button) {
       button = document.createElement('button'); button.dataset.control = id;
-      button.addEventListener('click', () => { ports?.unlock(); send({ $: 'Activate', id: control.id }); });
+      button.addEventListener('click', () => {
+        ports?.unlock();
+        const input = { $: 'Activate', id: control.id };
+        // This control is Bend-presented and enabled. The browser must open its
+        // gesture-gated chooser now, before an arbitrarily slow worker reply.
+        const picker = control.id === 21 ? ports?.preparePickFile() : undefined;
+        send(input, picker);
+      });
       controls.append(button);
     }
     button.textContent = control.label; button.disabled = !control.enabled;
@@ -161,7 +180,13 @@ worker.addEventListener('message', event => {
     workerReply.add(performance.now() - started);
     requestStarted.delete(message.id);
   }
-  if (message.kind === 'fault') { status.textContent = `Bend runtime error: ${message.message}`; status.classList.remove('sr-only'); return; }
+  if (message.kind === 'fault') {
+    for (const picker of activePickers) ports.discardPickFile(picker);
+    ports.cancelPickFiles();
+    activePickers.clear();
+    inflightPickers.delete(message.id);
+    status.textContent = `Bend runtime error: ${message.message}`; status.classList.remove('sr-only'); return;
+  }
   bendCompute.add(message.renderMs);
   workerPreparation.add(message.portMs);
   if (message.image || message.bitmap) {
@@ -190,6 +215,7 @@ worker.addEventListener('message', event => {
     publishProfile();
     scheduleTextureProbe();
     presentation = message.presentation;
+    presentedControls = message.controls;
     presentedTheme = message.renderTheme;
     canvas.setAttribute('aria-label', message.summary);
     accessibility(message.controls);
@@ -197,7 +223,14 @@ worker.addEventListener('message', event => {
   }
   canvas.dataset.ready = 'true'; canvas.dataset.renderMs = String(message.renderMs);
   canvas.dataset.frame = String(message.id);
-  for (const effect of message.effects) void ports.execute(effect);
+  const prepared = inflightPickers.get(message.id) ?? [];
+  inflightPickers.delete(message.id);
+  for (const effect of message.effects) {
+    const picker = effect.$ === 'PickFile' ? prepared.shift() : undefined;
+    if (picker) activePickers.delete(picker);
+    void ports.execute(effect, picker);
+  }
+  for (const picker of prepared) { ports.discardPickFile(picker); activePickers.delete(picker); }
   tick(message.after);
   // Always show a completed frame, even while newer pointer input is queued.
   pump();
@@ -209,23 +242,66 @@ worker.addEventListener('message', event => {
   }
   if (qualityWindow.length >= 8) queueMicrotask(nextQualityProbe);
 });
-worker.addEventListener('error', event => { status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only'); });
+worker.addEventListener('error', event => {
+  for (const picker of activePickers) ports?.discardPickFile(picker);
+  ports?.cancelPickFiles();
+  activePickers.clear();
+  status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only');
+});
+window.addEventListener('pagehide', () => {
+  for (const picker of activePickers) ports?.discardPickFile(picker);
+  ports?.cancelPickFiles();
+  activePickers.clear();
+});
 function point(event: MouseEvent): { x: number; y: number } {
   const rect = canvas.getBoundingClientRect();
   return { x: Math.max(0, Math.floor((event.clientX - rect.left) * canvas.width / rect.width)),
     y: Math.max(0, Math.floor((event.clientY - rect.top) * canvas.height / rect.height)) };
 }
+function importAt(x: number, y: number): boolean {
+  // Same first-enabled-control and half-open bounds as Bend's ChromePlan.hit.
+  const control = presentedControls.find(item => item.enabled && x >= item.bounds.x &&
+    x < item.bounds.x + item.bounds.width && y >= item.bounds.y &&
+    y < item.bounds.y + item.bounds.height);
+  return control?.id === 21;
+}
 canvas.addEventListener('pointerdown', event => {
   if (!event.isPrimary) return;
   canvas.focus(); ports?.unlock(); canvas.setPointerCapture(event.pointerId);
-  send({ $: 'PointerDown', ...point(event), button: event.button, alt: event.altKey }); event.preventDefault();
+  const p = point(event);
+  const input = { $: 'PointerDown', ...p, button: event.button, alt: event.altKey };
+  const importing = event.button === 0 && !event.altKey && importAt(p.x, p.y);
+  if (importing && event.pointerType !== 'mouse') {
+    // Touch/pen activation is granted on pointerup, not pointerdown.
+    touchImport = { pointerId: event.pointerId, input, shown: presentation };
+    event.preventDefault();
+    return;
+  }
+  const picker = importing ? ports?.preparePickFile() : undefined;
+  send(input, picker); event.preventDefault();
 });
-canvas.addEventListener('pointermove', event => { if (event.isPrimary) send({ $: 'PointerMove', ...point(event) }); });
+canvas.addEventListener('pointermove', event => {
+  if (event.isPrimary && touchImport?.pointerId !== event.pointerId)
+    send({ $: 'PointerMove', ...point(event) });
+});
 canvas.addEventListener('pointerup', event => {
+  if (touchImport?.pointerId === event.pointerId) {
+    const held = touchImport;
+    touchImport = null;
+    const p = point(event);
+    if (held.shown !== presentation || !importAt(held.input.x, held.input.y) || !importAt(p.x, p.y)) {
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+      return;
+    }
+    send(held.input, ports?.preparePickFile());
+  }
   send({ $: 'PointerUp', ...point(event), button: event.button });
   if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
 });
-canvas.addEventListener('pointercancel', event => send({ $: 'PointerUp', ...point(event), button: event.button }));
+canvas.addEventListener('pointercancel', event => {
+  if (touchImport?.pointerId === event.pointerId) { touchImport = null; return; }
+  send({ $: 'PointerUp', ...point(event), button: event.button });
+});
 canvas.addEventListener('contextmenu', event => event.preventDefault());
 canvas.addEventListener('wheel', event => {
   if (document.activeElement !== canvas) return;
