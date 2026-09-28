@@ -1006,3 +1006,13 @@ This is a disposable source-equivalent compiler copy and local browser gate,
 not final-replay native parity or pin acceptance. Linux was asked for a
 single [read-only 88 GiB headroom observation](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311)
 after its previous pre-emission stop; no heavy attempt was requested.
+
+The [read-only Linux observation](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865876967)
+later measured 103.204 GiB MemAvailable, 15.204 GiB above the 88 GiB floor,
+without acquiring a claim or starting a build. One separate
+[exact-source CPU candidate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865910914)
+now binds public source `c30d312`, a new narrow claim, two fresh admission
+samples, compiler/asset closure, at most one C/ELF attempt, and only then
+bounded X.Org/PCM/restart probes. The [append-only SHA correction](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865920136)
+must be read with it before heavy work. No CPU-candidate result follows from
+this request; the earlier 72.538 GiB stop remains evidence for its own attempt.

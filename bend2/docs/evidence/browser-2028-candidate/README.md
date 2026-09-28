@@ -274,3 +274,10 @@ authorize a pin amendment. The previous Linux candidate package stopped at
 its 88 GiB guard before compilation; a fresh read-only headroom observation
 was [requested separately](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311),
 not a retry.
+
+The [read-only Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865876967)
+later measured 103.204 GiB MemAvailable without starting any build. A
+separate [exact-source CPU candidate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865910914)
+and its [replay-receipt SHA correction](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865920136)
+preserve two fresh 88 GiB admission gates and a one-attempt bound. The
+observation and request are not CPU package/runtime evidence.

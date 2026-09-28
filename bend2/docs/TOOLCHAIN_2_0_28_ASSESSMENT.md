@@ -251,3 +251,17 @@ does not supply a new-source Linux C/ELF/device result or the reviewed pin
 amendment. A [read-only Linux headroom observation](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311)
 was requested after the prior 72.538 GiB stop; even a passing observation
 does not authorize a build or lower the 88 GiB floor.
+
+The [Linux read-only reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865876967)
+sampled 110,814,109,696 bytes (103.204 GiB) MemAvailable at 08:00:04 UTC,
+15.204 GiB above the floor. Visible nonroot cgroup ancestors were unlimited
+along the observer's path; that is not proof of a future emission process's
+path or headroom. A [separate exact-source CPU-only candidate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865910914)
+for public source `c30d312` requires fresh admission initially and just
+before one bounded C/ELF attempt, preserving the old failed sample. Its
+Windows final-replay SHA suffix was transcribed incorrectly in the request;
+the [append-only correction](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865920136)
+gives the independently rehashed exact receipt
+`a71ce32941c74abef1762bebb30d8526f115fc905bbb084722b3d6a4b2d7af01`.
+Neither the headroom observation nor the corrected request is native
+execution evidence or pin acceptance.
