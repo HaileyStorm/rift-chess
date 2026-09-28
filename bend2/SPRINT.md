@@ -1053,3 +1053,13 @@ state from White into Black and then counted its cleanup resignation as a
 terminal game. That raw receipt is retained; the driver now resets the seed
 and requires a natural outcome before cap. This extends finite candidate
 browser coverage, not native/GPU or pin acceptance.
+
+The [canonical pin assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract)
+now records two independent 2.0.28 blockers: pristine upstream rejects a
+frozen alias reference, and its removed `Comp.book_owned`/`Comp.SYNTH` API
+breaks the frozen v2 checker. The current amendment cannot substitute that
+checker, and project policy forbids replacing the pristine pinned checkout
+with the patched candidate. Retain 2.0.27 and the candidate receipts pending
+an owner choice of a reviewed new proof-authority version or a fresh pristine
+upstream successor assessment. This does not affect the separately requested
+current-source GPU pilot.

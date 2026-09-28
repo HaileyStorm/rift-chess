@@ -164,10 +164,13 @@ dist omits obsolete predecessor host/worker bundles. These are local draft
 gates, not pin migration or native/GPU acceptance; exact receipts and caveats
 are in the linked evidence.
 
-Do not move `TOOLCHAIN.json` on this evidence. Required next gates include
-the broader graphics matrix and completion of actual candidate browser integration
-of the systematic cross-book/host ABI, the current
-application build/browser/offline matrix, Linux native source/C/ELF/window/PCM/restart
-parity, measured runtime behavior and independent final review. Any pin move
-must use the Local Bend Guide's frozen-dependency amendment, preserving old
-bytes and receipts.
+Do not move `TOOLCHAIN.json` on this evidence. The later isolated candidate
+passed the extended local Chrome/bot/draw matrix and a source-bound Linux
+CPU/GUI/PCM/restart package gate; see the linked evidence and its limits.
+Current-source GPU parity, owner acceptance, and canonical integration remain
+open. More importantly, a normal 2.0.28 amendment is incompatible with both
+the pristine upstream alias check and the frozen v2 checker's removed
+`Comp.book_owned`/`Comp.SYNTH` dependency. A patched compiler cannot replace
+the clean upstream checkout under project policy. The
+[pin assessment](../../docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract)
+records the required owner decision; preserve old bytes and receipts.

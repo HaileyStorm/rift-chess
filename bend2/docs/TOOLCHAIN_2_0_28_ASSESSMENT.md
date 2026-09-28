@@ -280,5 +280,30 @@ relaunch on public `c30d312`, with both fresh 88 GiB admissions passing.
 This closes that **host-local CPU candidate** gate as reported by its owner;
 it is not a GPU/device gate, independent Windows receipt replay, physical
 audio, owner visual/performance acceptance, or permission to move the pin.
-Independent final stack/ABI/native evidence review and the formal amendment
-remain required.
+Independent final stack/ABI/native evidence review remains outstanding, and
+the normal amendment path is blocked as detailed below.
+
+### Canonical pin gate: blocked under the current frozen contract
+
+The candidate results above do not make a standard 2.0.28 pin amendment
+possible. The **pristine** upstream 2.0.28 checkout rejects the unchanged
+`ArithmeticLaws.bend` identity-alias reference; patch 006 fixes that only in a
+separate candidate. Independently, frozen `bend2/core/v2/node-check.mjs`
+imports the compiler at the canonical pinned path and calls
+`Comp.book_owned(book, Comp.SYNTH)`, an interface removed in 2.0.28. Redirecting
+the wrapper cannot change that direct import. The v2 checker is frozen and is
+not a substitutable file in the existing amendment procedure. Putting a
+patched or derived compiler at `.artifacts/toolchains/bend` would conflict with
+the project rule never to patch that upstream checkout and the guide's clean
+upstream pin procedure. No canonical five-receipt amendment or pin move has
+been attempted on these incompatible inputs.
+
+Keep 2.0.27 pinned and preserve all candidate receipts. A reviewed new
+semantic/proof-authority version could retain every v2 Law and old evidence
+byte while introducing a versioned checker and an explicit, separately bound
+compiler variant. Alternatively, a pristine upstream successor can be
+assessed for both the alias and checker interface (with its own versioned
+checker migration if necessary). Either path changes the authorized pin
+strategy and needs the owner's choice; neither makes the candidate's browser,
+CPU or finite proof receipts canonical or closes the separate GPU and visual
+acceptance gates.
