@@ -1386,3 +1386,10 @@ checked closures and promise lists matched, and small selected C and JS
 fixtures were byte-identical. The v1 `verify-library --check` also passed all four checks
 after the staging path was corrected. The v2 graphics checker remains the active historical caller;
 no new library manifest, full library gates or 2.0.28 pin are claimed.
+
+A separate [draft versioned Bun loader](toolchain-patches/loader-v3/README.md)
+preserves the frozen semantic-v2 loader while replacing its removed ownership
+API call at a new staging path. A pinned-2.0.27 small-fixture comparison gave
+byte-identical selected JS and both versions rejected a `PROOF.bend` missing
+its sibling Law. The production `--run` wrapper and browser build still select
+their existing loaders; the draft is not a 2.0.28 pin or full proof/build gate.
