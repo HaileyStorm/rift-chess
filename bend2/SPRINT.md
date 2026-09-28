@@ -849,6 +849,10 @@ whereas CPU/off restored the initial frame; a 1,000 ms diagnostic cadence
 passed. This is an open input/presentation-latency finding, not source-matched
 GPU parity or a throughput speedup. No default device promotion follows;
 see the [orbit evidence](docs/evidence/v2-motion-walls/README.md#exact-source-leased-cuda-presentation-pilot).
+A separate [observer-only timing request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861118746)
+will distinguish release delivery, app frame submission and X11 capture
+under a new lease without altering the receipt-bound ELF/sidecar. No result
+or GPU promotion is inferred from that request.
 
 ## Bend 2.0.32 release triage
 

@@ -151,3 +151,9 @@ separately timed for this source. Do not infer a speedup, delivered FPS,
 default automatic GPU policy or owner visual approval. The 250 ms finding
 remains open for input-versus-presentation timing diagnosis under a future
 fresh lease, not a reason to weaken the check.
+One [observer-only diagnostic request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861118746)
+now asks the Linux owner to reuse that exact ELF/sidecar under a new lease,
+timestamp the second-click event consumption and submitted frame, and poll
+a bounded g1 region through one second. It does not authorize a new build or
+turn the original 250 ms failure into a pass. No diagnostic result is yet
+claimed.
