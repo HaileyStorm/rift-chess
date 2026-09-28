@@ -1195,3 +1195,19 @@ It had no GPU lease/process or app build and does not cure the c30 250 ms
 CUDA-on deselection failure. A fresh source-bound device request needs a
 separate coherent lease and review after the current browser change is fixed
 to an exact revision.
+
+The [clean gesture-bound browser release](docs/evidence/v2-playtest-recovery/README.md#clean-and-hosted-import-handshake)
+then built from pushed source `a3a57b9` on the unchanged pristine 2.0.27 pin.
+The exact-bound 13 extended groups and focused delayed Import/cancel/reflow
+passed locally and again on the [shareable Pages preview](https://haileystorm.github.io/rift-chess-bend2/)
+after Pages commit `5ae5636` reported `built`. Live bytes matched all 22 Bend
+assets and both original-site baselines. This is a scoped browser transport
+and publication gate, not proof that the earlier intermittent timeout had
+this cause, owner acceptance, a response-time pass, a GPU-on fix or a 2.0.28
+pin amendment. Those objective parts remain open.
+
+The [new GPU observer request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5872596195)
+is now pending after the CPU-only XRes preflight. It requires a fresh coherent
+lease and reviewed, source-bound harness, uses the retained c30 candidate ELF
+only for timing diagnosis, and explicitly forbids relabeling the original
+250 ms failure or claiming GPU parity for the new browser source.

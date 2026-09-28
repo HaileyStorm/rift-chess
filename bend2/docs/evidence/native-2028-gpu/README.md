@@ -142,3 +142,28 @@ authority/readiness fixes, rechecking wrong-cookie denial and verifying a
 private-cookie status-0 reply with a returned PID equal to the owned window
 process. Its result is pending; it grants no GPU authority. The c30 original
 250 ms GPU-on failure remains unchanged.
+
+## CPU-only XRes positive control passed
+
+The [one-shot Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5870229954)
+for the preceding request reports an owned Xephyr display with corrected
+`xwininfo -root` readiness, wrong-cookie rejection, and private-cookie
+`XResQueryClientIds` status 0, count 1 and returned PID exactly matching the
+owned window process (3878284). The status check was the original
+`status != 0`; no application gate or GPU process ran. The host reports owned
+fixture teardown and exact claim release. Host-local evidence/result/claim
+SHA-256 values are `486fadbd3692bda26df61ce1134aaecfdbbddf6fb41a4394c864c5fe7d1b435a`,
+`c0001c304204959d9c37e29a76f6bebc1d1fee1ce882b3710a8029e9cd772c42`,
+and `6fde09fe012d618dad3947c56b2c3b5ac1b57e063b00579893fe383ba5503e0a`.
+Those bytes have not been cross-hashed on Windows. The pilot's GPU-on 250 ms
+failure remains terminal, and the CPU-only request is consumed. A new device
+diagnostic needs a separately reviewed fresh coherent lease and source-bound
+one-shot scope; this preflight alone is not device permission.
+
+A [new one-shot observer-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5872596195)
+asks the Linux owner to rebind the retained c30 CUDA ELF/sidecar, repair only
+the disposable observer's scoped authority/readiness/status predicate, obtain
+an independently reviewed harness and *fresh* coherent lease/claim, then
+separate untraced 25 ms ROI samples from an Xlib observer timeline. It grants
+no automatic acceptance retry, compiler/source mutation, current a3a native
+parity or 250 ms pass. Its result is pending; the earlier failure remains.

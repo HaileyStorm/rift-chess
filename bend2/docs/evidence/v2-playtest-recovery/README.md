@@ -289,3 +289,39 @@ clean final-source browser gate remains open.
 Clean build/publication and owner acceptance remain to be assessed. A
 passing controlled delay and finite regression matrix do not establish a
 reliability bound on all users' browsers or explain the original failure.
+
+## Clean and hosted Import handshake
+
+Commit `a3a57b9910ddb8fd84c026f8f6b0eae073f6384b` built non-draft on the
+clean 2.0.27 pin with `sourceDirty: false`, content version
+`c7056b49df1aa08b4048` and `build.json` SHA-256
+`e40a0123041225185dfab3b74d6e697c03805d7835ca9337260486b207851582`.
+The local exact-build-bound 13-group extended Chrome suite passed with zero
+page errors (receipt SHA-256
+`2cfca143df33136d4953a13d8f05f472455a1c5130d5c9d336ec930faef5665f`),
+followed by the delayed mobile import, cancel/retry and trusted touch reflow
+scenarios (summary SHA-256
+`4eedb6dd1cdfb156471647b9400e4023f5e82bd9c001e71bcb4645572ac12a6c`).
+The original TypeScript application's 62 tests and production build also
+passed; its files were not changed.
+
+The [shareable Bend preview](https://haileystorm.github.io/rift-chess-bend2/)
+advanced to separate Pages commit
+`5ae563632eb9fed1c0702fd8dc3e1ed513f3272a`. Pages reported `built`.
+The live publication verifier matched all 22 Bend files and both unchanged
+original-site baselines; its ignored receipt
+`.artifacts/bend2/publication/2026-09-28T14-52-43-283Z-f88b691b/receipt.json`
+is SHA-256 `c11b8fb38aaa7ede9fff6418c8b5b87b7b91ca64e41e54ed10c8a4beb0cae6b2`.
+The hosted, served-manifest-bound 13 extended groups passed with zero errors
+(receipt SHA-256
+`ac0250ee15aab24090e87908857ed0875d8174521c5a94f60fde96f20a4a308c`).
+Hosted mobile import with the controlled six-second second-input delay,
+cancel/retry, and touch held across a completed Resize frame also passed,
+three scenarios with zero defects (summary SHA-256
+`1376edccaaac1129d5318ca0cce9ea71bd6f067735ff9b502b2298e204d6b426`).
+The second chooser was clicked while user activation was active, about
+6.27 seconds before Bend's matching `PickFile` effect. This closes the
+controlled timing reproduction and publication of this scoped browser fix,
+not a statistical reliability bound, the cause of the earlier uninstrumented
+timeout, physical-device/owner acceptance, native GPU, responsiveness or the
+reviewed compiler pin.
