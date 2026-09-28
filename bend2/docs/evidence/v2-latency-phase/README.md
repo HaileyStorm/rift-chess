@@ -99,6 +99,44 @@ implementation/proof version. Menu composition is a distinct implementation
 optimization that still needs exact pixel/input parity. Neither a relaxed
 frame threshold nor a GPU fixture speed claim closes these observations.
 
+## Current hosted cold visual-phase baseline
+
+The clean published browser content `c7056b49df1aa08b4048` (source
+`a3a57b9`) was replayed in fresh real Chrome contexts with exact served
+`build.json` binding. Three `desktop-start` runs passed their position,
+capture and Front-refinement checks; proxy-to-detailed spans were 4,459.2,
+3,886.8 and 3,682.8 ms. Their ignored summaries under
+`.artifacts/bend2/playtest-stage2/sprite-baseline-current-{a,b,c}-20260928/`
+have SHA-256 values `42326e3899026bc3a854301b6c9b6be2faad189030462ea1ca30108faeb32843`,
+`94bdb15d755b7d15f816d1684773375582f0712e4185a3d849a88e310a117846`,
+and `42bff276c72a92821062efbbec268ffba085db628e3f4d696378eb93518c2759`.
+Those samples spent roughly 1.0–1.3 seconds decoding the plate/sprite assets,
+0.83–0.96 seconds building the ground and 1.32–1.42 seconds placing sprites.
+The phases overlap neither within that helper nor with its final image
+transfer; prewarming only the fetch cannot remove the dominant scene work.
+
+The playtest driver now retains first dirty-frame worker/port/tree/traversal
+timings and requires finite values, without changing the game. On the same
+hosted build, three observed initial request-to-reply latencies were 3,521.1,
+5,684.1 and 3,245.3 ms, with first-frame port work 2,332.3, 4,216.2 and
+2,294.0 ms respectively. A fourth gated sample was 3,485.7 ms with
+2,494.1 ms port work. The last two sampled first-frame tree compositions
+were about 951–953 ms, while the recorded raster traversal itself was only
+about 34–38 ms. Worker-side scene phase totals and asset/font preparation,
+not raw traversal, are the first-frame optimization questions; the current
+instrumentation does not isolate every component of port work. The
+corresponding ignored summary SHA-256 values are
+`ec7f9c3c767a459357ea3b8ac866c0771a4bc066a549e24e08a4b29f3bdefe44`,
+`53b58fd5351c93ae03b10dbd17543fae748dd5c9f427074eef2daaa31f3815ad`,
+`42961e59f91123d8ac0ba35c861ebeedce6fb47c905860b643a7704fdbe3af2b`,
+and `10c7ec0b229ef59a74478ce5d4896b380b4bd03b5f096ca16a45f0706b666303`.
+One high-load run put proxy-to-detail at 8,502.7 ms, with decode 2,092.8,
+ground 2,057.8 and sprite placement 3,338.3 ms. These small, variable-load
+samples are diagnostic, not a cold-start bound or throughput claim. They
+argue against calling the current refinement rapid; any source change should
+improve actual first interaction and detailed-art arrival without blurring
+the authored piece edges or bypassing Bend's rendering authority.
+
 ### Rejected menu-shell reuse trial
 
 An isolated local draft added a Bend `render_from_base` entry and let the

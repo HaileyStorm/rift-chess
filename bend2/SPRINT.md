@@ -1211,3 +1211,14 @@ is now pending after the CPU-only XRes preflight. It requires a fresh coherent
 lease and reviewed, source-bound harness, uses the retained c30 candidate ELF
 only for timing diagnosis, and explicitly forbids relabeling the original
 250 ms failure or claiming GPU parity for the new browser source.
+
+Fresh exact-build-bound [cold visual phase samples](docs/evidence/v2-latency-phase/README.md#current-hosted-cold-visual-phase-baseline)
+on that hosted version measure the first proxy boot request-to-reply at
+3.2–5.7 s in four small variable-load runs, with detailed art another
+3.7–8.5 s after
+the first frame. The driver now records finite initial worker/port/tree/
+traversal phases. The sprite helper spends substantial time in decoding,
+ground and per-piece composition; raw first-frame raster traversal is much
+smaller than first-frame port work. This is diagnostic evidence and leaves
+rapid readiness/response-time acceptance open. Do not infer that asset
+prewarm or a less-defined sprite filter solves the measured scene work.

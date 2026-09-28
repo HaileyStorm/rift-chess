@@ -508,6 +508,17 @@ const whitePieces = ['a1', 'b1', 'c1', 'd1', 'e1', 'a2'].map(sq), blackPieces = 
 
 await scenario('desktop-start', DESKTOP, async t => {
   await t.open();
+  t.result.timings.firstFrame = await t.page.evaluate(() => {
+    const frame = window.__frames.find(item => item.dirty);
+    return frame ? { at: frame.at, workerMs: frame.ms, portMs: frame.portMs,
+      treeMs: frame.treeMs, traversalMs: frame.traversalMs,
+      pixelStats: frame.pixelStats, latencyMs: frame.latency,
+      sceneTimes: frame.sceneTimes } : null;
+  });
+  t.check(Number.isFinite(t.result.timings.firstFrame?.latencyMs) &&
+    Number.isFinite(t.result.timings.firstFrame?.treeMs) &&
+    Number.isFinite(t.result.timings.firstFrame?.traversalMs),
+    'Initial playable frame has bounded worker/port phase timings');
   await t.verify('start');
   await t.shot('start', { squares: [...whitePieces, ...blackPieces, sq('c3'), sq('d6'), sq('e4')], controls: [1, 3, 11], pageShot: true });
   await t.refined();
