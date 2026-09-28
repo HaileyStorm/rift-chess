@@ -163,3 +163,25 @@ aggregate repeat is pending: the Windows host had about 6.0–6.3 GiB free
 physical memory when checked, below prudent headroom for the prior
 eight-minute proof worker with an 8 GiB old-generation cap. A fresh resource
 check and full receipt are required before promoting this candidate verdict.
+
+The checked verdict and its negative-control helper now live in a **draft**
+`core/v3/proof-authority.mjs` instead of inside the disposable runner. The
+candidate verifier binds its SHA-256
+`3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013`
+before worker import, passes the expected hash to the worker, and checks the
+module again after completion. The small-book test imports the same module
+after installing telemetry/fetch denial and passes again; the 56-source
+candidate preflight also passed with that authority hash. This is a reusable
+piece of a future versioned checker, not a frozen v3 manifest, canonical
+node-checker, full aggregate proof or reviewed pin amendment.
+
+The same source-bound verifier then ran its `--fixture-only` worker mode on
+the exact replay snapshot. Ignored receipt
+`.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028/receipt-1790618236566.json`
+has SHA-256
+`5b060a7a566fc5882f9c017969178bfc7b1096082b6c3e0e7abaa3e5dd1176b4`.
+It records 497 loaded/validated terms, an empty selected emit, zero holes,
+zero taint, all three negative controls, zero denied fetches, and unchanged
+fixture/input, runner, authority, compiler and replay bindings. This is an
+actual worker-import/source-binding smoke, deliberately **not** a frozen
+1,584-term aggregate run or a pin amendment.

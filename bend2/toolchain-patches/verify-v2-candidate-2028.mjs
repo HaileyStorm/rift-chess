@@ -10,6 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isMainThread, parentPort, Worker, workerData } from 'node:worker_threads';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const authorityFile = path.join(root, 'bend2/core/v3/proof-authority.mjs');
 const baseline = path.join(root, '.artifacts/bend2/toolchain-patches/fresh-2028-stack');
 const replayIndex = process.argv.indexOf('--replay-receipt');
 const replayPath = replayIndex < 0 ? null : path.resolve(process.argv[replayIndex + 1] ?? '');
@@ -24,6 +25,9 @@ const candidate = snapshotPath ?? (replay
   : aliasTrial ? path.join(root, '.artifacts/bend2/toolchain-patches/alias-equality-2028')
     : baseline);
 const entry = path.join(root, 'bend2/core/v2/CHECK.bend');
+const fixtureOnly = process.argv.includes('--fixture-only');
+const fixture = path.join(root, 'bend2/toolchain-patches/fixtures/proof-authority-negative-2028.bend');
+const expectedFixtureSha = '06d304ddeb723aca439615ba45d81322ce0d60142136e8c567ccf98b01f49e64';
 const semanticManifestPath = path.join(root, 'bend2/laws/semantic-v2.json');
 const expectedSemanticManifestSha = 'c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf';
 const expectedProofClosureNamesSha = '4acca1af0927befabf25e52678750e6552b7e5d900e35c0f0400e16fe805cf3a';
@@ -94,87 +98,11 @@ function snapshotCompiler(replaySource, snapshot) {
   return binding;
 }
 
-export function proofUses(Bend, book, own) {
-  const uses = Object.create(null), visited = new Set();
-  function refs(term, out) {
-    if (typeof term !== 'object' || term === null) return;
-    if ((term.$ === 'Ref' || term.$ === 'ADT') && term.k !== undefined) out.add(term.k);
-    for (const [field, value] of Object.entries(term)) if (field !== 's') refs(value, out);
-  }
-  for (const queue = own.slice(); queue.length;) {
-    const key = queue.pop(), term = book.tlds[key];
-    if (!term || visited.has(key)) continue;
-    visited.add(key);
-    const names = new Set();
-    for (const body of term.$ === 'ADT' ? term.c : [term]) refs(Bend.term_lower(body.T), names);
-    refs(term.$ === 'Def' ? term.e : undefined, names);
-    for (const ref of names) { (uses[ref] ??= []).push(key); queue.push(ref); }
-  }
-  return uses;
-}
-
-export function proofVerdict(Bend, book, graph = null) {
-  const holes = book.hols + book.open;
-  if (holes) throw Error(`${holes} TODO/open proof holes`);
-  const own = [...new Set(book.order.filter(key => book.tlds[key]?.b !== true))];
-  const unsafe = new Set(Object.keys(book.tlds).filter(key => book.tlds[key].u === true));
-  const foreign = new Set(Object.keys(book.tlds).filter(key => {
-    const term = book.tlds[key];
-    return term.i !== undefined && term.b !== true;
-  }));
-  const uses = unsafe.size || foreign.size ? graph ?? proofUses(Bend, book, own) : null;
-  function tainted(starters) {
-    for (const key of starters) uses[key]?.forEach(caller => starters.add(caller));
-    return own.filter(key => starters.has(key));
-  }
-  if (unsafe.size) {
-    const bad = tainted(unsafe);
-    if (bad.length) throw Error(`Proof depends on unsafe code: ${bad.join(', ')}`);
-  }
-  if (foreign.size) {
-    const bad = tainted(foreign);
-    if (bad.length) throw Error(`Proof depends on foreign code: ${bad.join(', ')}`);
-  }
-  return { holes, tainted: 0, own };
-}
-
-export function proofNegativeControls(Bend, book) {
-  const { own } = proofVerdict(Bend, book);
-  const uses = proofUses(Bend, book, own), ownSet = new Set(own);
-  const marked = own.find(key => book.tlds[key]?.$ === 'Def' &&
-    book.tlds[key].i === undefined && book.tlds[key].u !== true &&
-    uses[key]?.some(caller => caller !== key && ownSet.has(caller)));
-  if (!marked) throw Error('No reachable non-Base def for proof authority mutations');
-  const caller = uses[marked].find(key => key !== marked && ownSet.has(key));
-  const original = book.tlds[marked], originalHoles = book.hols;
-  try {
-    book.hols = originalHoles + 1;
-    assert.throws(() => proofVerdict(Bend, book, uses),
-      /1 TODO\/open proof holes/, 'TODO mutation was not specifically rejected');
-    book.hols = originalHoles;
-    book.tlds[marked] = { ...original, u: true };
-    assert.throws(() => proofVerdict(Bend, book, uses),
-      error => error.message.startsWith('Proof depends on unsafe code: ') &&
-        error.message.split(': ')[1].split(', ').includes(caller),
-      'reachable unsafe mutation was not rejected');
-    book.tlds[marked] = { ...original, i: ['synthetic-host'] };
-    assert.throws(() => proofVerdict(Bend, book, uses),
-      error => error.message.startsWith('Proof depends on foreign code: ') &&
-        error.message.split(': ')[1].split(', ').includes(caller),
-      'reachable foreign mutation was not rejected');
-  } finally {
-    book.hols = originalHoles;
-    book.tlds[marked] = original;
-  }
-  proofVerdict(Bend, book);
-  return { todo: true, reachableUnsafe: true, reachableForeign: true,
-    marked, caller };
-}
-
 if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   process.env.BEND_NO_TELEMETRY = '1';
   process.env.BEND_HUB = 'http://127.0.0.1:9';
   const runnerSha256 = sha(fs.readFileSync(fileURLToPath(import.meta.url)));
+  const authoritySha256 = sha(fs.readFileSync(authorityFile));
   let snapshotBinding = null;
   assert.ok(!snapshotPath || replay, 'short compiler snapshot requires a reviewed final replay');
   if (replay) {
@@ -301,6 +229,11 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
     'Frozen aggregate proof import set drifted');
   for (const name of proofNames)
     assert.equal(inputs[name], manifest.files[name], `Frozen aggregate proof source drifted: ${name}`);
+  if (fixtureOnly) {
+    assert.equal(sha(fs.readFileSync(fixture)), expectedFixtureSha,
+      'Candidate worker fixture drifted');
+    inputs[relative(fixture)] = expectedFixtureSha;
+  }
   inputs['candidate/base.bend'] = sha(fs.readFileSync(path.join(candidate, 'bend2/base.bend')));
   if (process.argv.includes('--preflight-only')) {
     console.log(JSON.stringify({ ok: true, candidate: relative(candidate),
@@ -309,13 +242,15 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
       finalStackReplay: Boolean(replay), replayReceiptSha256: expectedReceiptSha,
       semanticManifestSha256: expectedSemanticManifestSha,
       proofClosureNamesSha256: expectedProofClosureNamesSha,
-      frozenProofSources: proofNames.length, compiler, baseSha256: inputs['candidate/base.bend'] }));
+      frozenProofSources: proofNames.length, compiler, baseSha256: inputs['candidate/base.bend'],
+      authoritySha256, fixtureOnly }));
   } else {
   const started = Date.now();
   const output = path.join(root, '.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028');
   fs.mkdirSync(output, { recursive: true });
   const worker = new Worker(new URL(import.meta.url), {
-    workerData: { candidate, entry },
+    workerData: { candidate, entry: fixtureOnly ? fixture : entry,
+      expectedTerms: fixtureOnly ? 497 : 1584, authoritySha256 },
     resourceLimits: { stackSizeMb: runtime.worker.stackSizeMb, maxOldGenerationSizeMb: 8192 },
     execArgv: runtime.worker.execArgv,
   });
@@ -339,6 +274,7 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
     const compilerUnchanged = Object.entries(compiler).every(([name, record]) =>
       sha(fs.readFileSync(path.join(candidate, 'bend2', name))) === record.sha256);
     const runnerUnchanged = sha(fs.readFileSync(fileURLToPath(import.meta.url))) === runnerSha256;
+    const authorityUnchanged = sha(fs.readFileSync(authorityFile)) === authoritySha256;
     const replayReceiptUnchanged = !replay || sha(fs.readFileSync(replayPath)) === expectedReceiptSha;
     const replayCloneUnchanged = !replay || Object.entries(replay.final.files).every(([name, record]) =>
       sha(fs.readFileSync(path.join(replayClone, ...name.split('/')))) === record.sha256);
@@ -348,26 +284,30 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
         assert.deepEqual(snapshotCompiler(replayClone, candidate), snapshotBinding);
     } catch { compilerSnapshotUnchanged = false; }
     const semanticManifestUnchanged = sha(fs.readFileSync(semanticManifestPath)) === expectedSemanticManifestSha;
-    if (!inputsUnchanged || !compilerUnchanged || !runnerUnchanged ||
+    if (!inputsUnchanged || !compilerUnchanged || !runnerUnchanged || !authorityUnchanged ||
         !replayReceiptUnchanged || !replayCloneUnchanged ||
         !compilerSnapshotUnchanged || !semanticManifestUnchanged)
       result = { ...result, ok: false, error: 'Proof inputs, compiler or runner changed during the attempt' };
     const receipt = { schema: 'rift-bend-v2-candidate-2028-check/1', aliasEqualityTrial: aliasTrial,
+      fixtureOnly,
       finalStackReplay: Boolean(replay), replayReceiptSha256: expectedReceiptSha,
       replayReceipt: replayPath ? relative(replayPath) : null,
       at: new Date().toISOString(), sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'],
         { cwd: root, encoding: 'utf8' }).trim(), candidateTag: expectedTag,
       compiler, inputs, runtime: runtime.runtime.sha256, runnerSha256,
+      authoritySha256,
       semanticManifestSha256: expectedSemanticManifestSha,
       proofClosureNamesSha256: expectedProofClosureNamesSha,
       compilerSnapshot: snapshotBinding,
       candidateCompiler: relative(candidate),
       replayClone: replayClone ? relative(replayClone) : null,
-      inputsUnchanged, compilerUnchanged, runnerUnchanged,
+      inputsUnchanged, compilerUnchanged, runnerUnchanged, authorityUnchanged,
       replayReceiptUnchanged, replayCloneUnchanged,
       compilerSnapshotUnchanged, semanticManifestUnchanged,
       elapsedMs: Date.now() - started, lastPhase, result,
-      scope: 'Frozen v2 aggregate source terms and unsafe/foreign dependency walk on disposable 2.0.28 stack; no semantic amendment, conformance, native or browser claim' };
+      scope: fixtureOnly
+        ? 'Small source-bound Bend fixture and candidate worker/authority integration; not the frozen v2 aggregate or canonical proof'
+        : 'Frozen v2 aggregate source terms and unsafe/foreign dependency walk on disposable 2.0.28 stack; no semantic amendment, conformance, native or browser claim' };
     const file = path.join(output, `receipt-${Date.now()}.json`);
     fs.writeFileSync(file, JSON.stringify(receipt, null, 2) + '\n');
     console.log(JSON.stringify({ file, elapsedMs: receipt.elapsedMs, result }));
@@ -379,11 +319,15 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
   let deniedFetches = 0;
   globalThis.fetch = async () => { deniedFetches++; throw Error('Candidate proof network fetch denied'); };
   try {
+    assert.equal(sha(fs.readFileSync(authorityFile)), workerData.authoritySha256,
+      'Candidate proof authority changed before worker import');
+    const { proofVerdict, proofNegativeControls } = await import(pathToFileURL(authorityFile).href);
     Bend = await import(pathToFileURL(path.join(workerData.candidate, 'bend2/bend.ts')).href);
     const Comp = await import(pathToFileURL(path.join(workerData.candidate, 'bend2/comp.ts')).href);
     const book = Bend.book_nil(), seen = new Map(), started = Date.now();
     await Bend.book_load(book, workerData.entry.replaceAll('\\', '/'), '', seen);
-    if (book.order.length !== 1584) throw Error(`Frozen aggregate term count drifted: ${book.order.length}`);
+    if (book.order.length !== workerData.expectedTerms)
+      throw Error(`Candidate proof term count drifted: ${book.order.length}`);
     parentPort.postMessage({ phase: 'loaded', elapsedMs: Date.now() - started,
       terms: book.order.length });
     Bend.book_valid(book);

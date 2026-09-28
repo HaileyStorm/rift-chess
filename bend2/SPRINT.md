@@ -1324,3 +1324,12 @@ against a real 497-term Bend book on the reviewed isolated 2.0.28+006 tree.
 The aggregate worker uses that same verdict code, but its older 1,584-term
 receipt binds the previous runner and does not transfer. A full repeat is
 pending fresh Windows memory headroom; no frozen source or canonical pin moved.
+
+The checked verdict has since moved to a [draft versioned proof-authority module](docs/evidence/toolchain-2028-stack/README.md#candidate-proof-rejection-controls-on-a-real-bend-book),
+shared by the isolated candidate worker and small-book negative test. Its
+source hash is bound before worker import and after completion. This prepares
+the actual migration without claiming a frozen v3 manifest or canonical
+2.0.28 proof; the revised full aggregate and five-receipt amendment remain.
+The bound [fixture-only worker smoke](docs/evidence/toolchain-2028-stack/README.md#candidate-proof-rejection-controls-on-a-real-bend-book)
+passed actual worker import/validation/negative controls without changing
+source. It is not a substitute for the full aggregate or canonical proof.

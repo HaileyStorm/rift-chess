@@ -10,7 +10,7 @@ process.env.BEND_HUB = 'http://127.0.0.1:9';
 let deniedFetches = 0;
 globalThis.fetch = async () => { deniedFetches++; throw Error('Proof test network fetch denied'); };
 await import('./proof-guard-2028.test.mjs'); // checks all 95 candidate compiler files
-const { proofNegativeControls, proofVerdict } = await import('./verify-v2-candidate-2028.mjs');
+const { proofNegativeControls, proofVerdict } = await import('../core/v3/proof-authority.mjs');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const compiler = path.join(root, '.artifacts/bend2/toolchain-patches/final-2028-proof-e943f02a/bend2');
 const fixture = path.join(root, 'bend2/toolchain-patches/fixtures/proof-authority-negative-2028.bend');
