@@ -265,3 +265,10 @@ gives the independently rehashed exact receipt
 `a71ce32941c74abef1762bebb30d8526f115fc905bbb084722b3d6a4b2d7af01`.
 Neither the headroom observation nor the corrected request is native
 execution evidence or pin acceptance.
+
+A separate [Windows source/asset closure probe](evidence/v2-native-candidate-preflight/README.md)
+validated the current NativeV2 imports and manifests against the disposable
+2.0.28+006 compiler copy without running Bend's checker. The local memory
+observation was only 5.085 GiB free, so no local heavy native attempt was
+made. That subset map cannot prove Linux byte parity or replace the guarded
+CPU candidate receipt.

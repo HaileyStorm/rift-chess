@@ -1026,3 +1026,10 @@ time, with a slow composition around 589 ms. Same-position Bun calls found
 consistent with repeated legal work in the command/refresh path. These are
 bounded diagnostics, not browser performance acceptance or permission to
 weaken frozen dependencies or native parallel shape.
+
+A [read-only Windows NativeV2 candidate closure preflight](docs/evidence/v2-native-candidate-preflight/README.md)
+validated 151 source and 18 asset/manifest input paths against the isolated
+2.0.28+006 compiler copy and current public game source. The local 15.675 GiB
+host had only about 5.085 GiB free; no potentially multi-gigabyte NativeV2
+check or emission was started. This preflight does not substitute for the
+separate Linux two-sample 88 GiB admission or CPU/GUI/PCM/restart result.
