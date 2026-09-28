@@ -77,3 +77,20 @@ has been requested for exact `cafc934`/tree
 older-source GPU timing diagnostic closes. It requires fresh two-sample
 88 GiB admission, one bounded C/ELF package, original-cadence X.Org input,
 routed PCM and save/restart; the request is not a result or GPU grant.
+
+### Rejected nearest-filter speed trial
+
+A reversible local draft swapped only the interactive piece filter from
+linear to nearest, leaving the published source/commit untouched. Its ignored
+`.artifacts/bend2/playtest-stage2/nearest-sprite-trial-20260928/summary.json`
+is SHA-256
+`8c2ff9a0c37a6156aa8b053e4bf430900f49f43bba19e150f8b5c739bd59d67d`;
+draft build version `c63a72b314b162c0d536` is preserved with build-manifest
+SHA-256 `3f9ba35f7866563465f95dea11273ad6133d4631f5f39979e3f03c2237f807de`.
+One local Chrome sample cut first sprite drawing from 1,388 to 865 ms and
+the refined-after-first-frame interval from 4,085 to 3,700 ms. Enlarged
+piece crops showed jagged contours, and the several-hundred-ms gain did not
+remove the conspicuous fallback interval. This was rejected as a visual
+regression, not promoted as a stable benchmark or published. `PieceSprites.bend`
+was restored byte-for-byte; the clean selected module and exact published
+`build.json` were restored and the 22+2 live-file verifier passed again.
