@@ -240,3 +240,51 @@ trace, an exact owned-directory inventory rule (not a broad `data-*` bypass),
 independent preflight, and a new coherent lease/claim before any CUDA-off/on
 phase episode. It preserves the stopped result and original 250 ms failure;
 the request itself is not device execution or an acceptance retry.
+
+## Corrected allowlist phase diagnostic: completed, delay still unattributed
+
+The [one-shot Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5876259686)
+for exact request `5874204027` reports that a newly reviewed allowlist
+admitted only the observer-owned, empty `data-XXXXXX` directory, then
+rechecked output inventory after the run. Its independent pre-GPU preflight
+v5 SHA-256 was
+`3b30c8eb3386e86629f7326aade9bdf78329ea126b134018f97b51026cb97f40`.
+The previous attempt `5873174640` remains terminal; this was a fresh
+one-shot diagnostic under a new lease, not a retry of its failed fixture.
+
+The clean source was c30d312727a56f6b66b501dddf8038d317dfd946, generated
+C SHA-256 `8e5ceff370d88b7c8aa6f31bc2abef2e7776a660ea2cb2f0c61f0573a17ff1ca`,
+CUDA ELF `646b71c575ab6bfdf82ab5d545ba7d16af0bfe2024a139d0f0b2348750e7d42b`
+and sidecar `e5cc0bcac1a4cab1b1c21c5ffa0944bc85cc96b87269f40b85443e9e7a1c3fda`.
+Exactly one CPU-traced, explicit CUDA-off and CUDA-on episode exited 0;
+the CUDA-on PID matched device observation. The Linux report calls the
+CPU/off 250 ms nested-ROI images the “initial frame” and says CUDA-on
+remained selected. That wording is not silently reclassified as a CPU/off
+deselection verdict or the original full-window acceptance test.
+
+In the **traced** CUDA-on episode, second release was consumed at 0.330 ms;
+four `bend_dev` launches ended by 14.004 ms. The changed `window_dev` launch
+began at 245.067 ms, leaving about 231.063 ms between those observed host
+call boundaries without attribution. `cuMemcpyDtoH` took 9.080 ms; changed
+XPutImage began at 254.378 ms, XFlush returned at 254.928 ms and the first
+changed external sample was at 275.115 ms. Asynchronous launches, blocking
+copy, 60 Hz pacing, CPU dispatch, X submission and visible presentation
+are distinct; tracing perturbs timing. This does not prove the device
+executed for 231 ms or identify a GPU optimization.
+
+Four exact lease validations authorized that narrow episode. The lease
+was withdrawn, outbox denied, post-withdraw validation exited 2, no target
+or Xephyr remained and the exact claim was released. Host-local verdict,
+evidence and lease-closure JSON SHA-256 values are respectively
+`db3bf2d2a1ab696438bf3105644ea87ea7c5f670d75c83aaed8110eaff1540b7`,
+`3f177934dd9fb7ff51fda927ed248d03db0fdbfece8da0d1f39b3abe46bfc447`,
+and `f1b07f8de653b20da423fcaa359963b9176d5c6bdd876f011d095152ccfb1af7`.
+Those private artifacts have not been cross-hashed on Windows. The original
+full-window CUDA-on 250 ms deselection gate remains **terminal FAIL**;
+no GPU default, parity, speedup or acceptance follows.
+
+A [read-only retained-trace request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5876312618)
+asks Linux to enumerate intervening frames, pacing and X/CUDA host calls
+between release and the changed launch. It authorizes no new device or CPU
+episode, lease, retry, source edit or acceptance claim. The gap remains
+unattributed unless the exact retained rows actually account for it.

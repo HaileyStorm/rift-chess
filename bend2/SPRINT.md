@@ -1279,11 +1279,22 @@ defect, not a new GPU timing or parity result. The prior full-window 250 ms
 CUDA-on failure remains authoritative; any correction needs exact source
 review and fresh one-shot authority, not a blind retry.
 
-A [new reviewed allowlist-fixture request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5874204027)
-is pending on Linux. It binds the retained CPU trace and exact observer's
-owned `mkdtemp` directory before any fresh lease, then permits only one
+A [reviewed allowlist-fixture request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5874204027)
+bound the retained CPU trace and exact observer's
+owned `mkdtemp` directory before any fresh lease, then permitted one
 separately source-bound CPU/off/on phase diagnostic. No CUDA timing or
-acceptance is inferred from the request.
+acceptance was inferred from the request. Its completed result follows.
+
+The [Linux diagnostic result](docs/evidence/native-2028-gpu/README.md#corrected-allowlist-phase-diagnostic-completed-delay-still-unattributed)
+ran one CPU-traced/off/on episode under a new narrow lease, then withdrew
+the lease, denied further outbox use and released its claim. CUDA-on was
+still selected at the nested 250 ms ROI; the changed traced `window_dev`
+launch began at 245.067 ms, about 231 ms after four `bend_dev` launches
+ended. DtoH took 9.080 ms and changed X submission began 254.378 ms.
+The intervening interval is not yet attributed to paced frames, host work
+or device synchronization; the exact retained-trace readout is requested
+without another run. The original full-window 250 ms GPU-on gate remains
+terminal FAIL, with no parity, speedup or default-on acceptance.
 
 The [full hosted rendered matrix](docs/evidence/v2-playtest-recovery/README.md#uninterrupted-24-scenario-hosted-matrix-on-shared-plate-release)
 then passed all 24 current scenarios and 685 checks in one exact-build-bound
@@ -1307,6 +1318,8 @@ At straight Front orientations, 75° separates near pawns from the back rank
 more clearly for White and Black, while making wall depth less apparent.
 This narrows the visual trade-off but does not change the default or replace
 owner acceptance and source-bound native/browser retesting after an edit.
+The owner explicitly rejected 75° for Front as too top-down for the depth
+lost. Keep the current 65° Front preset; 70° is not an approved replacement.
 
 An optional [current-source menu-layer diagnostic](docs/evidence/v2-latency-phase/README.md#current-source-menu-layer-diagnostic-after-account-resumption)
 now separates a retained Preferences scrim, panel and rounded controls in a
@@ -1315,6 +1328,13 @@ local Node sample; flat destination controls are cheaper. It is not a
 real-Chrome speed improvement, published renderer change or responsiveness
 acceptance. Optimize only after paired browser timing and exact visual/input
 parity protect the authored button edges.
+
+A [one-pass rounded-button draft](docs/evidence/v2-latency-phase/README.md#rejected-one-pass-rounded-button-trial)
+was exact-pixel equal but slower than the existing path both on a simple
+background and on the retained Bend Preferences panel (actual-panel p50
+188 versus 123 ms for ten backgrounds). All tracked draft code was removed;
+the published/browser/native source remains unchanged. This rejects that
+optimization, not the outstanding real-browser responsiveness requirement.
 
 The [2.0.28 proof-authority guard](docs/evidence/toolchain-2028-stack/README.md#proof-authority-migration-guard-2026-09-28)
 now source-binds the isolated final candidate's empty selected-emit adapter

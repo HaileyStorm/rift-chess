@@ -179,3 +179,32 @@ next profiling target. The earlier real-Chrome 486.7 ms menu-tree p95 remains
 the browser observation. No change to control art or its authored edges is
 justified without exact pixel and interaction parity plus a paired real-Chrome
 improvement; responsiveness is still open.
+
+## Rejected one-pass rounded-button trial
+
+A reversible game-owned `ButtonPanel` draft combined the existing shadow,
+rim and opaque face into one quadtree traversal, retaining the original
+`Widgets.panel` fallback for invalid geometry. The pinned compiler checked
+the standalone module and a ten-control Preferences specimen. Two selected
+JS comparisons produced pixel-identical 1024×640 outputs against the old
+renderer. On a simple varied background, twelve alternating local Node
+samples measured 38.10/65.83 ms baseline versus 69.21/114.34 ms candidate
+at p50/p90; baseline and candidate PNGs have the same SHA-256
+`4d249f468bb8c6ea5414a02516c16e74cb84d951cf23cbcfe304cdb8025acda5`.
+The emitted selected JS is ignored under `.artifacts/bend2/menu-button-panel/`
+with SHA-256 `d38c088263404e342c24601c1be3e0851a14a4f2ecbb0d63a974d7233f7d6998`.
+
+The same ten backgrounds were then compared over a retained, actual Bend
+Preferences board/chrome/panel image, again pixel-identical. Twelve
+alternating local Node samples measured 122.58/177.03 ms baseline versus
+188.11/258.25 ms candidate at p50/p90. Its ignored selected JS is
+`.artifacts/bend2/v2-preview/menu-aa/specimen.mjs`, SHA-256
+`8a13ba9ac836cabf81e25f0545bf06c839c0cc395d98b13b4206977f13281bb2`.
+These are background-composition samples without font labels, not a paired
+real-Chrome input-to-present benchmark. They provide no reason to promote
+the one-pass renderer: it was slower in both relevant local specimens.
+The three new draft source/test files were removed with `apply_patch`, and
+the temporary imports/functions in two existing tracked files were removed;
+`git status` returned clean. No game, selected published bundle, frozen Law,
+pin, native source or hosted bytes changed. The remaining bottleneck still
+requires a different exact-pixel design and browser measurement.

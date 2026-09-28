@@ -157,3 +157,8 @@ These are view-control captures rather than a changed default, and neither
 pixel hashes nor my visual comparison constitute owner WOW acceptance.
 Retain the source/default pending the owner’s preference; any pitch change
 would need fresh browser and native source-bound checks.
+
+The owner then rejected **75° for Front**: it is too close to top-down and
+the added rank separation is not worth the loss of depth. Keep the current
+65° Front preset. The 70° sample remains comparison evidence, not an
+approved replacement; no default-camera change was requested or made.
