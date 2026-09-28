@@ -8,6 +8,7 @@ import ../../lib/graphics/Quad.bend as Quad
 import ../../lib/graphics/Ortho.bend as Ortho
 import ../../lib/graphics/v2/Color.bend as Color
 import ../../lib/graphics/pixels/Pixel.bend as Pixel
+import ../../lib/graphics/v2/Transform2D.bend as Transform
 
 def quad4(a: Image, b: Image, c: Image, d: Image) -> Image:
   Qua{a, b, c, d}
@@ -55,7 +56,7 @@ def center_y(square: U32, camera: Camera.Basis) -> U32:
 def sprite_mid_y(+square: U32, +camera: Camera.Basis) -> U32:
   +center = board_center(square, camera)
   Ortho.pixel(F32.sub(F32.add(BoardScene.point_y(center),
-      F32.mul(BoardScene.sprite_width(512, camera), 0.16)),
+      F32.mul(BoardScene.sprite_width(512, camera), 0.22)),
     F32.div(BoardScene.sprite_height(512, camera), 2.0)))
 
 def rendered(frame: Scene.Frame, +background: Image) -> Image:
@@ -105,11 +106,26 @@ def contact_shadow_is_bounded() -> Bool:
   +width = BoardScene.sprite_width(512,camera)
   +background: Image = Pix{Color.rgb(180,190,200)}
   +image = BoardScene.sprite_contact_shadow(9n,512,width,center,background)
-  +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.11)))
+  +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.17)))
   +foot = Pixel.sample_xy(9n,center_x(square,camera),base,image)
   +outside = Pixel.sample_xy(9n,U32.add(center_x(square,camera),48),base,image)
   Bool.and(U32.is_ne(foot,Color.rgb(180,190,200)),
     U32.is_eq(outside,Color.rgb(180,190,200)))
+
+# The screen-facing court pieces should remain close to one projected rank
+# tall and have a base that visibly rests below the square center in Front.
+def front_rank_projection_is_compact() -> Bool:
+  +camera = Camera.basis(Camera.View{0,90,115})
+  +pitch = BoardScene.sprite_board_pitch(512,camera)
+  +height = BoardScene.sprite_height(512,camera)
+  +center = board_center(4,camera)
+  +matrix = BoardScene.sprite_matrix(BoardScene.sprite_width(512,camera),
+    height,center)
+  +foot = F32.sub(BoardScene.point_y(Transform.point(matrix,
+    Quad.Point{0.5,1.0})),BoardScene.point_y(center))
+  Bool.and(F32.is_le(height,F32.mul(pitch,1.08)),
+    Bool.and(F32.is_ge(foot,F32.mul(pitch,0.24)),
+      F32.is_le(foot,F32.mul(pitch,0.32))))
 
 def report(check: Bool, +pass: String, +fail: String) -> IO(Unit):
   match check:
@@ -133,6 +149,10 @@ def main() -> IO(Unit):
           report(hovered_focus_is_lit(),
             "PASS: hovered piece receives a distinct focus rim",
             "Hovered piece focus rim did not change its expected pixel"),
-          _ => report(contact_shadow_is_bounded(),
-            "PASS: subtle contact shadow remains beneath the piece base",
-            "Piece contact shadow is absent or spills outside its footprint")))))
+          _ => IO.bind(Unit,Unit,
+            report(contact_shadow_is_bounded(),
+              "PASS: subtle contact shadow remains beneath the piece base",
+              "Piece contact shadow is absent or spills outside its footprint"),
+            _ => report(front_rank_projection_is_compact(),
+              "PASS: Front sprite height and base fit the projected rank",
+              "Front sprite still projects too tall or too high"))))))

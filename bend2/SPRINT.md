@@ -1086,3 +1086,12 @@ passed. Its lease was withdrawn and denied, and its claim released. A fresh
 is open on the retained ELF/sidecar; it is not a second acceptance attempt.
 Default GPU-off and the failed gate remain in force. A final visual-source
 change would also need a fresh exact-source device gate after a reviewed fix.
+
+A [shorter/lower Bend piece projection trial](docs/evidence/v2-piece-proportions/README.md)
+addresses the Front-rank overlap without touching chess rules or the piece
+atlas. Its rendered default/Front and four-cardinal captures were visually
+inspected; the local draft desktop-start, selection, camera and 13 extended
+Chrome groups passed with zero defects, as did the focused sprite checks and
+the original TypeScript application. This is not yet a clean published build,
+owner visual acceptance or a new-source native/GPU result. The pending
+observer-only c30 timing diagnostic remains bound to its exact older ELF.
