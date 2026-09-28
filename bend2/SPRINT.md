@@ -1468,6 +1468,11 @@ comparisons matched complete canvas bytes at startup, after e2–e4 and at the
 unchanged 65° Front. In those local samples, a 32-piece first piece phase
 fell from 0.99–1.20 s to 0.68–0.75 s; the repeated same-ground e2–e4 piece
 phase fell from 0.92–1.30 s to about 0.49–0.50 s. The full candidate local
-matrix passed 24 scenarios/685 checks with zero defects. This is a local
-candidate only: no current-source Linux native result, GPU-on repair, clean
-hosted release, reviewed compiler pin or owner visual acceptance follows.
+matrix passed 24 scenarios/685 checks with zero defects. The clean post-commit
+build kept the same content version and all asset hashes. The
+[hosted preview](docs/evidence/v2-alpha-bounds/README.md#hosted-preview) is
+live at Pages commit `2af5618` from source `c986e3f`, with 22/22 Bend
+manifest bytes and both original-site baselines verified, plus seven focused
+hosted scenarios/65 checks with zero defects. No current-source Linux native
+result, GPU-on repair, reviewed compiler pin, full hosted matrix or owner
+visual acceptance follows.

@@ -17,17 +17,18 @@ published piece/wall scene and do not prove native parity for later source. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link serves build `3616886e4d25f31c6943` from clean source
-`a7895fb`, with a board-first
+The public Bend link serves build `b5022e026e9bf6904c29` from clean source
+`c986e3f`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
 and a separate Bend-rendered sprite helper. Run
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
 and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
 The [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
 is historical; the current preview also has clipped camera-facing wall faces,
-shorter and lower-set authored pieces, warmer exposed sides, and a one-entry
-settled-ground cache. The
-[hosted cache receipt](docs/evidence/v2-ground-cache/README.md#hosted-cache-preview-and-exact-pixels)
+shorter and lower-set authored pieces, warmer exposed sides, a one-entry
+settled-ground cache, and data-derived alpha bounds for faster detailed
+sprites without changing their pixels. The
+[hosted sprite receipt](docs/evidence/v2-alpha-bounds/README.md#hosted-preview)
 binds its source, live bytes and focused real-Chrome playtest. Non-draft builds verify
 the frozen semantic and graphics manifests and source-bound worker graph.
 Native parity for the current source, owner visual acceptance and Bend 2.0.28

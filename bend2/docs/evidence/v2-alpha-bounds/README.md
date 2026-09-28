@@ -49,12 +49,36 @@ hashes; its new manifest SHA-256 is
 `4125176cd73d954c7d23303bd0611f0d0cc83b3d84d6090f1629214efd1ae216`.
 Its `sourceRevision` is the previous committed HEAD because this was built
 before committing; the content version and selected-source cache binding
-include the candidate's edited files. A clean source commit/build and any
-hosted/native retest are distinct later gates. The existing Linux CPU-only
-request binds older source `a7895fb` and cannot validate this change; no
-new GPU lease, toolchain pin, or owner visual acceptance is inferred.
+include the candidate's edited files. The subsequent source commit
+`c986e3ffbbf747504dccb7315d8b0bce69554894` was pushed, and its clean
+non-draft build retained the exact same content version and file hashes;
+the final source-bound `build.json` SHA-256 is
+`fd31e49a1b404bddfba425f6230a89c56f86fa27e0d43e05bb541120b530205f`.
+Its exact-build-bound local smoke passed three rendered scenarios and 37
+checks with zero defects.
 
 The unrelated full frozen-v2 checker was intentionally interrupted before a
 receipt when physical free memory fell to about 2 GiB during its large proof
 entry. It is not recorded as a pass or a failed law. The non-draft browser
 build's frozen-manifest verification is narrower than a fresh aggregate proof.
+
+## Hosted preview
+
+The separate [Bend preview](https://haileystorm.github.io/rift-chess-bend2/)
+was published at Pages commit `2af56181b2e5b83fe724b9b82abae2cdda3e2d68`.
+Pages reported `built`; the live verifier matched the source-bound manifest,
+all 21 listed Bend assets, and both unchanged original-site baselines.
+The ignored receipt is
+`.artifacts/bend2/publication/2026-09-28T22-50-59-887Z-9dbb0d33/receipt.json`,
+SHA-256 `9cdf61ae365ce56bcb4b9ce66c7ea449568472ad410bfe88990931aef409d31b`.
+Seven exact-build-bound hosted real-Chrome scenarios passed 65 checks with
+zero defects: desktop start, corrupt plate fallback, camera, persistence,
+mobile, import gesture guards, and touch import replanning. The ignored
+summary is `.artifacts/bend2/playtest-stage2/alpha-bounds-hosted-20260928/summary.json`,
+SHA-256 `1d0a0227936e10b83cf999b468eac722686d881932672502c732740b5061bd62`.
+The full 24/685 result binds the local same-content candidate, not a new
+hosted full-suite run. Browser measurements do not establish native CPU/GPU
+speed, a repaired 250 ms CUDA window, physical audio or owner visual
+acceptance. The existing Linux CPU-only request binds older source `a7895fb`;
+a new-source native check is still required. No new GPU lease or 2.0.28 pin
+is inferred.
