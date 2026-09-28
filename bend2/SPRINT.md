@@ -1240,3 +1240,12 @@ submission around the release, without app/compiler mutation or an automatic
 250 ms acceptance retry. The Windows pinned 2.0.27 Base source cannot be
 used to assert 2.0.28+006 generated C call order; missing or ambiguous hooks
 must stop the diagnostic rather than inventing attribution.
+
+An isolated [Bend-decoded plate-sharing draft](docs/evidence/v2-shared-plate/README.md)
+removes the helper's redundant RGA decode, while retaining the original
+fallback and exact pixel output. Repaired local real-Chrome/Node gates pass,
+including malformed source, rapid supersession, both themes and orbit;
+eight paired startup samples suggest an earlier detailed frame without a
+measured first-click penalty. The one-time structured clone still costs
+hundreds of milliseconds and its transient memory peak is unknown. This is
+not yet a clean/public build or a universal responsiveness pass.

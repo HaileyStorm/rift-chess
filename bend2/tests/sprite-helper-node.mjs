@@ -136,4 +136,40 @@ test('static sprite helper validates source/theme and retains Bend assets across
   assert.deepEqual(newest.image, { $: 'Pix', color: 1 });
   assert.equal(newest.testState.fetchGroups.length, 4,
     'a superseded theme can fill its asset cache; the newest theme is then restored and painted');
+
+  const supplied = { $: 'ObservatoryPlates', astral: { $: 'Missing' },
+    stone: { $: 'Ready', depth: 9, pixels: { $: 'Pix', color: 7 } } };
+  worker.postMessage({ kind: 'job', protocol: 1, id: 8, generation: 4,
+    source: token, theme: 1, frame: { $: 'Frame', theme: 1, marker: 'shared' }, plates: supplied });
+  const shared = await waitFor(worker, message => message.kind === 'result' && message.id === 8);
+  assert.deepEqual(shared.image, { $: 'Pix', color: 2 });
+  assert.equal(shared.testState.fetchGroups.length, 4,
+    'a Bend-decoded plate from the main worker avoids a second theme fetch/decode');
+  assert.equal(shared.metrics.fetchMs, 0);
+  assert.equal(shared.metrics.decodeMs, 0);
+
+  worker.postMessage({ kind: 'job', protocol: 1, id: 9, generation: 5,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'wrong-shared' }, plates: supplied });
+  const wrongShared = await waitFor(worker, message => message.kind === 'error' && message.id === 9);
+  assert.match(wrongShared.message, /Invalid sprite helper job envelope/);
+});
+
+test('a superseded first job retains its Bend plate without refetching it', async t => {
+  const worker = new Worker(bootstrap, { eval: true, workerData: { entry: helperPath, source: token } });
+  t.after(() => worker.terminate());
+  await waitFor(worker, message => message.kind === 'hello');
+  const supplied = { $: 'ObservatoryPlates', astral: { $: 'Ready', depth: 9,
+    pixels: { $: 'Pix', color: 9 } }, stone: { $: 'Missing' } };
+  worker.postMessage({ kind: 'test-delay-fetch' });
+  worker.postMessage({ kind: 'job', protocol: 1, id: 10, generation: 1,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'superseded' }, plates: supplied });
+  worker.postMessage({ kind: 'job', protocol: 1, id: 11, generation: 2,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'newest' } });
+  await waitFor(worker, message => message.kind === 'stale' && message.id === 10);
+  const newest = await waitFor(worker, message => message.kind === 'result' && message.id === 11);
+  assert.deepEqual(newest.image, { $: 'Pix', color: 1 });
+  assert.ok(newest.testState.fetchGroups.every(paths => paths.every(path => path.startsWith('assets/pieces-fast-'))),
+    'neither the canceled nor the replacement job refetches the supplied plate');
+  assert.equal(Number.isFinite(newest.metrics.decodeMs), true,
+    'the canceled job may already have populated the immutable sprite-page cache');
 });

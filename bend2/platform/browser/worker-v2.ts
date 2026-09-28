@@ -41,6 +41,7 @@ let menuBase: any, menuControls: any, menuBaseData: any, menuBasePlan: any;
 let menuStaticData: any, menuStaticPlan: any;
 let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
+let spritePlateTheme: number | null = null;
 let spriteHelper: Worker | null = null, spriteHello = false, spriteGeneration = 0, spriteTaskId = 0;
 let spritePending: { id: number; generation: number; frame: any; theme: number;
   revision: number; at: number; epoch: number; quietWindowMs: number } | null = null;
@@ -181,6 +182,7 @@ function disposeSprite(): void {
   spriteHello = false;
   spriteLayer = spriteFrame = null;
   spriteTheme = null;
+  spritePlateTheme = null;
   spriteMetrics = null;
   spriteHelper?.terminate();
   spriteHelper = null;
@@ -248,8 +250,17 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   const pending = { id: ++spriteTaskId, generation: ++spriteGeneration,
     frame, theme, revision, at, epoch: performance.timeOrigin + at, quietWindowMs };
   spritePending = pending;
+  // The main Bend worker already decoded this exact theme plate for its first
+  // playable frame. Clone it only on a helper/theme transition; the helper
+  // keeps its independent request/decode fallback for superseded jobs.
+  const selected = theme === 0 ? plates?.astral : plates?.stone;
+  const usablePlate = plates?.$ === 'ObservatoryPlates' && selected?.$ === 'Ready' &&
+    selected.depth === 9 && ['Pix', 'Qua'].includes(selected.pixels?.$);
+  const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
   spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
-    id: pending.id, generation: pending.generation, theme, frame });
+    id: pending.id, generation: pending.generation, theme, frame,
+    ...(sharedPlate ? { plates: sharedPlate } : {}) });
+  if (sharedPlate) spritePlateTheme = theme;
 }
 
 function scheduleSprite(packet: any): void {

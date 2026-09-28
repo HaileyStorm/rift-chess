@@ -537,6 +537,30 @@ await scenario('desktop-start', DESKTOP, async t => {
   await t.shot('layout-c', { squares: [sq('e3'), sq('f6'), sq('d4'), sq('g5')] });
 });
 
+await scenario('corrupt-plate-fallback', DESKTOP, async t => {
+  let intercepted = 0;
+  await t.context.route('**/assets/observatory-astral.rga', async route => {
+    intercepted++;
+    await route.fulfill({ status: 200, contentType: 'application/octet-stream',
+      body: Buffer.from('invalid-rga-payload') });
+  });
+  await t.open();
+  await t.refined();
+  t.check(intercepted >= 2,
+    'Main and sprite workers independently receive the malformed plate fallback input', String(intercepted));
+  await t.shot('fallback-refined', { squares: [sq('e1'), sq('d8'), sq('c3')] });
+  await t.play(mv('g1', 'f3'));
+  await t.verify('malformed plate fallback remains interactive');
+});
+
+await scenario('startup-response', DESKTOP, async t => {
+  await t.open();
+  await t.frames('immediate-selection', () => t.clickSquare(sq('g1'), 16));
+  t.check(await t.has(1000 + mv('g1', 'f3')), 'First post-boot click selects the knight');
+  await t.refined();
+  await t.shot('selection-refined', { squares: [sq('g1'), sq('f3')] });
+});
+
 // Rules §10 defaults: destination overlays off, Shift indicators on, selection always shown.
 await scenario('defaults', DESKTOP, async t => {
   await t.open({}, { targets: false });

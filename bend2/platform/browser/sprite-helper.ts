@@ -23,7 +23,7 @@ function values(value: any): any[] {
 
 type SpriteJob = {
   kind: 'job'; protocol: number; id: number; generation: number;
-  source: string; theme: number; frame: any;
+  source: string; theme: number; frame: any; plates?: any;
 };
 
 type Timings = {
@@ -57,6 +57,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   let generationIds = new Set<number>();
   let queue: Promise<void> = Promise.resolve();
   let plates: any = null, plateTheme: number | null = null, underlay: any = null;
+  let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
 
   scope.postMessage({ kind: 'hello', protocol: PROTOCOL, source });
@@ -67,7 +68,12 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       Number.isSafeInteger(request.generation) && request.generation >= 0 &&
       typeof request.source === 'string' &&
       (request.theme === 0 || request.theme === 1) &&
-      request.frame?.$ === 'Frame' && request.frame.theme === request.theme;
+      request.frame?.$ === 'Frame' && request.frame.theme === request.theme &&
+      (request.plates === undefined ||
+        (request.plates?.$ === 'ObservatoryPlates' &&
+          (request.theme === 0 ? request.plates.astral : request.plates.stone)?.$ === 'Ready' &&
+          (request.theme === 0 ? request.plates.astral : request.plates.stone)?.depth === 9 &&
+          ['Pix', 'Qua'].includes((request.theme === 0 ? request.plates.astral : request.plates.stone)?.pixels?.$)));
   }
 
   function error(request: any, message: string): void {
@@ -82,27 +88,30 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       id: request.id, generation: request.generation, source });
   }
 
-  async function ensureAssets(theme: number, metrics: Timings): Promise<void> {
+  async function ensureAssets(theme: number, metrics: Timings, supplied?: any): Promise<void> {
     const missingPlates = plateTheme !== theme || !plates || !underlay;
     const missingPieces = !pieces;
     if (!missingPlates && !missingPieces) return;
 
-    const plateRequests = missingPlates ? values(board.asset_ids(theme)) : [];
+    const plateRequests = missingPlates && !supplied ? values(board.asset_ids(theme)) : [];
     const spriteRequests = missingPieces ? values(board.sprite_asset_ids()) : [];
     const fetchStart = now();
     const [plateResponses, spriteResponses] = await Promise.all([
-      missingPlates ? fetchAssets(plateRequests) : Promise.resolve([]),
+      plateRequests.length ? fetchAssets(plateRequests) : Promise.resolve([]),
       missingPieces ? fetchAssets(spriteRequests) : Promise.resolve([]),
     ]);
-    metrics.fetchMs = now() - fetchStart;
+    metrics.fetchMs = plateRequests.length || spriteRequests.length ? now() - fetchStart : 0;
 
     const decodeStart = now();
     let nextPlates = plates, nextUnderlay = underlay, nextPieces = pieces;
     if (missingPlates) {
-      if (plateRequests.length !== 1 || plateResponses.length !== 1 ||
-          plateResponses.some((entry: any) => entry?.ok !== true))
-        throw new Error('Bend observatory asset request did not return its exact source');
-      nextPlates = board.load_plates(list(plateResponses));
+      if (supplied) nextPlates = supplied;
+      else {
+        if (plateRequests.length !== 1 || plateResponses.length !== 1 ||
+            plateResponses.some((entry: any) => entry?.ok !== true))
+          throw new Error('Bend observatory asset request did not return its exact source');
+        nextPlates = board.load_plates(list(plateResponses));
+      }
       nextUnderlay = null;
     }
     if (missingPieces) {
@@ -113,7 +122,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       if (decoded?.$ !== 'Some') throw new Error('Bend rejected its source-bound chess sprite pages');
       nextPieces = decoded.value;
     }
-    metrics.decodeMs = now() - decodeStart;
+    metrics.decodeMs = missingPieces || (missingPlates && !supplied) ? now() - decodeStart : 0;
 
     // Do not publish partial state: an interrupted or malformed asset load
     // leaves the last complete theme and sprite set intact.
@@ -150,7 +159,8 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       groundMs: 0, spritesMs: 0, workerMs: 0,
       startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
-      await ensureAssets(request.theme, metrics);
+      await ensureAssets(request.theme, metrics,
+        request.plates ?? (sharedPlate?.theme === request.theme ? sharedPlate.value : undefined));
       if (request.generation !== generation) { stale(request); return; }
 
       if (!underlay || plateTheme !== request.theme) {
@@ -180,6 +190,10 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
 
   scope.addEventListener('message', event => {
     const request = event.data;
+    // Receive the validated immutable Bend plate before an earlier async
+    // sprite-page fetch can be superseded. Retain at most one theme.
+    if (validEnvelope(request) && request.source === source && request.plates)
+      sharedPlate = { theme: request.theme, value: request.plates };
     // Advance the generation at receipt time, including while an older job is
     // awaiting asset IO. A synchronous Bend call cannot be interrupted, so the
     // main worker must also discard replies whose generation is no longer live.
