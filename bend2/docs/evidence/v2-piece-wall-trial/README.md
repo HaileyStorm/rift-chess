@@ -78,5 +78,11 @@ console errors. Its ignored receipt is
 SHA-256 `df891e1af7afffc4cba41d035994842c3d73a930b2c00fe81d532cc481c827c5`.
 The hosted warm-court PNG is byte-identical to the clean local capture,
 SHA-256 `cb5cc53fbff79606ca5ae7fb1c41d4069412b7aa022a3b9b0b64efcbe60c96af`.
+The separate hosted bot smoke also reached actions 3980 then 20065 both
+online and after a cold offline reload; four module-worker files returned
+JavaScript MIME from the service worker with no page/console errors. That
+command's console result was not saved as a source-bound receipt and does not
+exclude a serial fallback by itself; the isolated 2.0.28 diagnostic route
+has its own stronger instrumented evidence.
 This establishes a public browser preview, not owner visual acceptance,
 new-source native CPU/GPU parity or release completion.
