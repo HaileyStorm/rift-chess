@@ -1393,3 +1393,11 @@ API call at a new staging path. A pinned-2.0.27 small-fixture comparison gave
 byte-identical selected JS and both versions rejected a `PROOF.bend` missing
 its sibling Law. The production `--run` wrapper and browser build still select
 their existing loaders; the draft is not a 2.0.28 pin or full proof/build gate.
+
+The [browser Import gesture repair](docs/evidence/v2-import-gesture/README.md)
+invalidates a held touch immediately on resize, before a pending worker
+replan replies, without opening a stale chooser or sending an unpaired release.
+The focused fake-host event sequence, existing picker/queue controls, and two
+exact-draft-build-bound real-Chrome touch scenarios pass; the original
+TypeScript game remains 62/62 with a clean type check. The browser evidence
+does not yet establish a clean hosted release or a physical-touchscreen gate.

@@ -14,7 +14,8 @@ let presentedControls: any[] = [];
 const queuedPickers = new WeakMap<object, PreparedPickFile>();
 const inflightPickers = new Map<number, PreparedPickFile[]>();
 const activePickers = new Set<PreparedPickFile>();
-let touchImport: { pointerId: number; input: any; shown: unknown } | null = null;
+let touchImport: { pointerId: number; input: any; presentation: unknown; layoutVersion: number } | null = null;
+let layoutVersion = 0;
 let presentedTheme: number | null = null;
 let pendingRefinement: any = null;
 let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0, slow = 0;
@@ -273,7 +274,7 @@ canvas.addEventListener('pointerdown', event => {
   const importing = event.button === 0 && !event.altKey && importAt(p.x, p.y);
   if (importing && event.pointerType !== 'mouse') {
     // Touch/pen activation is granted on pointerup, not pointerdown.
-    touchImport = { pointerId: event.pointerId, input, shown: presentation };
+    touchImport = { pointerId: event.pointerId, input, presentation, layoutVersion };
     event.preventDefault();
     return;
   }
@@ -289,7 +290,8 @@ canvas.addEventListener('pointerup', event => {
     const held = touchImport;
     touchImport = null;
     const p = point(event);
-    if (held.shown !== presentation || !importAt(held.input.x, held.input.y) || !importAt(p.x, p.y)) {
+    if (held.presentation !== presentation || held.layoutVersion !== layoutVersion ||
+      !importAt(held.input.x, held.input.y) || !importAt(p.x, p.y)) {
       if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
       return;
     }
@@ -312,6 +314,9 @@ for (const [name, down] of [['keydown', true], ['keyup', false]] as const) canva
   if ([13, 27, 32, 37, 38, 39, 40].includes(event.keyCode)) event.preventDefault();
 });
 window.addEventListener('resize', () => {
+  // Invalidate a held touch Import as soon as layout changes, even if its
+  // Resize event is still queued and the old presentation remains current.
+  layoutVersion++;
   qualityWindow.length = 0;
   fit();
   capabilities = measureBrowserCapabilities(window, canvas, capabilities.maxTextureEdge);
