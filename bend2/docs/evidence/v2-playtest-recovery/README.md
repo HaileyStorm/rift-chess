@@ -139,3 +139,35 @@ back-rank art still occupies some of the adjacent pawn rank in this preset.
 The front-view refinement followed its last first-pass frame by 3,352.2 ms
 in this sample. These captures support a precise visual adjustment trial;
 they are not owner acceptance or a frame-budget pass.
+
+## Full bot games and terminal artwork on published proportions
+
+The clean hosted `817dfa63932dd6ccf4b4` preview ran the two bot-game
+scenarios independently with exact served `build.json` binding and a reset
+human-choice seed. White-bot reached a natural threefold draw after 52 bot
+replies (161 checks, zero defects; summary SHA-256
+`185a635075d8ab848377036da43eae1eb9a3e73416b4f9720114e0d5dabd3556`).
+Black-bot reached a natural White checkmate after 45 replies (140 checks,
+zero defects; summary SHA-256
+`24acc2852564e4ab7cb391f2dc84da22dd8f680bf727ed7d0b2041a568e17100`).
+Reference positions, journals, status and rendered input were checked along
+both games. Bot-reply frame p95 was about 2,356 and 1,819 ms respectively;
+these are not a responsiveness pass. The immediate final screenshots still
+sampled the transient proxy tier, so they alone could not establish the
+detailed terminal appearance.
+
+The focused hosted Fool's Mate path now waits for a `refinement` packet at
+the **terminal revision 4**, then captures the final art separately. It
+passed with zero defects using playtest driver SHA-256
+`450beeb57a205c95d133fba3af959b4f9542ceca994b14f564755d070bce05f9`
+(summary SHA-256
+`af1ce3de03d4e20a42fa06f7ee70cc48aeab9e85a090c648f8ade1bdefefd463`).
+The proxy terminal PNG SHA-256 is
+`c3e4d2652a8997629c276eaaa84f9fd0c3f8d63bcbc56fed0e5be836ff767ca`;
+the visually inspected detailed terminal PNG is
+`aa8063514e8323bf18850aa1db33eafe4712830cbb849bdfc3878f9c6082aa97`.
+This confirms that a terminal board can refine rather than being permanently
+stuck at proxies. It does not measure a universal refinement bound or prove
+that every bot terminal packet was captured after refinement. The current
+source has not repeated the full 20-scenario union or the long 304-action
+draw imports; earlier exact versions retain those separate finite results.

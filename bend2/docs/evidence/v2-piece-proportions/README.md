@@ -85,6 +85,12 @@ X.Org input/orbit, routed PCM and same-directory restart after both fresh
 an independent Windows replay, physical audibility or a current-source GPU
 result. The separate GPU-auth harness preflight remains pending.
 
+The [longer hosted bot/terminal follow-up](../v2-playtest-recovery/README.md#full-bot-games-and-terminal-artwork-on-published-proportions)
+adds natural threefold/checkmate games for both bot sides and a focused
+checkmate that visibly upgrades from proxy pieces to the detailed final art.
+Those rendered checks do not make the several-second refinement rapid or
+replace owner visual acceptance.
+
 ### Rejected nearest-filter speed trial
 
 A reversible local draft swapped only the interactive piece filter from

@@ -98,6 +98,7 @@ const instrument = () => {
         if (m.kind === 'fault') window.__fault = m.message;
         if (m.kind === 'refinement') {
           window.__refinements.push({ at: performance.now(), dirty: !!m.image,
+            revision: Number(m.presentation?.revision),
             spriteMetrics: m.spriteMetrics, sceneTimes: m.sceneTimes });
         }
         if (m.kind !== 'frame') return;
@@ -172,6 +173,14 @@ async function scenario(name, viewport, body) {
           +(state.refined.at - state.initial).toFixed(1),
         afterFrameMs: state.lastFrame == null ? null : +(state.refined.at - state.lastFrame).toFixed(1),
         metrics: state.refined.spriteMetrics };
+    },
+    async refinedRevision(revision, timeout = 60000) {
+      await page.waitForFunction(revision => window.__fault ||
+        window.__refinements.some(item => item.revision === revision && item.dirty),
+      revision, { timeout });
+      const fault = await page.evaluate(() => window.__fault);
+      if (fault) throw new ScriptError(`Bend terminal sprite refinement fault: ${fault}`);
+      t.check(true, `Detailed sprite frame reaches terminal revision ${revision}`);
     },
     async change(action) {
       const id = await page.evaluate(() => window.__reply?.id || 0);
@@ -571,6 +580,8 @@ await scenario('hotseat-black-mates', DESKTOP, async t => {
   const game = await t.verify('fool mate');
   t.check(game?.outcome()?.reason === 'checkmate', 'Fool mate is checkmate');
   await t.shot('checkmate', { squares: [sq('e1'), sq('h4'), sq('f2')], controls: [3, 6, 7] });
+  await t.refinedRevision(await t.commands());
+  await t.shot('checkmate-refined', { squares: [sq('e1'), sq('h4'), sq('f2')] });
   await t.clickSquare(sq('e2'), 16);
   t.check(!(await t.summary()).includes('White Pawn e2'), 'A finished game ignores board selection');
   t.check(!(await t.has(6)) && !(await t.has(7)), 'Draw and resign are disabled after checkmate');

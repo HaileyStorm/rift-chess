@@ -1144,3 +1144,11 @@ on that visual source passed its interaction checks but still measured a
 1,248 ms p95 move reply and 508 ms p95 menu reply. The visual improvement
 is not a responsiveness pass; the frozen legal-refresh and separate chrome
 composition paths remain work rather than being hidden behind green UI tests.
+
+The [current-source hosted bot/terminal playtest](docs/evidence/v2-playtest-recovery/README.md#full-bot-games-and-terminal-artwork-on-published-proportions)
+then ended White-bot in natural threefold after 52 replies and Black-bot in
+natural checkmate after 45, with zero journal/reference defects. A focused
+Fool's Mate capture showed the initial terminal proxy frame upgrading to
+ornate pieces on a refinement packet for terminal revision 4. This closes
+that narrow visual-lifecycle question, not the multi-second delay, full
+current-source scenario union, owner acceptance or GPU-on latency gate.
