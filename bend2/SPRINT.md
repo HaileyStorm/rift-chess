@@ -1300,3 +1300,11 @@ source. Steeper pitch modestly alters rank spacing but also hides some wall
 depth; the existing default is retained pending owner visual preference.
 No screenshot substitutes for that acceptance or for a new-source native
 gate after any future camera change.
+
+An optional [current-source menu-layer diagnostic](docs/evidence/v2-latency-phase/README.md#current-source-menu-layer-diagnostic-after-account-resumption)
+now separates a retained Preferences scrim, panel and rounded controls in a
+pixel-equal Bend specimen. The ten ordinary controls dominate this variable
+local Node sample; flat destination controls are cheaper. It is not a
+real-Chrome speed improvement, published renderer change or responsiveness
+acceptance. Optimize only after paired browser timing and exact visual/input
+parity protect the authored button edges.

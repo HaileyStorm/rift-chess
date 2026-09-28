@@ -133,6 +133,24 @@ def preferences(fonts: FontPack.Book) -> Image:
   +plan = Compact.plan_for(2,prefs.desktop(),Plan.Viewport{1024,640,1,9n})
   Menu.render(10n,1024,data(2),plan,fonts,demo_board())
 
+def prefs_base(+fonts: FontPack.Book) -> Image:
+  +plan = Compact.plan_for(2,prefs.desktop(),Plan.Viewport{1024,640,1,9n})
+  +shell = Menu.base_chrome(10n,1024,data(2),plan,fonts)
+  +dynamic = Menu.dynamic_chrome(10n,1024,data(2),plan,fonts,shell)
+  Menu.compose(10n,plan,demo_board(),dynamic)
+
+def prefs_scrim(base: Image) -> Image:
+  +plan = Compact.plan_for(2,prefs.desktop(),Plan.Viewport{1024,640,1,9n})
+  Menu.scrim(10n,1024,plan,base)
+
+def prefs_panel(fonts: FontPack.Book,base: Image) -> Image:
+  +plan = Compact.plan_for(2,prefs.desktop(),Plan.Viewport{1024,640,1,9n})
+  Menu.panel_for(2,10n,1024,0,plan,fonts,base)
+
+def prefs_controls(fonts: FontPack.Book,panel: Image) -> Image:
+  +plan = Compact.plan_for(2,prefs.desktop(),Plan.Viewport{1024,640,1,9n})
+  Menu.paint_controls(10n,1024,0,2,fonts,Plan.plan_controls(plan),panel)
+
 def mobile(fonts: FontPack.Book) -> Image:
   +plan: Plan.Plan = Plan.Plan{512,1024,1,9n,True{},
     Plan.Rect{0,106,512,524},Plan.Rect{0,112,512,512},play.mobile()}

@@ -155,3 +155,27 @@ source files restored byte-for-byte. The clean selected menu bundle and exact
 published `build.json` were restored; 22 Bend files plus two original-site
 baselines passed live verification again. Any future menu optimization must
 target Bend-owned panel/control work and demonstrate pixel/input parity.
+
+## Current-source menu-layer diagnostic after account resumption
+
+The pinned 2.0.27 wrapper ran the standalone `MenuAASpecimen` on the current
+published game source. A focused 40-iteration destination-control specimen
+(flat destination fills) returned 50.83 ms median, 126.96 ms p90, 273.5 ms
+maximum in this local Node run. A new optional `--profile-menu` specimen
+isolates a retained Preferences board/chrome image, then times the scrim,
+panel including scrim, and ten rounded controls on the retained panel. Each
+path ran 20 iterations. Medians/p90 were 47.71/70.03 ms for scrim,
+199.32/273.08 ms for panel including scrim, and 1,038.28/3,798.47 ms for
+controls on the panel. The composed final image matched the direct Bend
+Preferences render pixel-for-pixel at 1024 by 640. The optional diagnostic
+is in `tests/menu-aa-render.mjs` and `ui/v2/MenuAASpecimen.bend`; it does not
+alter the game renderer, frozen laws, browser bundle or published site.
+
+The unexpectedly large and variable repeated-control cost is a local Node
+specimen, not a representative browser input-to-present bound or a speedup.
+It separates rounded ordinary buttons from the cheaper rectangular
+destination controls and points to control composition/retention as the
+next profiling target. The earlier real-Chrome 486.7 ms menu-tree p95 remains
+the browser observation. No change to control art or its authored edges is
+justified without exact pixel and interaction parity plus a paired real-Chrome
+improvement; responsiveness is still open.

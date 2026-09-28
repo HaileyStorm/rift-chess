@@ -19,11 +19,16 @@ const began = performance.now();
 await Bend.book_load(book, path.join(root, 'bend2/ui/v2/MenuAASpecimen.bend').replaceAll('\\', '/'),
   '', new Map());
 resolveBaseForeignImports(book);
-Bend.book_valid(book);
+try { Bend.book_valid(book); } catch (error) {
+  console.error(Bend.err_show(error));
+  process.exit(1);
+}
 assert.equal(book.hols + book.open, 0);
 console.log(`checked ${book.order.length} definitions in ${Math.round(performance.now() - began)}ms`);
 const controlsOnly = process.argv.includes('--controls-only');
-const exports = controlsOnly ? ['decoded','base_prepared','controls_from_base',
+const profileMenu = process.argv.includes('--profile-menu');
+const exports = profileMenu ? ['decoded','preferences','prefs_base','prefs_scrim',
+  'prefs_panel','prefs_controls'] : controlsOnly ? ['decoded','base_prepared','controls_from_base',
   'destinations_from_base','destination_selected'] : ['decoded', 'desktop', 'prepared', 'static_prepared',
   'base_prepared','controls_from_base','destinations_from_base',
   'destination_selected',
@@ -41,6 +46,31 @@ bytes.set(packed);
 const parsed = api.decoded(bytes,packed.length);
 assert.equal(parsed.$,'Some','packaged font must decode in Bend');
 const fonts = parsed.value;
+if (profileMenu) {
+  const base = api.prefs_base(fonts);
+  const measure = (name,run) => {
+    const times = [];
+    let result;
+    for (let i=0;i<20;i++) {
+      const start = performance.now();
+      result = run();
+      times.push(performance.now()-start);
+    }
+    times.sort((a,b)=>a-b);
+    console.log(JSON.stringify({name,iterations:times.length,
+      p50Ms:+times[9].toFixed(2),p90Ms:+times[17].toFixed(2)}));
+    return result;
+  };
+  measure('scrim on retained board',()=>api.prefs_scrim(base));
+  const panel=measure('panel including scrim',()=>api.prefs_panel(fonts,base));
+  const composed=measure('controls on panel',()=>api.prefs_controls(fonts,panel));
+  const direct=api.preferences(fonts);
+  assert.deepEqual(new Uint8Array(new PixelPort().render(composed,1024,640,1024)),
+    new Uint8Array(new PixelPort().render(direct,1024,640,1024)),
+    'profile layers must reproduce direct Preferences pixels');
+  console.log(JSON.stringify({exactOutput:true,compiledMs:Math.round(performance.now()-began)}));
+  process.exit(0);
+}
 if (controlsOnly) {
   const base = api.base_prepared(fonts);
   const times = [];
