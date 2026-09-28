@@ -1102,3 +1102,9 @@ A separate [one-attempt current-source CPU retest](https://github.com/HaileyStor
 is queued after that diagnostic closes, with a fresh two-sample 88 GiB
 admission and original-cadence GUI/PCM/restart gates. Neither request is
 execution evidence or a pin change.
+
+A [fresh isolated 2.0.28+006 browser candidate](docs/evidence/browser-2028-candidate/README.md#published-shorter-piece-source-trial)
+for the published proportions passed 13 local Chrome groups and a focused
+Front/default rendered check. Seven sampled PNGs matched the live 2.0.27
+preview byte-for-byte. This neither resolves the pristine-upstream/frozen
+checker pin blockers nor transfers the older CPU/GPU host receipts.

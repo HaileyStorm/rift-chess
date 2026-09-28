@@ -306,3 +306,25 @@ Their ignored summary SHA-256 is
 `af62b13c7e961bf781bfa74d6c1e11dad601483cc1a04b745586498938cf0200`.
 These are bounded rendered/reference differential cases, not a universal
 rules proof, stable speed result, native/GPU gate or pin amendment.
+
+## Published shorter-piece source trial
+
+After the 2.0.27 [piece-proportion preview](../v2-piece-proportions/README.md)
+was published, a fresh nonce-private 2.0.28+006 candidate bound the current
+source (game bytes at `cafc934`, build revision `cf38634`) without editing the
+clean pin or canonical browser output. Candidate version
+`fc1c3a1b33c3d54064ab` has build receipt SHA-256
+`e0f34f238bd38ad817f3a68f55a5ca0d5b9beee72fb9e07274513ecffefd8323`
+and `build.json` SHA-256
+`bc6cd5d7faed0bb9e577ad125a004eb4dc46e63b62ec3b7a789e8208000711f7`.
+The exact-manifest-bound 13-group local Chrome run passed online/offline
+refinement, themes, selection, import/promotion, PCM, Shift/Undo and portrait
+with no browser errors (receipt SHA-256
+`db6653e09e8a6b15d02c54066b06d18d4d56b1b860e5d7f8d66b8a97ab41b21a`).
+The focused default/Front rendered start passed with zero defects (summary
+SHA-256 `d00d95241be445705c55b6f9d067e8a671372af3e2e104f4ac2ed29f3fafd8d7`).
+Seven sampled PNGs, including those two refined views, were byte-identical
+to the separately hosted pinned-2.0.27 visual source. This is local draft
+compiler/browser compatibility. It does not re-prove the strict bot-worker
+route, native GPU/CPU on this newer source, canonical proof gates, or the
+currently blocked reviewed pin amendment.
