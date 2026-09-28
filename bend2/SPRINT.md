@@ -1259,3 +1259,28 @@ after the first proxy, but this does not establish a rapid cold-start bound
 or solve the source-bound CUDA-on 250 ms failure. The native/Bend input
 closure did not change from the last Linux CPU gate; no new native result or
 toolchain pin acceptance is inferred.
+
+The exact [pristine 2.0.32 source checkout](docs/evidence/toolchain-2032-scout/README.md#pristine-exact-tag-checkout-and-migration-call-sites-2026-09-28)
+confirms the identity-alias fix without moving the 2.0.27 pin. It also
+confirms that the frozen v2 checker calls a private/removed compiler API;
+the new `--check-only` promise verdict is not the same claim as its BendTT
+`--verdict` mathematical check. `NativeCLI.bend` would also interpret the
+new `IO.args()` program-path entry as an unknown command unless adapted.
+These are source-bound migration duties, not executed 2.0.32 proof/browser/
+native gates or authorization to change the compiler target.
+
+The [C30 GPU phase attempt](docs/evidence/native-2028-gpu/README.md#c30-phase-probe-stopped-at-disposable-output-allowlist)
+stopped after one CPU-traced episode, before CUDA-off/on, because its strict
+output allowlist omitted an empty `data-*` directory created by the retained
+observer's own `mkdtemp`. Its exact C/ELF ABI review and XRes auth preflights
+passed; the CPU episode exited 0 with 371 bounded rows. The fresh lease was
+withdrawn and denied and the exact claim released. This is a harness fixture
+defect, not a new GPU timing or parity result. The prior full-window 250 ms
+CUDA-on failure remains authoritative; any correction needs exact source
+review and fresh one-shot authority, not a blind retry.
+
+A [new reviewed allowlist-fixture request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5874204027)
+is pending on Linux. It binds the retained CPU trace and exact observer's
+owned `mkdtemp` directory before any fresh lease, then permits only one
+separately source-bound CPU/off/on phase diagnostic. No CUDA timing or
+acceptance is inferred from the request.

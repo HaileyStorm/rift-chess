@@ -203,6 +203,40 @@ any process-local interception. If safe dynamic hooks exist, it asks for
 per-frame second-release, identified `window_dev` versus generic CUDA kernel
 calls, blocking DtoH copy, `nanosleep`, X submission and external ROI timing
 under a fresh coherent lease/claim. The pinned 2.0.27 Windows foreign source
-is **not** the authority for that candidate binary's call order. This request
-is pending and is diagnostic only; a traced later frame cannot close the
-original full-window 250 ms failure.
+is **not** the authority for that candidate binary's call order. The request
+was diagnostic only and its stopped result follows; a traced later frame
+cannot close the original full-window 250 ms failure.
+
+## C30 phase probe stopped at disposable output allowlist
+
+The [one-shot Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5874095945)
+to the phase request stopped after its first CPU-traced episode. It re-bound
+the exact c30 source, C, CUDA ELF, sidecar and assets; its exact generated-C/
+ELF ABI inspection and independent static preflight passed. Private-display
+readiness, wrong-cookie denial and unique correct-cookie CPU-window PID
+ownership passed. The CPU-traced episode exited 0 and wrote 371 bounded trace
+rows. A strict disposable output allowlist then rejected one unexpected but
+empty `data-DyFYed` directory. The retained observer source creates a
+`data-*` directory with `mkdtemp` at lines 498–499; the allowlist had omitted
+that fixture. This is a harness/output-inventory defect, not CUDA evidence.
+
+No explicit CUDA-off or CUDA-on episode ran. The lease was withdrawn and
+post-withdraw validator denied use; exact claim released, no unstopped PIDs.
+Host-local ABI review SHA-256 is
+`454faa63fcc7be54bbedf9237f7a86eba965812276e4a4ccb51f8e56c84657d9`,
+static preflight `3256f29d761067a29a03ca7dee99e650b907ac50e9052a98f1ab7b074f7b7473`,
+diagnostic result `d2cc15b060f72b8a2899972d3c26d3498f5d5b448608fa8082a1f8d472a92fe5`,
+blocker `1a2620c3bfc2fe5f669a242f4b6911d32e2f9469036d11383b3cd0c7e88adf0f`,
+and lease closure `fd9bb85355d9a5413dcf7aefa17f8864c5d07dd4f29510c57d8d4fc014cacfe5`.
+Windows has not independently cross-hashed those host-local bytes. The prior
+untraced nested-display result and original full-window 250 ms CUDA-on FAIL
+remain unchanged. A later attempt needs a newly reviewed exact owned-fixture
+allowlist, fresh claim/lease and one-shot authority; silence or a CPU exit 0
+does not authorize continuing to GPU.
+
+A [fresh one-shot allowlist-repair request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5874204027)
+requires source review of the observer's `mkdtemp` fixture and 371-row CPU
+trace, an exact owned-directory inventory rule (not a broad `data-*` bypass),
+independent preflight, and a new coherent lease/claim before any CUDA-off/on
+phase episode. It preserves the stopped result and original 250 ms failure;
+the request itself is not device execution or an acceptance retry.
