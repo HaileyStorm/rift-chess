@@ -1449,3 +1449,13 @@ the cache hit only for unchanged ground. A new-source CPU-only Linux gate is
 requested under [exact handoff 5879022597](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5879022597),
 not yet a result. Full hosted reliability, first-detail speed, GPU-on parity
 and the compiler pin are still open.
+
+A [first-detail feasibility check](docs/evidence/v2-ground-cache/README.md#first-detail-feasibility-checks-after-publication)
+found one hosted helper sample at 364 ms sprite decode, 685 ms first ground
+and 1,028 ms sprite placement within a 2,734 ms proxy-to-detail interval.
+A local build-time-prepared data probe was only ~929 KB plus twelve `BigInt`
+fields and could at most address the decode phase; it was not integrated.
+A hardcoded alpha-envelope clip failed the generic synthetic-sprite pixel
+contract and was fully removed. Rapid first detailed art still requires an
+exact, provenance-safe improvement to ground or sprite composition rather
+than a nearest-filter or unverified clipping shortcut.

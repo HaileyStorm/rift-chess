@@ -129,3 +129,32 @@ One hosted job sampled 0 ms cached ground versus 478 ms in the local old
 baseline, but different serving/network load and one pair prohibit a general
 end-to-end speedup claim. No present-day Linux CPU/GPU, reviewed 2.0.28 pin,
 first-detail speed bound, physical audio or owner visual acceptance follows.
+
+## First-detail feasibility checks after publication
+
+The hosted `desktop-start` helper sample on this release spent about 364 ms
+decoding its three sprite pages, 685 ms building the first settled ground and
+1,028 ms placing sprites; proxy-to-detail was 2,734 ms. These are one
+variable-load browser sample, not independent phase budgets or a reliability
+bound. A source-bound local Node decode of the pinned three pages took
+roughly 202–373 ms across two diagnostic invocations. Its prepared twelve-
+sprite `Pieces` graph serialized to 928,961 JSON bytes with twelve `BigInt`
+fields; lossless stringify/revival and structural equality passed locally,
+with revival around 36 ms. A build-time-prepared module might save some decode
+time, but would add download/parse/memory cost and must prove exact ordered
+ID/path/cap requests, same-fetch page hashes, full generated-graph binding,
+and the existing rejected/missing-page behavior. No browser fast path or
+artifact was implemented; the current 2.7-second detailed arrival is not
+solved by this Node probe.
+
+The current pinned RGA2 pages have twelve nonempty alpha bounding boxes with
+roughly 24–37% of each 64² cell inside its individual box. A reversible
+hardcoded shared clip trial was rejected before bundling: the game adapter's
+`Pieces` input also accepts synthetic and potentially changed valid pages,
+and the existing selected-focus pixel test failed when an opaque synthetic
+sprite was clipped. The draft source and its test file were removed, and the
+unmodified seven-check sprite test passed again. Any future clipping must
+derive and retain a verified per-texture envelope (or preserve a full draw
+for arbitrary textures); pinned artwork bounds alone cannot change this
+generic renderer contract. The rejected nearest filter remains rejected for
+its jagged authored contours.
