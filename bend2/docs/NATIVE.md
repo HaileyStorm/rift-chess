@@ -415,6 +415,12 @@ artifact and its receipt are tracked separately in [NATIVE_CLI.md](NATIVE_CLI.md
 
 A separate [NativeV2 package workflow](NATIVE_PACKAGE.md) now binds the current
 Bend source closure, generated C, native ELF, and runtime artwork to one local
-receipt. It builds CPU-first on a suitable Linux host. Until its fresh package
-is built and play tested, the earlier native X11 and PCM receipts apply only
-to their recorded source revision and binary hash.
+receipt. It builds CPU-first on a suitable Linux host. The exact current
+orbit-wall source `68411c4` now has a [CPU package/X.Org/routed-PCM/held-orbit result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860542619).
+The later [leased CUDA pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860926260)
+confirmed actual RTX 5090 use and matching key/orbit frame bytes but exposed
+a reproducible 250 ms GPU-on synthetic deselection capture lag; a 1,000 ms
+diagnostic cadence passed. The original-cadence discrepancy and unmeasured
+device transfer/readback remain open. Earlier receipts retain their own
+source/binary scope; neither host report proves Windows native or owner
+acceptance.

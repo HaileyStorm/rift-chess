@@ -175,3 +175,12 @@ PCM results are recorded in NATIVE.md. They remain separate from any package
 build: rerun the bounded Linux interaction and audio checks against the
 receipt-bound package before claiming that this package passed those gates.
 No Windows native target is supported by the pinned compiler.
+
+For tests that invoke the ELF directly instead of this launcher, pass
+`--gpu off` or `--gpu on` explicitly and record the effective mode. A
+source-matched [CUDA pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860926260)
+found that an environment variable alone did not distinguish direct-ELF
+CPU-off from its GPU default. This does not change the launcher's default-off
+contract above. Its original 250 ms GPU-on deselection capture remained
+selected; a 1,000 ms diagnostic cadence passed, so input/presentation
+latency is open even where other frame hashes match.

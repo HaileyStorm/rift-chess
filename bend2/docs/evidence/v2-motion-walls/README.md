@@ -81,4 +81,73 @@ One [CPU-only Linux retest request](https://github.com/HaileyStorm/Coordination/
 now binds exact clean source `68411c4`, its tree, new `MotionWall` and scene
 hashes, builder/pin/camera/record/probe bytes, the 88 GiB admission gate and
 one fresh native package/X.Org/PCM/restart probe. It explicitly excludes
-CUDA/GPU and a 2.0.32 pin move; no response has been treated as acceptance.
+CUDA/GPU and a 2.0.32 pin move. At request time no response had been treated
+as acceptance.
+
+## Exact-source Linux CPU/X.Org/PCM/orbit result
+
+The [one-run Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860542619)
+binds clean source `68411c4` and tree `c2193270`, all seven requested file
+pins and the clean 2.0.27 compiler. Its read-only preflight passed the
+147-file source closure, seven runtime assets, X11/ALSA link and 88 GiB
+admission floor; the least observed host MemAvailable before C emission was
+114,307,133,440 bytes. Five visible nonroot cgroup ancestors were unbounded,
+but an unseen stricter ancestor cannot be ruled out. One CPU package build
+passed in 455.73 seconds with 71,639,564 KiB (68.321 GiB) peak RSS.
+Package receipt SHA-256 is
+`70cd357681f454ca6702c6392b1bb142748ace993019dad427db14b740c6d4a7`;
+C SHA-256 `1c02fb42883aad3c3c56f5e30189ad8bf5b01fba44e1cfa72eab2bfc7448e7e4`;
+ELF SHA-256 `1931d4a658b2273ce136b95fea3e6bd2b7ff059dd56cc969932d161432ba5a02`.
+All package and receipt files matched their size/hash records.
+
+The receipt-bound ELF passed a real X.Org :1 1024×640 window, g1
+select/deselect, g1-h3, Escape live, WM close, and relaunch from the same
+fresh data directory showing Black to move and a knight at h3. A bounded
+held-right-button orbit produced a coarse motion PPM SHA-256
+`a663feb1800779f54ff9ebe065a441234755cbcc65ccf31686caaacad38157a6`
+and settled full-detail PPM SHA-256
+`0fdab15a0e4988e98859b9bc21e9f55477875675d4efeb46749e01b4a4d46d4c`.
+The 56.818 ms motion and 206.552 ms release-to-stable observations include
+20 ms polling, intentional waits and XGetImage overhead, not pure render
+latency or a throughput guarantee. The host visually inspected those frames.
+The PipeWire HDMI monitor captured idle silence and 12,762 nonzero 48 kHz
+stereo s16 move samples with no clips, not physical audibility.
+
+This closes the requested exact-source Linux CPU/window/routed-PCM/orbit
+pilot, not Windows-native acceptance, owner visual approval, or GPU parity.
+The earlier source's C, ELF and frames were not reused. One separate
+[CUDA pilot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860739585)
+requires a fresh coordinator grant before any device execution and may
+reuse only the new receipt-bound C after independent hash checks.
+
+## Exact-source leased CUDA presentation pilot
+
+The [one-run Linux GPU result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860926260)
+verified that CPU receipt/C/ELF/asset closure, acquired a fresh GPU
+coordinator lease, then reused only the new C to link a CUDA ELF (SHA-256
+`da8b3ecae0e0eb3e0edec9a67154243ee98c94fa360cfe2cc93f00af12a219c7`)
+and build its sidecar (SHA-256
+`f6f6463d3b5819a18383c12c9fc4bbc324dd311b27c662655e1691814eb49044`).
+`nvidia-smi` matched the exact process under `--gpu on` on an RTX 5090
+(driver 595.84, CUDA 13). The 36 lease checks authorized while working;
+the lease was withdrawn and post-withdrawal validation denied further use.
+Linux-local evidence SHA-256 is
+`8f7049050bdcc8c65aca1863d8a705a399f87f7b80346afdc1f0be3693c61be3`,
+with separate lease-closure SHA-256
+`98f116b804f3559a055b4cfb480f619be6597ff79a488b17d4e716a83d0adb78`.
+
+The receipt-bound CPU ELF, CUDA ELF `--gpu off`, and CUDA ELF `--gpu on`
+matched initial, selected, completed g1-h3 and held-orbit/settled 1024×640
+frame bytes on real X.Org. The ordinary synthetic 250 ms second-click
+deselection capture **failed on GPU-on**: it remained selected while CPU/off
+returned to initial. This reproduced; a diagnostic helper waiting 1,000 ms
+after each click passed on GPU-on. It proves eventual matching state under
+that slower cadence, not original-cadence input/presentation parity. The
+held and settled orbit PPM hashes matched the CPU pilot exactly. Direct ELF
+comparison required explicit `--gpu off/on`; the package launcher separately
+sets its documented default-off policy. Whole-process and X11 capture times
+include startup, waits and transfer overhead; device fill/readback were not
+separately timed for this source. Do not infer a speedup, delivered FPS,
+default automatic GPU policy or owner visual approval. The 250 ms finding
+remains open for input-versus-presentation timing diagnosis under a future
+fresh lease, not a reason to weaken the check.

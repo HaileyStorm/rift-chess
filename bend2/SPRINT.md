@@ -811,7 +811,7 @@ source, not physical audibility, saved-old-view migration, GPU/Windows-native
 parity, or owner acceptance. Exact hashes and limits are in the
 [composition evidence](docs/evidence/v2-composition/README.md).
 
-An unshipped local draft now adds camera-facing exposed walls to the compact
+A local draft added camera-facing exposed walls to the compact
 active-orbit ground without a second full top pass. An independent review
 found no confirmed mask/geometry bug and prompted stronger absolute palette
 checks. The nine-yaw and 288-view sweep, 160 near-cardinal/hole/theme
@@ -825,12 +825,30 @@ two original TypeScript-site baseline files matched, and the hosted real
 Chrome scenario passed all 13 groups with zero errors. The first immediate
 public check saw the previous deployment and is retained as failed evidence.
 See the [motion-wall evidence](docs/evidence/v2-motion-walls/README.md).
-No Linux result applies to these changed scene bytes until a fresh
-exact-source run; public browser playability is not owner acceptance.
 One [CPU-only native retest request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860391255)
-is bound to `68411c4`, the new `MotionWall` hash and the 88 GiB guard.
-The existing quiet follow-up now watches that request, not the completed
-composition result; no duplicate run or GPU grant is implied.
+bound `68411c4`, the new `MotionWall` hash and the 88 GiB guard. Its
+[Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860542619)
+passed one 455.73-second CPU package build (68.321 GiB peak RSS), real
+X.Org selection/move/close/relaunch, a held-right-button orbit with distinct
+motion/settled frames, and routed PipeWire PCM. The observed orbit delays
+include polling and capture overhead and do not establish internal render
+latency. This is exact-source Linux CPU evidence, not physical audibility,
+Windows-native, GPU, public desktop release or owner acceptance. The now
+completed hourly follow-up was paused. A separate
+[CUDA pilot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860739585)
+requires a fresh GPU coordinator lease; no device grant is inferred from
+the CPU result.
+
+The [source-bound leased CUDA pilot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5860926260)
+subsequently reused only that C, built a new CUDA ELF/sidecar, observed an
+RTX 5090 running the exact `--gpu on` process, and matched CPU/off initial,
+selected, completed-move and held/settled orbit frame bytes. Its fresh lease
+was withdrawn and verified denied afterward. The original 250 ms synthetic
+second-click deselection capture repeatedly stayed selected on GPU-on,
+whereas CPU/off restored the initial frame; a 1,000 ms diagnostic cadence
+passed. This is an open input/presentation-latency finding, not source-matched
+GPU parity or a throughput speedup. No default device promotion follows;
+see the [orbit evidence](docs/evidence/v2-motion-walls/README.md#exact-source-leased-cuda-presentation-pilot).
 
 ## Bend 2.0.32 release triage
 
@@ -844,3 +862,16 @@ does not transfer to 2.0.32 or accept either pin. The running application
 remains on 2.0.27. A separate 2.0.32 checkout/rebase and full frozen
 proof/browser/native gate review would precede any amendment; see the
 [release triage](docs/evidence/toolchain-2032-scout/README.md).
+
+The final replayed 2.0.28+006 clone also matched its exact 005 baseline
+across all 647 local parser/checker/normalized JS+C emission rows when the
+unchanged matrix ran as two individually supervised lanes. The first
+combined command timed out at a 120-second child bound. A subsequent
+[source-bound wrapper receipt](docs/evidence/toolchain-2028-stack/README.md#final-stack-proof-attempt-and-647-case-differential)
+binds both successful 647/647 lanes, compiler/fixture/runtime inputs and
+unchanged pre/post bytes; it is still only a finite differential. A new exact-replay
+frozen v2 proof attempt loaded 1,584 terms but timed out at 900 seconds
+before validation returned, with inputs unchanged. Preserve that failure;
+neither matrix equality nor the earlier separate candidate proof is a
+passing final-stack aggregate proof. The pin remains 2.0.27, with 2.0.28
+native/host ABI/amendment gates still open.
