@@ -61,6 +61,10 @@ The unrelated full frozen-v2 checker was intentionally interrupted before a
 receipt when physical free memory fell to about 2 GiB during its large proof
 entry. It is not recorded as a pass or a failed law. The non-draft browser
 build's frozen-manifest verification is narrower than a fresh aggregate proof.
+An attempted current-source `NativeV2.bend` check-only run was likewise
+stopped without a verdict when physical free memory fell to about 166 MiB;
+it recovered after stopping the owned process. Do not infer a native build
+failure or retry that large check on this memory-constrained Windows host.
 
 ## Hosted preview
 
