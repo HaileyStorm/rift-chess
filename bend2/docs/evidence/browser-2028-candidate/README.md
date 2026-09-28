@@ -281,3 +281,28 @@ separate [exact-source CPU candidate request](https://github.com/HaileyStorm/Coo
 and its [replay-receipt SHA correction](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865920136)
 preserve two fresh 88 GiB admission gates and a one-attempt bound. The
 observation and request are not CPU package/runtime evidence.
+
+## Deep candidate browser replay
+
+The same nonce-private, uninstrumented candidate version
+`7820dc19839fbc82889a` also ran the longer reference-checked browser paths.
+The first combined bot run reported zero position/journal defects, but its
+Black game inherited the White game's mutable random-choice seed, reached
+the 180-ply test cap and was ended by a **test-forced resignation**. Its
+ignored summary SHA-256 is
+`f2ea09a3d988960fc8419a587b69ded8fb0075d770f86fd296c225238e2b156e`.
+Preserve that misleading terminal sample; it is not a naturally finished
+Black game or compiler divergence. The playtest driver now resets its seed
+per game and asserts a natural outcome before any cleanup resignation.
+The candidate Black rerun reached a natural checkmate after 45 bot replies,
+with zero defects, summary SHA-256
+`459f8fb23a4baeb6b08659f8150d125150320a794addcc8956d1b2745db7eb44`.
+The prior White game had reached a natural threefold draw after 52 replies.
+
+`draw-terminals` and `draw-prompt` then passed independently on the same
+served candidate manifest, with zero defects and 30 plus eight checks;
+the 304-action policy imports took 566 and 334.6 seconds in those runs.
+Their ignored summary SHA-256 is
+`af62b13c7e961bf781bfa74d6c1e11dad601483cc1a04b745586498938cf0200`.
+These are bounded rendered/reference differential cases, not a universal
+rules proof, stable speed result, native/GPU gate or pin amendment.

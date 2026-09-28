@@ -87,3 +87,11 @@ The full 20-scenario union above is local draft evidence on the same content
 bytes; the hosted checks are narrower. None of this establishes native CPU,
 GPU, physical audio, a 2.0.28 pin amendment, a responsive frame budget, or
 owner visual acceptance.
+
+The bot-game driver previously shared one mutable human-choice seed across
+sequential scenarios. In a later candidate run that made Black's choices
+depend on whether White ran first; the Black game hit the 180-ply cap and
+the test's cleanup resignation was incorrectly accepted as a terminal game.
+The driver now resets the seed per game, records `naturalOutcome`, and treats
+a cap as a defect before cleanup. The source-bound [candidate follow-up](../browser-2028-candidate/README.md#deep-candidate-browser-replay)
+retains the misleading sample and a fresh-seed natural-checkmate rerun.

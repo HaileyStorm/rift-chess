@@ -677,6 +677,7 @@ await scenario('draw-actions', DESKTOP, async t => {
 });
 
 async function botGame(t, mode) {
+  seed = 20260923; // A scenario must not inherit the preceding bot game's choices.
   await t.open();
   await t.control(2); await t.control(mode === 1 ? 31 : 32); await t.control(29);
   await t.ready();
@@ -695,6 +696,9 @@ async function botGame(t, mode) {
     } else t.check(game?.outcome(), 'Bot replies to every non-terminal human action', `commands ${before} -> ${plies}`);
     if (plies % 30 < 2) await t.shot(`ply-${plies}`, {});
   }
+  t.result.naturalOutcome = game?.outcome() ?? null;
+  t.check(t.result.naturalOutcome, 'Bot game reaches a natural outcome before the 180-ply cap',
+    `plies ${plies}; a test-forced resignation is not bot completion`);
   if (game && !game.outcome()) { await t.matchControl(7); await t.control(42); game = await t.verify('resign at cap'); }
   thinks.sort((a, b) => a - b);
   t.result.timings.botReplyFrameMs = { n: thinks.length, median: thinks[thinks.length >> 1], p95: thinks[Math.floor(thinks.length * 0.95)], max: thinks.at(-1) };

@@ -190,3 +190,12 @@ original 250 ms GPU-on failure. Bounded ROI samples cleared at the next
 25 ms step, while traced event pickup was prompt and changed-frame submission
 followed later; trace overhead prevents an untraced causal attribution.
 The package launcher remains default-off and the original gate remains open.
+
+The later [isolated 2.0.28+006 CPU candidate](evidence/native-2028-cpu/README.md)
+was reported by Linux against exact clean public source `c30d312`. Its one
+source check, C emission, ELF link, original-250-ms X.Org interactions,
+held/settled orbit, routed PCM capture and same-data-directory relaunch
+passed under two fresh 88 GiB memory admissions. Its host-local receipt and
+C/ELF hashes are retained in the linked evidence. This result is CPU-only;
+it neither repairs the earlier 2.0.27 GPU-on deselection failure nor changes
+the pinned toolchain or this builder's default-off contract.

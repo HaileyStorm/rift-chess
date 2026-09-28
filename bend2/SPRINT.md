@@ -1033,3 +1033,23 @@ validated 151 source and 18 asset/manifest input paths against the isolated
 host had only about 5.085 GiB free; no potentially multi-gigabyte NativeV2
 check or emission was started. This preflight does not substitute for the
 separate Linux two-sample 88 GiB admission or CPU/GUI/PCM/restart result.
+
+The [Linux source-bound 2.0.28+006 CPU candidate result](docs/evidence/native-2028-cpu/README.md)
+has now reported a passing single source check, C emission, CPU ELF link,
+original 250 ms X.Org selection/deselection and g1-h3, held/settled orbit,
+routed PipeWire PCM capture and saved-position relaunch at exact public source
+`c30d312`. Both fresh host-memory admissions exceeded 88 GiB; the local
+claim was released. These are host-reported native CPU/package/GUI/PCM/restart
+evidence with immutable receipt hashes, not transferred binaries or
+independent Windows replay. GPU-on current-source parity, 250 ms device
+latency, owner visual/audio acceptance, responsive frame times, final review
+and a formal 2.0.28 pin amendment remain open.
+
+The isolated candidate then passed [deeper browser replay](docs/evidence/browser-2028-candidate/README.md#deep-candidate-browser-replay):
+two 304-action draw-policy cases and a fresh-seed Black bot game ended in
+natural checkmate, all with zero reference defects. An earlier combined
+bot run had reached the 180-ply cap because the test carried random-choice
+state from White into Black and then counted its cleanup resignation as a
+terminal game. That raw receipt is retained; the driver now resets the seed
+and requires a natural outcome before cap. This extends finite candidate
+browser coverage, not native/GPU or pin acceptance.

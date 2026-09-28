@@ -272,3 +272,13 @@ validated the current NativeV2 imports and manifests against the disposable
 observation was only 5.085 GiB free, so no local heavy native attempt was
 made. That subset map cannot prove Linux byte parity or replace the guarded
 CPU candidate receipt.
+
+The [Linux exact-source CPU candidate result](evidence/native-2028-cpu/README.md)
+subsequently reported a passing one-attempt 2.0.28+006 source check, C/ELF
+package, real original-cadence X.Org input/orbit, routed PCM and saved-state
+relaunch on public `c30d312`, with both fresh 88 GiB admissions passing.
+This closes that **host-local CPU candidate** gate as reported by its owner;
+it is not a GPU/device gate, independent Windows receipt replay, physical
+audio, owner visual/performance acceptance, or permission to move the pin.
+Independent final stack/ABI/native evidence review and the formal amendment
+remain required.
