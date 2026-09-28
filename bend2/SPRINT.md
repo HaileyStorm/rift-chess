@@ -1206,19 +1206,37 @@ and publication gate, not proof that the earlier intermittent timeout had
 this cause, owner acceptance, a response-time pass, a GPU-on fix or a 2.0.28
 pin amendment. Those objective parts remain open.
 
-The [new GPU observer request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5872596195)
-is now pending after the CPU-only XRes preflight. It requires a fresh coherent
-lease and reviewed, source-bound harness, uses the retained c30 candidate ELF
+The [GPU observer request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5872596195)
+followed the CPU-only XRes preflight. It required a fresh coherent
+lease and reviewed, source-bound harness, used the retained c30 candidate ELF
 only for timing diagnosis, and explicitly forbids relabeling the original
 250 ms failure or claiming GPU parity for the new browser source.
 
 Fresh exact-build-bound [cold visual phase samples](docs/evidence/v2-latency-phase/README.md#current-hosted-cold-visual-phase-baseline)
 on that hosted version measure the first proxy boot request-to-reply at
 3.2–5.7 s in four small variable-load runs, with detailed art another
-3.7–8.5 s after
-the first frame. The driver now records finite initial worker/port/tree/
-traversal phases. The sprite helper spends substantial time in decoding,
-ground and per-piece composition; raw first-frame raster traversal is much
-smaller than first-frame port work. This is diagnostic evidence and leaves
+3.7–8.5 s after the first frame. The driver now records finite initial
+worker/port/tree/traversal phases. The sprite helper spends substantial time
+in decoding, ground and per-piece composition. Raw first-frame raster
+traversal is much smaller than port work. This is diagnostic evidence and leaves
 rapid readiness/response-time acceptance open. Do not infer that asset
 prewarm or a less-defined sprite filter solves the measured scene work.
+
+The [one-shot c30 GPU observer result](docs/evidence/native-2028-gpu/README.md#c30-observer-timing-result-after-pickup-before-submission)
+then saw release pickup near 8 ms and first changed X submission near 250 ms
+on a separately traced CUDA-on episode, versus about 173–181 ms submission
+for traced CPU/off. An untraced nested ROI remained selected at 250.163 ms
+and first changed at 275.156 ms. Its lease and claim closed. This narrows the
+delay to after event pickup and before submission, but does not identify
+dispatch, CUDA fill/copy or pacing; the original full-window GPU-on gate is
+still failed. A further phase probe needs its own reviewed scope and fresh
+lease, never an automatic acceptance retry or a claim of current-source
+native parity.
+
+A separately reviewed [phase-timing request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5873174640)
+now awaits Linux's exact-C/ELF ABI and symbol preflight before any new leased
+device episode. It would time identified CUDA calls, DtoH copy, pacing and X
+submission around the release, without app/compiler mutation or an automatic
+250 ms acceptance retry. The Windows pinned 2.0.27 Base source cannot be
+used to assert 2.0.28+006 generated C call order; missing or ambiguous hooks
+must stop the diagnostic rather than inventing attribution.

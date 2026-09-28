@@ -166,4 +166,43 @@ the disposable observer's scoped authority/readiness/status predicate, obtain
 an independently reviewed harness and *fresh* coherent lease/claim, then
 separate untraced 25 ms ROI samples from an Xlib observer timeline. It grants
 no automatic acceptance retry, compiler/source mutation, current a3a native
-parity or 250 ms pass. Its result is pending; the earlier failure remains.
+parity or 250 ms pass. Its result follows below; the earlier failure remains.
+
+## C30 observer timing result: after pickup, before submission
+
+The [one-shot Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5873034200)
+used the retained c30 CUDA ELF/sidecar and a disposable observer (SHA-256
+`682e7b4598193a63c4c3fc5246fa5f6a5edc5b92475a733c137be43f0f980c75`)
+after independent static review. Under a fresh exact lease, six CPU/off/on
+episodes exited 0; GPU-on PIDs matched the owned windows. In the **untraced**
+nested Xephyr ROI, GPU-on was still selected at an actual 250.163 ms
+`XGetImage` capture and first changed at 275.156 ms. In a **separate traced**
+GPU-on episode, second release was picked up at 8.371 ms; the first
+deselected `XPutImage` and `XFlush` were at 250.197 and 250.212 ms. Traced
+CPU and GPU-off changed submissions were at 172.671 and 180.844 ms, with
+their release pickups at 11.822 and 2.217 ms respectively. These separate
+episodes are not a paired per-frame elapsed-time decomposition, and tracing
+can perturb timing.
+
+The observed GPU-on delay lies after event pickup and before the changed
+frame's X submission. The evidence does **not** isolate game dispatch,
+CUDA kernel/copy, 60 Hz pacing or the compositor, and a later ROI is not
+the original full-window 250 ms acceptance. The original gate remains
+terminal FAIL; no current a3a GPU parity or speedup is established. Linux-local
+evidence JSON SHA-256 is
+`584c68d80970539a9f0036b720877fa1f896cb367b796e0588682c45892404a0`.
+The fresh lease was withdrawn and validator denied further use (closure
+SHA-256 `cfdd68b68a894cb4b8a52a83a11f922661c4212d3a16d69e87fd612fcd5c8078`);
+the exact output claim was released and no diagnostic process remained.
+The receipt bytes are host-local, not independently cross-hashed on Windows.
+
+After independent read-only phase-probe review, a
+[new one-shot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5873174640)
+requires Linux to inspect the exact retained 2.0.28+006 C and ELF ABI before
+any process-local interception. If safe dynamic hooks exist, it asks for
+per-frame second-release, identified `window_dev` versus generic CUDA kernel
+calls, blocking DtoH copy, `nanosleep`, X submission and external ROI timing
+under a fresh coherent lease/claim. The pinned 2.0.27 Windows foreign source
+is **not** the authority for that candidate binary's call order. This request
+is pending and is diagnostic only; a traced later frame cannot close the
+original full-window 250 ms failure.
