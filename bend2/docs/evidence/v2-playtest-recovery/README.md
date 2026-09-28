@@ -59,3 +59,31 @@ SHA-256 `3bbb6d57dd8437f948864c240ba51628311316f8ff716075a8fd3c5cecce26da`.
 Source checks, finite browser play, subjective capture inspection, native CPU,
 native GPU, host audio and owner acceptance remain different evidence classes.
 This section is a draft checkpoint, not publication or native parity.
+
+## Clean build and hosted preview
+
+Source commit `c30d312727a56f6b66b501dddf8038d317dfd946` reproduced the
+same content version under clean pinned Bend 2.0.27 with `sourceDirty: false`
+and `draft: false`. Clean `build.json` SHA-256 is
+`9300df6bd209c2f4c89e44f44d5e2b7282927ddf79653f9f1d7822569c89f29f`.
+The bound local draw-actions/undo rerun passed with zero defects (summary
+SHA-256 `c58123b8cc211227bd9dbfaa1a9f69ab786732acb16312e641c46160aa77fa6c`),
+as did all 13 extended local Chrome groups (receipt SHA-256
+`214897d7504d83db1ce605c1d36aff15d03806c19c4ea4438debc9e04fc625a1`).
+The original TypeScript application again passed 62/62 tests and built.
+
+The separate [Bend browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+advanced to Pages commit `42ba051a760aef6f296c2c8e29054efa43d7da6c`.
+After Pages reported `built`, the ignored
+`.artifacts/bend2/publication/2026-09-28T07-39-48-908Z-669cd4c2/receipt.json`
+(SHA-256 `6d32dd773aaca84e53df39a49410d0c71de9aa9912565bb53e0c2c7096437f08`)
+matched all 22 live Bend files and the two unchanged original-site baselines.
+The hosted draw-actions/undo matrix passed both repaired paths (summary
+SHA-256 `5f0257b0552b67099025f60268ec266d7dfbeb7d08841a5a84ba01abf460ca2c`).
+The hosted extended Chrome suite passed all 13 groups, including offline play,
+PCM, promotion, Shift/Undo, themes and portrait, with zero page/console errors
+(receipt SHA-256 `ffba5c0041ec14a0b2854289905b98c53902ced022b342400aff6b97116ac0dd`).
+The full 20-scenario union above is local draft evidence on the same content
+bytes; the hosted checks are narrower. None of this establishes native CPU,
+GPU, physical audio, a 2.0.28 pin amendment, a responsive frame budget, or
+owner visual acceptance.

@@ -988,3 +988,12 @@ Chrome suite also passed. This is not yet a clean or hosted publication of
 the new source, and its slow bot/post-move frames keep responsiveness open.
 No browser result closes the new-source native CPU/GPU, 2.0.28 amendment, or
 owner visual gates.
+
+The match-status/resume source was then built clean and published at separate
+Pages commit `42ba051a`. The [publication trail](docs/evidence/v2-playtest-recovery/README.md#clean-build-and-hosted-preview)
+confirms 22 live Bend assets and two unchanged original-site files by bytes;
+hosted draw-actions/undo and all 13 extended Chrome groups passed. The 20
+scenario reference/interaction union remains local draft evidence, not a
+single uninterrupted hosted run. Browser responsiveness, native CPU/GUI/PCM/
+restart, GPU parity, owner visual acceptance and a reviewed 2.0.28 pin remain
+open.
