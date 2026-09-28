@@ -1378,3 +1378,11 @@ Bun/Node C parity stayed byte-identical across the change; an isolated
 2.0.28+006 fixture also emitted exact source-bound C. This closes one of
 those three removed-API call sites, not the large graphical package or pin.
 The frozen `tools/loader.ts` and graphics `actual_compiler.mjs` remain.
+
+A [draft graphics v3 compiler adapter](toolchain-patches/graphics-v3/README.md)
+now preserves the reviewed v2 tool bytes while using the candidate-compatible
+guard in a separate staging path outside the frozen v1/v2 library. Under the clean 2.0.27 pin, old/new
+checked closures and promise lists matched, and small selected C and JS
+fixtures were byte-identical. The v1 `verify-library --check` also passed all four checks
+after the staging path was corrected. The v2 graphics checker remains the active historical caller;
+no new library manifest, full library gates or 2.0.28 pin are claimed.
