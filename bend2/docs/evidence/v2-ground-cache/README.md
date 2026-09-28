@@ -101,3 +101,31 @@ found no paced unchanged frames in its 231.063 ms gap, but lacked CPU/
 reduction hooks and did not identify a cause. It binds the older c30 GPU
 source and does not accept this new BoardScene source. A fresh exact-source
 Linux CPU/native result and a reviewed GPU diagnosis remain outstanding.
+
+## Hosted cache preview and exact pixels
+
+The separate [Bend browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+advanced to Pages commit `bd1c90c3d91b5f0c5935c5355c459be91f56af12`.
+Pages reported `built`, and the live verifier matched `build.json`, all 21
+manifest-listed Bend assets and both original-site baselines. The ignored
+publication receipt under
+`.artifacts/bend2/publication/2026-09-28T21-27-26-455Z-f2f14577/receipt.json`
+has SHA-256
+`ba0e68c7f8f5892ed2ee81298af99004244c6cf18040d875dc239e2b2015f6c0`.
+Seven exact-build-bound hosted Chrome scenarios passed 65 checks with zero
+defects: desktop start, malformed-plate fallback, camera, offline persistence,
+mobile, touch Import/cancel and trusted touch-across-replan. Their ignored
+summary SHA-256 is
+`a61fb42f917258df85993fa2744eee8c2f036150bbdae1e5e754dfc3dd555e45f`.
+This is not a new full hosted 24-scenario pass; the full 24/685 result above
+is local and the earlier hosted full result binds the prior browser source.
+
+A separate paired Chrome comparison fetched and hashed every one of 21
+assets on both the old local baseline and the **live** new preview. It again
+found exact PNG bytes at start, after same-view e2–e4, and at 65° Front;
+the hosted helper reported a same-ground hit and a changed-view miss. Its
+ignored screenshots are under `.artifacts/bend2/ground-cache-parity-zvF5OS/`.
+One hosted job sampled 0 ms cached ground versus 478 ms in the local old
+baseline, but different serving/network load and one pair prohibit a general
+end-to-end speedup claim. No present-day Linux CPU/GPU, reviewed 2.0.28 pin,
+first-detail speed bound, physical audio or owner visual acceptance follows.

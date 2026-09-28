@@ -1435,5 +1435,17 @@ at source `a7895fb` retained the same browser asset version as its paired
 draft and passed the uninterrupted 24-scenario, 685-check real-Chrome matrix
 with zero defects on the project's normal byte-serving route. Move-class
 worker dispatch p95 still measured 910.7 ms in that sample, and first
-detailed art was not accelerated. No current-source Linux native package,
-GPU-on 250 ms repair, reviewed 2.0.28 pin or hosted cache release is inferred.
+detailed art was not accelerated. At that local checkpoint, no current-source
+Linux native package, GPU-on 250 ms repair, reviewed 2.0.28 pin or hosted
+cache release was inferred.
+
+The [hosted ground-cache preview](docs/evidence/v2-ground-cache/README.md#hosted-cache-preview-and-exact-pixels)
+is live at separate Pages commit `bd1c90c` from clean source `a7895fb`.
+The live verifier matched 22 Bend files and both original baselines; seven
+focused hosted scenarios passed 65 checks with zero defects. A paired
+old-local/new-hosted Chrome run verified all manifest-listed assets and
+byte-identical canvas pixels at start, after e2–e4, and at 65° Front, with
+the cache hit only for unchanged ground. A new-source CPU-only Linux gate is
+requested under [exact handoff 5879022597](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5879022597),
+not yet a result. Full hosted reliability, first-detail speed, GPU-on parity
+and the compiler pin are still open.
