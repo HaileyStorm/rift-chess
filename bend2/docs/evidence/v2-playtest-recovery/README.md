@@ -325,3 +325,38 @@ controlled timing reproduction and publication of this scoped browser fix,
 not a statistical reliability bound, the cause of the earlier uninstrumented
 timeout, physical-device/owner acceptance, native GPU, responsiveness or the
 reviewed compiler pin.
+
+## Uninterrupted 24-scenario hosted matrix on shared-plate release
+
+The clean [published Bend preview](https://haileystorm.github.io/rift-chess-bend2/)
+content version `b5251c45ce22760635b0` (source `b956606`) ran the entire
+current stage-two rendered matrix in **one process**, not a union of separate
+green runs. The served `build.json` was byte-bound to local clean SHA-256
+`ce9a29f5067a9eca746502862aa8835193493dbf2ed1356d8988df80451d3c72`.
+All 24 scenarios passed, totaling 685 checks, 1,727.6 scenario seconds and
+zero defects; the process exited 0. The ignored complete summary is
+`.artifacts/bend2/playtest-stage2/shared-plate-hosted-fullmatrix-20260928/summary.json`,
+SHA-256 `c7416166361472fd5d68b15914229db15e58f0bd5f0b3a89c275fd9078bb33b4`.
+
+Both long 304-action draw-policy paths passed in that same run:
+draw-terminals had 35 checks and zero defects over 494.8 s (raw scenario
+SHA-256 `0d52e9f3111fadf7c4684c912f44b0e1d1dde24b1b77e687a2a66ad02595fb9d`),
+and draw-prompt had nine checks and zero defects over 248.2 s (SHA-256
+`94407b29e583b3c928abae61f8f55597447aa134c44dec7a99f8a9f140e5e9f8`).
+White-bot reached a natural terminal before the cap (161 checks, zero
+defects; SHA-256
+`62bf9d4ffbf071db97e0f90fb3d868d1016a5f93c59334cb2fa715f30da97460`);
+Black-bot did likewise (140 checks, zero defects; SHA-256
+`7fce583ef4e14edecdb842d97f9030b7062c8ee891b8b4fa337cf4e6f3d227ce`).
+The mobile route completed both file choosers (13 checks, zero defects;
+SHA-256 `293e6d6b7cfb45fb4bda5384c01646579b62ad6030533135ff6ff2b88ef6c7ec`).
+Each scenario used its isolated browser context; the malformed HTTP-200 RGA
+case deliberately exercised Bend's fallback, without tainting other cases.
+
+The same run's small performance sample still measured p95 reply latency
+of 1,120.3 ms over 42 move-class frames and 443.5 ms over eight menu frames;
+orbit p95 was 248.7 ms over 18 frames. These are load-variable browser
+observations, not frame-budget acceptance. One uninterrupted green pass is
+substantially stronger than the prior 20-name union, but it does not prove
+universal import reliability, physical-device/owner acceptance, native GPU
+parity, rapid startup or the reviewed Bend 2.0.28 pin.

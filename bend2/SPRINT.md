@@ -1284,3 +1284,12 @@ is pending on Linux. It binds the retained CPU trace and exact observer's
 owned `mkdtemp` directory before any fresh lease, then permits only one
 separately source-bound CPU/off/on phase diagnostic. No CUDA timing or
 acceptance is inferred from the request.
+
+The [full hosted rendered matrix](docs/evidence/v2-playtest-recovery/README.md#uninterrupted-24-scenario-hosted-matrix-on-shared-plate-release)
+then passed all 24 current scenarios and 685 checks in one exact-build-bound
+process with zero defects, including both 304-action draw paths, two natural
+bot terminals, import/underpromotion and the prior mobile double-chooser
+path. The raw failure from the older build remains preserved; one full pass
+does not establish a reliability bound. Move and menu reply p95 were still
+about 1.12 s and 0.44 s in small samples, so responsiveness, owner visual
+acceptance, native GPU-on parity and the compiler pin remain open.

@@ -108,3 +108,9 @@ input closure was not modified; that is a source comparison, not a new Linux
 execution on this commit. Native GPU-on original-cadence parity, rapid
 first-frame response, transient clone-memory peaks, a reviewed 2.0.28 pin,
 and owner visual acceptance remain open.
+
+The later [uninterrupted hosted 24-scenario matrix](../v2-playtest-recovery/README.md#uninterrupted-24-scenario-hosted-matrix-on-shared-plate-release)
+passed all 685 checks with zero defects on this exact clean published build,
+including the long draws, both natural bot games and two mobile imports.
+Its move/menu reply sample still misses a rapid response budget; this result
+does not turn the optimization into a universal speed or GPU claim.
