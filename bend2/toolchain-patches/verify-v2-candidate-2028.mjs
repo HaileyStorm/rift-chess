@@ -248,15 +248,19 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
   const started = Date.now();
   const output = path.join(root, '.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028');
   fs.mkdirSync(output, { recursive: true });
+  const workerOldGenerationMb = fixtureOnly ? 768 : 8192;
+  const deadlineMs = fixtureOnly ? 60000 : 900000;
   const worker = new Worker(new URL(import.meta.url), {
     workerData: { candidate, entry: fixtureOnly ? fixture : entry,
       expectedTerms: fixtureOnly ? 497 : 1584, authoritySha256 },
-    resourceLimits: { stackSizeMb: runtime.worker.stackSizeMb, maxOldGenerationSizeMb: 8192 },
+    resourceLimits: { stackSizeMb: runtime.worker.stackSizeMb,
+      maxOldGenerationSizeMb: workerOldGenerationMb },
     execArgv: runtime.worker.execArgv,
   });
   let result = null, lastPhase = null;
-  const timer = setTimeout(() => { result = { ok: false, error: '900-second proof bound expired' };
-    void worker.terminate(); }, 900000);
+  const timer = setTimeout(() => { result = { ok: false,
+    error: `${deadlineMs / 1000}-second proof bound expired` };
+    void worker.terminate(); }, deadlineMs);
   worker.on('message', message => {
     if (message.phase) {
       lastPhase = message;
@@ -305,6 +309,7 @@ if (isMainThread && process.argv[1] && path.resolve(process.argv[1]) === fileURL
       replayReceiptUnchanged, replayCloneUnchanged,
       compilerSnapshotUnchanged, semanticManifestUnchanged,
       elapsedMs: Date.now() - started, lastPhase, result,
+      workerOldGenerationMb, deadlineMs,
       scope: fixtureOnly
         ? 'Small source-bound Bend fixture and candidate worker/authority integration; not the frozen v2 aggregate or canonical proof'
         : 'Frozen v2 aggregate source terms and unsafe/foreign dependency walk on disposable 2.0.28 stack; no semantic amendment, conformance, native or browser claim' };

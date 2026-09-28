@@ -98,3 +98,42 @@ current-source GPU parity or a compiler pin amendment. The earlier c30
 GPU-on 250 ms failure and the later pre-device Xauthority stop retain their
 separate verdicts. A CPU-only harness-auth preflight is queued after this
 result; no fresh GPU diagnostic follows automatically.
+
+## Ground-cache source CPU result and later sprite-source request
+
+The [Linux reply for the a789 one-shot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880067534)
+reports a passing CPU-only source/package/runtime attempt on clean source
+`a7895fb7a989d6790eff5ed2c2f7ccea2aa06c7e`, tree
+`7ad27a211f272954d3c34b1d592e017c40acb41f`, under the same isolated
+2.0.28+006 seven-patch candidate stack. The report binds a 151-file source
+closure, seven assets, compiler/patch and Node/Bun/Clang identities, and
+fresh process-path/visible-cgroup admission samples of 115,165,990,912
+initial, 115,392,094,208 tracked immediate-before-C, and 115,391,639,552
+adapter immediate-before-C bytes against the unchanged 88 GiB floor. Exactly
+one source check, one C emission and one CPU ELF link passed. The package
+receipt SHA-256 is
+`b7bda13bb6918ccdb6c0164ecdd9883f99978aa37be1ca09e67d8cc19e3d2e7d`;
+C is `6e1387a760a427178a4eb1973d21052597d12a7b2c8fce9237f1576e8f3e099a`;
+ELF is `c1343857d569cd02afb3746cecd9e421abb5ea8b06c15d74bb254d3fd41b31d0`.
+
+That exact ELF/assets passed the real X.Org original full-window 250 ms
+select/deselect, g1-h3, Escape/close, held/settled orbit and same-data-
+directory save/restart probes. Routed PipeWire HDMI monitor captured idle
+silence and 12,762 nonzero move samples (peak 6,926; no clips). Runtime
+result SHA-256 is
+`4c506617ec8acd87d2a1b2a6f07efb202c6a555e03f150eccfc6c06ed87e1289`;
+the consolidated host-local evidence JSON SHA-256 is
+`0e68a2aa445778e3ed8151d57e78098a50bfeec212cfcc92f0d5dfaba329a7f9`.
+Its host-local claim was reported released. The Windows task received a
+cross-host report, not the actual binary/capture/receipt bytes; this is
+reported candidate CPU evidence, not independent Windows validation,
+physical audibility, GPU parity or a canonical pin.
+
+The newer published sprite-bound source is
+`c986e3ffbbf747504dccb7315d8b0bce69554894`, tree
+`79ef5cc6953e8a9df98427a36f8697f68ecd2244`. It changes the NativeV2
+input closure after a789. A [separate one-shot CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
+targets that source with the same admission and runtime bounds; no reply or
+result is assumed here. It expressly excludes CUDA/GPU. The original C30
+full-window CUDA-on 250 ms failure remains terminal until a separately
+reviewed device path supplies new evidence.

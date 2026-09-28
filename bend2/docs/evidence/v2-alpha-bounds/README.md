@@ -83,6 +83,8 @@ SHA-256 `1d0a0227936e10b83cf999b468eac722686d881932672502c732740b5061bd62`.
 The full 24/685 result binds the local same-content candidate, not a new
 hosted full-suite run. Browser measurements do not establish native CPU/GPU
 speed, a repaired 250 ms CUDA window, physical audio or owner visual
-acceptance. The existing Linux CPU-only request binds older source `a7895fb`;
-a new-source native check is still required. No new GPU lease or 2.0.28 pin
+acceptance. The [Linux CPU reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880067534)
+reports a passing candidate on older `a7895fb` source; a separate
+[CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
+now targets this `c986e3f` source. No new GPU lease or 2.0.28 pin
 is inferred.

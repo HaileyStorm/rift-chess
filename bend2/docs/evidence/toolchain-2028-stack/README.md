@@ -249,3 +249,38 @@ This closes a small API-compatibility test,
 not the full graphical C package, CPU/PCM/restart, CUDA gate, frozen v2
 proof, or pin amendment. `tools/loader.ts` and the graphics library's
 `actual_compiler.mjs` still call the old exports and remain migration work.
+
+## Memory-bounded candidate loader and Worker fixture
+
+The reviewed final 2.0.28+006 replay receipt and its exact 95-file short-path
+compiler snapshot passed the frozen 56-source closure preflight under a
+768 MiB Node old-generation cap. The separate 497-term candidate proof
+authority negative test passed TODO, reachable unsafe and reachable foreign
+controls with zero denied fetches under the same cap. Both are source-only
+diagnostics; neither runs the full 1,584-term aggregate.
+
+The [candidate-only v3 loader test](../../../toolchain-patches/loader-v3/README.md#isolated-2028006-loader-seam)
+now binds that exact replay and snapshot, reroutes only the three static
+compiler/effect imports in an ignored temporary loader copy, and exercises
+selected JS, missing-sibling-Law rejection and explicit-sibling acceptance.
+The imported helper is SHA-bound before and after the run. The candidate's
+3,100-byte JS is pinned at SHA-256
+`8d427b379dae84f2bb53c373d969a90e44846912989c014af3f2062505636afb`;
+the two selected exports each returned 1. This is not byte-identical with
+2.0.27, nor is the staged loader selected for production.
+
+The candidate aggregate runner now caps **fixture-only** Worker old-generation
+memory at 768 MiB and its deadline at 60 seconds; its full aggregate limits
+remain 8,192 MiB and 900 seconds, and the full run was not launched on this
+memory-constrained Windows host. With the exact replay and snapshot, the
+bounded actual Worker loaded and validated 497 terms, entered the ownership
+guard, and passed its distinct TODO/unsafe/foreign negative controls with
+zero denied fetches in 866 ms. The ignored receipt is
+`.artifacts/bend2/toolchain-patches/candidate-v2-proof-2028/receipt-1790637115584.json`,
+SHA-256 `ca2d14f8ef575626eb27db3d3a0a835428bb67165dc27cc300a1650f7b810f34`;
+it records all source/compiler/runner/authority/replay rechecks true, runner
+SHA-256 `921eb57b3799b2a0c4a1bb01456619ae961205a8b5f30352ad99d805e9a12af4`,
+and authority SHA-256
+`3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013`.
+This is candidate small-book integration evidence, not a v2 aggregate proof,
+five-receipt amendment, native/GPU acceptance or a canonical 2.0.28 pin.

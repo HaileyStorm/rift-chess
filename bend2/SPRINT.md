@@ -1393,6 +1393,17 @@ API call at a new staging path. A pinned-2.0.27 small-fixture comparison gave
 byte-identical selected JS and both versions rejected a `PROOF.bend` missing
 its sibling Law. The production `--run` wrapper and browser build still select
 their existing loaders; the draft is not a 2.0.28 pin or full proof/build gate.
+The later [isolated candidate-loader diagnostic](toolchain-patches/loader-v3/README.md#isolated-2028006-loader-seam)
+now source-binds the reviewed final 2.0.28+006 replay snapshot, exercises
+the staged loader's empty ownership emit and sibling-Law guard on a small
+fixture, and runs both selected exports. Its 3,100-byte candidate JS differs
+from pinned 2.0.27's 2,819 bytes in an unused effect registry and escaped
+local symbol, so this is a scoped semantic smoke, not byte-identical compiler
+parity or a promoted loader. The same exact candidate snapshot also passed a
+separate 768 MiB/60 s **fixture-only** Worker: 497 terms, ownership entry,
+three distinct TODO/unsafe/foreign negative controls and all input rechecks.
+The 8 GiB, 1,584-term frozen aggregate still has no candidate verdict;
+the canonical pin/amendment remains unadopted.
 
 The [browser Import gesture repair](docs/evidence/v2-import-gesture/README.md)
 invalidates a held touch immediately on resize, before a pending worker
@@ -1445,9 +1456,11 @@ The live verifier matched 22 Bend files and both original baselines; seven
 focused hosted scenarios passed 65 checks with zero defects. A paired
 old-local/new-hosted Chrome run verified all manifest-listed assets and
 byte-identical canvas pixels at start, after e2–e4, and at 65° Front, with
-the cache hit only for unchanged ground. A new-source CPU-only Linux gate is
-requested under [exact handoff 5879022597](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5879022597),
-not yet a result. Full hosted reliability, first-detail speed, GPU-on parity
+the cache hit only for unchanged ground. The subsequent
+[Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880067534)
+reports that the one-shot CPU package, GUI, routed PCM and restart gate
+passed on this exact `a7895fb` source, subject to host-local evidence limits.
+Full hosted reliability, first-detail speed, GPU-on parity
 and the compiler pin are still open.
 
 A [first-detail feasibility check](docs/evidence/v2-ground-cache/README.md#first-detail-feasibility-checks-after-publication)
@@ -1475,4 +1488,6 @@ live at Pages commit `2af5618` from source `c986e3f`, with 22/22 Bend
 manifest bytes and both original-site baselines verified, plus seven focused
 hosted scenarios/65 checks with zero defects. No current-source Linux native
 result, GPU-on repair, reviewed compiler pin, full hosted matrix or owner
-visual acceptance follows.
+visual acceptance follows. The later sprite-source CPU-only attempt is
+separately [requested](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
+for `c986e3f`, with no CUDA/GPU authority.

@@ -37,3 +37,29 @@ is a candidate-only conformance adapter, not a drop-in replacement: it lacks
 this explicit empty emit and the sibling-Law check. Promotion needs a
 source-bound candidate gate plus the guide's independent review, five receipts,
 pin amendment, freeze and real browser/native checks.
+
+## Isolated 2.0.28+006 loader seam
+
+`node --max-old-space-size=768 bend2/toolchain-patches/loader-v3/test-loader-2028.mjs`
+is a small candidate-only diagnostic. It first runs the reviewed replay and
+frozen-v2-closure preflight against the exact 95-file final compiler snapshot,
+then substitutes only three compiler/effect import paths into an ignored
+temporary copy of the SHA-bound staged loader. The clean 2.0.27 pin and the
+production loader are not selected or mutated. The test recompiles the
+source-bound indented-import fixture, pins the candidate's 3,100-byte JS at
+SHA-256 `8d427b379dae84f2bb53c373d969a90e44846912989c014af3f2062505636afb`,
+executes both selected exports (each returns 1), rejects a `PROOF.bend` that
+omits its sibling `LAWS.bend`, accepts an explicit sibling import, and rechecks
+the imported fixture helper, reviewed preflight script and replay/snapshot
+binding after
+the test. The candidate adds an unused effect registry and escapes the
+imported hyphen in a local JS symbol, so its bytes deliberately differ from
+the pinned 2.0.27 fixture despite matching these tiny observable results.
+
+This closes a narrow candidate-loader seam, not the full application loader
+integration, aggregate frozen proof, browser/native regression, five-receipt
+amendment or canonical pin. It requires the exact host-local ignored replay
+and snapshot and does not create a portable proof artifact on its own. This
+fixture enters the ownership guard on valid input; the separate
+`proof-guard-2028.test.mjs` checks reserved-name and foreign-constructor
+rejection on the same source-bound snapshot and remains a promotion gate.
