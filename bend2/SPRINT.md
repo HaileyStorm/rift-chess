@@ -1342,8 +1342,9 @@ and positively checks its private ownership guard with reserved-name and
 foreign-constructor negative controls. Independent invariant review confirms
 that frozen v2 `node-check.mjs` cannot be substituted by the ordinary tool
 amendment; a new reviewed proof-authority version must preserve all v2 bytes,
-retain whole-book TODO/unsafe/foreign rejection, and migrate three other
-active removed-API callers. This diagnostic is not a pin or proof amendment.
+retain whole-book TODO/unsafe/foreign rejection, and, at that checkpoint,
+migrate three other active removed-API callers. This diagnostic is not a pin
+or proof amendment.
 
 The [candidate proof rejection follow-up](docs/evidence/toolchain-2028-stack/README.md#candidate-proof-rejection-controls-on-a-real-bend-book)
 now passes distinct TODO, reachable unsafe and reachable foreign mutations
@@ -1370,3 +1371,10 @@ worker exit and post-run import-closure/pin checks. The aggregate's 56 frozen
 local imports passed exact semantic-v2 manifest preflight without running a
 proof. This is not the full v2 aggregate,
 reviewed v3 freeze, 2.0.28 pin, native GPU or visual acceptance.
+
+The [non-frozen native C emitter migration](docs/evidence/toolchain-2028-stack/README.md#candidate-compatible-native-c-ownership-guard)
+now uses the candidate-compatible empty selected-emit guard. Pinned 2.0.27
+Bun/Node C parity stayed byte-identical across the change; an isolated
+2.0.28+006 fixture also emitted exact source-bound C. This closes one of
+those three removed-API call sites, not the large graphical package or pin.
+The frozen `tools/loader.ts` and graphics `actual_compiler.mjs` remain.

@@ -166,7 +166,7 @@ function main() {
   } catch (error) {
     writeImmutable(emitLog, `${JSON.stringify({
       schema: 'rift-bend-native-c-emission-failure/1',
-      phase: 'pinned Bend C emission via book_load + book_valid + book_owned(SYNTH) + compile_book',
+      phase: 'pinned Bend C emission via book_load + book_valid + empty selected js_lib ownership guard + compile_book',
       nativeInput: inputPath,
       bendCommit: pin.bendCommit,
       nodeRuntime: nativeEmitterRuntime(),
@@ -203,7 +203,7 @@ function main() {
       tool: path.relative(root, emitter).replaceAll('\\', '/'),
       toolSha256: inputs['bend2/tools/native-c-emitter.mjs'],
       runtime: emitResult.runtime,
-      method: '64 MiB pinned Node worker; pinned compiler book_load + book_valid + book_owned(SYNTH) + compile_book',
+      method: '64 MiB pinned Node worker; pinned compiler book_load + book_valid + empty selected js_lib ownership guard + compile_book',
       comparisonBunRuntime: parity.receipt.bunRuntime,
       parityReceipt: 'emitter-parity.json',
       parityReceiptSha256: parity.sha256,

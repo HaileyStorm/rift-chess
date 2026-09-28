@@ -430,3 +430,11 @@ not isolate a kernel or app cause. The [orbit evidence](evidence/v2-motion-walls
 retains the exact local receipt hashes and limits. Earlier receipts retain their own
 source/binary scope; neither host report proves Windows native or owner
 acceptance.
+
+The later [candidate-compatible C-emitter guard](evidence/toolchain-2028-stack/README.md#candidate-compatible-native-c-ownership-guard)
+replaced the active non-frozen emitter's removed public ownership API with
+an empty selected compiler emit. A small pinned Bun/Node C parity sample
+remained byte-identical, and an isolated 2.0.28+006 source-bound fixture
+emitted C. The earlier `book_owned(SYNTH)` description above is historical
+for its recorded attempt, not the current emitter method. Neither small
+case proves the current graphical native package, GPU timing or pin amendment.

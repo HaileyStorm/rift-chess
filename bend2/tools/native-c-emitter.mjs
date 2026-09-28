@@ -71,7 +71,7 @@ export function nativeEmitterRuntime() {
     arch: process.arch,
     workerStackSizeMb: metadata.worker.stackSizeMb,
     workerExecArgv: metadata.worker.execArgv,
-    api: 'pinned Bend book_load + book_valid + book_owned(SYNTH) + compile_book',
+    api: 'pinned Bend book_load + book_valid + empty selected js_lib ownership guard + compile_book',
   };
 }
 
@@ -115,7 +115,9 @@ if (!isMainThread) {
     const book = Bend.book_nil();
     await Bend.book_load(book, workerData.source, '', new Map());
     Bend.book_valid(book);
-    Comp.book_owned(book, Comp.SYNTH);
+    // 2.0.28 keeps this guard private. Empty selected emission enters the
+    // compiler's ownership/collision check without making a definition live.
+    Comp.js_lib(book, [], [], { internal: true });
     const holes = book.hols + book.open;
     if (holes > 0) throw new Error(`${holes} TODOs found; refusing C emission.`);
     const source = Comp.compile_book(book);

@@ -223,3 +223,29 @@ accepts (including indentation), and the worker rejects every loaded path
 outside the expected project closure except exact compiler Base. These
 checks address those findings; no full aggregate verdict follows from this
 preflight.
+
+## Candidate-compatible native C ownership guard
+
+The non-frozen `tools/native-c-emitter.mjs` now invokes the compiler's empty
+selected `js_lib(book, [], [], { internal: true })` after `book_valid` and
+before `compile_book`, replacing the removed public `book_owned(SYNTH)` call.
+`tools/export-native.mjs` records the new method. The small pinned 2.0.27
+Bun-versus-Node comparison passed immediately before and after the change:
+both emitted byte-identical C with SHA-256
+`ab6775249b4772f392a616bbb0900b9f6316c218d0c1e282e346787bccf02b5f`.
+Ignored baseline and updated parity receipts have SHA-256 values
+`59eb9a6242afbc4bc23aa3dca288fca0d528c05a0a08efb167954bb6627104fd`
+and `7a22cee0eb564ef34a242d300d2d073cd9726e0f46edb12efc93c3bfbd1aa0af`.
+
+The new source-bound `toolchain-patches/native-c-guard-2028.test.mjs`
+also checked the reviewed isolated 95-file 2.0.28+006 compiler tree,
+validated a real 497-term Bend fixture, ran that ownership guard and
+emitted 74,265 C bytes with SHA-256
+`4e4a80984dcaafaf0ab44baed4bc73d0e7e9f5c5b99164a52669a632a3412516`;
+zero fetch attempts occurred. Independent review caught that the first test
+bound only the entry fixture; it now also pins/rechecks its imported helper
+SHA-256 `187e3972e579403f6cfa1d0f244ea133983aa51a98d2bc7c142f0c3cf368d8e6`.
+This closes a small API-compatibility test,
+not the full graphical C package, CPU/PCM/restart, CUDA gate, frozen v2
+proof, or pin amendment. `tools/loader.ts` and the graphics library's
+`actual_compiler.mjs` still call the old exports and remain migration work.
