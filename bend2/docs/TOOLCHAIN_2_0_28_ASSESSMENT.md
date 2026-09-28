@@ -242,3 +242,12 @@ reconciles the 27 changed paths with 28 final input entries including
 unchanged Base; it does not close host parity. A later compact UI fix changes
 `ApplicationControl.bend` after the candidate browser/source-only checks, so
 those receipts cannot be transferred to the newer source.
+
+The newer [match-status/resume source trial](evidence/browser-2028-candidate/README.md#published-match-statusresume-source-trial)
+re-established a nonce-private 2.0.28+006 build, 13 real-Chrome groups,
+focused resignation/RESUME play, five sampled PNG matches to the pinned
+hosted build, and strict instrumented online/offline bot dispatch. It still
+does not supply a new-source Linux C/ELF/device result or the reviewed pin
+amendment. A [read-only Linux headroom observation](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311)
+was requested after the prior 72.538 GiB stop; even a passing observation
+does not authorize a build or lower the 88 GiB floor.

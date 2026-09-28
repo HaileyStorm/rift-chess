@@ -228,3 +228,49 @@ directly from that exact final replay clone. The final-stack aggregate proof
 has a separate full-tree-pinned short-path passing receipt. Candidate-native,
 GPU, complete host ABI migration, owner visual acceptance and the reviewed
 pin amendment remain open.
+
+## Published match-status/resume source trial
+
+After the clean match-status and bot-resume source commit `c30d312`, and the
+evidence-only successor `d63fc5a29a74dbac5e8782df713612d83c4d8c16`, a
+new nonce-private 2.0.28+006 candidate was built without touching the pinned
+2.0.27 checkout. The builder verified its recorded upstream tag, reviewed
+004-stage stack and exact patch 006, then emitted current Controller, scene,
+menu and BotAdapter books. Its run is
+`.artifacts/bend2/toolchain-patches/browser-2028-candidate/run-1790581636033-9301fe54-319f-442c-b98e-5c83ce1dad4d/`.
+Candidate version `7820dc19839fbc82889a` has `build.json` SHA-256
+`769b9606743f1392ec64af5dade2d05e5861c72ff122ef9bc7f84dc056cfd547`;
+the successful source-bound build receipt is SHA-256
+`82246132214c71b9ab8e5fb66fb8b46bcf112fb727d9eab32bae0fa9ca45eff5`.
+The builder deliberately records `sourceDirty: true` conservatively. Its
+separate bounded rendered boot/preferences/move smoke passed (receipt SHA-256
+`8309f7e6fdc2f9b24db2fe14ee6e5346b415bdbba4c636cc6cfdaee56b97f10`).
+
+A diagnostic re-bundle `bf626de2cf0b5878bb01` has source-bound receipt
+SHA-256 `a292f1f00896e73d3b126dc08a5d1da7c493349cccf38891cad7ac4a6b2520a3`.
+Its online/cold-offline strict bot-route Chrome run passed with worker
+`session-ready → choose → applied`, one required witness per phase, three
+remote jobs per phase, choice 20065 applied at revision 1→2, and no serial
+fallback (receipt SHA-256
+`13c8cc3b4e56289b24e7c1b3472d7981995416ead8ae4068a7d69a50a67c6e41`).
+The uninstrumented candidate build also passed the existing 13-group local
+Chrome suite, including both themes, offline play, promotion, Shift/Undo,
+portrait and browser PCM (receipt SHA-256
+`ad3784ce36da9deb14950cd92dc22d0fba26ddb0621a30d38bb49ef98765e861`).
+A focused rendered draw-actions/undo run then passed the actual resignation
+and bot-resume repair with zero defects (summary SHA-256
+`7d534740529cf6ba866ceb32a1f950f9e700aa04cd5d2fa578f22ab00f79f48d`).
+All those served manifests were byte-bound to their nonce-private dist.
+
+Five sampled Chrome PNGs (initial, selected, both-color moves, warm court,
+portrait) matched the exact-source hosted pinned-2.0.27 captures byte-for-byte.
+The manifest-bound local server used only this isolated candidate directory;
+its tracked source SHA-256 is
+`9ae96e9c77719b395d7c6c59a97e6f340289e33c36e0bf4b0e592fd7fa4ebebf`.
+This is finite local browser and instrumented bot evidence. It does not turn
+the source-equivalent compiler copy into an execution from the exact final
+replay clone, prove Linux native C/ELF/X.Org/PCM/restart or GPU parity, or
+authorize a pin amendment. The previous Linux candidate package stopped at
+its 88 GiB guard before compilation; a fresh read-only headroom observation
+was [requested separately](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311),
+not a retry.

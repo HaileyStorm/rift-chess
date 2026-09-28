@@ -997,3 +997,12 @@ scenario reference/interaction union remains local draft evidence, not a
 single uninterrupted hosted run. Browser responsiveness, native CPU/GUI/PCM/
 restart, GPU parity, owner visual acceptance and a reviewed 2.0.28 pin remain
 open.
+
+A separate [new-source 2.0.28+006 browser candidate](docs/evidence/browser-2028-candidate/README.md#published-match-statusresume-source-trial)
+passed the 13-group local Chrome matrix, a focused resignation/RESUME play,
+and an instrumented online/cold-offline bot worker route with no fallback.
+Five sampled frames matched the pinned hosted 2.0.27 preview byte-for-byte.
+This is a disposable source-equivalent compiler copy and local browser gate,
+not final-replay native parity or pin acceptance. Linux was asked for a
+single [read-only 88 GiB headroom observation](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5865659311)
+after its previous pre-emission stop; no heavy attempt was requested.
