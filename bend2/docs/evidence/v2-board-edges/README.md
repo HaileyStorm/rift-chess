@@ -78,3 +78,18 @@ The inspected hosted initial PNG is byte-identical to the local draft capture
 (SHA-256 `70af479e01001b2277cda0d22f222abf04aad8568250f208110879bbf94bb021`).
 This is a playable browser preview, not owner WOW acceptance, native/GPU
 parity, or a 2.0.28 pin change. The original TypeScript game is unchanged.
+
+## Published piece-proportion source recheck
+
+After the later `cafc934` Bend visual edit, the pinned-2.0.27
+`BoardEdgesTest.ts` ran again through the local wrapper with exit 0. It
+retained 19 topology assertions, sampled exact exposed wall material and
+top-lip pixels at four cardinal and five oblique yaws, checked nine
+low-resolution orbit wall/top cases and a full aperture/adjacent-top mask,
+and covered 160 near-cardinal rift/theme variants. The optional 288-view
+motion sweep was not run in this recheck. The test output reported no
+motion/top spill failures. This is a finite local source/render gate on the
+current BoardScene, not a proof of every camera pixel or subjective owner
+acceptance. The clean `817dfa63932dd6ccf4b4` browser build separately
+passed hosted rendered play and exact-file verification; the shorter sprites
+did not remove or intentionally alter tile/rift walls.
