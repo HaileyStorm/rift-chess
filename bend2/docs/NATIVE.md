@@ -421,6 +421,12 @@ The later [leased CUDA pilot](https://github.com/HaileyStorm/Coordination/issues
 confirmed actual RTX 5090 use and matching key/orbit frame bytes but exposed
 a reproducible 250 ms GPU-on synthetic deselection capture lag; a 1,000 ms
 diagnostic cadence passed. The original-cadence discrepancy and unmeasured
-device transfer/readback remain open. Earlier receipts retain their own
+device transfer/readback remain open. A subsequent
+[leased observer-only timing result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861399699)
+reproduced the original 250 ms GPU-on failure. Its traced Xlib episodes
+consumed release within 10–15 ms on GPU-on but submitted the changed frame
+281–304 ms after release; observer overhead shifted timings, so this does
+not isolate a kernel or app cause. The [orbit evidence](evidence/v2-motion-walls/README.md#exact-source-leased-cuda-presentation-pilot)
+retains the exact local receipt hashes and limits. Earlier receipts retain their own
 source/binary scope; neither host report proves Windows native or owner
 acceptance.

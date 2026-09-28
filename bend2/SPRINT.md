@@ -850,9 +850,14 @@ passed. This is an open input/presentation-latency finding, not source-matched
 GPU parity or a throughput speedup. No default device promotion follows;
 see the [orbit evidence](docs/evidence/v2-motion-walls/README.md#exact-source-leased-cuda-presentation-pilot).
 A separate [observer-only timing request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861118746)
-will distinguish release delivery, app frame submission and X11 capture
-under a new lease without altering the receipt-bound ELF/sidecar. No result
-or GPU promotion is inferred from that request.
+was completed under a new, withdrawn lease without altering the receipt-bound
+ELF/sidecar. The [Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861399699)
+reproduced the original GPU-on 250 ms failure. Untraced ROI sampling first
+cleared at 275 ms on GPU-on versus 225 ms on CPU/off; traced GPU-on release
+was consumed within 10–15 ms but changed-frame submission followed at
+281–304 ms. The trace affects timing and does not isolate a kernel, transfer,
+app or compositor cause. Preserve the failed gate and default-off policy;
+see the [detailed limits](docs/evidence/v2-motion-walls/README.md#exact-source-leased-cuda-presentation-pilot).
 
 ## Bend 2.0.32 release triage
 

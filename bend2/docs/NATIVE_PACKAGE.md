@@ -184,3 +184,9 @@ CPU-off from its GPU default. This does not change the launcher's default-off
 contract above. Its original 250 ms GPU-on deselection capture remained
 selected; a 1,000 ms diagnostic cadence passed, so input/presentation
 latency is open even where other frame hashes match.
+A later [observer-only Linux diagnostic](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861399699)
+reused the exact ELF/sidecar under a new, withdrawn lease and reproduced the
+original 250 ms GPU-on failure. Bounded ROI samples cleared at the next
+25 ms step, while traced event pickup was prompt and changed-frame submission
+followed later; trace overhead prevents an untraced causal attribution.
+The package launcher remains default-off and the original gate remains open.

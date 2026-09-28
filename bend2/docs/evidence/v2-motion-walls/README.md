@@ -152,8 +152,21 @@ default automatic GPU policy or owner visual approval. The 250 ms finding
 remains open for input-versus-presentation timing diagnosis under a future
 fresh lease, not a reason to weaken the check.
 One [observer-only diagnostic request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861118746)
-now asks the Linux owner to reuse that exact ELF/sidecar under a new lease,
-timestamp the second-click event consumption and submitted frame, and poll
-a bounded g1 region through one second. It does not authorize a new build or
-turn the original 250 ms failure into a pass. No diagnostic result is yet
-claimed.
+was executed once. The [Linux owner's result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5861399699)
+reports unchanged source/ELF/sidecar, a fresh grant with 11 authorized
+episode validations, verified withdrawal, and an ignored Linux-local
+`evidence.json` (SHA-256
+`6de8de51562e6aa30ca528b8b2844e803c249db70580180d9767b527d389e50c`).
+The unmodified full-window probe again passed CPU and CUDA-off and failed
+only GPU-on second-click deselection at 250 ms. Separate untraced 25 ms
+g1-region samples first showed clear at 225 ms for CPU/off and 275 ms for
+both GPU-on episodes. In traced episodes, Xlib consumed ButtonRelease about
+1/13/10–15 ms after injector flush for CPU/off/GPU-on; the first deselected
+image was submitted with XPutImage/XFlush about 206/228/281–304 ms after
+release. The trace itself shifted timings, so this locates the traced delay
+after event pickup and before changed-image submission without proving the
+untraced pickup time or separating app dispatch, kernel, transfer, server
+and compositor costs. No binary/capture was transferred to Windows. The
+original GPU-on 250 ms gate remains failed; neither GPU parity, throughput
+nor default-device promotion follows. The reply monitor was paused after
+this result was processed.
