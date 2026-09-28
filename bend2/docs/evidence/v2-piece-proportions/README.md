@@ -113,3 +113,19 @@ remove the conspicuous fallback interval. This was rejected as a visual
 regression, not promoted as a stable benchmark or published. `PieceSprites.bend`
 was restored byte-for-byte; the clean selected module and exact published
 `build.json` were restored and the 22+2 live-file verifier passed again.
+
+## Default camera elevation comparison on the current preview
+
+An exact current hosted `b5251c45ce22760635b0` real-Chrome view-control
+probe captured the detailed default at pitch 67° and two successive Up
+commands at 72° and 77°, without changing source or stored preferences.
+The ignored captures under `.artifacts/bend2/angle-probe-20260928/` have
+SHA-256 `b9d6fad0f50fc57047cf54f5d948c60ef67b3b2ad05eb16ce85740e0db8801de`,
+`a0ad8c50263ac0ae384d2d5a05e089c1ff4d6941f1122592a6d4ae1e8c4c5e4b`
+and `5cef6abae6ff7ceb9303d722edbb169e3096ab4543f0901ca361c60cf852b975`
+respectively. The page reported no errors and all three detailed refinements
+arrived. In visual inspection the steeper views give only a modest change to
+pawn/back-rank separation while making the outside wall thickness less
+prominent. Retain the current 67° default pending owner preference rather
+than changing native/browser source for this marginal subjective trade-off.
+These screenshots do not prove every exposed/rift face or owner acceptance.

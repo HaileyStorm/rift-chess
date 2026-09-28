@@ -1293,3 +1293,10 @@ path. The raw failure from the older build remains preserved; one full pass
 does not establish a reliability bound. Move and menu reply p95 were still
 about 1.12 s and 0.44 s in small samples, so responsiveness, owner visual
 acceptance, native GPU-on parity and the compiler pin remain open.
+
+A [current hosted camera comparison](docs/evidence/v2-piece-proportions/README.md#default-camera-elevation-comparison-on-the-current-preview)
+captured refined 67° default and 72°/77° Up variants without changing
+source. Steeper pitch modestly alters rank spacing but also hides some wall
+depth; the existing default is retained pending owner visual preference.
+No screenshot substitutes for that acceptance or for a new-source native
+gate after any future camera change.
