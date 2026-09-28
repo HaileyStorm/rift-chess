@@ -231,3 +231,14 @@ GPU execution follows from a source check. The separate
 requires a fresh claim, exact source/compiler closure, an 88 GiB two-sample
 memory admission and one bounded emission/link before runtime probes. Its
 request is not execution evidence or approval to move the pin.
+
+The [CPU request's Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863271416)
+stopped at its first MemAvailable observation: 72.538 GiB, below the 88 GiB
+floor by 15.462 GiB. It performed no source/asset binding, C emission, ELF,
+X.Org, PCM, or restart test; the claim was released. No native candidate is
+accepted, and a fresh source-bound request would need fresh headroom and a
+separately reviewed attempt. The [path-count clarification](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863349323)
+reconciles the 27 changed paths with 28 final input entries including
+unchanged Base; it does not close host parity. A later compact UI fix changes
+`ApplicationControl.bend` after the candidate browser/source-only checks, so
+those receipts cannot be transferred to the newer source.

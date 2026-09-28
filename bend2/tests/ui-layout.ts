@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import Layout from '../ui/Layout.bend';
+import App from '../ApplicationControl.bend';
 
 const nil = {$: 'Nil'};
 const list = (xs: any[]) => xs.reduceRight((tail, head) => ({$: 'Con', head, tail}), nil);
@@ -47,6 +48,11 @@ for (const mobile of [true, false]) {
   boundsWithin(main, mobile);
   assert.ok(main.some((control) => control.id === 47), `overflow MOVES control missing (${mobile})`);
   assert.ok(!main.some((control) => control.id >= 1000), `overflow destinations leaked (${mobile})`);
+  const compact = array(App['compact.controls'](snapshot(mobile, 0)));
+  assert.ok(compact.some((control) => control.id === 47),
+    `compact overflow MOVES control missing (${mobile})`);
+  assert.ok(!compact.some((control) => control.id >= 1000),
+    `compact overflow leaked destinations (${mobile})`);
 
   const legal = array(Layout.controls(snapshot(mobile, 7)));
   boundsWithin(legal, mobile);

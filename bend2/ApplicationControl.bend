@@ -183,9 +183,12 @@ def compact.top(+id: U32) -> Bool:
   Bool.or(U32.is_eq(id,1),Bool.or(U32.is_eq(id,2),U32.is_eq(id,27)))
 
 def compact.play(+id: U32, +has_destinations: Bool) -> Bool:
+  # Layout replaces overflowing destination buttons with MOVES (47). Keep
+  # that opener even when destinations exist; otherwise the compact pane is
+  # empty and its legal choices become inaccessible from the controls.
   Bool.or(compact.top(id),Bool.or(ChromePlan.dest_id(id),
-    Bool.and(Bool.not(has_destinations),
-      Bool.or(U32.is_eq(id,3),Bool.or(U32.is_eq(id,5),U32.is_eq(id,55))))))
+    Bool.or(U32.is_eq(id,47),Bool.and(Bool.not(has_destinations),
+      Bool.or(U32.is_eq(id,3),Bool.or(U32.is_eq(id,5),U32.is_eq(id,55)))))))
 
 def compact.show(+menu: U32, +id: U32, +has_destinations: Bool) -> Bool:
   Bool.pick(Bool,U32.is_zero(menu),compact.play(id,has_destinations),

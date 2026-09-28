@@ -10,11 +10,22 @@
 //   node bend2/tests/playtest-matrix.mjs            (all scenarios)
 //   PLAYTEST_ONLY=selection,shift BEND_PLAYTEST_RUN=after node bend2/tests/playtest-matrix.mjs
 import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { replayRecord, Game } from './ts-oracle.mjs';
 
 const url = process.env.BEND_TEST_URL || 'http://127.0.0.1:4184/';
+const servedBuild = await fetch(new URL('build.json', url), { cache: 'no-store' });
+assert.equal(servedBuild.status, 200, 'playtest build manifest is served');
+const buildBytes = Buffer.from(await servedBuild.arrayBuffer());
+const build = JSON.parse(buildBytes.toString('utf8'));
+if (process.env.BEND_EXPECTED_BUILD)
+  assert.equal(build.version, process.env.BEND_EXPECTED_BUILD, 'playtest build version');
+if (process.env.BEND_PLAYTEST_BUILD_JSON)
+  assert.deepEqual(buildBytes, await fs.readFile(path.resolve(process.env.BEND_PLAYTEST_BUILD_JSON)),
+    'served playtest build manifest differs from selected local bytes');
 const run = process.env.BEND_PLAYTEST_RUN || new Date().toISOString().replace(/[:.]/g, '-');
 const root = path.resolve('.artifacts/bend2/playtest-stage2', run);
 const only = (process.env.PLAYTEST_ONLY || '').split(',').filter(Boolean);
@@ -41,10 +52,10 @@ const record = (layout, policy, actions) => ({ schema: 'rift-bend-record/1', lay
 // ---- reference expectations ------------------------------------------------------------
 function expectedState(game) {
   const o = game.outcome();
-  if (!o) return `${game.state.side === 1 ? 'WHITE' : 'BLACK'} TO MOVE${game.observe().in_check ? ' - CHECK' : ''}`;
-  return { checkmate: o.winner === 1 ? 'WHITE WINS' : 'BLACK WINS', stalemate: 'STALEMATE', bare_kings: 'DRAW - BARE KINGS',
-    threefold: 'DRAW - THREEFOLD', progress100: 'DRAW - 100 QUIET', agreement: 'DRAW AGREED',
-    resignation: o.winner === 1 ? 'WHITE WINS - RESIGNED' : 'BLACK WINS - RESIGNED' }[o.reason];
+  if (!o) return `${game.state.side === 1 ? 'White' : 'Black'} to move${game.observe().in_check ? ' check' : ''}`;
+  return { checkmate: o.winner === 1 ? 'White wins' : 'Black wins', stalemate: 'Stalemate', bare_kings: 'Draw bare kings',
+    threefold: 'Draw repetition', progress100: 'Draw quiet moves', agreement: 'Draw agreed',
+    resignation: o.winner === 1 ? 'Black resigned' : 'White resigned' }[o.reason];
 }
 const VALUE = { 1: 1, 7: 1, 2: 3, 3: 3, 4: 5, 5: 9, 6: 0 };
 let seed = 20260923;
@@ -64,7 +75,11 @@ function humanChoice(game) {
 }
 
 // ---- run bookkeeping -------------------------------------------------------------------
-const summary = { run, url, at: new Date().toISOString(), scenarios: [], defects: [], timings: {} };
+const summary = { run, url, at: new Date().toISOString(), buildVersion: build.version,
+  buildSourceRevision: build.sourceRevision,
+  buildSha256: crypto.createHash('sha256').update(buildBytes).digest('hex'),
+  servedBuildBound: Boolean(process.env.BEND_PLAYTEST_BUILD_JSON),
+  scenarios: [], defects: [], timings: {} };
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const instrument = () => {
   window.__frames = []; window.__sounds = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
@@ -161,17 +176,22 @@ async function scenario(name, viewport, body) {
       if (settle) await t.change(() => page.mouse.click(p.x, p.y)); else await page.mouse.click(p.x, p.y);
     },
     async has(id) { return (await t.controls()).some(c => c.id === id && c.enabled); },
+    async clearSelection() {
+      await page.locator('canvas').focus();
+      await t.change(() => page.keyboard.press('Escape'));
+    },
     async toPage(x, y) {
       const b = await page.locator('canvas').boundingBox();
       const size = await page.locator('canvas').evaluate(c => ({ w: c.width, h: c.height }));
       return { x: b.x + x * b.width / size.w, y: b.y + y * b.height / size.h };
     },
     canvasSquare(shown, square, lift = 0) {
-      const v = shown.view, a = v.yaw * Math.PI / 180;
-      const scale = 45 / (Math.abs(Math.cos(a)) + Math.abs(Math.sin(a))) * v.zoom / 100;
+      const v = shown.view, a = v.yaw * Math.PI / 180, plan = shown.plan;
+      const projection = 45 / (Math.abs(Math.cos(a)) + Math.abs(Math.sin(a))) * v.zoom / 100;
       const u = square % 8 - 3.5, r = 3.5 - Math.floor(square / 8);
-      return { x: 256 + scale * (Math.cos(a) * u - Math.sin(a) * r),
-        y: (shown.mobile ? 64 : 128) + 274 + scale * Math.sin(v.pitch * Math.PI / 180) * (Math.sin(a) * u + Math.cos(a) * r) - lift };
+      return { x: plan.board.x + (256 + projection * (Math.cos(a) * u - Math.sin(a) * r)) * plan.scale,
+        y: plan.board.y + (274 + projection * Math.sin(v.pitch * Math.PI / 180) *
+          (Math.sin(a) * u + Math.cos(a) * r) - lift) * plan.scale };
     },
     async clickSquare(square, lift = 0) {
       const c = t.canvasSquare(await t.shown(), square, lift);
@@ -237,13 +257,17 @@ async function scenario(name, viewport, body) {
       const shown = await t.shown(), board = t.boardCodes(shown);
       const side = shown.position.side === true || shown.position.side?.$ === 'True';
       const own = code => code !== 0 && (side ? code < 8 : code >= 8);
-      const reset = async () => { if (await t.has(4)) await t.control(4); };
+      const reset = async () => { await t.clearSelection(); };
       let attempts = 0;
       if (!a.shift) {
         for (const lift of [piece, 8, 22, 2]) { await reset(); attempts++; await t.clickSquare(a.from, lift); if (await offered()) break; }
       } else {
         const squares = macroSquares(a.from), carried = squares.find(s => own(board[s]));
-        if (carried !== undefined && via !== 'tile') { attempts++; await t.clickSquare(carried, piece); await t.control(5); }
+        if (carried !== undefined && via !== 'tile') {
+          attempts++; await t.clickSquare(carried, piece);
+          if (await t.has(5)) await t.control(5);
+          else await t.change(() => page.keyboard.press('s'));
+        }
         else for (const s of squares.filter(s => board[s] === 0)) { await reset(); attempts++; await t.clickSquare(s, 0); if (await offered()) break; }
       }
       const control = await offered();
@@ -430,27 +454,27 @@ await scenario('selection', DESKTOP, async t => {
   t.check(await t.has(1000 + mv('g1', 'f3')) && await t.has(1000 + mv('g1', 'h3')), 'Selecting g1 offers f3 and h3');
   await t.shot('selected-g1', { squares: [sq('g1'), sq('f3'), sq('h3')], controls: [1000 + mv('g1', 'f3')] });
   await t.clickSquare(sq('g1'), 16);
-  t.check(!(await t.has(4)), 'Second click on the selected piece deselects it');
+  t.check(!(await t.summary()).includes('Knight g1'), 'Second click on the selected piece deselects it');
   await t.clickSquare(sq('g1'), 16); await t.clickSquare(sq('b1'), 16);
   t.check(await t.has(1000 + mv('b1', 'a3')) && !(await t.has(1000 + mv('g1', 'f3'))), 'Clicking another own piece moves the selection');
   await t.clickSquare(sq('e4'));
   t.check(await t.has(1000 + sh('C2', 'B2')), 'Clicking an empty platform selects it and offers its Shift');
   await t.shot('tile-selected', { squares: [sq('e3'), sq('f4'), sq('c3'), sq('d4')] });
-  await t.control(4); t.check(!(await t.has(4)), 'CLEAR removes the selection');
+  await t.clearSelection(); t.check(!(await t.summary()).includes('Selected tile'), 'Escape removes the tile selection');
   await t.clickSquare(sq('c4'));
   const hole = await t.shown();
-  t.check(!(await t.has(4)), 'Clicking an empty hole with nothing selected does not select the hole', `menu ${hole.menu}`, 'minor');
+  t.check(!(await t.summary()).includes('Selected tile'), 'Clicking an empty hole with nothing selected does not select the hole', `menu ${hole.menu}`, 'minor');
   await t.shot('hole-click', { squares: [sq('c4')] });
   await t.clickSquare(sq('g4'));
-  t.check(!(await t.has(4)), 'Clicking an empty platform with no legal Shift selects nothing');
+  t.check(!(await t.summary()).includes('Selected tile'), 'Clicking an empty platform with no legal Shift selects nothing');
   await t.clickSquare(sq('e7'), 16);
-  t.check(!(await t.has(4)), 'Clicking an opponent piece selects nothing');
-  await t.control(4).catch(() => {});
+  t.check(!(await t.summary()).includes('Selected Black'), 'Clicking an opponent piece selects nothing');
+  await t.clearSelection();
   await t.clickSquare(sq('e2'), 16);
   t.check(!(await t.has(5)), 'SHIFT is disabled when the selected piece\'s platform has no legal Shift');
-  await t.shot('shift-on-king-tile', { controls: [5, 4] });
+  await t.shot('shift-on-king-tile', { controls: [5] });
   await t.page.keyboard.press('Escape'); await t.ready();
-  t.check(!(await t.has(4)), 'Escape clears the selection');
+  t.check(!(await t.summary()).includes('Selected White'), 'Escape clears the selection');
   // Keyboard-only move: walk the focus to the a1 corner, then to e2, select, walk to e4, commit.
   await t.page.locator('canvas').focus();
   for (const key of [...Array(7).fill('ArrowLeft'), ...Array(7).fill('ArrowDown'), 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowUp']) { await t.page.keyboard.press(key); await t.ready(); }
@@ -554,7 +578,7 @@ await scenario('shift', DESKTOP, async t => {
   await t.open();
   await t.clickSquare(sq('f4'));
   await t.shot('tile-c2-selected', { squares: [sq('e3'), sq('f4'), sq('c3')] });
-  await t.control(4);
+  await t.clearSelection();
   await t.motion(true); await t.play(sh('C2', 'B2')); await t.saveMotion('empty-shift', await t.motion(false));
   await t.shot('after-empty-shift', { squares: [sq('c3'), sq('e3'), sq('e4')] });
   await t.play(sh('C3', 'B3'), { via: 'control' });
@@ -563,8 +587,10 @@ await scenario('shift', DESKTOP, async t => {
   const carried = game.legalActions().find(a => a.id === sh('D2', 'C2'));
   if (t.check(carried, 'The knight platform D2 can Shift into C2')) {
     await t.clickSquare(sq('h3'), 16); await t.shot('knight-selected-before-shift', { controls: [5] });
-    await t.control(5); await t.shot('knight-platform-selected', { squares: [sq('g3'), sq('e3')] });
-    await t.control(4);
+    if (await t.has(5)) await t.control(5);
+    else await t.change(() => t.page.keyboard.press('s'));
+    await t.shot('knight-platform-selected', { squares: [sq('g3'), sq('e3')] });
+    await t.clearSelection();
     await t.motion(true); await t.play(carried.id); await t.saveMotion('carry-shift', await t.motion(false));
     await t.shot('after-carry', { squares: [sq('f3'), sq('h3')] });
   }
@@ -677,14 +703,16 @@ await scenario('camera', DESKTOP, async t => {
   const stats = await t.frames('orbit-drag', async () => { await t.saveMotion('orbit', await drag(120, 60, false, true)); });
   await t.shot('orbited', { squares: [sq('e1'), sq('d8')] });
   const pick = async tag => {
+    if ((await t.shown()).menu === 11) await t.control(28);
     await t.clickSquare(sq('g1'), 16);
     const ok = await t.has(1000 + mv('g1', 'f3'));
     t.check(ok, `Canvas picking selects g1 at ${tag}`, JSON.stringify((await t.shown()).view));
     await t.shot(`pick-${tag}`, { squares: [sq('g1'), sq('f3')] });
-    if (ok) await t.control(4);
+    if (ok) await t.clearSelection();
+    await t.control(56); // Camera controls live in the compact View rail.
   };
   await pick('orbit');
-  await drag(-80, -30, true); await pick('alt-orbit');
+  await t.control(28); await drag(-80, -30, true); await pick('alt-orbit');
   for (let i = 0; i < 12; i++) await t.control(16);
   t.check((await t.shown()).view.pitch === 35, 'DOWN clamps pitch at 35', JSON.stringify((await t.shown()).view));
   for (let i = 0; i < 8; i++) await t.control(17);
@@ -693,12 +721,12 @@ await scenario('camera', DESKTOP, async t => {
   for (let i = 0; i < 12; i++) await t.control(15);
   t.check((await t.shown()).view.pitch === 90, 'UP clamps pitch at 90');
   await pick('top-max-zoom');
-  for (let i = 0; i < 10; i++) await t.control(18);
+  for (let i = 0; i < 12; i++) await t.control(18);
   t.check((await t.shown()).view.zoom === 75, 'ZOOM- clamps at 75');
   await t.control(11); await t.control(12); await pick('overhead');
   for (let i = 0; i < 6; i++) await t.control(14);
   await pick('right-90');
-  await t.control(19);
+  await t.control(19); await t.control(28);
   await t.page.locator('canvas').focus();
   const c = await t.toPage(256, 400); await t.page.mouse.move(c.x, c.y);
   await t.change(() => t.page.mouse.wheel(0, -400));

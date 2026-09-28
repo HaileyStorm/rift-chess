@@ -940,3 +940,19 @@ A separate [CPU-only candidate package request](https://github.com/HaileyStorm/C
 preserves the 88 GiB pre-emission guard, one bounded C/ELF attempt and fresh
 X.Org/PCM/restart probes only after the source/asset/compiler receipt binds.
 No native candidate result is inferred before that reply.
+
+The [Linux CPU-candidate reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863271416)
+stopped at the first resource gate: host MemAvailable was 72.538 GiB,
+15.462 GiB below the 88 GiB floor. No second sample, source/asset preflight,
+C emission, ELF, X.Org, PCM, or restart followed. The host released its claim;
+there is no native candidate acceptance or permission to lower the guard or
+blindly retry. The [Linux path-count clarification](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5863349323)
+confirms 27 changed patches and 28 final input entries including unchanged
+Base, with line-ending normalization; this still is not end-to-end parity.
+
+A subsequent [compact MOVES overflow repair](docs/evidence/v2-compact-overflow/README.md)
+is a source-dirty local draft. A bound rendered mobile test reproduced and
+then verified that the overflow opener exposes legal moves, while selection,
+Shift, camera, and the existing Chrome hotseat suite passed their bounded
+checks. This source is newer than the Linux requests and published preview;
+the native, full playtest, hosted and owner visual gates remain open.
