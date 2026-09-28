@@ -70,3 +70,41 @@ nor rapid detailed-art acceptance is closed by this candidate alone.
 The source is still a local draft at this point. Clean build, hosted
 publication, native closure comparison and owner visual acceptance remain
 separate gates.
+
+## Clean build and hosted preview
+
+The reviewed implementation was committed and pushed at
+`b9566067122e8d268881b586591dcfeeaaeb247a`. A non-draft build on the
+unchanged pristine Bend 2.0.27 pin has `sourceDirty: false`, browser content
+version `b5251c45ce22760635b0` and `build.json` SHA-256
+`ce9a29f5067a9eca746502862aa8835193493dbf2ed1356d8988df80451d3c72`.
+The local clean exact-bound 13-group Chrome suite passed with zero errors
+(receipt SHA-256
+`7289295c61eb5ebbfdba9da4c94156d098ce0b43286b8aabe45f6b477a239b66`),
+as did `desktop-start`, HTTP-200 corrupt-RGA fallback and immediate startup
+selection together (summary SHA-256
+`e3bd6302ecc66385c7b0743e55fb70778ef13e7315128a4e69dcffc440d04c8e`).
+The original TypeScript application passed 62 tests and its production build;
+its source and published assets were not changed.
+
+The [Bend-only shareable preview](https://haileystorm.github.io/rift-chess-bend2/)
+advanced to Pages commit `53c96bccc7bb37193671fe5bba4f59865c1da9f9`,
+which reported `built`. The live byte verifier matched 22 Bend files and the
+two unchanged original-game baselines. Its ignored publication receipt is
+`.artifacts/bend2/publication/2026-09-28T16-11-39-977Z-d38557e6/receipt.json`,
+SHA-256 `39e2b30fb9d5522ce543ae1da17b82ae4e4a17335bc8cf6fe722986d992ba9ee`.
+The hosted exact-manifest-bound 13-group Chrome suite passed with zero errors
+(receipt SHA-256
+`d103f9fdb633383170cba0a6a2f70c217d71f0c12cfbf75b042e930b9cba9d46`),
+as did the three focused rendered scenarios (summary SHA-256
+`65a78eccb5c5a92f13d23b2865d0b320aca1898f87e650238c868cc292e71de2`).
+One hosted start took 2,536.8 ms for its first proxy request/reply, then
+3,330.0 ms from that frame to ornate detail; this is a sample, not a bound.
+
+`git diff --name-only cafc934..b956606` contains only browser transport,
+tests and documentation. It contains no `.bend`, native entry, compiler or
+asset change, so the previously reported Linux CPU C/ELF/GUI/PCM/restart
+input closure was not modified; that is a source comparison, not a new Linux
+execution on this commit. Native GPU-on original-cadence parity, rapid
+first-frame response, transient clone-memory peaks, a reviewed 2.0.28 pin,
+and owner visual acceptance remain open.

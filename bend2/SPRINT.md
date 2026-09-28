@@ -1249,3 +1249,13 @@ eight paired startup samples suggest an earlier detailed frame without a
 measured first-click penalty. The one-time structured clone still costs
 hundreds of milliseconds and its transient memory peak is unknown. This is
 not yet a clean/public build or a universal responsiveness pass.
+
+The [clean plate-sharing browser release](docs/evidence/v2-shared-plate/README.md#clean-build-and-hosted-preview)
+is now published at separate Pages commit `53c96bc` from source `b956606`.
+The live byte verifier matched 22 Bend files and both original baselines;
+local and hosted exact-bound 13-group Chrome suites and focused malformed
+plate/startup cases passed. One hosted detailed-art sample arrived 3.33 s
+after the first proxy, but this does not establish a rapid cold-start bound
+or solve the source-bound CUDA-on 250 ms failure. The native/Bend input
+closure did not change from the last Linux CPU gate; no new native result or
+toolchain pin acceptance is inferred.
