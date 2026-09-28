@@ -105,3 +105,35 @@ fixture bytes matched their pre-run hashes after both lanes. No provider
 network monitor was used: the wrapper sets a loopback-only hub and invokes
 no provider command. This is a finite compiler differential, not a proof
 verdict, execution of fixture programs, native device or release acceptance.
+
+## Proof-authority migration guard, 2026-09-28
+
+The exact final 2.0.28+006 snapshot still has no exported `Comp.SYNTH` or
+`Comp.book_owned`; frozen `core/v2/node-check.mjs` calls both, so the 2.0.27
+proof receipt cannot be relabeled a canonical 2.0.28 proof. The prior
+source-bound candidate check above did pass 1,584 frozen aggregate terms with
+zero holes, zero unsafe/foreign taint and zero denied fetches. It reaches the
+private candidate ownership guard through an empty selected JS emit, then
+performs the whole-book checks separately. That is isolated candidate evidence.
+
+The reproducible `bend2/toolchain-patches/proof-guard-2028.test.mjs` now binds
+the reviewed final snapshot's complete 95-file Bend tree and canonical
+`bend.ts` and `comp.ts` hashes and
+tests that same empty selected emit on three synthetic books. The empty book
+passes; a non-Base `IO` declaration fails with the reserved-name verdict;
+and a foreign def colliding with a constructor fails with the distinct
+foreign-constructor verdict. `node` exit 0, three checks passed. No frozen
+file, canonical compiler, Law, browser build or native source changed.
+
+Independent read-only invariant review found that `node-check.mjs` and
+`proof-runtime.json` are protected in the v2 semantic manifest, not
+substitutable by the tool-only amendment contract. A migration must preserve
+their old bytes and evidence, create a reviewed versioned proof authority,
+bind the current compiler and full frozen Law closure, and retain whole-book
+TODO, unsafe and foreign rejection. Distinct negative controls for each of
+those failures and the six existing law mutations are required; a generic
+nonzero error is insufficient. `tools/loader.ts`, `tools/native-c-emitter.mjs`
+and `lib/graphics/v2/tools/actual_compiler.mjs` also call the removed exports
+and must be migrated or explicitly handled before a 2.0.28 pin. The new
+synthetic guard check is necessary but not sufficient for that migration;
+pin amendment and native/GPU/browser acceptance remain open.

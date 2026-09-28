@@ -1308,3 +1308,12 @@ local Node sample; flat destination controls are cheaper. It is not a
 real-Chrome speed improvement, published renderer change or responsiveness
 acceptance. Optimize only after paired browser timing and exact visual/input
 parity protect the authored button edges.
+
+The [2.0.28 proof-authority guard](docs/evidence/toolchain-2028-stack/README.md#proof-authority-migration-guard-2026-09-28)
+now source-binds the isolated final candidate's empty selected-emit adapter
+and positively checks its private ownership guard with reserved-name and
+foreign-constructor negative controls. Independent invariant review confirms
+that frozen v2 `node-check.mjs` cannot be substituted by the ordinary tool
+amendment; a new reviewed proof-authority version must preserve all v2 bytes,
+retain whole-book TODO/unsafe/foreign rejection, and migrate three other
+active removed-API callers. This diagnostic is not a pin or proof amendment.
