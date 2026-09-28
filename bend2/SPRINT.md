@@ -1152,3 +1152,22 @@ Fool's Mate capture showed the initial terminal proxy frame upgrading to
 ornate pieces on a refinement packet for terminal revision 4. This closes
 that narrow visual-lifecycle question, not the multi-second delay, full
 current-source scenario union, owner acceptance or GPU-on latency gate.
+
+The [corrected-readiness CPU-only fixture](docs/evidence/native-2028-gpu/README.md#corrected-readiness-inverted-xres-status-control)
+then reached XRes on an owned display, and wrong-cookie denial passed, but
+its copied helper inverted `XResQueryClientIds` status 0 and stopped before
+PID comparison. The mistaken reviewer approval is preserved and superseded.
+The fixture/claim closed without GPU use. A new bounded
+[status/ownership control](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5869916117)
+requires the original `status != 0` check and an exact private-cookie PID
+match; it is CPU-only and cannot relabel the failed CUDA-on gate.
+
+The [hosted current-source 20-name matrix union](docs/evidence/v2-playtest-recovery/README.md#current-published-source-matrix-union-and-mobile-chooser-anomaly)
+now has passing samples for every scenario across separate bounded runs,
+including two natural bot games and both long 304-action draw paths. It is
+**not** a zero-defect aggregate: one raw mobile run timed out waiting for its
+second file chooser after a successful import/underpromotion. Five bounded
+mobile repeats passed; a positive trace saw Bend `PickFile`, a browser file
+input click, and active transient user activation, but did not explain the
+failure. The driver now preserves bounded effect/click state on a future
+timeout. Reliable portrait import and responsiveness remain open.

@@ -82,12 +82,18 @@ const summary = { run, url, at: new Date().toISOString(), buildVersion: build.ve
   scenarios: [], defects: [], timings: {} };
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const instrument = () => {
-  window.__frames = []; window.__refinements = []; window.__sounds = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
+  window.__frames = []; window.__refinements = []; window.__sounds = []; window.__effects = [];
+  window.__fileClicks = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
   const openWindow = window.open;
   window.open = (...args) => { window.__opened.push(String(args[0])); return null; };
   void openWindow;
   const startSound = AudioBufferSourceNode.prototype.start;
   AudioBufferSourceNode.prototype.start = function (...args) { window.__audioStarts++; return Reflect.apply(startSound, this, args); };
+  const inputClick = HTMLInputElement.prototype.click;
+  HTMLInputElement.prototype.click = function (...args) {
+    if (this.type === 'file') window.__fileClicks.push({ at: performance.now(), active: navigator.userActivation?.isActive });
+    return Reflect.apply(inputClick, this, args);
+  };
   const Native = window.Worker;
   window.Worker = class extends Native {
     requests = new Map();
@@ -96,6 +102,10 @@ const instrument = () => {
       this.addEventListener('message', event => {
         const m = event.data;
         if (m.kind === 'fault') window.__fault = m.message;
+        if (m.kind === 'frame') for (const effect of m.effects || []) {
+          window.__effects.push({ id: m.id, kind: effect.$, at: performance.now() });
+          if (window.__effects.length > 64) window.__effects.shift();
+        }
         if (m.kind === 'refinement') {
           window.__refinements.push({ at: performance.now(), dirty: !!m.image,
             revision: Number(m.presentation?.revision),
@@ -341,7 +351,24 @@ async function scenario(name, viewport, body) {
       if ((await t.shown()).menu !== 2) await t.control(1);
       const chooser = page.waitForEvent('filechooser');
       await t.control(21, { settle: false });
-      const fileChooser = await chooser;
+      let fileChooser;
+      try { fileChooser = await chooser; }
+      catch (error) {
+        const diagnostic = await page.evaluate(() => ({
+          menu: window.__shown?.menu, revision: window.__shown?.revision,
+          busy: document.querySelector('canvas')?.getAttribute('aria-busy'),
+          fault: window.__fault, fileClicks: window.__fileClicks.slice(-3),
+          effects: window.__effects.slice(-8), frames: window.__frames.slice(-5).map(f => ({ kinds: f.kinds, ms: f.ms })),
+        }));
+        throw new ScriptError(`File chooser did not open: ${JSON.stringify(diagnostic)}; ${error.message}`);
+      }
+      const chooserRoute = await page.evaluate(() => ({
+        click: window.__fileClicks.at(-1) ?? null,
+        effect: window.__effects.filter(item => item.kind === 'PickFile').at(-1) ?? null,
+      }));
+      (result.timings.fileChoosers ??= []).push(chooserRoute);
+      t.check(!!chooserRoute.click && !!chooserRoute.effect,
+        'Bend PickFile effect reaches the browser file input', JSON.stringify(chooserRoute));
       const before = await page.evaluate(() => window.__reply.id);
       await fileChooser.setFiles({ name: 'scenario.json', mimeType: 'application/json',
         buffer: Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)) });

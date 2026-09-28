@@ -107,3 +107,38 @@ output and exit status before the wrong/private-cookie controls. It requires
 a fresh narrow claim and grants no GPU authority; its result is pending. The
 original c30 GPU-on 250 ms failure remains the only completed device
 acceptance verdict; the later cafc visual source has no GPU result.
+
+## Corrected readiness, inverted XRes status control
+
+The [next CPU-only fixture reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5869250290)
+established owned-display readiness using `xwininfo -root` with a retained
+startup exit 1 followed by exit 0 and 320×240 dimensions. Its uniquely owned
+test window and wrong-cookie XRes denial passed. The private-cookie call
+reached `XResQueryClientIds` but the copied helper rejected a returned status
+of **0** before reading a PID. It had inverted the original correct
+`status != 0` failure predicate. A preliminary disassembly interpretation
+and reviewer approval of that inversion were explicitly corrected (host-local
+correction receipt SHA-256
+`07bd79184246373a90783b5dc86230f0ab4dc91ba714f8d0b2327b71aabe2b`).
+The X server's [Success status](https://sources.debian.org/src/xorg-server/2%3A1.20.11-1%2Bdeb11u13/Xext/xres.c/)
+and the host's installed libXRes observation both use 0 here; a successful
+private-cookie PID ownership comparison was **not** observed.
+
+Host-local blocker/result/readiness SHA-256 values are
+`f815fb87c9311571b16ea458785ce4b7f2cc20337bbd56601998ef36cab9dc8e`,
+`84ca1b82c21575fbe2dae559604e29cbe4fa790baa9029adef3ba30a1deff9e5`,
+and `41069a0e9896a29af0982ca9108658813ee8a8942d493f09961ed7bc8e11271f`.
+The original/copied harness hashes are
+`fd68db207305af24a213fc52f297830503524982efba4570d1d3bbd251886328`
+and `0483732cf1f65aa45236fdba01644192628ec2effb3f873236e86271d545b7bc`;
+diff `ac9bde4b8eaba36c6a792fe1e8f186069d017cbb065a70523766c25974df9e32`.
+The host reports owned fixture teardown and exact claim release (SHA-256
+`63cb2843b44ff7b0bdc9f30f6d373b23c73cc53b8059ff41394caf8b1b73a785`).
+There was no GPU lease/use, native app build, or timing attempt.
+
+One [new CPU-only status/ownership control](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5869916117)
+requires restoring the original `status != 0` check, preserving the scoped
+authority/readiness fixes, rechecking wrong-cookie denial and verifying a
+private-cookie status-0 reply with a returned PID equal to the owned window
+process. Its result is pending; it grants no GPU authority. The c30 original
+250 ms GPU-on failure remains unchanged.

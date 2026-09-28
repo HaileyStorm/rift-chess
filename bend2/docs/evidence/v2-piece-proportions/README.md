@@ -91,6 +91,12 @@ checkmate that visibly upgrades from proxy pieces to the detailed final art.
 Those rendered checks do not make the several-second refinement rapid or
 replace owner visual acceptance.
 
+The later [current-source hosted matrix union](../v2-playtest-recovery/README.md#current-published-source-matrix-union-and-mobile-chooser-anomaly)
+reached passing samples for all 20 scenario names across bounded runs,
+including both long draw-policy imports. One raw mobile attempt timed out
+waiting for its second browser file chooser; subsequent passes do not erase
+that unresolved intermittent import boundary.
+
 ### Rejected nearest-filter speed trial
 
 A reversible local draft swapped only the interactive piece filter from

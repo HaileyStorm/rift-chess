@@ -168,6 +168,52 @@ the visually inspected detailed terminal PNG is
 `aa8063514e8323bf18850aa1db33eafe4712830cbb849bdfc3878f9c6082aa97`.
 This confirms that a terminal board can refine rather than being permanently
 stuck at proxies. It does not measure a universal refinement bound or prove
-that every bot terminal packet was captured after refinement. The current
-source has not repeated the full 20-scenario union or the long 304-action
-draw imports; earlier exact versions retain those separate finite results.
+that every bot terminal packet was captured after refinement. At this
+checkpoint the new-source 20-name union and long 304-action imports were
+still open; their later results and failure boundary follow below.
+
+## Current published-source matrix union and mobile chooser anomaly
+
+All 20 current rendered-playtest scenario names now have at least one passing
+sample against the exact clean hosted version `817dfa63932dd6ccf4b4` and
+served `build.json` SHA-256
+`40a49368c1bebaec3882b61e131dca99bf517da11735fcf1dcb320440449dfea`.
+This is a union of bounded runs, **not** one uninterrupted 20-scenario pass:
+
+| Ignored run under `.artifacts/bend2/playtest-stage2/` | Passing names | Summary SHA-256 |
+| --- | --- | --- |
+| `shorter-piece-hosted-20260928` | desktop-start | `097d3ddfb30557de2bd3bd80e79c4e37b112b85cf9507329e2147ff8633d4f32` |
+| `piece-proportion-bot-white-20260928` | bot-white | `185a635075d8ab848377036da43eae1eb9a3e73416b4f9720114e0d5dabd3556` |
+| `piece-proportion-bot-black-20260928` | bot-black | `24acc2852564e4ab7cb391f2dc84da22dd8f680bf727ed7d0b2041a568e17100` |
+| `piece-proportion-draw-terminals-20260928` | draw-terminals | `b6c27139b782b244b8b2387ac5629e281a90ef128749a7b1698924c9bbbb04a0` |
+| `piece-proportion-draw-prompt-20260928` | draw-prompt | `6d24af19a1ce2ea0898ff9210558d7aff7c6dcc18d197b5872a53e2e8eb784af` |
+| `terminal-sprite-refinement-20260928` | hotseat-black-mates | `af1ce3de03d4e20a42fa06f7ee70cc48aeab9e85a090c648f8ade1bdefefd463` |
+| `piece-proportion-matrix-a-20260928` | defaults, selection, hotseat-white-mates, castle-en-passant, promotion, shift | `9c5c633605d7d5ed3db838e948ce16088fc96cdcb7bdcdbba5026f3a8fb8529b` |
+| `piece-proportion-matrix-b-20260928` | draw-actions, undo, camera, menus, persistence, resize | `ccb963a320ef15af06984e72db87258768d053aeb6b713c0c89f3db509c4b095` |
+| `piece-proportion-mobile-repeat-20260928` | mobile | `1b90704678856990b9ed9da251953a6daf6d28bd988a06701c41917624cf3ea7` |
+| `piece-proportion-hosted-perf-20260928` | perf | `d71b64768c6348814427fb354ffc422ac3164ec5ffc8490feb5c77c2f8997790` |
+
+The two 304-action draw-policy imports passed separately: draw-terminals
+covered threefold, stalemate, bare kings, progress100 and checkmate in
+550.3 seconds (30 checks, zero defects); draw-prompt stayed nonterminal
+at 100 quiet actions and paged its history in 332.4 seconds (eight checks,
+zero defects). These are finite browser/reference checks, not a speed or
+universal rules proof.
+
+The raw matrix-B run above was **red** overall: its mobile scenario imported
+and underpromoted successfully, then timed out waiting 30 seconds for the
+second browser file chooser. The failure capture showed Preferences with
+IMPORT visible, but that version of the test did not record whether Bend
+emitted `PickFile` or whether `input.click()` had user activation. Preserve
+the raw failure; the six other scenarios in that run passed. Five later
+standalone mobile samples passed, including three with a diagnostic hook and
+one with a positive route receipt (summary SHA-256
+`36ada0ef5eadd1bda6a48c1743c56fd1856d18a3097b73ec7fca2701720d86b5`).
+That positive run saw both `PickFile` effects and two file-input clicks with
+transient activation active; it does **not** diagnose or erase the failure.
+The playtest driver now records bounded effect/click/activation state if the
+chooser times out (current driver SHA-256
+`5aa36a7170d957db64bb2edbe5249ba488847233bd2f39ccdb5b176c37d2a21e`).
+This intermittent import boundary remains open. Passing names across runs
+do not establish reliable portrait import, human acceptance, native/GPU
+parity, a frame budget, or the reviewed compiler pin.
