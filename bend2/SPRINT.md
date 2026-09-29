@@ -1633,3 +1633,8 @@ derived checkout is available for ordered patch rebases, starting with 001;
 005 remains a concrete prerequisite for this host. No frozen file or pin
 changed, and BendTT was not invoked because it would attempt a kernel build
 outside the workspace without an installed local Lean/BENDTT runtime.
+The [isolated 2.0.32 patch 001 candidate](toolchain-patches/001-arity/rebase-2032/README.md)
+now has an exact pristine/derived C+JS byte-comparison gate for its FID
+247/248 rejection and four CID constructor widths through 256. It restores
+the source return-binder diagnostic; extreme encoded-CID overflow, full
+stack replay and all proof/runtime/browser/native acceptance remain open.

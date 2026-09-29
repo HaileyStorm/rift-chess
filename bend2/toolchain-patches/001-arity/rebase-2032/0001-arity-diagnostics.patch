@@ -1,0 +1,62 @@
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index fab3ccd..99a8e4d 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -28,2 +28,7 @@ type Seg = {
+   def: Name;
++  origin?: Name;
++  // Diagnostic-only source layout; successful emission never reads it.
++  layout?: { captures: { name: Name; words: number }[];
++    binder?: { name: Name; words: number };
++    result: { names: string[]; words: number } };
+   ret: Lay;
+@@ -1607,3 +1612,4 @@ function seg_name(fl: File, stem: string): string {
+ function seg_open(fl: File, name: string, ret: Lay, frame: Seg["frame"],
+-  live: [Of<"Var">, Bind][], res: Val, rest: HTerm[]): File {
++  live: [Of<"Var">, Bind][], res: Val, rest: HTerm[],
++  binder?: Name): File {
+   const olds = live.flatMap(([, b]) => b.val.ws);
+@@ -1612,2 +1618,10 @@ function seg_open(fl: File, name: string, ret: Lay, frame: Seg["frame"],
+     [...live.flatMap(([, b]) => b.val.lay.ks), ...res.lay.ks], frame);
++  seg.origin = fl.def;
++  if (seg.params.length > WIDE) {
++    seg.layout = { captures: live.map(([p, b]) =>
++      ({ name: p.k, words: b.val.ws.length })),
++      binder: binder === undefined ? undefined
++        : { name: binder, words: res.ws.length },
++      result: { names: [...res.ws], words: res.ws.length } };
++  }
+   fl.segs.push(seg);
+@@ -2683,3 +2697,3 @@ function emit_fork(fl: File, x: Of<"Let">, ers: HTerm[]): void {
+     fl = seg_open(fl, kn, fl.seg.ret, { pop: last ? depth : 0, at }, held, rs,
+-      rest);
++      rest, o.ps[i].k);
+     bind_uses(fl, o.ps[i], rs, rest, ty_ann(x.v[i])!);
+@@ -2889,4 +2903,25 @@ function compile_tables(fl: File, entries: Seg[]): string[] {
+   const ars = [...cids.values()].map((n) => n > WIDE ? 240 + Math.log2(n) : n);
+-  if (entries.some((s) => s.params.length > WIDE) || ars.some((n) => n > 255)) {
+-    die("an arity over " + WIDE);
++  const wideSegment = entries.findIndex((s) => s.params.length > WIDE);
++  if (wideSegment >= 0) {
++    const seg = entries[wideSegment];
++    const layout = seg.layout;
++    die("native C segment layout exceeds " + WIDE + "-word cap: FID_T["
++      + wideSegment + "]=" + seg.params.length
++      + ", owner=" + JSON.stringify(seg.origin ?? seg.def)
++      + ", segment=" + seg.fid
++      + (layout ? ", captures=" + layout.captures.length + " ["
++        + layout.captures.map((c) => JSON.stringify(c.name) + ":" + c.words)
++          .join(", ") + "] (" + layout.captures.reduce((n, c) => n + c.words,
++            0) + " words), " + (layout.binder
++          ? "return binder=" + JSON.stringify(layout.binder.name) + " ("
++            + layout.binder.words + " words)"
++          : "result=" + JSON.stringify(layout.result.names) + " ("
++            + layout.result.words + " words)") : ""));
++  }
++  const wideTable = ars.findIndex((n) => n > 255);
++  if (wideTable >= 0) {
++    const owner = [...cids.keys()][wideTable];
++    die("native C CID_T entry exceeds 255-byte cap: CID_T[" + wideTable
++      + "]=" + ars[wideTable] + ", owner=" + JSON.stringify(owner)
++      + ", source_words=" + cids.get(owner));
+   }
