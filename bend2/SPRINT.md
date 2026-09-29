@@ -1575,6 +1575,27 @@ generation showed allocation-sensitive ground/piece tails and a separate GC
 trace recorded a 51-ms full collection; that is a lead for attribution, not
 proof that GC caused the Chrome tail or a constrained-device result.
 
+The [motion-wall classification cull](docs/evidence/v2-motion-wall-cull/README.md)
+avoids eager affine classification for quadtree cells outside each exposed
+orbit wall. The committed `fc11252` source checks, 288-view wall sweep and
+152,043,520-byte composed pixel differential retained exact sampled output;
+the clean local build `e2ced02d5cf5cb05a332` passed its own 24-scenario,
+685-check Chrome matrix with zero defects. Paired 128-MiB V8 old-generation
+drag samples favored the candidate, while uncapped samples varied by order;
+there is no physical-device speed claim. New-source native CPU/GUI/PCM/restart,
+GPU-on repair, hosted publication and owner visual acceptance are still open.
+
+The owner's [matrix cleanup](docs/evidence/v2-matrix-cleanup/README.md) kept
+the real interactions and long-history import stress while recording the
+actual cost: two 303-command imports dominated draw-terminal/prompt time;
+reference replay and captures did not. A speculative oracle cache was tested
+and removed. A deterministic 100-quiet-move witness now shortens only the
+auto100 boundary import; the original 304-command prompt/history scenario
+remains. The strengthened focused browser case passed 39 checks with zero
+defects, including Bend/reference quiet counts at 99 and 100. A final full
+matrix of 24 scenarios/689 checks is required before treating the harness
+revision as accepted; the game build and frozen semantics are unchanged.
+
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:
 bind the original second-release input and monotonic CPU/scheduling samples
@@ -1591,9 +1612,15 @@ retains its host-local blocker hash and the unrepaired CUDA-on failure. Do
 not substitute a privileged or alternate profiler without a separately
 reviewed authority and exact diagnostic path.
 
-The canonical 2.0.28 pin still needs the owner's migration choice recorded in
-the [assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract):
-the reviewed patched candidate passes isolated checks, but clean upstream
-2.0.28 rejects a frozen alias and the frozen v2 checker calls removed compiler
-exports. Clean 2.0.32 fixes the alias but still lacks those exports. Neither
-candidate may silently replace the 2.0.27 pin or weaken a Law.
+The owner now prefers carrying a versioned checker and the applicable
+downstream patches **directly to 2.0.32**, if feasible, rather than adopting
+2.0.28 first. The [2.0.28 assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract)
+and patch receipts remain historical candidate evidence. The pristine local
+2.0.32 scout fixes the alias, but removed compiler exports and a changed JS
+emitter API require a new proof authority and distinct adapter/replay gates.
+Review 001 arity, 002 layout, 005 Windows paths and 004 Web Workers against
+2.0.32 individually; 006's alias fix appears upstream and must not be blindly
+reapplied, while experimental 003 was never in the reviewed main stack.
+Keep the clean 2.0.27 canonical pin and every frozen Law until the separate
+derived-compiler review, exact proof/mutation/browser/native gates and the
+guide's chained amendment pass. No 2.0.32 acceptance is yet claimed.

@@ -29,6 +29,7 @@ if (process.env.BEND_PLAYTEST_BUILD_JSON)
 const run = process.env.BEND_PLAYTEST_RUN || new Date().toISOString().replace(/[:.]/g, '-');
 const root = path.resolve('.artifacts/bend2/playtest-stage2', run);
 const only = (process.env.PLAYTEST_ONLY || '').split(',').filter(Boolean);
+assert.equal(new Set(only).size, only.length, 'Duplicate PLAYTEST_ONLY scenario');
 const importGesture = process.env.BEND_IMPORT_GESTURE || 'canvas';
 assert.ok(['canvas', 'touch', 'keyboard'].includes(importGesture), 'unknown import gesture');
 const fixtures = JSON.parse(await fs.readFile(new URL('./fixtures/playtest-records.json', import.meta.url), 'utf8'));
@@ -177,6 +178,8 @@ async function scenario(name, viewport, body) {
   await page.addInitScript(instrument);
   let sequence = 0;
   let fileImportAttempts = 0;
+  let referenceReplayMs = 0, referenceReplayCalls = 0;
+  let captureMs = 0, captureFiles = 0;
   const t = {
     page, context, dir, result,
     async ready(timeout = 90000) {
@@ -298,9 +301,13 @@ async function scenario(name, viewport, body) {
     async verify(context) {
       const rec = await t.record() ?? record('B', 0, []);
       let game;
+      const oracleStart = performance.now();
       try { game = replayRecord(rec); } catch (error) {
         t.defect('critical', `Reference engine rejects the Bend journal (${context})`, error.message);
         return null;
+      } finally {
+        referenceReplayMs += performance.now() - oracleStart;
+        referenceReplayCalls++;
       }
       const shown = await t.shown();
       const board = t.boardCodes(shown), expected = game.state.board.map(p => p < 0 ? -p + 8 : p);
@@ -397,12 +404,15 @@ async function scenario(name, viewport, body) {
         }));
         throw new ScriptError(`File chooser did not open: ${JSON.stringify(diagnostic)}; ${error.message}`);
       }
+      const importStart = performance.now();
       await fileChooser.setFiles({ name: 'scenario.json', mimeType: 'application/json',
         buffer: Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)) });
       await page.waitForFunction(prior => window.__effects.filter(item => item.kind === 'PickFile').length > prior.effects &&
         window.__frames.slice(prior.frames).some(frame => frame.kinds.includes('FileText')), prior, { timeout: 60000 });
       // Validation replays every command through the frozen kernel (about a second each).
       await t.ready(60000 + 1500 * (value.commands?.length ?? 0));
+      (result.timings.imports ??= []).push({ commands: value.commands?.length ?? null,
+        readyMs: +(performance.now() - importStart).toFixed(1) });
       const chooserRoute = await page.evaluate(prior => ({
         click: window.__fileClicks[prior.clicks] ?? null,
         effect: window.__effects.filter(item => item.kind === 'PickFile')[prior.effects] ?? null,
@@ -422,6 +432,7 @@ async function scenario(name, viewport, body) {
       return shots;
     },
     async saveMotion(tag, shots, board = true) {
+      const started = performance.now();
       const names = [];
       for (const [i, data] of shots.entries()) {
         const file = path.join(dir, `${String(++sequence).padStart(2, '0')}-${tag}-A${i}.png`);
@@ -438,10 +449,12 @@ async function scenario(name, viewport, body) {
         await fs.writeFile(file, png); names.push(path.basename(file));
       }
       result.shots.push({ name: `${tag}-motion`, files: names });
+      captureMs += performance.now() - started; captureFiles += names.length;
       return names;
     },
     /** Hierarchical capture: L1 canvas, L2 regions, L3 squares/controls/rects. */
     async shot(tag, { squares = [], controls = [], rects = [], pageShot = false } = {}) {
+      const started = performance.now();
       const shown = await t.shown();
       const regions = captureRegions(shown);
       const details = [];
@@ -466,6 +479,7 @@ async function scenario(name, viewport, body) {
       for (const [i, d] of details.entries()) await write(`L3-${d.name}`, data.details[i]);
       if (pageShot) { const file = `${prefix}-page.png`; await page.screenshot({ path: path.join(dir, file), fullPage: true }); files.push(file); }
       result.shots.push({ name: tag, files });
+      captureMs += performance.now() - started; captureFiles += files.length;
       return files;
     },
     async frames(tag, fn) {
@@ -502,6 +516,8 @@ async function scenario(name, viewport, body) {
     try { await t.shot('FAIL'); } catch {}
   } finally {
     for (const e of result.errors) t.defect('major', 'Browser console/page error', e);
+    result.timings.referenceReplay = { calls: referenceReplayCalls, ms: +referenceReplayMs.toFixed(1) };
+    result.timings.capture = { files: captureFiles, ms: +captureMs.toFixed(1) };
     result.seconds = Math.round((Date.now() - started) / 100) / 10;
     summary.scenarios.push(result); summary.timings[name] = result.timings;
     await fs.writeFile(path.join(dir, 'result.json'), JSON.stringify(result, null, 2));
@@ -766,11 +782,24 @@ await scenario('shift', DESKTOP, async t => {
 await scenario('draw-terminals', DESKTOP, async t => {
   await t.open();
   for (const [name, fixture] of Object.entries({ threefold: fixtures.threefold, stalemate: fixtures.stalemate,
-    bareKings: fixtures.bareKings, progress100: fixtures.progress100, checkmate: fixtures.checkmate })) {
+    bareKings: fixtures.bareKings, progress100: fixtures.progress100Short, checkmate: fixtures.checkmate })) {
     await t.upload(record(fixture.layout, fixture.policy, fixture.actions.slice(0, -1)));
+    if (name === 'progress100') {
+      const before = await t.verify('99 quiet moves before auto draw');
+      const shown = await t.shown();
+      t.check(before?.state.halfmove === 99 && !before.outcome() && shown.position.quiet === 99,
+        'Imported short witness is live at quiet count 99',
+        `reference ${before?.state.halfmove}, Bend ${shown.position.quiet}`);
+    }
     await t.play(fixture.actions.at(-1));
     const game = await t.verify(name);
     t.check(game?.outcome()?.reason === fixture.outcome, `${name} reaches ${fixture.outcome}`);
+    if (name === 'progress100') {
+      const shown = await t.shown();
+      t.check(game?.state.halfmove === 100 && shown.position.quiet === 100,
+        'Final quiet move reaches count 100 in both engines',
+        `reference ${game?.state.halfmove}, Bend ${shown.position.quiet}`);
+    }
     await t.shot(name, { controls: [3, 6, 7] });
   }
 });
@@ -953,8 +982,9 @@ await scenario('menus', DESKTOP, async t => {
   // Desktop overflow: find a reachable piece with more than 12 destinations.
   let found = null;
   for (const fixture of [fixtures.progress100, fixtures.stalemate, fixtures.bareKings]) {
+    const game = new Game(fixture.layout === 'C' ? 'C' : 'B', 'prompt');
     for (let n = 1; n < fixture.actions.length && !found; n++) {
-      const game = replayRecord(record(fixture.layout, 0, fixture.actions.slice(0, n)));
+      game.step(fixture.actions[n - 1], n - 1);
       if (game.outcome()) break;
       const groups = new Map();
       for (const a of game.legalActions()) if (a.type === 'move') { const s = sq(a.from); groups.set(s, (groups.get(s) || new Set()).add(Math.floor(a.id / 5))); }
@@ -1139,6 +1169,18 @@ await scenario('perf', DESKTOP, async t => {
 
 // ---- report ----------------------------------------------------------------------------
 await browser.close();
+const checks = summary.scenarios.reduce((total, scenario) => total + scenario.checks.length, 0);
+const names = summary.scenarios.map(scenario => scenario.name);
+summary.coverage = { scenarios: summary.scenarios.length, checks,
+  expected: only.length ? null : { scenarios: 24, checks: 689 } };
+if (new Set(names).size !== names.length) summary.defects.push({ scenario: 'matrix', severity: 'script',
+  title: 'Duplicate playtest scenario', detail: names.join(',') });
+const absent = only.filter(name => !summary.scenarios.some(scenario => scenario.name === name));
+if (absent.length) summary.defects.push({ scenario: 'matrix', severity: 'script',
+  title: 'Unknown or skipped PLAYTEST_ONLY scenario', detail: absent.join(',') });
+if (!only.length && (summary.coverage.scenarios !== 24 || checks !== 689))
+  summary.defects.push({ scenario: 'matrix', severity: 'script',
+    title: 'Full playtest coverage changed', detail: JSON.stringify(summary.coverage) });
 const bySeverity = summary.defects.reduce((m, d) => (m[d.severity] = (m[d.severity] || 0) + 1, m), {});
 summary.counts = bySeverity;
 await fs.mkdir(root, { recursive: true });
