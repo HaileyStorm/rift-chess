@@ -59,6 +59,13 @@ async function canvasPoint(x, y) {
   const { width, height } = await page.locator('canvas').evaluate(canvas => ({ width: canvas.width, height: canvas.height }));
   return { x: box.x + x * box.width / width, y: box.y + y * box.height / height };
 }
+async function control(id) {
+  const rect = await page.locator(`[data-control="${id}"]`)
+    .evaluate(button => JSON.parse(button.dataset.rect));
+  const point = await canvasPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  await page.mouse.click(point.x, point.y);
+  await settled();
+}
 async function squarePoint(file, rank, piece = false) {
   const shown = await page.evaluate(() => window.__shown);
   const view = shown.view, yaw = view.yaw * Math.PI / 180;
@@ -111,6 +118,14 @@ try {
   await page.waitForTimeout(1100);
   await settled();
   await page.screenshot({ path: `${artifact}/browser-v2-after-e4.png` });
+
+  if (process.env.BEND_LIVE_WARM === '1') {
+    await control(1); await control(23); await control(28);
+    await page.waitForFunction(() => {
+      const value = localStorage.getItem('rift-bend-lab/preferences-v1');
+      return value && JSON.parse(value).theme === 1;
+    });
+  }
 
   const startEvent = await page.evaluate(() => window.__events.length);
   const refinementBeforeOrbit = await page.evaluate(() => window.__refinements.length);
@@ -174,6 +189,7 @@ try {
       'the 512px board slot reused the compact 256px motion tree');
   }
   console.log(JSON.stringify({ ok: true, url, initial, mobile,
+    warm: process.env.BEND_LIVE_WARM === '1',
     refinements,
     qualityProbes: qualityProbes.map(({ physicalEdge, sampleCount, measuredScale,
       mainP90Us, workerP90Us }) => ({ physicalEdge, sampleCount, measuredScale,

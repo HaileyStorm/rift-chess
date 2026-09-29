@@ -11,12 +11,14 @@ import { PixelPort } from '../platform/browser/image-port.ts';
 
 for (const name of ['scene', 'controller', 'menu']) assertCache(name);
 const nil = { $: 'Nil' };
-const raw = fs.readFileSync('bend2/assets/runtime/observatory-astral.rga');
-let bytes = nil;
-for (let i = raw.length - 1; i >= 0; i--) bytes = { $: 'Con', head: raw[i], tail: bytes };
-const plates = scene.load_plates({ $: 'Con', head: { $: 'AssetResponse',
-  id: { $: 'Astral' }, bytes, ok: true }, tail: nil });
-const underlay = scene.underlay128_asset(0, plates);
+const underlays = [0, 1].map(theme => {
+  const raw = fs.readFileSync(`bend2/assets/runtime/observatory-${theme ? 'stone' : 'astral'}.rga`);
+  let bytes = nil;
+  for (let i = raw.length - 1; i >= 0; i--) bytes = { $: 'Con', head: raw[i], tail: bytes };
+  const plates = scene.load_plates({ $: 'Con', head: { $: 'AssetResponse',
+    id: { $: theme ? 'Stone' : 'Astral' }, bytes, ok: true }, tail: nil });
+  return scene.underlay128_asset(theme, plates);
+});
 const packet = control.boot_reads('', '', true, true, 1024, 640);
 let enhanced = packet;
 const probe = { $: 'QualityProbe', portrait: false, physicalEdge: 1920,
@@ -45,19 +47,19 @@ function nodes(node) {
 const pixels = (image, width, height) =>
   Buffer.from(new PixelPort().render(image, width, height, Math.max(width, height)));
 const counts = [];
-for (const layout of layouts) for (const view of views) {
-  const frame = { ...layout.packet.snapshot.frame, view,
+for (const layout of layouts) for (const view of views) for (let theme = 0; theme < 2; theme++) {
+  const frame = { ...layout.packet.snapshot.frame, view, theme,
     selected: 6, hovered: 6, progress: 8, lastAction: 3980 };
-  const expanded = scene.fast_camera512(frame, underlay);
-  const source = scene.fast_camera256_for_512(frame, underlay);
+  const expanded = scene.fast_camera512(frame, underlays[theme]);
+  const source = scene.fast_camera256_for_512(frame, underlays[theme]);
   const chrome = { $: 'Pix', color: 0x142535 };
   const before = pixels(menu.compose(layout.packet.render.depth, layout.packet.plan,
     expanded, chrome), layout.width, layout.height);
   const after = pixels(menu.compose(layout.packet.render.depth, layout.packet.plan,
     source, chrome), layout.width, layout.height);
-  assert.ok(before.equals(after), `depth-8 source misinterpreted at ${layout.name}/yaw ${view.yaw}`);
+  assert.ok(before.equals(after), `depth-8 source misinterpreted at ${layout.name}/yaw ${view.yaw}/theme ${theme}`);
   compared += before.length;
-  counts.push({ layout: layout.name, yaw: view.yaw,
+  counts.push({ layout: layout.name, yaw: view.yaw, theme,
     compactNodes: nodes(source), expandedNodes: nodes(expanded) });
 }
 assert.ok(counts.every(row => row.compactNodes < row.expandedNodes));
@@ -68,7 +70,7 @@ for (let round = 0; round < 9; round++) for (const view of views) {
   for (const mode of round % 2 ? ['expanded', 'compact'] : ['compact', 'expanded']) {
     const started = performance.now();
     const board = mode === 'compact'
-      ? scene.fast_camera256_for_512(frame, underlay) : scene.fast_camera512(frame, underlay);
+      ? scene.fast_camera256_for_512(frame, underlays[0]) : scene.fast_camera512(frame, underlays[0]);
     const built = performance.now();
     const composed = menu.compose(10n, packet.plan, board, { $: 'Pix', color: 0x142535 });
     const pixels = ports[mode].render(composed, 1024, 640, 1024);
@@ -82,7 +84,7 @@ function stats(rows, key) {
   return { medianMs: +sorted[Math.floor(sorted.length / 2)].toFixed(2),
     p90Ms: +sorted[Math.ceil(sorted.length * 0.9) - 1].toFixed(2) };
 }
-console.log(JSON.stringify({ ok: true, views: views.length, layouts: layouts.length, counts,
+console.log(JSON.stringify({ ok: true, views: views.length, layouts: layouts.length, themes: 2, counts,
   comparedBytes: compared, timing: Object.fromEntries(Object.entries(timing).map(([mode, rows]) =>
     [mode, { samples: rows.length, tree: stats(rows, 'treeMs'), full: stats(rows, 'fullMs') }])),
   scope: 'Finite selected-JS exact pixels and interleaved same-process timing; not a proof or browser/native frame budget' }));

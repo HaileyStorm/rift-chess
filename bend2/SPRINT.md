@@ -1529,9 +1529,19 @@ also passed 24 scenarios/685 checks with zero defects on the exact deployed
 build. Faster arbitrary views, constrained devices, native GPU and owner
 visual acceptance remain open. A read-only review of the still-simplified
 during-orbit glyphs identified `PieceArt.camera_draw_min`, not the separate
-fast-piece proxy, as the narrow Bend-owned visual path. An isolated Black
-glyph contrast draft is being tested; the published build remains unchanged
-and no visual source is accepted from the mapping alone.
+fast-piece proxy, as the narrow Bend-owned visual path. The
+[isolated brass-edge draft](docs/evidence/v2-motion-brass-edge/README.md)
+adds a one-pixel accent behind Black's immediate orbit glyph, leaving the
+settled art, White glyphs and accepted cameras unchanged. Its 24-case color
+sentinel, four-view/three-layout/two-theme compact pixel check, real-Chrome
+cool/warm orbit captures and exact settled-pixel parity passed. Local drag
+timings were variable; there is no claimed speedup. The exact draft build
+passed the full local 24-scenario/685-check matrix with zero defects. It
+remains unpublished pending clean/hosted gates, and its `PieceArt.bend`
+change needs fresh native CPU evidence. A broad Windows NativeV2 source
+check timed out at its 120-second wrapper bound without a verdict; the child
+was observed absent afterward, so that attempt is neither a pass nor a
+source counterexample.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:

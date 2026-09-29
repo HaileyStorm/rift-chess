@@ -468,8 +468,8 @@ def camera_draw(+depth: Nat, +size: U32, +x: U32, +floor: U32,
   +code: U32, image: Image) -> Image:
   camera_draw.ready(Model.occupied(code), depth, size, x, floor, code, image)
 
-# Lowest-detail orbit glyphs use exactly one convex primitive per token.
-# Their outline—not an extra ring or base—carries the six-piece distinction.
+# Lowest-detail orbit glyphs use one compact contour per token. The dark
+# tokens receive a shifted brass edge below to remain visible over the rift.
 def camera_min_pawn(+depth: Nat, +size: U32, +x: U32, +floor: U32,
   body: U32, image: Image) -> Image:
   dot(depth, size, at(x), before_y(size, floor, 19), 7, body, 255, image)
@@ -522,17 +522,29 @@ def camera_min_type(+depth: Nat, +size: U32, +x: U32, +floor: U32,
     case 7: camera_min_pawn(depth, size, x, floor, body, image)
     case _: camera_min_pawn(depth, size, x, floor, body, image)
 
-def material_body(style: Material) -> U32:
+def camera_min_ink.side(white: Bool, +depth: Nat, +size: U32, +x: U32,
+  +floor: U32, +kind: U32, body: U32, glint: U32, shadow: U32,
+  image: Image) -> Image:
+  match white:
+    case True{}: camera_min_type(depth, size, x, floor, kind, body, image)
+    case False{}:
+      +edge = camera_min_type(depth, size, U32.add(x, 1),
+        U32.add(floor, 1), kind, glint, image)
+      camera_min_type(depth, size, x, floor, kind, shadow, edge)
+
+def camera_min_ink(+depth: Nat, +size: U32, +x: U32, +floor: U32,
+  +code: U32, style: Material, image: Image) -> Image:
   match style:
-    case Material{+body, shade, glint, shadow}: body
+    case Material{+body, shade, +glint, +shadow}:
+      camera_min_ink.side(Model.is_white(code), depth, size, x, floor,
+        Model.piece_type(code), body, glint, shadow, image)
 
 def camera_draw_min.ready(show: Bool, +depth: Nat, +size: U32, +x: U32,
   +floor: U32, +code: U32, image: Image) -> Image:
   match show:
     case False{}: image
     case True{}:
-      camera_min_type(depth, size, x, floor, Model.piece_type(code),
-        material_body(material(code)), image)
+      camera_min_ink(depth, size, x, floor, code, material(code), image)
 
 def camera_draw_min(+depth: Nat, +size: U32, +x: U32, +floor: U32,
   +code: U32, image: Image) -> Image:
