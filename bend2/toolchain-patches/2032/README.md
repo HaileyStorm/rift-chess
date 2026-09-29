@@ -16,8 +16,12 @@ older versioned 2.0.27/2.0.28 patch receipts remain unchanged. The pristine
 
 Run `node bend2/toolchain-patches/2032/replay-001-002-005.mjs` to reconstruct
 the exact first three patches from pristine source in owned OS temporary
-storage and compare the final `bend.ts`, `comp.ts`, and `main.ts` bytes with the
-derived candidate. The source-only replay passed on Windows after the 005
+storage. Pass `--compare-derived` only when the derived checkout is still at
+001→002→005; it now also carries phase-two 004 source. The phase-two
+[focused gate](../004-web-workers/rebase-2032/phase2/README.md) applies its
+separate parser/planner patch after that preimage and compares the final
+`bend.ts`, `comp.ts`, and `main.ts` bytes with the derived candidate. The
+original source-only replay passed on Windows after the 005
 foreign-path review fix; final patch SHA-256 values are bound in that script.
 The independent 005 review found and prompted that `pkg_files` fix. Run the
 versioned 001, 002 and 005 tests separately for their bounded behavior gates.

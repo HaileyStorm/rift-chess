@@ -1666,3 +1666,10 @@ not full worker eligibility. Higher-order/intrinsic/F32 screening,
 `require`/`never`, Web Worker runtime/hosting, 107 tests and browser proof
 remain open; the temporary adapter must be reconciled or removed when 004
 is fully ported.
+The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
+now replays exactly after 001→002→005 and passes source-only suffix,
+metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.
+Independent review caught zero-argument policy loss and exponential diamond
+path expansion; both were repaired and a mixed normal/`never` diamond now
+retains its separate requirement and conflict. This does not emit a worker,
+run browser Worker tests, establish full worker eligibility, or move the pin.

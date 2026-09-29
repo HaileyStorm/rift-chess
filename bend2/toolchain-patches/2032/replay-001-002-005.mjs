@@ -13,6 +13,9 @@ const canonical = path.join(root, '.artifacts/toolchains/bend');
 const derived = path.join(root, '.artifacts/bend2/toolchain-patches/derived-2032');
 const release = '573002f01ec6c52416d44489543f69a9625facf8';
 const pin = 'd37909174ebd664338ae3194799a9e0899dedd51';
+assert.ok(process.argv.slice(2).every(arg => arg === '--compare-derived'),
+  'Only --compare-derived is supported');
+const compareDerived = process.argv.includes('--compare-derived');
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const patches = [
   ['001', 'bend2/toolchain-patches/001-arity/rebase-2032/0001-arity-diagnostics.patch',
@@ -56,7 +59,7 @@ assert.equal(git(derived, 'rev-parse', 'HEAD'), release);
 assert.equal(git(derived, 'diff', '--cached', '--name-only'), '');
 assert.equal(git(derived, 'status', '--porcelain', '--untracked-files=no'),
   ' M bend2/bend.ts\n M bend2/comp.ts\n M bend2/main.ts');
-assertHashes(derived, final);
+if (compareDerived) assertHashes(derived, final);
 
 const tempRoot = fs.realpathSync(os.tmpdir());
 const scratch = fs.mkdtempSync(path.join(tempRoot, 'bend2-replay-2032-'));
@@ -77,12 +80,13 @@ try {
     replay.push({ patch: name, sha256: expected, paths: files });
   }
   assertHashes(scratch, final);
-  for (const file of Object.keys(final))
+  if (compareDerived) for (const file of Object.keys(final))
     assert.deepEqual(fs.readFileSync(path.join(scratch, file)),
       fs.readFileSync(path.join(derived, file)), `${file} differs from derived candidate`);
   console.log(JSON.stringify({ schema: 'rift-bend-2032-patch-replay/1', ok: true,
     upstream: release, canonicalPin: pin, replay, finalSourceSha256: final,
-    scope: 'exact source-only 001→002→005 replay; not proof, compiler matrix, worker, native, GPU or pin acceptance' }));
+    comparedDerived: compareDerived,
+    scope: 'exact source-only 001→002→005 replay; derived equality only with --compare-derived; not proof, compiler matrix, worker, native, GPU or pin acceptance' }));
 } finally {
   const exact = fs.realpathSync(scratch);
   assert.equal(path.dirname(exact), tempRoot, 'replay cleanup escaped OS temp');

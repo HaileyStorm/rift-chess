@@ -1,0 +1,384 @@
+diff --git a/bend2/bend.ts b/bend2/bend.ts
+index 590556c..3287dda 100644
+--- a/bend2/bend.ts
++++ b/bend2/bend.ts
+@@ -280,7 +280,7 @@ export type LetsOf<B> = BodyOf<B> extends Function ? (xs: TermOf<B>[]) => TermOf
+ export type SubsOf<B> = BodyOf<B> extends Function ? TermOf<NoInfer<B>> : HTerm;
+ export type TermOf<B> = (
+   | { $: "Var"; k: Name; i: number; v?: SubsOf<B> }                                // x
+-  | { $: "Ref"; k: Name; b?: Bool }                                                // x
++  | { $: "Ref"; k: Name; b?: Bool; web?: "require" | "never"; webMax?: number } // x
+   | { $: "Sub"; i: number; v: Patt; f: TermOf<B> }                                 // x <- v; f
+   | { $: "Let"; k: Name[]; i: number[]; q: Quant[]; v: TermOf<B>[]; f: LetsOf<B> } // x y = v w; f
+   | { $: "Typ"; g: TermOf<B> }                                                     // Kind(g)
+@@ -364,8 +364,10 @@ export function Var<X>(k: Name, i: number, s?: Span, v?: SubsOf<X>): TermOf<X> {
+   return { $: "Var", k, i, s, v };
+ }
+ 
+-export function Ref<X>(k: Name, s?: Span, b?: Bool): TermOf<X> {
+-  return { $: "Ref", k, s, b };
++export function Ref<X>(k: Name, s?: Span, b?: Bool,
++  web?: "require" | "never", webMax?: number): TermOf<X> {
++  return { $: "Ref", k, s, b, ...(web === undefined ? {} : { web }),
++    ...(webMax === undefined ? {} : { webMax }) };
+ }
+ 
+ export function Sub<X>(i: number, v: Patt, f: TermOf<X>, s?: Span): TermOf<X> {
+@@ -712,7 +714,7 @@ export function term_higher(tm: LTerm, env: Env = null): HTerm {
+           "Note: we broke this after launch, sorry. Until 2.0.16 a bare operator meant Nat.\n"
+           + "That was a bug: operators demand annotation. Wrap the expression and it'll work again.");
+       }
+-      return Ref(tm.k, tm.s, tm.b);
++      return Ref(tm.k, tm.s, tm.b, tm.web, tm.webMax);
+     }
+     case "Sub": {
+       return term_higher(tm.f, list_set(env, tm.i, (s?: Span) => term_higher(patt_term(tm.v, s), env)));
+@@ -1441,7 +1443,9 @@ export function term_show(term: LTerm, top: number = -1, bnd: Name[] = [], file?
+       }
+       case "Ref": {
+         const k = name_show(file, tm.k);
+-        return (bnd.includes(k) ? k + "^" : k) + (tm.b === true ? "!" : "");
++        return (bnd.includes(k) ? k + "^" : k) + (tm.b === true ? "!" : "")
++          + (tm.web === "require" ? "@" + (tm.webMax ?? "")
++            : tm.web === "never" ? "~" : "");
+       }
+       case "Sub": {
+         return go(tm.f, prc);
+@@ -1977,15 +1981,16 @@ export function parse_term_base(p: Parse, beg: number): LTerm {
+     }
+     case "%": {
+       parse_bump(p);
+-      const e0 = parse_term(p);
++      // Keep `%name@proof` distinct from a worker call in `%(f@(args))`.
+       parse_skip(p);
+       let k = "";
+-      let e = e0;
+-      if (parse_take(p, "@")) {
+-        if (e0.$ !== "Var") {
+-          parse_fail(p, "a name before @ (a rewrite binder is one name: %e@E : P)");
+-        }
+-        k = e0.k;
++      let e: LTerm;
++      const binder = /^[a-zA-Z_][a-zA-Z0-9_.]*[ \t\r\n]*@/.exec(p.str.slice(p.pos));
++      if (binder !== null) {
++        k = parse_name(p);
++        parse_eat(p, "@");
++        e = parse_term(p);
++      } else {
+         e = parse_term(p);
+       }
+       parse_eat(p, ":");
+@@ -1999,7 +2004,7 @@ export function parse_term_base(p: Parse, beg: number): LTerm {
+       parse_take(p, ";");
+       const f = parse_block(p);
+       const s = parse_span(p, beg);
+-      return Rwt(e, Lam("_", xi, Lam(k, ei, P, e0.s), s), f, s);
++      return Rwt(e, Lam("_", xi, Lam(k, ei, P, e.s), s), f, s);
+     }
+     case "{": {
+       parse_bump(p);
+@@ -2140,17 +2145,43 @@ export function parse_term_ops(p: Parse, tm: LTerm, beg: number, lvl: number): L
+     if (parse_nl(p) && (parse_at(p, "(") || parse_at(p, "["))) {
+       return out;
+     }
+-    if (parse_at(p, "(") || parse_at(p, "!(")) {
++    const legacyBang = parse_at(p, "!(");
++    const modifier = parse_at(p, "@") || parse_at(p, "~") || legacyBang
++      || parse_at(p, "!@") || parse_at(p, "!~") || parse_at(p, "!!");
++    if (modifier && parse_nl(p) && !legacyBang) {
++      return out;
++    }
++    if (parse_at(p, "(") || modifier) {
+       if (out.$ === "Var" && out.v !== undefined) {
+         out = out.v as LTerm;
+       }
+-      if (parse_at(p, "!")) {
++      if (modifier) {
+         if (out.$ !== "Ref") {
+-          parse_fail(p, "a named def before ! (only f!(..) offloads)");
++          parse_fail(p, "a named saturated call before !/@/~");
++        }
++        if (!legacyBang && (parse_nl(p) || /\s/.test(p.str[p.pos - 1] ?? ""))) {
++          parse_fail(p, "a contiguous named-call modifier and argument list");
++        }
++        if (out.b || out.web !== undefined) {
++          parse_fail(p, "one canonical suffix: optional ! then @count or ~");
++        }
++        out.b = parse_take(p, "!") || undefined;
++        if (parse_take(p, "@")) {
++          out.web = "require";
++          const digits = /^[0-9]+/.exec(p.str.slice(p.pos));
++          if (digits !== null) {
++            out.webMax = Number(digits[0]);
++            p.pos += digits[0].length;
++            if (!Number.isSafeInteger(out.webMax) || out.webMax < 1) {
++              parse_fail(p, "a positive safe decimal worker cap");
++            }
++          }
++        } else if (parse_take(p, "~")) {
++          out.web = "never";
++        }
++        if (!parse_at(p, "(")) {
++          parse_fail(p, "a contiguous argument list after optional ! then @count or ~");
+         }
+-        parse_bump(p);
+-        out.b = true;
+-        continue;
+       }
+       parse_bump(p);
+       const hd = p.book.tlds[out.$ === "Ref" ? out.k : ""];
+@@ -2166,6 +2197,13 @@ export function parse_term_ops(p: Parse, tm: LTerm, beg: number, lvl: number): L
+         parse_take(p, ",");
+       }
+       const xs = ts.concat(parse_term_args(p, ")"));
++      if (out.$ === "Ref" && out.web !== undefined && xs.length === 0) {
++        parse_fail(p, "a worker-suffixed call with an explicit argument (zero-argument refs are not planner callsites yet)");
++      }
++      if (out.$ === "Ref" && out.web !== undefined
++        && (hd?.$ !== "Def" || xs.length !== hd.n)) {
++        parse_fail(p, "a named saturated call for @/~ (include every explicit argument)");
++      }
+       const s  = parse_span(p, beg);
+       for (const a of xs) {
+         out = App(out, a, s);
+@@ -3436,7 +3474,7 @@ export function term_infer(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ctx: Ctx,
+       if (tld.$ === "ADT" && tld.n > 0) {
+         throw Err(book, ctx, "a family instance (write " + tm.k + "<..>)", tm, tm.s, lhs.def);
+       }
+-      return Infer(Ref(k, tm.s, tm.b), book.tlds[k].T, uses_nil(), x);
++      return Infer(Ref(k, tm.s, tm.b, tm.web, tm.webMax), book.tlds[k].T, uses_nil(), x);
+     }
+     // Γ ⊢ q : Quant
+     // where q is dead
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index cafa654..7059ce5 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -50,6 +50,8 @@ type Spine = {
+   k: Name | null;
+   xs: HTerm[];
+   b?: boolean;
++  web?: "require" | "never";
++  webMax?: number;
+ };
+ 
+ type HTerm = Bend.HTerm;
+@@ -749,7 +751,9 @@ function term_spine(fl: File, tm: HTerm): Spine {
+       && (done_live(tld) || def_foreign(tld)) ? c.k : null;
+     const need = def === null ? 0 : fun_of(fl, def).lays.length;
+     const a = apps[live.lastIndexOf(true)];
+-    const m: Spine = { h, t: c, all, args, tld, k: null, xs: args };
++    const ref = c.$ === "Ref" ? c as Of<"Ref"> : null;
++    const m: Spine = { h, t: c, all, args, tld, k: null, xs: args,
++      b: ref?.b, web: ref?.web, webMax: ref?.webMax };
+     if (def !== null && args.length === need) {
+       return { ...m, k: def, b: (c as Of<"Ref">).b };
+     }
+@@ -1506,6 +1510,207 @@ function file_book(src: Bend.Book, roots: Name[], js: boolean): File {
+   return fl;
+ }
+ 
++export type WorkerPlanCall = {
++  from: Name; to: Name; policy: "automatic" | "require" | "never";
++  max?: number; native: boolean; line: number | null;
++};
++
++export type WorkerStaticPlan = {
++  schema: "bend-worker-static-plan/2032-1";
++  roots: Name[];
++  functions: { name: Name; sourceEligible: boolean; reasons: string[] }[];
++  calls: WorkerPlanCall[];
++  requirements: { from: Name; to: Name; max?: number; path: Name[] }[];
++  conflicts: { kind: "require_under_never" | "require_unsupported";
++    from: Name; to: Name; path: Name[] }[];
++  sourceEligible: boolean;
++};
++
++/** Source-only policy and eligibility screen; this does not emit or dispatch workers. */
++export function plan_web_workers(book: Bend.Book, roots: Name[]): WorkerStaticPlan {
++  if (roots.length === 0 || new Set(roots).size !== roots.length) {
++    throw new Error("select distinct worker roots");
++  }
++  const io = book.tlds.IO;
++  const typeBook = io?.$ === "Def"
++    ? { ...book, tlds: Object.assign(Object.create(null), book.tlds,
++      { IO: { ...io, v: null } }) }
++    : book;
++  for (const root of roots) {
++    const def = book.tlds[root];
++    const eligible = book.order.includes(root) && def?.$ === "Def"
++      && def.v !== null && def.b !== true && def.x === 0 && def.i === undefined
++      && io_base(book, def.T) === null
++      && io_base(book, Bend.tele_unbind(typeBook, def.T).ret) === null;
++    if (!eligible) throw new Error("worker root is not hostable: " + root);
++  }
++
++  const refsOf = (tld: Bend.TLD): Set<Name> => {
++    const refs = new Set<Name>();
++    const add = (tm: unknown, seen = new WeakSet<object>()): void => {
++      if (typeof tm !== "object" || tm === null || seen.has(tm)) return;
++      seen.add(tm);
++      const node = tm as { $?: string; k?: Name };
++      if ((node.$ === "Ref" || node.$ === "ADT") && node.k !== undefined) refs.add(node.k);
++      for (const [field, value] of Object.entries(tm)) if (field !== "s") add(value, seen);
++    };
++    for (const body of tld.$ === "ADT" ? tld.c : [tld]) add(Bend.term_lower(body.T));
++    if (tld.$ === "Def") add(tld.e);
++    return refs;
++  };
++
++  const graph = new Map<Name, Set<Name>>();
++  const queue = roots.slice();
++  while (queue.length > 0) {
++    const key = queue.pop() as Name;
++    if (graph.has(key)) continue;
++    const tld = book.tlds[key];
++    if (tld === undefined) { graph.set(key, new Set()); continue; }
++    const refs = refsOf(tld);
++    graph.set(key, refs);
++    queue.push(...refs);
++  }
++
++  const direct = new Map<Name, Set<string>>();
++  const reasons = (key: Name): Set<string> => {
++    let got = direct.get(key);
++    if (got === undefined) direct.set(key, got = new Set());
++    return got;
++  };
++  for (const [key, refs] of graph) {
++    const tld = book.tlds[key];
++    if (tld === undefined) reasons(key).add("unfilled_reachable:" + key);
++    else {
++      if (tld.$ === "Def") {
++        if (tld.u === true) reasons(key).add("unsafe_reachable:" + key);
++        if (tld.i !== undefined) reasons(key).add("foreign_reachable:" + key);
++        if (tld.v === null && tld.i === undefined && tld.b !== true) {
++          reasons(key).add("unfilled_reachable:" + key);
++        }
++        if (tld.x > 0) reasons(key).add("template_reachable:" + key);
++        const signature = Bend.tele_unbind(book, tld.T);
++        if (signature.doms.some(([, , type]) => Bend.term_wnf(book, type).$ === "All")
++          || Bend.term_wnf(book, signature.ret).$ === "All") {
++          reasons(key).add("higher_order_signature:" + key);
++        }
++      }
++      if (key === "F32" || key.startsWith("F32.")) reasons(key).add("f32_reachable:" + key);
++      for (const ref of refs) {
++        if (ref === "F32" || ref.startsWith("F32.")) reasons(key).add("f32_reachable:" + ref);
++      }
++    }
++  }
++
++  const fl = file_book(book, roots, true);
++  const calls: WorkerPlanCall[] = [];
++  for (const key of SRCS.keys()) {
++    const tld = book.tlds[key];
++    if (tld?.$ !== "Def" || tld.v === null) continue;
++    const fun = fun_of(fl, key);
++    let body = fun.h;
++    if (body === null) continue;
++    body = term_strip(body);
++    for (let i = 0; i < fun.n; i++) {
++      const lambda = term_force(body);
++      if (lambda.$ !== "Lam") break;
++      body = term_strip(term_open(lambda).b);
++    }
++    const walk = (tm: HTerm): void => {
++      const s = term_force(tm);
++      if (s.$ === "App") {
++        const call = term_spine(fl, s);
++        if (call.k === null && call.t.$ === "Ref" && call.tld?.$ === "Def"
++          && intr_of(fl, call.t.k, true) !== undefined) {
++          const target = call.t.k;
++          const span = call.t.s;
++          reasons(target).add("intrinsic_reachable:" + target);
++          calls.push({ from: key, to: target,
++            policy: call.web === "require" ? "require"
++              : call.web === "never" ? "never" : "automatic",
++            ...(call.webMax === undefined ? {} : { max: call.webMax }),
++            native: call.b === true,
++            line: span ? span.file.str.slice(0, span.beg).split("\n").length : null });
++          for (const arg of call.args) walk(arg);
++          return;
++        }
++        if (call.k === CLO_APPLY || call.k === null) {
++          reasons(key).add("higher_order_or_dynamic_call:" + key);
++          if (call.t.$ !== "Ref") walk(call.t);
++          for (const arg of call.all) walk(arg);
++          return;
++        }
++        const target = call.k;
++        if (intr_of(fl, target, true) !== undefined) {
++          reasons(key).add("intrinsic_reachable:" + target);
++        }
++        const span = call.t.$ === "Ref" ? call.t.s : undefined;
++        calls.push({ from: key, to: target,
++          policy: call.web === "require" ? "require"
++            : call.web === "never" ? "never" : "automatic",
++          ...(call.webMax === undefined ? {} : { max: call.webMax }),
++          native: call.b === true,
++          line: span ? span.file.str.slice(0, span.beg).split("\n").length : null });
++        for (const arg of call.args) walk(arg);
++        return;
++      }
++      if (s.$ === "Ref") return;
++      if ((s.$ === "Ctr" || s.$ === "Mat") && s.k === "F32") {
++        reasons(key).add("f32_reachable:F32");
++      }
++      if (s.$ === "Lam") reasons(key).add("higher_order_or_dynamic_call:" + key);
++      for (const child of term_kids(fl, s)) walk(child);
++    };
++    walk(body);
++  }
++
++  const propagated = new Map<Name, Set<string>>([...direct].map(([key, values]) =>
++    [key, new Set(values)]));
++  let changed = true;
++  while (changed) {
++    changed = false;
++    for (const [key, refs] of graph) {
++      let into = propagated.get(key);
++      if (into === undefined) propagated.set(key, into = new Set());
++      for (const ref of refs) for (const reason of propagated.get(ref) ?? []) {
++        if (!into.has(reason)) { into.add(reason); changed = true; }
++      }
++    }
++  }
++
++  const callsByOwner = new Map<Name, WorkerPlanCall[]>();
++  for (const call of calls) (callsByOwner.get(call.from) ?? callsByOwner.set(call.from, []).get(call.from)!).push(call);
++  const requirements: WorkerStaticPlan["requirements"] = [];
++  const conflicts: WorkerStaticPlan["conflicts"] = [];
++  const explore = (current: Name, neverPath: Name[], path: Name[], visited: Set<string>): void => {
++    const state = current + (neverPath.length ? "|never" : "|normal");
++    if (visited.has(state)) return;
++    visited.add(state);
++    for (const call of callsByOwner.get(current) ?? []) {
++      const nextPath = [...path, call.to];
++      const nextNever = call.policy === "never" ? [...neverPath, call.from, call.to] : neverPath;
++      if (call.policy === "require") {
++        const badPath = nextPath;
++        if (neverPath.length) conflicts.push({ kind: "require_under_never",
++          from: call.from, to: call.to, path: badPath });
++        else if ((propagated.get(call.to)?.size ?? 0) > 0) conflicts.push({
++          kind: "require_unsupported", from: call.from, to: call.to, path: nextPath });
++        else requirements.push({ from: call.from, to: call.to,
++          ...(call.max === undefined ? {} : { max: call.max }), path: nextPath });
++      }
++      explore(call.to, nextNever, nextPath, visited);
++    }
++  };
++  for (const root of roots) explore(root, [], [root], new Set());
++
++  const functions = [...graph.keys()].filter((key) => book.tlds[key]?.$ === "Def")
++    .map((name) => ({ name, sourceEligible: (propagated.get(name)?.size ?? 0) === 0,
++      reasons: [...(propagated.get(name) ?? [])].sort() }));
++  const sourceEligible = roots.every((root) => (propagated.get(root)?.size ?? 0) === 0)
++    && conflicts.length === 0;
++  return { schema: "bend-worker-static-plan/2032-1", roots: roots.slice(), functions,
++    calls, requirements, conflicts, sourceEligible };
++}
++
+ function book_owned(src: Bend.Book): void {
+   for (const k of OWNED) {
+     if (src.tlds[k] !== undefined && src.tlds[k].b !== true) {
