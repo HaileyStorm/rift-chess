@@ -1526,3 +1526,19 @@ matched 24/24 Bend build entries and two unchanged original-site baselines,
 and seven hosted scenarios passed 65 checks with zero defects. Faster
 arbitrary views, constrained devices, native GPU, full hosted matrix and
 owner visual acceptance remain open.
+
+The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
+is a single, conditional Linux attempt against the retained exact c30 package:
+bind the original second-release input and monotonic CPU/scheduling samples
+only if the unprivileged profiler and existing owned observer can do so without
+an install, privilege change or fixture drift. If preflight fails, it stops
+without a run. This is not a CUDA episode or a retry of the terminal 250-ms
+GPU-on failure, and a CPU-off profile cannot by itself attribute the CUDA-on
+231.063-ms gap. No result is assumed from posting the request.
+
+The canonical 2.0.28 pin still needs the owner's migration choice recorded in
+the [assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract):
+the reviewed patched candidate passes isolated checks, but clean upstream
+2.0.28 rejects a frozen alias and the frozen v2 checker calls removed compiler
+exports. Clean 2.0.32 fixes the alias but still lacks those exports. Neither
+candidate may silently replace the 2.0.27 pin or weaken a Law.
