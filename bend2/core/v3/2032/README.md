@@ -82,8 +82,32 @@ meaning only that this bounded harness classified them as expected.
 
 This is not a BendTT verdict, a completed mathematical proof gate, a run of
 the frozen 56-file v2 closure, a mutation-suite result, compiler-emission
-validation, or browser/native/GPU acceptance. The frozen v2 closure is still
-blocked before checker execution by 2.0.32's Windows nested-import path
-resolution (`ArithmeticProof.bend` -> `../ProofKit.bend`); this candidate does
-not copy or rebase that source. BendTT was not invoked or installed. The
+validation, or browser/native/GPU acceptance. This pristine-scout synthetic
+checker does not repair 2.0.32's Windows nested-import path resolution
+(`ArithmeticProof.bend` -> `../ProofKit.bend`); the separate derived 005 patch
+handles that boundary. BendTT was not invoked or installed. The
 canonical 2.0.27 pin and every frozen Law remain untouched.
+
+## Frozen-proof source shards (diagnostic, not the aggregate gate)
+
+`shards.mjs` checks the individual proof entries imported by frozen
+`core/v2/CHECK.bend` under the exact 001→002→005→004-phase2 derived 2.0.32
+compiler. It verifies the frozen v2 manifest, loaded source closure, Git
+states, compiler bytes, and Node executable identity before and after each
+bounded Worker. The shared proof-authority negative controls run once on the
+small ArithmeticProof representative; every shard still gets its own
+`book_valid` and reachable promise screen. A separate shared stage marker
+attributes resource stops without sending progress as a premature result.
+
+Run `node bend2/core/v3/2032/shards.mjs --only ArithmeticProof.bend` for a
+bounded selected diagnostic. The all-shards route is also diagnostic and
+cannot replace frozen aggregate `CHECK.bend`, BendTT, mutation suite, or the
+guide's pin amendment. The default is 512 MiB old-generation/120 seconds;
+only CanonicalProof and OrderingProof have measured 1-GiB/240-second
+exceptions after default typecheck resource stops. On Windows both
+subsequently passed individual source/promise checks (Canonical typecheck
+about 112–117 seconds, Ordering about 161 seconds). An earlier all-shards
+run reached Ordering before its default timeout; the current revised runner
+has not completed all entries. No Law counterexample was observed. Its
+current script SHA-256 is
+`035dea8b041517bbcc7712a59c95937af4680c294d311fd53a42417ec5ee274a`.

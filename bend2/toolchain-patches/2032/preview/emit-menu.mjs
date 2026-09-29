@@ -7,6 +7,7 @@ import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
 import { moduleSpecs } from '../../../tools/selected-modules.mjs';
+import { bindCompilerEol } from './compiler-eol.mjs';
 import {
   acquireOwnedLock, closeOwnedLock, finalizeOwnedManifest, releaseOwnedLock, settleWorker,
 } from './lifecycle.mjs';
@@ -34,11 +35,6 @@ const canonicalPin = 'd37909174ebd664338ae3194799a9e0899dedd51';
 const minFreeBytes = 2.5 * 1024 ** 3;
 const workerTimeoutMs = 300_000;
 const spec = moduleSpecs.menu;
-const derivedFiles = {
-  'bend2/bend.ts': '2def95c26e150c5a66a1a8ba3e5dd6ec5de3a8dd822627976f606a273b0cea88',
-  'bend2/comp.ts': '4f420f4a9b9efadfb5708fa2e20703fbc44e130365805c4b1be09f3c276e39b1',
-  'bend2/main.ts': 'e41167de4f0a5e00a6bc6e2ab3bdcdbb4920ef4edfc60631cd12225a03102cae',
-};
 const patchStack = [
   ['bend2/toolchain-patches/001-arity/rebase-2032/0001-arity-diagnostics.patch',
     '98282500926c0df0baa531bc04e3516111ecf997c409b9a910bc4173e0c5b9db'],
@@ -54,12 +50,6 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 function git(cwd, ...args) {
   return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8' })
     .replace(/\r\n/g, '\n').trimEnd();
-}
-function assertCompilerFiles(root) {
-  for (const [file, expected] of Object.entries(derivedFiles)) {
-    assert.equal(sha256(fs.readFileSync(path.join(root, file))), expected,
-      `derived compiler source changed: ${file}`);
-  }
 }
 function collectSourceClosure(entry) {
   const found = new Map();
@@ -93,6 +83,7 @@ function collectSourceClosure(entry) {
     selectedHelperPath,
     path.join(here, 'emit-menu.mjs'),
     path.join(here, 'emit-menu.worker.mjs'),
+    path.join(here, 'compiler-eol.mjs'),
     path.join(here, 'lifecycle.mjs'),
   ]) {
     assert.ok(file.startsWith(repoPrefix), `adapter input escaped repository: ${file}`);
@@ -103,6 +94,10 @@ function collectSourceClosure(entry) {
   })).sort((a, b) => a.path.localeCompare(b.path));
 }
 function bindingSnapshot() {
+  const sourceCommit = git(repo, 'rev-parse', 'HEAD');
+  const sourceTree = git(repo, 'show', '-s', '--format=%T', 'HEAD');
+  assert.equal(git(repo, 'status', '--porcelain', '--untracked-files=all'), '',
+    'menu source checkout must be clean and complete');
   assert.equal(git(scout, 'rev-parse', 'HEAD'), release);
   assert.equal(git(scout, 'status', '--porcelain', '--untracked-files=all'), '');
   assert.equal(git(canonical, 'rev-parse', 'HEAD'), canonicalPin);
@@ -110,7 +105,8 @@ function bindingSnapshot() {
   assert.equal(git(derived, 'rev-parse', 'HEAD'), release);
   assert.equal(git(derived, 'status', '--porcelain', '--untracked-files=all'),
     ' M bend2/bend.ts\n M bend2/comp.ts\n M bend2/main.ts');
-  assertCompilerFiles(derived);
+  const compilerEol = bindCompilerEol((relative) =>
+    fs.readFileSync(path.join(derived, relative)));
   const patches = patchStack.map(([file, expected]) => {
     const actual = sha256(fs.readFileSync(file));
     assert.equal(actual, expected, `patch bytes changed: ${file}`);
@@ -119,7 +115,9 @@ function bindingSnapshot() {
   return {
     upstream: release,
     canonicalPin,
-    derivedFiles: Object.entries(derivedFiles).map(([file, sha256]) => ({ path: file, sha256 })),
+    sourceCommit, sourceTree,
+    derivedEol: compilerEol.eol,
+    derivedFiles: compilerEol.files,
     patches,
     sourceFiles: collectSourceClosure(spec.entry),
     module: { name: 'menu', entry: spec.entry, exports: spec.exports },
@@ -141,6 +139,15 @@ assert.ok(Array.isArray(spec.exports) && spec.exports.length > 0,
   'menu selected roots must remain explicit and nonempty');
 const binding = bindingSnapshot();
 const bindingSha256 = sha256(Buffer.from(JSON.stringify(binding)));
+if (process.argv.length === 3 && process.argv[2] === '--preflight-only') {
+  console.log(JSON.stringify({ schema: 'rift-bend-2032-menu-preflight/1', ok: true,
+    bindingSha256, sourceCommit: binding.sourceCommit,
+    sourceTree: binding.sourceTree, derivedEol: binding.derivedEol,
+    derivedFiles: binding.derivedFiles,
+    scope: 'read-only source/compiler/patch preflight; no Worker, JS, manifest or pin adoption' }));
+  process.exit(0);
+}
+assert.equal(process.argv.length, 2, 'only --preflight-only is accepted');
 const outputRootRealParent = fs.realpathSync(path.join(repo, '.artifacts/bend2'));
 assert.equal(outputRootRealParent, path.join(repo, '.artifacts/bend2'));
 execFileSync('git', ['check-ignore', '--quiet', path.relative(repo, outputRoot)], { cwd: repo });

@@ -22,3 +22,9 @@ bytes, and derived compiler files. It verifies the exact same binding again
 before writing the receipt.
 The derived compiler and canonical pin are checked read-only. This is a focused
 consumer fixture, not `build.ts` integration or whole-app/browser acceptance.
+The current gate also uses the exact shared LF/CRLF compiler binding in
+`../preview/compiler-eol.mjs`; independent replay must match the derived
+checkout's mode and byte postimages. The revised test SHA-256 is
+`e3ce707434be3f22ad09b88e80c48eaaf1bb51d4c859e66c3fd39f249e455375`.
+The historical Windows-only test receipt remains provenance; the revised gate
+passed on Windows, while a Linux run remains unverified.

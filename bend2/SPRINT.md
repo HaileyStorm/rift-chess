@@ -1643,7 +1643,8 @@ passes five exact-scout local controls: one source/type-and-promise positive,
 distinct TODO/unsafe/foreign negatives, and a compiler-owned-name rejection.
 It adapts the 2.0.32 `hols`-only book shape without changing frozen v2. This
 is not the frozen closure, BendTT kernel verdict, six Law mutations, or an
-accepted pin; Windows nested imports still stop that closure before checking.
+accepted pin; the pristine scout still fails Windows nested imports, while
+the separate 005-derived compiler addresses that path.
 The [isolated 2.0.32 patch 002 candidate](toolchain-patches/002-layout/rebase-2032/README.md)
 now replays exactly after 001 and passes a bounded deterministic layout,
 direct local-only denial, CLI-isolation and successful C/JS byte-parity gate.
@@ -1657,6 +1658,13 @@ probe (7 files, 543 definitions, zero network attempts), but the broader
 `CHECK.bend` type-check did not finish under either 120 or 300 seconds with
 a 64-MiB worker stack. This is a timeout, not a Law counterexample. 004,
 BendTT, full mutations, browser/native/GPU and pin amendment remain open.
+The [versioned individual proof-shard diagnostic](core/v3/2032/README.md#frozen-proof-source-shards-diagnostic-not-the-aggregate-gate)
+now binds the frozen source closure and Node/derived-compiler identity.
+Adjudication through NoWrap passed individually on Windows; Canonical and
+Ordering needed measured 1-GiB/240-second exceptions after default typecheck
+resource stops, then each passed. The all-shards route and aggregate
+`CHECK.bend`/BendTT/mutation gates remain unverified; these are source and
+promise screens, not mathematical proof acceptance.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/
@@ -1712,9 +1720,13 @@ absent there. A distinct [official-source acquisition](https://github.com/Hailey
 verified and retained that exact tag in an isolated clean scout, but stopped
 before compiler execution: the host's partial Rift clone lacked 63 objects
 from exact source commit 8096edc, including a patch blob. No JS or manifest
-exists from either handoff. A [third one-shot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5895339046)
-permits a complete isolated public Rift source checkout and the same bounded
-menu-only CPU attempt after exact source/claim/memory gates; it is pending.
+exists from either handoff. The [third result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5896318403)
+verified a complete exact Rift source checkout and patch-001 Git postimage,
+but stopped before patch 002: LF working bytes differed from the historical
+Windows CRLF SHA. Exact blob normalization proves the same postimage, not a
+compiler failure. The [portable EOL binding](toolchain-patches/2032/preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
+now checks both exact working-file modes and rejects mixed/tampered source;
+it still needs a clean-checkout Linux preflight and menu emission receipt.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

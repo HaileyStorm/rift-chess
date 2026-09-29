@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { bindCompilerEol } from '../preview/compiler-eol.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
 let networkCalls = 0;
@@ -24,7 +25,6 @@ const workerEntry = path.join(repo,
 const workerForeign = path.join(repo,
   'bend2/toolchain-patches/004-web-workers/rebase-2032/fixtures/foreign.js');
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const tracked = (root, file) => path.join(root, file);
 const release = '573002f01ec6c52416d44489543f69a9625facf8';
 const canonicalPin = 'd37909174ebd664338ae3194799a9e0899dedd51';
 const patchStack = [
@@ -39,21 +39,13 @@ const patchStack = [
 ].map(([relative, expected]) => [
   path.join(repo, 'bend2/toolchain-patches', relative), expected,
 ]);
-const derivedFiles = {
-  'bend2/bend.ts': '2def95c26e150c5a66a1a8ba3e5dd6ec5de3a8dd822627976f606a273b0cea88',
-  'bend2/comp.ts': '4f420f4a9b9efadfb5708fa2e20703fbc44e130365805c4b1be09f3c276e39b1',
-  'bend2/main.ts': 'e41167de4f0a5e00a6bc6e2ab3bdcdbb4920ef4edfc60631cd12225a03102cae',
-};
 
 function git(cwd, ...args) {
   return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8' })
     .replace(/\r\n/g, '\n').trimEnd();
 }
-function assertCompilerSources(root, expected) {
-  for (const [file, hash] of Object.entries(expected)) {
-    assert.equal(sha256(fs.readFileSync(tracked(root, file))), hash, `${file} source hash changed`);
-  }
-}
+const compilerBinding = (tree) => bindCompilerEol((relative) =>
+  fs.readFileSync(path.join(tree, relative)));
 function applyPatch(cwd, file) {
   execFileSync('git', ['apply', '--check', file], { cwd, stdio: 'pipe' });
   execFileSync('git', ['apply', file], { cwd, stdio: 'pipe' });
@@ -99,6 +91,7 @@ function sourceClosure(starts, extraFiles = []) {
   for (const helper of [
     path.join(here, 'selected-library.mjs'),
     path.join(repo, 'bend2/toolchain-patches/004-web-workers/rebase-2032/selected-module.mjs'),
+    path.join(repo, 'bend2/toolchain-patches/2032/preview/compiler-eol.mjs'),
     path.join(here, 'test.mjs'),
     ...extraFiles,
   ]) {
@@ -123,7 +116,7 @@ function bindingSnapshot() {
   assert.equal(derivedHead, release);
   const derivedStatus = git(derived, 'status', '--porcelain', '--untracked-files=all');
   assert.equal(derivedStatus, ' M bend2/bend.ts\n M bend2/comp.ts\n M bend2/main.ts');
-  assertCompilerSources(derived, derivedFiles);
+  const compiler = compilerBinding(derived);
   const patches = patchStack.map(([file, expected]) => {
     const actual = sha256(fs.readFileSync(file));
     assert.equal(actual, expected, `patch bytes changed: ${file}`);
@@ -135,7 +128,8 @@ function bindingSnapshot() {
       canonical: { head: canonicalHead, status: canonicalStatus },
       derived: { head: derivedHead, status: derivedStatus },
     },
-    compilerFiles: Object.entries(derivedFiles).map(([file, sha256]) => ({ path: file, sha256 })),
+    compilerEol: compiler.eol,
+    compilerFiles: compiler.files,
     patchStack: patches,
     sourceFiles: sourceClosure([entry, workerEntry], [workerForeign]),
   };
@@ -195,7 +189,8 @@ const replay = fs.mkdtempSync(path.join(temporaryRoot, 'rift-bend-2032-build-ada
 try {
   fs.cpSync(path.join(scout, 'bend2'), path.join(replay, 'bend2'), { recursive: true });
   for (const [file] of patchStack) applyPatch(replay, file);
-  assertCompilerSources(replay, derivedFiles);
+  assert.deepEqual(compilerBinding(replay), compilerBinding(derived),
+    'independent replay has a different reviewed postimage or checkout EOL mode');
   const ReplayBend = await import(pathToFileURL(path.join(replay, 'bend2/bend.ts')));
   const ReplayComp = await import(pathToFileURL(path.join(replay, 'bend2/comp.ts')));
   const replayBook = await load(ReplayBend);

@@ -54,10 +54,44 @@ commit marker only after the last source/output binding check. Root reran
 `node bend2/toolchain-patches/2032/preview/lifecycle.test.mjs`; injected
 timeout/error, partial write/fsync, existing lock, failed final binding and
 no-overwrite cases passed without importing Bend or launching a real Worker.
-The final emitter and worker source SHA-256 values are
+The historical 8096edc emitter and worker source SHA-256 values are
 `f7792e12783e125dd9c2ce7c4d239ef84b61b10a092aade4f0cfdfe1bea30282`
 and `3a9cd0a5204539e60f3958213f90a5b4084d634937ac051086e0f128a2b0c497`;
 the lifecycle helper/test hashes are
 `91d8b5c325a48602d0d6860624ab0abf9d5428d374a12d85988cb866a732fbc8`
 and `c576a60e1da6b5c40265c3b38c977e2063aa4e630469dd3e2b52abfb9cc5adcc`.
 The 2.5 GiB checks are admission checkpoints, not a peak-memory bound.
+
+## Exact LF/CRLF source binding after Linux preflight stop
+
+The [Linux source-acquisition receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5896318403)
+stopped before menu emission because patch 001's LF working file had SHA-256
+`55949c2fe7f1faecb6d142079a2afa60a559d2a54ef165ba40d31968548be58d`
+instead of the historical Windows CRLF SHA-256
+`a067bd0fae6111e500f16db33697ed7f1347be7e20c4fb90d9996484489a1038`.
+Both are the exact Git postimage blob `99a8e4df3603102ef03eb6fc2bd543a6f5fb61e1`:
+the Windows source normalizes to the LF hash, and converting that blob to CRLF
+reproduces the Windows hash. The upstream commit and four patch files did not
+change; neither Linux attempt reached a Bun menu worker.
+
+`compiler-eol.mjs` now accepts only the exact final 2.0.32 compiler bytes in
+one consistent LF or CRLF mode, and rejects mixed endings, tampering, or a
+different normalized postimage. The fixture test derives both modes from the
+verified local checkout, so it also runs on a legitimate LF host. The emitter
+includes the mode and actual byte hashes in its before/after binding, requires
+a clean source checkout, and offers a read-only preflight:
+
+```powershell
+node bend2/toolchain-patches/2032/preview/compiler-eol.test.mjs
+node bend2/toolchain-patches/2032/preview/emit-menu.mjs --preflight-only
+```
+
+The first command passed on Windows, including mixed/tampered/inconsistent
+negative controls. The second requires a committed clean source checkout and
+has not been run on Linux; it neither constructs a Worker nor writes output.
+Current source SHA-256: EOL helper
+`4bd8f6191b65fdfeb74372f95834fa6c4d017f0027162861b575c3dd428810e4f168`,
+fixture test
+`4931ac18016a4c1474aa77eb74372f87db428d346c09892ad3ec6c0e60c63412`,
+emitter `93696fec322898f414d6478056d954884047cee2f5783a77f2e0a99c7a20266e`.
+No menu JS/manifest or browser acceptance follows from EOL equivalence alone.

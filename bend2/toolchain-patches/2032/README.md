@@ -68,8 +68,13 @@ verified and retained the official tag in an isolated scout, but stopped at
 the next source gate: the host's partial Rift clone lacks 63 objects from
 exact 8096edc, including a patch blob. Neither handoff produced JS or a
 manifest. A third bounded request permits a complete isolated Rift source
-checkout, then one menu-only attempt after exact host-local preflight; it is
-pending and does not authorize pin movement, GPU or publication.
+checkout. Its [result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5896318403)
+verified exact 8096edc source and the pristine 2.0.32 scout, then stopped
+after patch 001 because the Linux LF working SHA differed from the Windows
+CRLF expectation despite the exact Git postimage. No later patch or Bun worker
+ran. The [portable preview binding](preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
+now accepts only the two exact EOL postimages and needs a fresh Linux
+preflight/menu receipt; this is not a pin, GPU or publication result.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`
