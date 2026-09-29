@@ -1584,6 +1584,11 @@ the clean local build `e2ced02d5cf5cb05a332` passed its own 24-scenario,
 drag samples favored the candidate, while uncapped samples varied by order;
 there is no physical-device speed claim. New-source native CPU/GUI/PCM/restart,
 GPU-on repair, hosted publication and owner visual acceptance are still open.
+The [accepted Front-65° wall check](docs/evidence/v2-front65-walls/README.md)
+adds White yaw 0° and Black yaw 180° at pitch 65° to the independent
+low-resolution exposed-wall/topology gate. Both facing rift walls retain
+material and back faces remain hidden; present tile top-spill checks pass.
+This is test-only finite evidence, not a camera change or owner acceptance.
 
 The owner's [matrix cleanup](docs/evidence/v2-matrix-cleanup/README.md) kept
 the real interactions and long-history import stress while recording the

@@ -331,7 +331,7 @@ for(const [yaw,visible] of [
 // The low-resolution orbit board is already painted before its cheap wall
 // overlay. Check that only camera-facing exposed rift faces survive, rather
 // than letting back faces spill over the flat neighboring top surfaces.
-const motionPixels:Array<{yaw:number;edge:string;colorPixels:number}>=[];
+const motionPixels:Array<{yaw:number;pitch:number;edge:string;colorPixels:number}>=[];
 let motionAdjacentTopPixels=0;
 let composedMotionTopPixels=0;
 const motionSpills:Array<{yaw:number;square:number;count:number}>=[];
@@ -360,16 +360,17 @@ function checkAbsoluteTops(image:Image,holes:number,orbitView:any,themeArg:numbe
     absoluteTopCenters++;
   }
 }
-for(const [yaw,visible] of [
-  [0,['rank-down']], [90,['file-right']],
-  [180,['rank-up']], [270,['file-left']],
-  [45,['rank-down','file-right']],
-  [135,['file-right','rank-up']],
-  [225,['rank-up','file-left']],
-  [315,['rank-down','file-left']],
-  [345,['rank-down','file-left']],
+for(const [yaw,pitch,visible] of [
+  [0,67,['rank-down']], [90,67,['file-right']],
+  [180,67,['rank-up']], [270,67,['file-left']],
+  [45,67,['rank-down','file-right']],
+  [135,67,['file-right','rank-up']],
+  [225,67,['rank-up','file-left']],
+  [315,67,['rank-down','file-left']],
+  [345,67,['rank-down','file-left']],
+  [0,65,['rank-down']], [180,65,['rank-up']],
 ] as const) {
-  const orbitView={$:'View',yaw,pitch:67,zoom:115};
+  const orbitView={$:'View',yaw,pitch,zoom:115};
   const orbitCamera=Camera.basis(orbitView);
   const motionSize=128;
   const opened=BoardScene.fast_ground(7n,motionSize,underlay,
@@ -388,11 +389,11 @@ for(const [yaw,visible] of [
     const topQuad=[orbitCorners.p00,orbitCorners.p10,orbitCorners.p11,orbitCorners.p01];
     const colorPixels=wallColorPixels(opened,closed,wallQuad,topQuad,
       predictedWallColors(testCase.square,testCase.edge),motionSize);
-    motionPixels.push({yaw,edge:testCase.edge,colorPixels});
+    motionPixels.push({yaw,pitch,edge:testCase.edge,colorPixels});
     if(visible.some(value=>value===testCase.edge))
-      assert.ok(colorPixels>0,`${testCase.edge} motion wall survives at yaw ${yaw}`);
+      assert.ok(colorPixels>0,`${testCase.edge} motion wall survives at yaw ${yaw}/pitch ${pitch}`);
     else
-      assert.equal(colorPixels,0,`${testCase.edge} motion back face stays hidden at yaw ${yaw}`);
+      assert.equal(colorPixels,0,`${testCase.edge} motion back face stays hidden at yaw ${yaw}/pitch ${pitch}`);
   }
   for(const square of motionTopSamples) {
     const tileCorners=corners(square,orbitCamera,motionSize);
@@ -476,4 +477,4 @@ if(process.env.BEND_MOTION_BENCH==='1') {
 
 console.log(JSON.stringify({ok:true,topologyChecks:19,edgePixels,obliquePixels,motionPixels,
   aperturePixels,apertureCorePixels,adjacentTopPixels,motionAdjacentTopPixels,composedMotionTopPixels,
-  scope:'Per-facing-edge settled wall checks at four cardinal and five oblique yaws; nine low-resolution orbit wall/top checks including diagonal rift corners; full aperture core underlay and adjacent present-tile top masks.'}));
+  scope:'Per-facing-edge settled wall checks at four cardinal and five oblique yaws; eleven low-resolution orbit wall/top checks including both 65-degree Front views and diagonal rift corners; full aperture core underlay and adjacent present-tile top masks.'}));
