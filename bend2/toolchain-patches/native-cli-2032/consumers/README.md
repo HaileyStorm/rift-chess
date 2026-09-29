@@ -49,3 +49,14 @@ before and after loading. It verifies each loaded source belongs to that
 closure; [ENTRY_SOURCE_RECEIPT.json](ENTRY_SOURCE_RECEIPT.json) records the
 six binding digests. This is not an executable, CLI argv scenario, GPU run,
 frozen proof, pin amendment or release acceptance.
+
+An independently reviewed [bounded C-emission probe](C_EMISSION_RECEIPT.json)
+also passed for the patched NativeCLI entry. Run
+`node bend2/toolchain-patches/native-cli-2032/consumers/test-c-emit-2032.mjs <absolute-isolated-checkout>`.
+It repeats the exact source/closure gate before and after a 512-MiB
+old-generation-capped child, which generated 2,189,927 UTF-8 C bytes in
+memory (SHA-256
+`373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281`).
+The emitted text contains no X11/ALSA include or GPU `BANGS` marker. No C
+artifact or native binary was written, linked or run; this is not a CLI
+argument, GUI, PCM, restart, GPU or release acceptance result.

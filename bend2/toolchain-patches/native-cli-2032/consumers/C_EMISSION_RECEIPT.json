@@ -1,0 +1,27 @@
+{
+  "schema": "rift-native-cli-2032-c-emission-receipt/1",
+  "evidenceClass": "source-bound-in-memory-c-emission",
+  "entry": "bend2/NativeCLI.bend",
+  "candidateBaseCommit": "3080ad508fd73c1730a82c9393890cc199426918",
+  "entrySha256": "c637e16ce6c81c91be30a5ab9b690da880e5dd3e85b4c6be0e06609138dd471e",
+  "sourceBindingSha256": "1ae658969f10cd045952070a5f4bb7aef89adb8e23894fdb8868a2518910d32a",
+  "sourceGateSha256": "0b6839e4269869d10a48fe15e35b3b30f41ac27f0e969ff404752a8fbd74d17c",
+  "childSha256": "c695aca8a1c2ea8a6d4d7ae0292fca88abef85f98824fd2347915426b7d3bbaf",
+  "runnerSha256": "08220776841a6d4343f4ccfbd7aaff3df5457235404a4c23a0e268413933dd46",
+  "nodeOldGenerationCapMiB": 512,
+  "childTimeoutMs": 180000,
+  "emittedC": {
+    "bytes": 2189927,
+    "sha256": "373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281",
+    "includesX11": false,
+    "includesAlsa": false,
+    "bangs": false
+  },
+  "definitions": 1232,
+  "loadedFiles": 17,
+  "holes": 0,
+  "fetches": 0,
+  "artifactWritten": false,
+  "nativeBinaryBuilt": false,
+  "nativeRuntimeTested": false
+}

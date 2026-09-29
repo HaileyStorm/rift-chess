@@ -1681,6 +1681,10 @@ omitted consumer. A separate isolated source candidate at 3080ad5 with both
 versioned argv patches then passed `book_load`/`book_valid` for NativeCLI and
 all five consumers (each zero holes/network, largest 43 files/1375 defs).
 No native executable or actual argv scenario has yet passed under 2.0.32.
+The exact patched NativeCLI source then passed a separate source-bound,
+bounded in-memory C emission (2,189,927 bytes, SHA-256
+`373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281`).
+This is not a linked binary or native execution receipt.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS

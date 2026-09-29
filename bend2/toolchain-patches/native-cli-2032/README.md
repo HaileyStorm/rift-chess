@@ -47,6 +47,9 @@ shared helper typechecks under the exact derived 2.0.32 source compiler. Both
 versioned patches were then applied in a separate isolated source candidate;
 all six patched entries passed `book_load`/`book_valid` with zero holes and
 network attempts. No native command/argv matrix has run under 2.0.32.
+The same isolated NativeCLI entry also passed a source-bound in-memory C
+emission; see the [bounded receipt](consumers/C_EMISSION_RECEIPT.json). No C
+artifact, binary or native runtime was produced by that probe.
 
 Keep the historical 2.0.27 CLI source and its Linux receipt
 `bend2/docs/evidence/native-cli-linux-2-0-27/receipt.json` unchanged. Remove

@@ -87,6 +87,10 @@ preflight, pure list controls, and a small helper-only 2.0.32 source check.
 All six patched argv entries also pass source `book_load`/`book_valid` in a
 separate isolated candidate with zero holes/network. No native CLI scenario
 has been accepted under 2.0.32.
+The isolated NativeCLI source then emitted C bytes in memory under a bounded,
+source-checked child, with no artifact, link or native runtime test; the
+[receipt](../native-cli-2032/consumers/C_EMISSION_RECEIPT.json) remains a
+compiler-emission result only.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without
