@@ -104,9 +104,36 @@ and `e8db2df4591e7ddb2f3dce5a4dd33144c482bd30a1ee04de3f2aa0ca6a3627c`.
 Both bind clean source `9d4a532`, build version `e788562833af84fd6840`
 and `build.json` SHA-256
 `85c194ad428b32874e978bd1389fb3e69c67dc3377a72aa8f273e76f22287996`.
-The slower samples spent about 120–124 ms P90 traversing the pixel tree; no
-new page error or stale-frame defect was observed. Two local baseline/new-build
+The slower samples spent about 120–124 ms P90 constructing the Bend scene
+(`treeMs` measures `render(packet)`, despite its name). The measured
+`sceneTimes.pointer` phase contains nearly all of that time in those frames;
+`traversalMs` separately measures `PixelPort.render` and reached about 10–15 ms
+in their slow motion frames. No new page error or stale-frame defect was
+observed. Two local baseline/new-build
 128-MiB pairs had reply P90 41.3/71.7 ms and 44.8/57.8 ms; another pair was
 about 59.8/59.9 ms. Input coalescing and host load varied, so these are
 diagnostic samples, not a portable latency bound, established speedup or
 physical low-memory acceptance. Device-class orbit responsiveness remains open.
+
+## Scene-stage localization after the heap diagnostic
+
+The exact selected scene JS SHA-256 was
+`9aa218cab2dc6873098bbf781f370ee04d5c3033e1e5e480bf3cba27d073c82c`.
+`node bend2/tests/browser-v2-motion-phases.mjs` temporarily instruments its
+generated `fast_camera256_for_512` function **in memory**, without editing
+the emitted module or Bend source. Four camera outputs, including Front 65°,
+matched the uninstrumented full 256×256 pixel buffers. Two warm local runs
+each measured 28 subsequent selected-JS calls. The ground phase was 7.71–8.04
+ms P90, nearest expansion 0.70–0.79 ms, compact pieces 9.61–10.27 ms, and
+feedback 1.93–2.99 ms. These ordinary-host samples do not reproduce or explain
+the hosted low-heap ~120 ms Bend-pointer tail; a speculative pixel-port change
+would target the separately measured smaller traversal phase. The generated
+function signature is checked before instrumentation, so this diagnostic
+must be updated rather than silently trusted after an emitter change.
+
+The existing finite `browser-v2-motion-extent.mjs` check now includes the
+accepted Front 65° alongside its four previous views. It passed 30 complete
+composed comparisons across three layouts and two themes, totaling
+152,043,520 equal bytes. This proves compact-depth versus explicit-expansion
+equivalence for those cases, not parity against an independent earlier scene
+renderer, physical-device speed, or owner visual acceptance.

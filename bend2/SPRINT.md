@@ -1561,6 +1561,14 @@ browser errors, but repeated drag P90 samples ranged from roughly 54 to
 317 ms and local old/new pairs were mixed under varying load. The flag does
 not constrain physical RAM or establish rapid orbit on a device; constrained
 hardware measurement remains an explicit acceptance gap.
+The subsequent [scene-stage localization](docs/evidence/v2-motion-brass-edge/README.md#scene-stage-localization-after-the-heap-diagnostic)
+corrected the old `treeMs` interpretation: it times Bend `render(packet)`,
+not pixel-port traversal. The low-heap tail sits in the active-orbit Bend
+pointer stage; a four-view exact-pixel instrumented selected-JS probe measured
+ground and compact pieces separately but did not reproduce or attribute that
+tail. The finite motion-extent check now includes accepted Front 65° and
+compared 152,043,520 bytes across 30 cases. No scene/camera behavior changed,
+and there is no speed or device acceptance claim from this diagnostic.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:

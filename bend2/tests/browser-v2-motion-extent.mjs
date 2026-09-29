@@ -36,6 +36,7 @@ const layouts = [
 ];
 const views = [
   { $: 'View', yaw: 345, pitch: 67, zoom: 115 },
+  { $: 'View', yaw: 0, pitch: 65, zoom: 115 },
   { $: 'View', yaw: 0, pitch: 35, zoom: 130 },
   { $: 'View', yaw: 75, pitch: 90, zoom: 75 },
   { $: 'View', yaw: 180, pitch: 55, zoom: 100 },
