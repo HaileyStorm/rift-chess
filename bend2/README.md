@@ -17,8 +17,8 @@ published piece/wall scene and do not prove native parity for later source. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link serves build `b5022e026e9bf6904c29` from clean source
-`c986e3f`, with a board-first
+The public Bend link serves build `12e233fd9c7ca2c09fe4` from clean source
+`c8f8eee`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
 and a separate Bend-rendered sprite helper. Run
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
@@ -26,12 +26,14 @@ and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
 The [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
 is historical; the current preview also has clipped camera-facing wall faces,
 shorter and lower-set authored pieces, warmer exposed sides, a one-entry
-settled-ground cache, and data-derived alpha bounds for faster detailed
-sprites without changing their pixels. The
-[hosted sprite receipt](docs/evidence/v2-alpha-bounds/README.md#hosted-preview)
-binds its source, live bytes and focused real-Chrome playtest. Non-draft builds verify
-the frozen semantic and graphics manifests and source-bound worker graph.
-Native parity for the current source, owner visual acceptance and Bend 2.0.28
+settled-ground cache, data-derived alpha bounds and an exact, source-bound
+prepared first ground. The latter is used only for the default camera/theme/
+topology and matching decoded plate; other states retain the Bend ground path.
+The [hosted ground receipt](docs/evidence/v2-ground-first/README.md#hosted-preview)
+binds its source, live bytes and focused real-Chrome playtest. Non-draft builds
+verify the frozen semantic and graphics manifests and source-bound worker graph.
+The Linux CPU-only candidate passed on unchanged native inputs from `c986e3f`;
+current GPU parity, physical audio, owner visual acceptance and Bend 2.0.28
 pin review remain open. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 

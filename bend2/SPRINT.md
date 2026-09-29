@@ -1496,7 +1496,16 @@ hosted scenarios/65 checks with zero defects. No current-source Linux native
 result, GPU-on repair, reviewed compiler pin, full hosted matrix or owner
 visual acceptance follows. The later sprite-source CPU-only attempt is
 separately [requested](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
-for `c986e3f`, with no CUDA/GPU authority.
+for `c986e3f`, with no CUDA/GPU authority. Its later
+[Linux host-local reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5881328169)
+reports one passing source check, C/CPU ELF build, original full-window
+250-ms X.Org interaction, routed PCM and same-directory save/restart on that
+exact source. The [CPU evidence](docs/evidence/native-2028-cpu/README.md)
+binds the closure and receipt hashes; no binary or evidence bytes were
+transferred. Subsequent source through `c8f8eee` changes no `.bend`, runtime
+asset or toolchain pin inputs. This is CPU candidate evidence only; the C30
+CUDA-on deselection failure, physical audio and owner visual acceptance remain
+open.
 
 The [first detailed-ground phase probe](docs/evidence/v2-ground-first/README.md)
 on the same 512px source-bound start view found 56 tile draws dominate the
@@ -1508,7 +1517,12 @@ prepared-ground path was integrated into ordinary v2-preview draft builds:
 the actual decoded Ready plate must match its digest and Bend ground key before
 the hashed prepared image is loaded, with original detailed-ground fallback.
 The [ground evidence](docs/evidence/v2-ground-first/README.md) records exact
-local canvas parity, negative/changed-plate/offline checks, a 24-scenario
-earlier-draft matrix, and variable paired first-visit timings. The final clean
-build/full matrix and hosted verification are still pending; faster arbitrary
-views, native GPU, and owner visual acceptance remain open.
+local canvas parity, negative/changed-plate/offline checks, paired first-visit
+diagnostics, and a clean source-bound build with the same 23 asset hashes as
+its tested draft. The exact clean-build rendered matrix passed 24 scenarios,
+685 checks, zero defects. The separate Pages commit `c85f5dc` reported built;
+[live verification](docs/evidence/v2-ground-first/README.md#hosted-preview)
+matched 24/24 Bend build entries and two unchanged original-site baselines,
+and seven hosted scenarios passed 65 checks with zero defects. Faster
+arbitrary views, constrained devices, native GPU, full hosted matrix and
+owner visual acceptance remain open.

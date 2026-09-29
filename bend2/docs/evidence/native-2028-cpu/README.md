@@ -132,8 +132,36 @@ physical audibility, GPU parity or a canonical pin.
 The newer published sprite-bound source is
 `c986e3ffbbf747504dccb7315d8b0bce69554894`, tree
 `79ef5cc6953e8a9df98427a36f8697f68ecd2244`. It changes the NativeV2
-input closure after a789. A [separate one-shot CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
-targets that source with the same admission and runtime bounds; no reply or
-result is assumed here. It expressly excludes CUDA/GPU. The original C30
-full-window CUDA-on 250 ms failure remains terminal until a separately
-reviewed device path supplies new evidence.
+input closure after a789. The [separate one-shot CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
+received a [passing Linux host-local result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5881328169).
+The reported 152-file/174-input closure includes seven matching runtime
+assets and unchanged pinned `NativeV2.bend` SHA-256
+`29fc92d043aff032de13ceafad63ef4f101c72b08f93b7199c3ce40bd333cf6d`.
+The isolated Bend 2.0.28+006 compiler was `bc178404f4778704fa5584a73fcdf72bcdf9f32c`
+plus diff SHA-256 `1b710e4e872885ef7b5b6086ff518f394290190b43c6a8c855dd17895c2b092a`;
+the clean canonical 2.0.27 pin was not moved. Process-path MemAvailable was
+114,815,094,784 bytes initially and 114,479,927,296 immediately before C,
+above the unchanged 94,489,280,512-byte floor; five visible nonroot cgroup
+ancestors were unlimited. Exactly one source check, C emission and CPU ELF
+link passed. The source-bound package receipt SHA-256 is
+`740d23ffccc487f5047ab43a440fc91ba6fba5b293779f8c4c9d979472b1a427`;
+C `d38db67ee3665ba02cb41d6eae657b5c2ab2b703cafa975a86dd361e71157e51`;
+ELF `d293f19273cf5ab3b4fdfc08ed93315739e8b27764408d1a4a8f4ff748c7b204`.
+
+That ELF/assets passed real X.Org :1 full-window 250-ms select/deselect,
+g1-h3, Escape/close, held/settled orbit and same-directory save/restart;
+Black to move and knight on h3 persisted. HDMI PipeWire sink-monitor PCM had
+zero idle nonzero samples and 12,762 move nonzero samples without clipping.
+Eight sampled PPMs were byte-identical to the earlier a789 CPU sample.
+Runtime-result SHA-256 is
+`bb280bf696668a6537d65b77d91dcf37ae23f431a68d00da439c9a46b1e3cf1c`;
+consolidated immutable host-local evidence JSON SHA-256 is
+`76c4beda7cc561cafd1876afb5a5c47df7db6b3cc8fba9949da69c292b7f33de`.
+The exact host-local claim was reported released; the binary and evidence
+bytes were not transferred. Subsequent Windows source through `c8f8eee` has
+no changes to `.bend`, runtime assets or `TOOLCHAIN.json` from c986, and the
+four named native source hashes were independently rechecked locally. This
+remains reported Linux CPU candidate evidence, not a Windows native run,
+physical audibility, all-frame/human visual acceptance, GPU parity, or a
+canonical pin amendment. The original C30 CUDA-on full-window 250-ms
+deselection failure remains terminal; no automatic GPU retry is authorized.

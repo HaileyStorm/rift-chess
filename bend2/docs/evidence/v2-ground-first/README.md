@@ -58,8 +58,15 @@ with exact pixels. Normal v2-preview packaging, byte-hash verification and
 the source-bound phase probe also passed on the subsequent `12e233fd9c7ca2c09fe4`
 draft incorporating the stale-job repair. A local paired Chrome run of this
 draft again matched exact complete canvas PNGs at all three states and measured
-130 ms first ground versus 704 ms in its baseline. A clean source build and
-full matrix remain necessary before publication.
+130 ms first ground versus 704 ms in its baseline. The committed clean,
+non-draft source `c8f8eee0e75b45867ec3b0b2046f601d32f17e05` built the
+identical content version and all identical file hashes with `sourceDirty=false`.
+Its exact-build-bound full local rendered matrix passed 24 scenarios and 685
+checks, zero defects. The ignored summary is
+`.artifacts/bend2/playtest-stage2/ground-first-clean-c8f8eee-full-20260928/summary.json`,
+SHA-256 `e2b3ba393e9484002450831c7db01ecbb2e322eb6e6598d292963ab670b63254`.
+The clean `build.json` SHA-256 is
+`60ce496956f7c1b08f79ae486f05d07efe5655d310c165283713e7feddf81708`.
 
 The added 7,347,974-byte CacheStorage entry raised measured local usage by
 about 7.36 MB (approximately 10.13 MB total). First-visit service-worker
@@ -71,6 +78,24 @@ detailed arrival took 4.23–4.35 s versus 4.56–6.35 s in those two local pair
 the added proxy hop and variable host load make this diagnostic rather than a
 hosted-network or portable latency bound. Earlier unproxied pairs had mixed
 whole-page ordering. No physical low-memory device or universal speedup is
-established. General per-view ground
-speed and native GPU evidence remain separate open requirements. The current
-hosted build remains the previous build until clean-build and hosted gates pass.
+established. General per-view ground speed and native GPU evidence remain
+separate open requirements. The separate Pages repository received commit
+`c85f5dc1e57b2b2473f61801701b419a7112395e`.
+
+## Hosted preview
+
+The [Bend-only playable link](https://haileystorm.github.io/rift-chess-bend2/)
+reported Pages `built` for that exact commit. The live verifier matched
+`build.json`, all 23 listed files and two unchanged original-game baselines;
+the required module MIME types passed. Its ignored receipt is
+`.artifacts/bend2/publication/2026-09-29T01-43-07-174Z-cf242634/receipt.json`,
+SHA-256 `795363353e32e1172a56ed6d30267934fcd1257f704cd0cfa3e22035eae88a19`.
+Seven exact-build-bound hosted real-Chrome scenarios passed 65 checks with
+zero defects (start, corrupt-plate fallback, camera, persistence, mobile and
+two import-gesture cases). The ignored summary is
+`.artifacts/bend2/playtest-stage2/ground-first-hosted-20260929/summary.json`,
+SHA-256 `6c6eca1b81d305a10e5e222cbe8e3994f436cd1070e2a9c6aa218a8958a8a573`.
+The 24/685 result is the local same-content clean build, not a full hosted
+matrix. The 7.35 MB addition, variable cold timing, arbitrary-view speed,
+low-memory devices, GPU, physical audio and owner visual acceptance remain
+separate evidence requirements.
