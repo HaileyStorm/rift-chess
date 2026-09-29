@@ -1,5 +1,11 @@
 # Camera, gaps and rendered input
 
+Historical camera-v1 presentation contract. The current v2 game defaults to
+yaw 345°, pitch 67°, zoom 115%; its named Front preset is yaw 0°, pitch 65°.
+The 65° straight-on default, zoom ceiling and test counts below describe the
+earlier implementation, not a request to change the current camera. Current
+v2 camera and rendered checks are tracked in `../SPRINT.md`.
+
 This is the tested presentation contract, separate from the frozen rules and
 pixel-sampling laws. Camera math and convex-quad rasterization use Bend's F32
 operations; they are not presented as formally proved floating-point geometry.
