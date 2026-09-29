@@ -1,0 +1,63 @@
+{
+  "schema": "rift-native-cli-entries-2032-source-receipt/1",
+  "evidenceClass": "isolated-source-typecheck",
+  "hostPlatform": "win32",
+  "candidateBaseCommit": "3080ad508fd73c1730a82c9393890cc199426918",
+  "upstreamBendCommit": "573002f01ec6c52416d44489543f69a9625facf8",
+  "canonicalBendPinUnchanged": "d37909174ebd664338ae3194799a9e0899dedd51",
+  "testScriptSha256": "0b6839e4269869d10a48fe15e35b3b30f41ac27f0e969ff404752a8fbd74d17c",
+  "nativeCliPatchSha256": "c104cde276ef3890552c84ae6cb1518c73fe4555440503da648e365c6715c3eb",
+  "consumersPatchSha256": "4ddf245874bddd2c2dcbb799889b4a280dd1de12fdd62057c8f33d6fc02c95a5",
+  "nodeOldGenerationCapMiB": 512,
+  "entries": [
+    {
+      "path": "bend2/NativeCLI.bend",
+      "loadedFiles": 17,
+      "definitions": 1232,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "1ae658969f10cd045952070a5f4bb7aef89adb8e23894fdb8868a2518910d32a"
+    },
+    {
+      "path": "bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend",
+      "loadedFiles": 30,
+      "definitions": 819,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "0f04dfbe5c0e09a0ef0b35b081af4e1100246fe799c03e55ea5330494a666bd5"
+    },
+    {
+      "path": "bend2/lib/graphics/v2/bench/gpu/PlanReadback.bend",
+      "loadedFiles": 31,
+      "definitions": 835,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "82ad8af089ed0c7cb5489ab188926966a7e57b230c07ef8acfad1ae9045b7503"
+    },
+    {
+      "path": "bend2/tests/piece-sprites/BoardSceneSpriteBench.bend",
+      "loadedFiles": 43,
+      "definitions": 1375,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "4f54efa612e960ecdd62c323edfe528bbcccae50f9155ba466bdf4abbdd9a7b0"
+    },
+    {
+      "path": "bend2/tests/piece-sprites/DecodePageTest.bend",
+      "loadedFiles": 23,
+      "definitions": 786,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "50596a3d311638fa53708f975a45fbad7c55579246a560c1fe961a00b9bb1be8"
+    },
+    {
+      "path": "bend2/tests/piece-sprites/PieceRenderBench.bend",
+      "loadedFiles": 26,
+      "definitions": 841,
+      "holes": 0,
+      "fetches": 0,
+      "bindingSha256": "c14b0109873b9aa124346615450c1ec2bda1702e8486af9b913bc5a6fc0a24f0"
+    }
+  ],
+  "notProven": ["native executable", "actual argv dispatch", "GUI", "PCM", "GPU", "frozen proof", "pin amendment", "release"]
+}

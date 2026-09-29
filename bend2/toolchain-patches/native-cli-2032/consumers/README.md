@@ -25,7 +25,27 @@ The separate bounded source test (`test-source-2032.mjs` SHA-256
 `8f9999673b2de848038313f92450373a075b6ad049e20a8962fe4e89ba4d41c6`)
 loaded Base, `Args2032` and the shared helper under the exact derived 2.0.32
 compiler: 3 files/493 definitions, zero holes and zero network calls. This
-checks only the helper; it does not typecheck any of the five patched entries
-or execute native arguments. No consumer source, compiler, pin, frozen Law,
-native binary, or GPU path was changed here. Apply this patch only after the
-shared `Args2032.bend` file is present in the 2.0.32 candidate.
+checks only the helper. Apply this patch only after the shared `Args2032.bend`
+file is present in the 2.0.32 candidate.
+
+In a separate managed checkout at source commit `3080ad508fd73c1730a82c9393890cc199426918`, the reviewed NativeCLI patch and this five-consumer patch were applied to exactly their six entry files. The pinned 2.0.27 checkout, frozen Laws and main application sources stayed unchanged. Each entry passed `book_load`/`book_valid` through the exact derived 2.0.32 compiler, with zero holes and network fetches, under a 512-MiB Node old-generation heap cap:
+
+| Entry | Loaded files | Definitions |
+| --- | ---: | ---: |
+| `NativeCLI.bend` | 17 | 1232 |
+| `PlanProfile.bend` | 30 | 819 |
+| `PlanReadback.bend` | 31 | 835 |
+| `BoardSceneSpriteBench.bend` | 43 | 1375 |
+| `DecodePageTest.bend` | 23 | 786 |
+| `PieceRenderBench.bend` | 26 | 841 |
+
+Reproduce one source check with
+`node --max-old-space-size=512 bend2/toolchain-patches/native-cli-2032/consumers/test-entries-2032.mjs <absolute-isolated-checkout> <entry-path>`.
+The test (SHA-256
+`0b6839e4269869d10a48fe15e35b3b30f41ac27f0e969ff404752a8fbd74d17c`)
+binds the source commit, exact six post-patch hashes, two patch files, all
+tracked candidate Bend sources, derived compiler/Base bytes and Git states
+before and after loading. It verifies each loaded source belongs to that
+closure; [ENTRY_SOURCE_RECEIPT.json](ENTRY_SOURCE_RECEIPT.json) records the
+six binding digests. This is not an executable, CLI argv scenario, GPU run,
+frozen proof, pin amendment or release acceptance.

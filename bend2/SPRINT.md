@@ -1677,7 +1677,10 @@ now have a separate hash-bound zero-context patch candidate; read-only
 `git apply --check` and pure exact-one-drop controls pass without editing
 their sources. The shared helper passed a bounded 2.0.32 source check
 (3 files/493 definitions, zero holes/network); independent review found no
-omitted consumer. The five patched entries have not been typechecked or run.
+omitted consumer. A separate isolated source candidate at 3080ad5 with both
+versioned argv patches then passed `book_load`/`book_valid` for NativeCLI and
+all five consumers (each zero holes/network, largest 43 files/1375 defs).
+No native executable or actual argv scenario has yet passed under 2.0.32.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
