@@ -1644,3 +1644,8 @@ distinct TODO/unsafe/foreign negatives, and a compiler-owned-name rejection.
 It adapts the 2.0.32 `hols`-only book shape without changing frozen v2. This
 is not the frozen closure, BendTT kernel verdict, six Law mutations, or an
 accepted pin; Windows nested imports still stop that closure before checking.
+The [isolated 2.0.32 patch 002 candidate](toolchain-patches/002-layout/rebase-2032/README.md)
+now replays exactly after 001 and passes a bounded deterministic layout,
+direct local-only denial, CLI-isolation and successful C/JS byte-parity gate.
+Its recursive-import and imported-name assertions await the 005 Windows path
+rebase; this is not full compiler, proof, or pin acceptance.
