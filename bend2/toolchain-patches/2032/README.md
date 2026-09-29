@@ -38,6 +38,24 @@ bound. These are local source probes, not mathematical/BendTT proofs or the
 six frozen-Law mutation suite. The 300-second bound terminated its owned
 worker; no Law counterexample is inferred.
 
+The 001, 002, and 005 fixture scripts, and the first 004 selected-root test,
+bind intermediate compiler hashes and are historical stage receipts on the
+current shared derived checkout. The phase-two test reconstructs the exact
+preimage, applies its own patch, checks final source bytes, and compares
+no-suffix C/JS output. The phase-three and current-stack build-adapter tests
+then exercise separate runtime/export seams. A green old-stage fixture is
+not required on the advanced checkout, and a failing old-stage input guard
+is not a regression. A unified final-stack gate is still required before pin
+adoption.
+
+The [current-stack selected browser-library adapter](build-adapter/README.md)
+passes a before/after source-bound local Bun gate on `MenuAA.font_byte_cap`,
+emitting only `font_cap` and evaluating 262144. It repeats selected-root
+key/order/invalid-root and compiler collision controls on the phase-two
+compiler and matches no-suffix JavaScript bytes against an independent stack
+replay. It has not replaced `emit-selected.ts`, the cache binding, or
+`build.ts`; exact 2.0.32 browser build/render evidence remains open.
+
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without
 installing anything implicitly, run the complete mutation/conformance and

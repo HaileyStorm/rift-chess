@@ -1,5 +1,13 @@
 # Bend 2.0.32 worker carry-forward: selected-root phase
 
+This fixture is bound to the historical **pre-phase-two** derived compiler
+bytes (001→002→005). The shared derived checkout now also contains the
+phase-two parser/planner; rerunning this exact-hash gate there is expected to
+fail its input guard. Its separate passing receipt remains provenance. Use
+the [current-stack build-adapter gate](../../2032/build-adapter/README.md)
+for selected export/ownership behavior and the phase-two/three gates for
+their additional contracts; do not relabel the old fixture as a current run.
+
 This is a bounded compatibility slice, not a rebase or acceptance of the full
 004 Web Worker backend. It is based on pristine upstream `573002f01ec6c52416d44489543f69a9625facf8` with the exact ordered 001+002+005 source stack. The pre-004 compiler source hashes are recorded by
 [`replay-001-002-005.mjs`](../../2032/replay-001-002-005.mjs): `bend.ts`
@@ -34,7 +42,9 @@ synchronous emitter.
 
 ## Bounded receipt
 
-Run from the repository root on Windows with the local Bun runtime:
+Historical reproduction only on a separate pre-phase-two 001→002→005
+checkout (the current shared derived checkout intentionally fails its hash
+guard). From that checkout, run with the local Bun runtime:
 
 ```powershell
 & .artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe run bend2/toolchain-patches/004-web-workers/rebase-2032/test.mjs

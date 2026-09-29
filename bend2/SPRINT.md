@@ -1671,6 +1671,13 @@ now passes its pure exact-one-leading-program removal test and exact-source
 patch preflight without editing the 2.0.27 entry. It is not yet applied to a
 2.0.32 application closure or validated in a native command matrix; other
 `IO.args` consumers remain in the migration inventory.
+The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
+now passes an exact before/after source-bound local Bun fixture: a real
+`MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
+matches a fresh 001→002→005→004-phase2 replay, and reserved-name/foreign
+collision and invalid-root controls reject. It does not yet wire the
+production selected caches or `build.ts`, nor prove controller/scene/chrome/
+menu multi-export emission or a rendered 2.0.32 browser build.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.
