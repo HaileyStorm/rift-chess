@@ -10,7 +10,7 @@ function byteList(bytes: Uint8Array): any {
   return tail;
 }
 
-async function boundedBytes(response: Response, limit: number): Promise<Uint8Array> {
+export async function boundedBytes(response: Response, limit: number): Promise<Uint8Array> {
   const header = response.headers.get('content-length');
   if (header !== null && Number(header) > limit) throw new RangeError('Asset exceeds its Bend byte cap');
   if (!response.body) {

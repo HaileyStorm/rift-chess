@@ -4,15 +4,66 @@
 // and stale-result suppression.
 // @ts-ignore Compiled by the pinned Bend loader.
 import BoardScene from '../../graphics/v2game/BoardScene.bend';
-import { loadAssetRequests } from './asset-port';
+import { boundedBytes, loadAssetRequests } from './asset-port';
 
 declare const __BEND_SPRITE_SOURCE__: string;
+declare const __BEND_PREPARED_GROUND_PATH__: string;
+declare const __BEND_PREPARED_GROUND_SHA__: string;
+declare const __BEND_PREPARED_PLATE_SHA__: string;
+declare const __BEND_PREPARED_FRAME_JSON__: string;
 
 const PROTOCOL = 1;
 const SOURCE = typeof __BEND_SPRITE_SOURCE__ === 'string'
   ? __BEND_SPRITE_SOURCE__ : 'unbound-development-build';
+const PREPARED_PATH = typeof __BEND_PREPARED_GROUND_PATH__ === 'string'
+  ? __BEND_PREPARED_GROUND_PATH__ : '';
+const PREPARED_SHA = typeof __BEND_PREPARED_GROUND_SHA__ === 'string'
+  ? __BEND_PREPARED_GROUND_SHA__ : '';
+const PREPARED_PLATE_SHA = typeof __BEND_PREPARED_PLATE_SHA__ === 'string'
+  ? __BEND_PREPARED_PLATE_SHA__ : '';
+const PREPARED_FRAME_JSON = typeof __BEND_PREPARED_FRAME_JSON__ === 'string'
+  ? __BEND_PREPARED_FRAME_JSON__ : '';
 const scene = BoardScene as Record<string, (...args: any[]) => any>;
 const list = (items: any[]) => items.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' } as any);
+
+async function digest(bytes: Uint8Array): Promise<string> {
+  const output = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(output)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function restoreFrame(value: any): any {
+  if (!value || typeof value !== 'object') return value;
+  if (!Array.isArray(value) && Object.keys(value).length === 1 &&
+      typeof value.__bend_bigint__ === 'string' && /^-?(0|[1-9][0-9]*)$/.test(value.__bend_bigint__))
+    return BigInt(value.__bend_bigint__);
+  for (const key of Object.keys(value)) value[key] = restoreFrame(value[key]);
+  return value;
+}
+
+function configuredFrame(): any | null {
+  if (!PREPARED_FRAME_JSON) return null;
+  try { return restoreFrame(JSON.parse(PREPARED_FRAME_JSON)); }
+  catch { return null; }
+}
+
+async function loadPreparedGround(scope: Scope): Promise<any | null> {
+  if (!/^\.\/assets\/ground-initial-[0-9a-f]{12}\.json$/.test(PREPARED_PATH) ||
+      !/^[0-9a-f]{64}$/.test(PREPARED_SHA) || !scope.location?.href) return null;
+  try {
+    const url = new URL(PREPARED_PATH, scope.location.href);
+    if (url.origin !== new URL(scope.location.href).origin) return null;
+    const response = await fetch(url);
+    if (!response.ok || response.redirected || response.url !== url.href) return null;
+    const bytes = await boundedBytes(response, 8_000_000);
+    if (await digest(bytes) !== PREPARED_SHA) return null;
+    const image = JSON.parse(new TextDecoder().decode(bytes));
+    return image?.$ === 'Pix' || image?.$ === 'Qua' ? image : null;
+  } catch { return null; }
+}
+
+async function digestPlate(ready: any): Promise<string> {
+  return digest(new TextEncoder().encode(JSON.stringify(ready)));
+}
 
 function values(value: any): any[] {
   const result = [];
@@ -28,7 +79,8 @@ type SpriteJob = {
 
 type Timings = {
   fetchMs: number; decodeMs: number; underlayMs: number;
-  groundMs: number; groundCacheHit: number; spritesMs: number; workerMs: number;
+  groundMs: number; groundCacheHit: number; preparedGroundHit: number;
+  spritesMs: number; workerMs: number;
   startedEpochMs: number; sendEpochMs: number;
 };
 
@@ -43,6 +95,10 @@ type RuntimeOptions = {
   loadAssets?: (requests: any[]) => Promise<any[]>;
   now?: () => number;
   source?: string;
+  loadPrepared?: () => Promise<any | null>;
+  hashPlate?: (ready: any) => Promise<string>;
+  preparedFrame?: any;
+  preparedPlateSha256?: string;
 };
 
 /** Install the worker protocol. The injected seams are used by the bounded
@@ -52,6 +108,11 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   const fetchAssets = options.loadAssets ?? loadAssetRequests;
   const now = options.now ?? (() => performance.now());
   const source = options.source ?? SOURCE;
+  const preparedFrame = options.preparedFrame ?? configuredFrame();
+  const preparedPlateSha256 = options.preparedPlateSha256 ?? PREPARED_PLATE_SHA;
+  const preparedEnabled = Boolean(preparedFrame && /^[0-9a-f]{64}$/.test(preparedPlateSha256) &&
+    (options.loadPrepared || PREPARED_PATH));
+  const hashPlate = options.hashPlate ?? digestPlate;
 
   let generation = -1;
   let generationIds = new Set<number>();
@@ -60,6 +121,28 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
   let settledGround: any = null, groundFrame: any = null;
+  let preparedLoad: Promise<any | null> | null = null;
+  // Bend plates are immutable. A newly supplied/decoded plate has a new
+  // identity, while orbiting away and back may reuse this same Ready object.
+  const plateHashes = new WeakMap<object, Promise<string | null>>();
+  const prepared = () => preparedLoad ??= (options.loadPrepared
+    ? options.loadPrepared() : loadPreparedGround(scope)).catch(() => null);
+
+  function readyPlate(theme: number, value: any): any | null {
+    const ready = theme === 0 ? value?.astral : value?.stone;
+    if (!ready || ready.$ !== 'Ready' || ready.depth !== 9 ||
+        !['Pix', 'Qua'].includes(ready.pixels?.$)) return null;
+    return ready;
+  }
+
+  function readyDigest(ready: object): Promise<string | null> {
+    let result = plateHashes.get(ready);
+    if (!result) {
+      result = hashPlate(ready).catch(() => null);
+      plateHashes.set(ready, result);
+    }
+    return result;
+  }
 
   scope.postMessage({ kind: 'hello', protocol: PROTOCOL, source });
 
@@ -162,11 +245,19 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
     generationIds.add(request.id);
 
     const metrics: Timings = { fetchMs: 0, decodeMs: 0, underlayMs: 0,
-      groundMs: 0, groundCacheHit: 0, spritesMs: 0, workerMs: 0,
+      groundMs: 0, groundCacheHit: 0, preparedGroundHit: 0, spritesMs: 0, workerMs: 0,
       startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
+      const eligible = preparedEnabled && board.sprite_same_ground(preparedFrame, request.frame);
+      const supplied = request.plates ?? (sharedPlate?.theme === request.theme
+        ? sharedPlate.value : undefined);
+      const knownReady = eligible && readyPlate(request.theme,
+        supplied ?? (plateTheme === request.theme ? plates : null));
+      // Hash a supplied immutable plate alongside sprite-page loading, but do
+      // not fetch the large prepared ground until its decoded pixels match.
+      const knownDigest = knownReady ? readyDigest(knownReady) : null;
       await ensureAssets(request.theme, metrics,
-        request.plates ?? (sharedPlate?.theme === request.theme ? sharedPlate.value : undefined));
+        supplied);
       if (request.generation !== generation) { stale(request); return; }
 
       if (!underlay || plateTheme !== request.theme) {
@@ -180,7 +271,25 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
         metrics.groundCacheHit = 1;
       } else {
         const groundAt = now();
-        settledGround = board.settled_ground512(request.frame, underlay);
+        const currentReady = eligible && readyPlate(request.theme, plates);
+        const actualDigest = currentReady && (currentReady === knownReady && knownDigest
+          ? await knownDigest : await readyDigest(currentReady));
+        const exact = actualDigest === preparedPlateSha256 && Boolean(currentReady);
+        if (request.generation !== generation) { stale(request); return; }
+        const candidate = exact ? await prepared() : null;
+        if (request.generation !== generation) {
+          // A superseding view must not retain a resolved, large prepared tree
+          // through the loader promise while it builds its own ground.
+          if (candidate) preparedLoad = null;
+          stale(request);
+          return;
+        }
+        settledGround = candidate ?? board.settled_ground512(request.frame, underlay);
+        metrics.preparedGroundHit = candidate ? 1 : 0;
+        // The retained settledGround owns this image. Drop the loader promise
+        // so a later orbit/Shift can release it instead of holding two large
+        // ground trees. Returning to the default may fetch/parse it again.
+        if (candidate) preparedLoad = null;
         groundFrame = request.frame;
         metrics.groundMs = now() - groundAt;
       }

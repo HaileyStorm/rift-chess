@@ -299,11 +299,18 @@ const out = v2Preview
 fs.mkdirSync(out, { recursive: true });
 const common = { outdir: out, target: 'browser' as const, format: 'esm' as const, naming: '[name]-[hash].[ext]', minify: true, sourcemap: 'external' as const, splitting: false };
 let spriteHelperName = '', spriteSource = '';
+let preparedGround: Awaited<ReturnType<typeof import('./emit-default-ground.mjs').emitDefaultGround>> | null = null;
 if (v2Preview) {
   spriteSource = assertCache('scene').manifest.output.sha256;
+  const { emitDefaultGround } = await import('./emit-default-ground.mjs');
+  preparedGround = emitDefaultGround(out);
   const helper = await Bun.build({ ...common,
     entrypoints: [path.join(root, 'bend2/platform/browser/sprite-helper.ts')],
-    plugins: [plugin], define: { __BEND_SPRITE_SOURCE__: JSON.stringify(spriteSource) } });
+    plugins: [plugin], define: { __BEND_SPRITE_SOURCE__: JSON.stringify(spriteSource),
+      __BEND_PREPARED_GROUND_PATH__: JSON.stringify(preparedGround.assetPath),
+      __BEND_PREPARED_GROUND_SHA__: JSON.stringify(preparedGround.assetSha256),
+      __BEND_PREPARED_PLATE_SHA__: JSON.stringify(preparedGround.plateSha256),
+      __BEND_PREPARED_FRAME_JSON__: JSON.stringify(preparedGround.frameJson) } });
   if (!helper.success) throw new Error(helper.logs.map(String).join('\n'));
   spriteHelperName = path.basename(helper.outputs.find(file => file.path.endsWith('.js'))!.path);
 }
@@ -398,6 +405,10 @@ if (v2Preview) {
     fs.writeFileSync(path.join(out, name), bytes);
     files[name] = digest(bytes);
   }
+  if (preparedGround) {
+    for (const name of [preparedGround.assetFile, preparedGround.metadataFile])
+      files[name] = digest(fs.readFileSync(path.join(out, name)));
+  }
 }
 const version = digest(JSON.stringify(files)).slice(0, 20);
 fs.writeFileSync(path.join(out, 'sw.js'), fs.readFileSync(path.join(root, 'bend2/platform/browser/sw.js'), 'utf8')
@@ -405,6 +416,9 @@ fs.writeFileSync(path.join(out, 'sw.js'), fs.readFileSync(path.join(root, 'bend2
 files['sw.js'] = digest(fs.readFileSync(path.join(out, 'sw.js')));
 fs.writeFileSync(path.join(out, 'build.json'), JSON.stringify({ schema: 'rift-bend-browser/2', builtAt: new Date().toISOString(), version, sourceRevision, sourceDirty, draft,
   ...(v2Preview ? { v2Preview: true, workerLibraries } : {}),
+  ...(preparedGround ? { preparedGround: { asset: preparedGround.assetFile,
+    assetSha256: preparedGround.assetSha256, assetBytes: preparedGround.assetBytes,
+    metadata: preparedGround.metadataFile, metadataSha256: preparedGround.metadataSha256 } } : {}),
   application: 'Bend-owned rules, UI, bitmap text, input policy, codec, replay, animation and PCM synthesis; browser IO transport only',
   semanticSha256: rulesV2?.sha256 ?? null, parentSemanticSha256: semantic?.sha256 ?? null,
   pixelSemanticSha256: pixels?.sha256 ?? null, graphicsManifestSha256: digest(fs.readFileSync(path.join(root,'bend2/lib/graphics/VERIFICATION.json'))),

@@ -1497,3 +1497,18 @@ result, GPU-on repair, reviewed compiler pin, full hosted matrix or owner
 visual acceptance follows. The later sprite-source CPU-only attempt is
 separately [requested](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5880290631)
 for `c986e3f`, with no CUDA/GPU authority.
+
+The [first detailed-ground phase probe](docs/evidence/v2-ground-first/README.md)
+on the same 512px source-bound start view found 56 tile draws dominate the
+uncached ground; top facets and cast shadows cost far more than the rail or
+exposed rims in local Bun. Compact ground differs at 96,948 pixels and is
+not a visual drop-in. An exact precomputed image would add about 843 KB
+gzipped for just one initial camera/theme/topology. A later source-bound
+prepared-ground path was integrated into ordinary v2-preview draft builds:
+the actual decoded Ready plate must match its digest and Bend ground key before
+the hashed prepared image is loaded, with original detailed-ground fallback.
+The [ground evidence](docs/evidence/v2-ground-first/README.md) records exact
+local canvas parity, negative/changed-plate/offline checks, a 24-scenario
+earlier-draft matrix, and variable paired first-visit timings. The final clean
+build/full matrix and hosted verification are still pending; faster arbitrary
+views, native GPU, and owner visual acceptance remain open.

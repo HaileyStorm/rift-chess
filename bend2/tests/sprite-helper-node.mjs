@@ -23,10 +23,13 @@ function transpile(source, fileName) {
 let helperSource = fs.readFileSync(helperSourcePath, 'utf8');
 helperSource = helperSource.replace("declare const __BEND_SPRITE_SOURCE__: string;",
   `const __BEND_SPRITE_SOURCE__ = ${JSON.stringify(token)};`);
+for (const name of ['GROUND_PATH', 'GROUND_SHA', 'PLATE_SHA', 'FRAME_JSON'])
+  helperSource = helperSource.replace(`declare const __BEND_PREPARED_${name}__: string;`,
+    `const __BEND_PREPARED_${name}__ = '';`);
 helperSource = helperSource.replace("import BoardScene from '../../graphics/v2game/BoardScene.bend';",
   `import BoardScene from ${JSON.stringify(pathToFileURL(scenePath).href)};`);
-helperSource = helperSource.replace("import { loadAssetRequests } from './asset-port';",
-  `import { loadAssetRequests } from ${JSON.stringify(pathToFileURL(assetPath).href)};`);
+helperSource = helperSource.replace("import { boundedBytes, loadAssetRequests } from './asset-port';",
+  `import { boundedBytes, loadAssetRequests } from ${JSON.stringify(pathToFileURL(assetPath).href)};`);
 assert.ok(!helperSource.includes("'../../graphics/v2game/BoardScene.bend'"),
   'test harness must resolve BoardScene through its currently source-bound selected module');
 fs.writeFileSync(assetPath, transpile(fs.readFileSync(assetSourcePath, 'utf8'), assetSourcePath));
@@ -36,7 +39,8 @@ const bootstrap = `
 const { parentPort, workerData } = require('node:worker_threads');
 (async () => {
   const module = await import(require('node:url').pathToFileURL(workerData.entry).href);
-  const state = { calls: [], fetchGroups: [], delayNextFetch: false, lastGround: null };
+  const state = { calls: [], fetchGroups: [], delayNextFetch: false,
+    delayNextPrepared: false, lastGround: null };
   const list = items => items.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' });
   const values = value => { const out = []; while (value?.$ === 'Con') { out.push(value.head); value = value.tail; } return out; };
   const scene = {
@@ -65,9 +69,29 @@ const { parentPort, workerData } = require('node:worker_threads');
     return entries.map(item => ({ $: 'AssetResponse', id: item.id, bytes: list([0]), ok: true }));
   };
   let time = 0;
-  module.installSpriteHelper(scope, { scene, loadAssets, now: () => ++time, source: workerData.source });
+  const prepared = workerData.prepared ? {
+    preparedFrame: { theme: 0, groundKey: 'court' },
+    preparedPlateSha256: 'a'.repeat(64),
+    loadPrepared: async () => {
+      state.calls.push('load-prepared');
+      parentPort.postMessage({ kind: 'test-prepared-started' });
+      if (state.delayNextPrepared) {
+        state.delayNextPrepared = false;
+        await new Promise(resolve => setTimeout(resolve, 40));
+      }
+      return { theme: 0, marker: 'baked', platePixel: 7 };
+    },
+    hashPlate: async ready => {
+      state.calls.push('hash-plate-' + ready.pixels.color);
+      if (ready.pixels.color === 10) throw new Error('unavailable digest');
+      return ready.pixels.color === 7 ? 'a'.repeat(64) : 'b'.repeat(64);
+    },
+  } : {};
+  module.installSpriteHelper(scope, { scene, loadAssets, now: () => ++time,
+    source: workerData.source, ...prepared });
   parentPort.on('message', data => {
     if (data.kind === 'test-delay-fetch') state.delayNextFetch = true;
+    if (data.kind === 'test-delay-prepared') state.delayNextPrepared = true;
   });
 })().catch(error => parentPort.postMessage({ kind: 'test-crash', message: String(error) }));
 `;
@@ -200,4 +224,104 @@ test('a superseded first job retains its Bend plate without refetching it', asyn
     'neither the canceled nor the replacement job refetches the supplied plate');
   assert.equal(Number.isFinite(newest.metrics.decodeMs), true,
     'the canceled job may already have populated the immutable sprite-page cache');
+});
+
+test('prepared ground requires Bend ground key and exact decoded plate, with stale fallback', async t => {
+  const worker = new Worker(bootstrap, { eval: true,
+    workerData: { entry: helperPath, source: token, prepared: true } });
+  t.after(() => worker.terminate());
+  await waitFor(worker, message => message.kind === 'hello');
+  const plate = color => ({ $: 'ObservatoryPlates', astral: { $: 'Ready', depth: 9,
+    pixels: { $: 'Pix', color } }, stone: { $: 'Missing' } });
+  const job = (id, generation, marker, groundKey, plates) => ({
+    kind: 'job', protocol: 1, id, generation, source: token, theme: 0,
+    frame: { $: 'Frame', theme: 0, marker, groundKey }, ...(plates ? { plates } : {}) });
+
+  worker.postMessage(job(1, 1, 'initial', 'court', plate(7)));
+  const initial = await waitFor(worker, message => message.kind === 'result' && message.id === 1);
+  assert.equal(initial.metrics.preparedGroundHit, 1);
+  assert.equal(initial.metrics.groundCacheHit, 0);
+  assert.equal(initial.testState.lastGround.marker, 'baked');
+  assert.ok(!initial.testState.calls.includes('ground-initial'));
+
+  worker.postMessage(job(2, 1, 'occupancy-only', 'court'));
+  const cached = await waitFor(worker, message => message.kind === 'result' && message.id === 2);
+  assert.equal(cached.metrics.groundCacheHit, 1);
+  assert.equal(cached.metrics.preparedGroundHit, 0);
+
+  worker.postMessage(job(3, 2, 'new-holes', 'rift'));
+  const changed = await waitFor(worker, message => message.kind === 'result' && message.id === 3);
+  assert.equal(changed.metrics.preparedGroundHit, 0);
+  assert.equal(changed.testState.lastGround.marker, 'new-holes');
+
+  worker.postMessage(job(4, 3, 'different-plate', 'court', plate(8)));
+  const different = await waitFor(worker, message => message.kind === 'result' && message.id === 4);
+  assert.equal(different.metrics.preparedGroundHit, 0);
+  assert.equal(different.testState.lastGround.platePixel, 8);
+  assert.ok(different.testState.calls.includes('ground-different-plate'));
+
+  worker.postMessage(job(10, 4, 'digest-failed', 'court', plate(10)));
+  const unverified = await waitFor(worker, message => message.kind === 'result' && message.id === 10);
+  assert.equal(unverified.metrics.preparedGroundHit, 0);
+  assert.equal(unverified.testState.lastGround.platePixel, 10);
+
+  worker.postMessage(job(5, 4, 'restored-source', 'court', plate(7)));
+  const restored = await waitFor(worker, message => message.kind === 'result' && message.id === 5);
+  assert.equal(restored.metrics.preparedGroundHit, 1);
+  assert.equal(restored.testState.lastGround.marker, 'baked');
+
+  const stone = { $: 'ObservatoryPlates', astral: { $: 'Missing' },
+    stone: { $: 'Ready', depth: 9, pixels: { $: 'Pix', color: 7 } } };
+  worker.postMessage({ kind: 'job', protocol: 1, id: 8, generation: 5,
+    source: token, theme: 1, frame: { $: 'Frame', theme: 1,
+      marker: 'new-theme', groundKey: 'court' }, plates: stone });
+  const changedTheme = await waitFor(worker, message => message.kind === 'result' && message.id === 8);
+  assert.equal(changedTheme.metrics.preparedGroundHit, 0);
+  assert.equal(changedTheme.testState.lastGround.marker, 'new-theme');
+
+  const fresh = new Worker(bootstrap, { eval: true,
+    workerData: { entry: helperPath, source: token, prepared: true } });
+  t.after(() => fresh.terminate());
+  await waitFor(fresh, message => message.kind === 'hello');
+  fresh.postMessage({ kind: 'test-delay-prepared' });
+  fresh.postMessage(job(6, 1, 'superseded', 'court', plate(7)));
+  await waitFor(fresh, message => message.kind === 'test-prepared-started');
+  fresh.postMessage(job(7, 2, 'current', 'court', plate(7)));
+  const stale = await waitFor(fresh, message => message.kind === 'stale' && message.id === 6);
+  assert.equal(stale.generation, 1);
+  const current = await waitFor(fresh, message => message.kind === 'result' && message.id === 7);
+  assert.equal(current.metrics.preparedGroundHit, 1);
+  assert.equal(current.testState.lastGround.marker, 'baked');
+  assert.ok(!current.testState.calls.includes('sprites-superseded'));
+  assert.equal(current.testState.calls.filter(call => call === 'load-prepared').length, 2,
+    'a prepared tree loaded by the stale job is released before the replacement retries');
+
+  const missing = new Worker(bootstrap, { eval: true,
+    workerData: { entry: helperPath, source: token, prepared: true } });
+  t.after(() => missing.terminate());
+  await waitFor(missing, message => message.kind === 'hello');
+  missing.postMessage(job(9, 1, 'missing-ready', 'court'));
+  const fallback = await waitFor(missing, message => message.kind === 'result' && message.id === 9);
+  assert.equal(fallback.metrics.preparedGroundHit, 0);
+  assert.equal(fallback.testState.lastGround.marker, 'missing-ready');
+
+  const wrongFirst = new Worker(bootstrap, { eval: true,
+    workerData: { entry: helperPath, source: token, prepared: true } });
+  t.after(() => wrongFirst.terminate());
+  await waitFor(wrongFirst, message => message.kind === 'hello');
+  wrongFirst.postMessage(job(11, 1, 'wrong-first', 'court', plate(8)));
+  const wrong = await waitFor(wrongFirst, message => message.kind === 'result' && message.id === 11);
+  assert.equal(wrong.metrics.preparedGroundHit, 0);
+  assert.ok(!wrong.testState.calls.includes('load-prepared'),
+    'a valid but different initial plate must not fetch and discard the large prepared asset');
+  wrongFirst.postMessage(job(12, 2, 'right-second', 'court', plate(7)));
+  const right = await waitFor(wrongFirst, message => message.kind === 'result' && message.id === 12);
+  assert.equal(right.metrics.preparedGroundHit, 1);
+  wrongFirst.postMessage(job(13, 3, 'orbited-away', 'rift'));
+  await waitFor(wrongFirst, message => message.kind === 'result' && message.id === 13);
+  wrongFirst.postMessage(job(14, 4, 'returned-default', 'court'));
+  const returned = await waitFor(wrongFirst, message => message.kind === 'result' && message.id === 14);
+  assert.equal(returned.metrics.preparedGroundHit, 1);
+  assert.equal(returned.testState.calls.filter(call => call === 'hash-plate-7').length, 1,
+    'the same immutable Ready is not rehashed after an orbit return');
 });

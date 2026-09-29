@@ -138,6 +138,12 @@ try {
   assert.deepEqual(after.front, before.front, 'Front-view detailed canvas changed');
   assert.equal(after.metrics.groundCacheHit, 1, 'Bend-approved same-ground move did not reuse ground');
   assert.equal(after.viewMetrics.groundCacheHit, 0, 'Changed camera reused stale ground');
+  if (process.env.BEND_EXPECT_PREPARED_GROUND === '1') {
+    assert.equal(after.initialMetrics.preparedGroundHit, 1,
+      'Exact initial source plate/view failed to use the prepared ground');
+    assert.equal(after.viewMetrics.preparedGroundHit, 0,
+      'Changed Front view reused the default prepared ground');
+  }
   console.log(JSON.stringify({ ok: true, output: path.relative(root, output), reversed,
     baseline: { version: before.buildVersion, sourceRevision: before.sourceRevision,
       assetsVerified: before.assetsVerified,
@@ -145,6 +151,10 @@ try {
       spritesMs: before.metrics.spritesMs,
       workerMs: before.metrics.workerMs, roundTripMs: before.metrics.roundTripMs,
       initialSpritesMs: before.initialMetrics.spritesMs,
+      initialGroundMs: before.initialMetrics.groundMs,
+      initialWorkerMs: before.initialMetrics.workerMs,
+      initialRoundTripMs: before.initialMetrics.roundTripMs,
+      initialPreparedGroundHit: before.initialMetrics.preparedGroundHit,
       frontSpritesMs: before.viewMetrics.spritesMs },
     candidate: { version: after.buildVersion, sourceRevision: after.sourceRevision,
       assetsVerified: after.assetsVerified,
@@ -152,6 +162,10 @@ try {
       spritesMs: after.metrics.spritesMs,
       workerMs: after.metrics.workerMs, roundTripMs: after.metrics.roundTripMs,
       initialSpritesMs: after.initialMetrics.spritesMs,
+      initialGroundMs: after.initialMetrics.groundMs,
+      initialWorkerMs: after.initialMetrics.workerMs,
+      initialRoundTripMs: after.initialMetrics.roundTripMs,
+      initialPreparedGroundHit: after.initialMetrics.preparedGroundHit,
       frontSpritesMs: after.viewMetrics.spritesMs,
       groundCacheHit: after.metrics.groundCacheHit,
       changedViewGroundCacheHit: after.viewMetrics.groundCacheHit },
