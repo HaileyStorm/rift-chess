@@ -50,6 +50,9 @@ network attempts. No native command/argv matrix has run under 2.0.32.
 The same isolated NativeCLI entry also passed a source-bound in-memory C
 emission; see the [bounded receipt](consumers/C_EMISSION_RECEIPT.json). No C
 artifact, binary or native runtime was produced by that probe.
+A separate [host-local C artifact export](consumers/C_ARTIFACT_RECEIPT.json)
+verified the same bytes and committed a manifest. The Windows clang syntax
+probe lacks `sys/mman.h`; a supported Linux native build/run remains open.
 
 Keep the historical 2.0.27 CLI source and its Linux receipt
 `bend2/docs/evidence/native-cli-linux-2-0-27/receipt.json` unchanged. Remove

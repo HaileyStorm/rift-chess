@@ -60,3 +60,15 @@ memory (SHA-256
 The emitted text contains no X11/ALSA include or GPU `BANGS` marker. No C
 artifact or native binary was written, linked or run; this is not a CLI
 argument, GUI, PCM, restart, GPU or release acceptance result.
+
+The follow-on [C artifact export](C_ARTIFACT_RECEIPT.json) passed in a unique,
+ignored Windows run directory. Reproduce with
+`node bend2/toolchain-patches/native-cli-2032/consumers/export-c-2032.mjs <absolute-isolated-checkout>`;
+the exporter source-gates before and after the bounded child, verifies the
+exclusive 2,189,927-byte C file against the known digest, then atomically
+publishes its no-overwrite manifest. The retained host-local run is
+`.artifacts/bend2/native-cli-2032/run-juMYA0` (manifest SHA-256
+`fa425944eb2d82c4de8c97a0d8e259ecbdf2ec54adec4cbd16f300e33584074f`).
+A local Windows clang 21.1.8 syntax-only probe failed at the generated
+POSIX `sys/mman.h` include, absent in that Windows toolchain. This does not
+test Linux compilation and is not a native binary or argv receipt.

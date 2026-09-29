@@ -91,6 +91,10 @@ The isolated NativeCLI source then emitted C bytes in memory under a bounded,
 source-checked child, with no artifact, link or native runtime test; the
 [receipt](../native-cli-2032/consumers/C_EMISSION_RECEIPT.json) remains a
 compiler-emission result only.
+A [separate C artifact](../native-cli-2032/consumers/C_ARTIFACT_RECEIPT.json)
+matches those emitted bytes and has a bound manifest. A Windows clang syntax
+probe failed on missing POSIX `sys/mman.h`; Linux native build/argv acceptance
+has not run.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

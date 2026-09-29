@@ -1,0 +1,29 @@
+{
+  "schema": "rift-native-cli-2032-c-artifact-receipt/1",
+  "evidenceClass": "source-bound-C-artifact-and-host-diagnostic",
+  "hostPlatform": "win32",
+  "hostLocalIgnoredRun": ".artifacts/bend2/native-cli-2032/run-juMYA0",
+  "candidateBaseCommit": "3080ad508fd73c1730a82c9393890cc199426918",
+  "upstreamBendCommit": "573002f01ec6c52416d44489543f69a9625facf8",
+  "sourceBindingSha256": "1ae658969f10cd045952070a5f4bb7aef89adb8e23894fdb8868a2518910d32a",
+  "exporterSha256": "da9e8be815d414823d51512e8dc9be9822647976effaaff6a3fc6b6c2be8f488",
+  "childSha256": "3355412374bc840abae2d1eb615b632a863ac094e7538bd9b3433d9e0d27c091",
+  "manifestSha256": "fa425944eb2d82c4de8c97a0d8e259ecbdf2ec54adec4cbd16f300e33584074f",
+  "cSource": {
+    "file": "NativeCLI.c",
+    "bytes": 2189927,
+    "sha256": "373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281"
+  },
+  "windowsSyntaxProbe": {
+    "command": "clang -std=c11 -O0 -fsyntax-only NativeCLI.c",
+    "clangVersion": "21.1.8",
+    "clangTarget": "i686-w64-windows-gnu",
+    "clangExeSha256": "f1d381062b68dadbd191217e30696f02e9cdb0e4ebb9e41239260687ab4b65ad",
+    "exitCode": 1,
+    "diagnostic": "NativeCLI.c:34:10: fatal error: 'sys/mman.h' file not found",
+    "interpretation": "Windows toolchain lacks a POSIX runtime header; Linux compilation is untested"
+  },
+  "nativeBinaryBuilt": false,
+  "nativeRuntimeTested": false,
+  "linuxAcceptance": false
+}

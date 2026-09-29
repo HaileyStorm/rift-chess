@@ -1685,6 +1685,11 @@ The exact patched NativeCLI source then passed a separate source-bound,
 bounded in-memory C emission (2,189,927 bytes, SHA-256
 `373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281`).
 This is not a linked binary or native execution receipt.
+The same exact candidate subsequently produced a verified, host-local
+[C artifact and manifest](toolchain-patches/native-cli-2032/consumers/C_ARTIFACT_RECEIPT.json)
+with the same 2,189,927-byte digest. Windows clang 21.1.8 syntax-only stopped
+at the generated POSIX `sys/mman.h` include, absent on that toolchain; no
+Linux compile or native runtime/argv acceptance is inferred.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
