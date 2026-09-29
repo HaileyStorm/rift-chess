@@ -17,8 +17,8 @@ published piece/wall scene and do not prove native parity for later source. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link serves build `12e233fd9c7ca2c09fe4` from clean source
-`c8f8eee`, with a board-first
+The public Bend link serves build `e788562833af84fd6840` from clean source
+`9d4a532`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
 and a separate Bend-rendered sprite helper. Run
 `node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
@@ -29,11 +29,15 @@ shorter and lower-set authored pieces, warmer exposed sides, a one-entry
 settled-ground cache, data-derived alpha bounds and an exact, source-bound
 prepared first ground. The latter is used only for the default camera/theme/
 topology and matching decoded plate; other states retain the Bend ground path.
-The [hosted ground receipt](docs/evidence/v2-ground-first/README.md#hosted-preview)
+Black's immediate orbit glyphs also have a small navy/brass edge for contrast;
+White and settled authored sprites remain unchanged, and Front stays 65°.
+The [hosted orbit receipt](docs/evidence/v2-motion-brass-edge/README.md#hosted-preview)
 binds its source, live bytes and focused real-Chrome playtest. Non-draft builds
 verify the frozen semantic and graphics manifests and source-bound worker graph.
-The Linux CPU-only candidate passed on unchanged native inputs from `c986e3f`;
-current GPU parity, physical audio, owner visual acceptance and Bend 2.0.28
+The [Linux CPU-only candidate](docs/evidence/native-2028-cpu/README.md)
+now reports a passing source/C/ELF, X.Org interaction, routed PCM and
+save/restart run on the current `9d4a532` native inputs. GPU parity, physical audio,
+owner visual acceptance and Bend 2.0.28
 pin review remain open. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 

@@ -39,11 +39,48 @@ is inferred. The full uninterrupted exact-draft-build local game matrix
 passed 24 scenarios/685 checks, zero defects; ignored summary SHA-256
 `6a7a91ab0d3709abe4bac16f61346a033cd74efee10bee4822c236a9374fcd3e`.
 
+The committed clean source `9d4a532df368006ef5464dd55888a593ed30e520`
+built non-draft with `sourceDirty=false`, content version
+`e788562833af84fd6840` and every playable file hash identical to the full
+draft. Clean `build.json` SHA-256 is
+`85c194ad428b32874e978bd1389fb3e69c67dc3377a72aa8f273e76f22287996`.
+The separate exact-clean-build local matrix also passed 24 scenarios/685
+checks with zero defects, with ignored summary SHA-256
+`a91860036cbbdc5b82ac767889155f8e1fe3e553a827b65920ee44e88a7fc951`.
 Frozen graphics-v1 and semantic-v2 manifests, the original TypeScript
 62-test suite and its production build passed. `PieceArt.bend` is a native
 `NativeV2` input even though this browser trial changes only fast orbit art.
 A broad Windows `NativeV2.bend --check-only` sample reached the wrapper's
 120-second timeout without a verdict; the child was no longer present on
 read-only inspection. Do not relabel the older Linux CPU receipt as covering
-this source. Clean build, hosted checks, fresh native CPU evidence, low-memory
-device performance and owner visual acceptance remain separate gates.
+this source. A [new one-shot Linux CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5883381933)
+binds the exact PieceArt SHA-256 and existing unchanged native inputs. Its
+[Linux host-local result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5883726070)
+reports a passing one-shot CPU package, real X.Org interaction, routed PCM
+and save/restart; see the [native receipt limits](../native-2028-cpu/README.md).
+The separate Pages repo received commit `7fb8613`. Browser checks, native
+GPU, low-memory device performance and owner visual acceptance are separate.
+
+## Hosted preview
+
+The [separate playable Bend link](https://haileystorm.github.io/rift-chess-bend2/)
+reported Pages `built` for exact commit
+`7fb8613f1f2c15f6649b09db50a2f99c027247cd`. The live verifier matched
+`build.json`, all 23 manifest-listed files, four required module MIME types,
+and both unchanged original-game baselines. Its ignored receipt is
+`.artifacts/bend2/publication/2026-09-29T04-03-56-070Z-abdf6838/receipt.json`,
+SHA-256 `a83fd4c349ef5e862721134b895d93987f5abbd4f5fdc6d5ddb6df8e7d46fb66`.
+Eight exact-build-bound hosted real-Chrome scenarios passed 83 checks with
+zero defects: start, corrupt-plate fallback, camera, Warm Court menus,
+persistence, mobile, import-gesture guards and touch import replanning.
+The ignored summary is
+`.artifacts/bend2/playtest-stage2/motion-brass-edge-hosted-focused-20260929/summary.json`,
+SHA-256 `26397d20bf043b3290a811fc0ed171a1cc87c1059c41ed030ac4117303b71e15`.
+The subsequent uninterrupted full hosted run on the same deployed build also
+passed 24 scenarios/685 checks with zero defects. Its ignored
+`.artifacts/bend2/playtest-stage2/motion-brass-edge-hosted-full-20260929/summary.json`
+is SHA-256 `9c0ea1e309d9455a9914e8a260916548b90c54201e5c5b3891cdf27183e4a75e`;
+the summary binds clean source `9d4a532` and content version `e788562833af84fd6840`.
+This is real Chrome coverage on this host, not a physical-device latency
+bound or owner visual sign-off. Native GPU, constrained-device motion latency,
+physical audio and owner visual acceptance remain open.

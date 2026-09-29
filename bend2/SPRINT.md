@@ -1536,9 +1536,21 @@ settled art, White glyphs and accepted cameras unchanged. Its 24-case color
 sentinel, four-view/three-layout/two-theme compact pixel check, real-Chrome
 cool/warm orbit captures and exact settled-pixel parity passed. Local drag
 timings were variable; there is no claimed speedup. The exact draft build
-passed the full local 24-scenario/685-check matrix with zero defects. It
-remains unpublished pending clean/hosted gates, and its `PieceArt.bend`
-change needs fresh native CPU evidence. A broad Windows NativeV2 source
+passed the full local 24-scenario/685-check matrix with zero defects. The
+committed clean source `9d4a532` retained the same build version/all playable
+hashes, and its own full local 24/685 matrix passed with zero defects. Pages
+commit `7fb8613` reported built; the
+[live hosted receipt](docs/evidence/v2-motion-brass-edge/README.md#hosted-preview)
+matched all 24 Bend build entries and two unchanged original-site baselines,
+and eight hosted scenarios passed 83 checks with zero defects. The later
+uninterrupted full hosted run also passed 24 scenarios/685 checks on the
+exact deployed build. The `PieceArt.bend` change has a distinct
+[Linux CPU-only reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5883726070)
+reporting one passing source/C/ELF package, real original 250-ms X.Org
+interaction, routed PCM and save/restart; [native evidence](docs/evidence/native-2028-cpu/README.md)
+binds hashes and limits, including the intended held-orbit frame difference.
+This is host-local candidate CPU, not GPU or physical audio acceptance.
+A broad Windows NativeV2 source
 check timed out at its 120-second wrapper bound without a verdict; the child
 was observed absent afterward, so that attempt is neither a pass nor a
 source counterexample.

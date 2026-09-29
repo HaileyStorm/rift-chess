@@ -165,3 +165,38 @@ remains reported Linux CPU candidate evidence, not a Windows native run,
 physical audibility, all-frame/human visual acceptance, GPU parity, or a
 canonical pin amendment. The original C30 CUDA-on full-window 250-ms
 deselection failure remains terminal; no automatic GPU retry is authorized.
+
+The later clean browser source `9d4a532df368006ef5464dd55888a593ed30e520`
+changes the NativeV2 import closure only at `graphics/v2game/PieceArt.bend`
+(SHA-256 `44d46133946ba1a516cb46e0ff7a399b12c095e14194c82af956d22ecb790b28`)
+relative to c986; runtime assets and the toolchain pin remain unchanged. A
+[distinct one-shot Linux CPU-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5883381933)
+received a [passing host-local result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5883726070).
+Its owner reports the same 152 native source paths as c986 with only PieceArt
+changed, 174 bound inputs including the build tool, seven unchanged assets,
+and the reviewed isolated 2.0.28+006 stack; the canonical pin stayed 2.0.27.
+Fresh process/visible-cgroup available memory was 114,035,060,736 bytes
+initially and 113,301,667,840 immediately before C, above the unchanged
+94,489,280,512-byte floor, with five visible nonroot cgroups unlimited.
+Exactly one source check, C emission and CPU ELF link passed. Host-local C
+SHA-256 is `1594306339e03e93827e024969ae04a33fedb2225dae4497d0ce25f8c6db252f`;
+ELF `1bd22f80f29b70f04e7793a3fe07a8d92ec5540d7f34fe350fa5f2d5635bb953`;
+package receipt `78e2a4a7eb63eed7fc29f75479fbffc74ed7367d991778f664490ea722da3381`.
+
+The exact ELF/assets passed real X.Org :1 original full-window 250-ms
+select/deselect, g1-h3, Escape/close, held/settled orbit and same-directory
+save/restart, with Black to move and knight h3 after relaunch. Routed HDMI
+PipeWire monitor captured zero idle nonzero samples and 12,762 move nonzero
+samples without clipping. Seven of eight sampled PPMs matched c986 bytes;
+the held-orbit Black-piece region differed in 6,800 pixels, consistent with
+the intended compact glyph change. Runtime-result SHA-256 is
+`b9aa6774d3ca6a27b4d2f52f72e4f97c0ae7455c63d665dfb8ee816e728a8fe4`;
+consolidated immutable host-local evidence JSON SHA-256 is
+`84d8359136f1afa50454d32c5085557b3c222eddef3725caa4bc36635f4ac8e8`.
+The host-local claim was reported released; no ELF, image or evidence bytes
+were transferred to Windows. This is Linux CPU candidate evidence, not GPU,
+physical speaker audibility, all-frame parity, owner acceptance, a canonical
+pin amendment or repair of the terminal C30 CUDA-on 250-ms failure.
+A Windows whole-book NativeV2 check hit its 120-second wrapper timeout
+without a verdict, and read-only process inspection found no remaining
+child. No blind retry or native parity claim follows.
