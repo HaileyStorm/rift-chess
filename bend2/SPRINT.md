@@ -1666,6 +1666,11 @@ not full worker eligibility. Higher-order/intrinsic/F32 screening,
 `require`/`never`, Web Worker runtime/hosting, 107 tests and browser proof
 remain open; the temporary adapter must be reconciled or removed when 004
 is fully ported.
+The [separate NativeCLI 2.0.32 IO.args adapter](toolchain-patches/native-cli-2032/README.md)
+now passes its pure exact-one-leading-program removal test and exact-source
+patch preflight without editing the 2.0.27 entry. It is not yet applied to a
+2.0.32 application closure or validated in a native command matrix; other
+`IO.args` consumers remain in the migration inventory.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

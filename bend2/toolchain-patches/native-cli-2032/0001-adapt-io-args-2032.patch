@@ -1,0 +1,35 @@
+diff --git a/bend2/NativeCLI.bend b/bend2/NativeCLI.bend
+--- a/bend2/NativeCLI.bend
++++ b/bend2/NativeCLI.bend
+@@ -3,7 +3,8 @@
+ import ./core/MatchSpec.bend as Match
+ import ./core/v2/Facade.bend as Rules
+ import ./ui/Codec.bend as Codec
+ import ./ui/Json.bend as Json
++import ./toolchain-patches/native-cli-2032/Args2032.bend as CLIArgs
+ 
+ type Read is Data:
+   Read{present: Bool, error: U32, text: String}
+@@ -918,14 +919,21 @@
+ def start_loaded(args: List<String>, loaded: Load) -> IO(Unit):
+   match loaded:
+     case Selected{store}: dispatch(args, store)
+     case Fresh{store}: dispatch(args, store)
+     case Failed{error}:
+       IO.die(Unit, error,
+         "Both CLI snapshots are invalid or unreadable. Preserve or repair them before continuing.")
+ 
++def start_2032(args: CLIArgs.ProgramArgs, loaded: Load) -> IO(Unit):
++  match args:
++    case CLIArgs.WithProgram{args}: start_loaded(args, loaded)
++    case _:
++      IO.die(Unit, 9003,
++        "Bend 2.0.32 IO.args omitted a nonempty invoked program.")
++
+ def main() -> IO(Unit):
+   do IO<Unit>:
+     a : Snapshot <- read_slot(0)
+     b : Snapshot <- read_slot(1)
+     args : List<String> <- IO.args()
+-    start_loaded(args, choose_snapshots(a, b))
++    start_2032(CLIArgs.strip_program(args), choose_snapshots(a, b))
