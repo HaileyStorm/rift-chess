@@ -1,0 +1,253 @@
+diff --git a/bend2/bend.ts b/bend2/bend.ts
+index 6818b26..590556c 100644
+--- a/bend2/bend.ts
++++ b/bend2/bend.ts
+@@ -930,15 +930,103 @@ async function name_hash(book: Book, nv: string, spn?: Span): Promise<string> {
+   return got;
+ }
+ 
++function path_is_inside(dir: string, file: string): boolean {
++  const rel = path.relative(path.resolve(dir), path.resolve(file));
++  return rel === "" || (rel !== ".." && !rel.startsWith(".." + path.sep)
++    && !path.isAbsolute(rel));
++}
++
++function path_with_missing_tail(file: string): string | null {
++  let at = path.resolve(file);
++  const tail: string[] = [];
++  while (!fs.existsSync(at)) {
++    const parent = path.dirname(at);
++    if (parent === at) {
++      return null;
++    }
++    tail.unshift(path.basename(at));
++    at = parent;
++  }
++  try {
++    return path.resolve(fs.realpathSync(at), ...tail);
++  } catch {
++    return null;
++  }
++}
++
++function path_inside(base: string, file: string): boolean {
++  if (path_is_inside(base, file)) {
++    return true;
++  }
++  const realBase = path_with_missing_tail(base);
++  const realFile = path_with_missing_tail(file);
++  return realBase !== null && realFile !== null && path_is_inside(realBase, realFile);
++}
++
++function file_identity_key(file: string): string | null {
++  if (process.platform !== "win32") {
++    return null;
++  }
++  const stat = fs.statSync(file, { bigint: true });
++  if (stat.dev === 0n || stat.ino === 0n) {
++    throw new Error("this Windows filesystem does not expose a stable file identity");
++  }
++  return "\0bend-file:" + stat.dev.toString() + ":" + stat.ino.toString();
++}
++
++const seen_file_ids = new WeakMap<Map<string, string | null>, Map<string, string | null>>();
++
++function file_id_map(seen: Map<string, string | null>): Map<string, string | null> {
++  let ids = seen_file_ids.get(seen);
++  if (ids === undefined) {
++    ids = new Map();
++    seen_file_ids.set(seen, ids);
++  }
++  return ids;
++}
++
++export function book_seen(seen: Map<string, string | null>, file: string): boolean {
++  if (seen.has(file)) {
++    return true;
++  }
++  const identity = file_identity_key(file);
++  return identity !== null && file_id_map(seen).has(identity);
++}
++
++function path_posix(file: string): string {
++  return file.split(path.sep).join("/");
++}
++
++export function relative_module_path(dir: string, file: string): string {
++  const from = path.resolve(dir);
++  const to = path.resolve(file);
++  if (process.platform === "win32" &&
++      path.parse(from).root.toLowerCase() !== path.parse(to).root.toLowerCase()) {
++    throw new Error("cross-volume local imports are not supported");
++  }
++  const rel = path.relative(from, to);
++  if (path.isAbsolute(rel)) {
++    throw new Error("cross-volume local imports are not supported");
++  }
++  return path_posix(rel);
++}
++
++function cache_relative(file: string): string | null {
++  const rel = path.relative(path.resolve(BEND_LIB), path.resolve(file));
++  return rel !== "" && rel !== ".." && !rel.startsWith(".." + path.sep)
++    && !path.isAbsolute(rel) ? rel : null;
++}
++
+ async function book_file(book: Book, file: string, spn?: Span): Promise<string> {
+-  if (file.startsWith(BEND_LIB + "/") && !fs.existsSync(file)) {
+-    const pkg = file.slice(BEND_LIB.length + 1).split("/")[0];
++  const cached = cache_relative(file);
++  if (cached !== null && !fs.existsSync(file)) {
++    const pkg = cached.split(path.sep)[0];
+     const man = await hub_get(book, pkg + "/manifest", pkg.slice(2), spn);
+     const fls = man.trim().split("\n").map((l) => l.split(" "));
+     const srs = await Promise.all(fls.map(([h, p]) =>
+       hub_get(book, pkg + "/" + p, h, spn)));
+     fls.forEach(([, p], i) => {
+-      const at = BEND_LIB + "/" + pkg + "/" + p;
++      const at = path.join(BEND_LIB, pkg, ...p.split("/"));
+       fs.mkdirSync(path.dirname(at), { recursive: true });
+       fs.writeFileSync(at, srs[i]);
+     });
+@@ -949,22 +1037,6 @@ async function book_file(book: Book, file: string, spn?: Span): Promise<string>
+   return fs.realpathSync(file);
+ }
+ 
+-function path_inside(base: string, file: string): boolean {
+-  const inside = (dir: string, at: string): boolean => {
+-    const rel = path.relative(dir, at);
+-    return rel === "" || (rel !== ".." && !rel.startsWith(".." + path.sep)
+-      && !path.isAbsolute(rel));
+-  };
+-  if (inside(path.resolve(base), path.resolve(file))) {
+-    return true;
+-  }
+-  try {
+-    return inside(fs.realpathSync(base), fs.realpathSync(file));
+-  } catch {
+-    return false;
+-  }
+-}
+-
+ export async function book_load(book: Book, file: string, ns: string,
+   seen: Map<string, string | null>, spn?: Span, root?: string,
+   localOnly = false): Promise<number> {
+@@ -975,14 +1047,22 @@ export async function book_load(book: Book, file: string, ns: string,
+   if (localOnly && path_inside(BEND_LIB, real)) {
+     throw new Error("--explain-layout accepts local files only; packages are disabled");
+   }
+-  if (seen.has(real)) {
+-    if (seen.get(real) === null) {
++  const fileIds = file_id_map(seen);
++  const identity = file_identity_key(real);
++  const priorNs = seen.has(real) ? seen.get(real)
++    : identity !== null && fileIds.has(identity) ? fileIds.get(identity) : undefined;
++  if (priorNs !== undefined) {
++    if (priorNs === null) {
+       throw Err(book, ctx_nil(), "an import cycle through " + file, undefined, spn);
+     }
+     return book.order.length;
+   }
+   seen.set(real, null);
+-  const dir   = real.slice(0, real.lastIndexOf("/") + 1);
++  if (identity !== null) {
++    fileIds.set(identity, null);
++  }
++  const parent = path.dirname(real);
++  const dir   = parent.endsWith(path.sep) ? parent : parent + path.sep;
+   const top   = root ?? dir;
+   const text  = fs.readFileSync(real, "utf8");
+   const lines = text.split("\n");
+@@ -1018,7 +1098,7 @@ export async function book_load(book: Book, file: string, ns: string,
+     }
+     const bad = () => Err(book, ctx_nil(), "an import path of plain names (letters, digits, _ and -; the hub's files import the hub's)", "'" + m[1] + "'", sp);
+     const nv  = /^([^/]*@[^/]*)\//.exec(m[1]);
+-    if (localOnly && (path.posix.isAbsolute(m[1]) || path.win32.isAbsolute(m[1])
++    if (localOnly && (path.isAbsolute(m[1]) || path.win32.isAbsolute(m[1])
+       || m[1].includes("\\") || nv !== null || hub(m[1]))) {
+       throw new Error("--explain-layout accepts local relative imports only; absolute paths and packages are disabled");
+     }
+@@ -1027,16 +1107,24 @@ export async function book_load(book: Book, file: string, ns: string,
+     if (!ok(as.replace(/^\.\//, "").slice(0, -5), hub(as))) {
+       throw bad();
+     }
+-    const target = hub(as) ? BEND_LIB + "/" + rel : path.posix.resolve(dir, rel);
++    const target = hub(as)
++      ? path.join(BEND_LIB, ...rel.split("/"))
++      : path.resolve(dir, rel);
+     if (localOnly && (path_inside(BEND_LIB, target)
+       || path_inside(BEND_LIB, path.resolve(path.dirname(real), rel)))) {
+       throw new Error("--explain-layout accepts local files only; packages are disabled");
+     }
+     const got = await book_file(book, target, sp);
+-    const lib = fs.existsSync(BEND_LIB) ? fs.realpathSync(BEND_LIB) + "/" : "\0";
+-    const sub = (got.startsWith(lib) ? got.slice(lib.length)
+-      : path.posix.relative(top, got)).replace(/\.bend$/, "");
+-    if (!ok(sub, got.startsWith(lib)) || (hub(ns) && !got.startsWith(lib))) {
++    const inLib = path_inside(BEND_LIB, got);
++    const gotIdentity = file_identity_key(got);
++    const existingPath = seen.has(got) ? seen.get(got)
++      : gotIdentity !== null && fileIds.has(gotIdentity) ? fileIds.get(gotIdentity) : undefined;
++    const resolvedSub = inLib
++      ? path_posix(path.relative(fs.realpathSync(BEND_LIB), got))
++      : path.posix.join(path.posix.dirname(ns), relative_module_path(dir, got));
++    const sub = (existingPath !== undefined && existingPath !== null ? existingPath : resolvedSub)
++      .replace(/\.bend$/, "");
++    if (!ok(sub, inLib) || (hub(ns) && !inLib)) {
+       throw bad();
+     }
+     al[m[2]] = sub;
+@@ -1050,6 +1138,9 @@ export async function book_load(book: Book, file: string, ns: string,
+     }
+   }
+   seen.set(real, ns);
++  if (identity !== null) {
++    fileIds.set(identity, ns);
++  }
+   return n0;
+ }
+ 
+diff --git a/bend2/main.ts b/bend2/main.ts
+index 82b5c88..319314c 100755
+--- a/bend2/main.ts
++++ b/bend2/main.ts
+@@ -676,20 +676,25 @@ async function cli_login(): Promise<string> {
+ // takes the entry's ancestor directories along, as many as the deepest climb.
+ // A LICENSE beside a published file goes along; a license/ directory, in
+ // any case, is refused (it clashes with LICENSE on a case-blind disk).
+-function pkg_files(file: string, book: Bend.Book,
++export function pkg_files(file: string, book: Bend.Book,
+   seen: Map<string, string | null>): Record<string, string> {
+-  const dir  = fs.realpathSync(path.dirname(file)) + "/";
++  const dir  = fs.realpathSync(path.dirname(file));
+   const raws = [...[...seen].flatMap(([real, ns]): [string, string][] =>
+     real === BASE || ns === null || ns.startsWith("0x") ? []
+       : [[ns === "" ? path.basename(file) : ns + ".bend", real]]),
+   ...Object.entries(book.tlds).flatMap(([k, tld]): [string, string][] =>
+     tld.$ !== "Def" || tld.i === undefined || tld.b === true
+       || k.startsWith("0x") ? [] : tld.i.map((f) =>
+-      [f.startsWith(dir) ? f.slice(dir.length) : f, f]))];
++      [Bend.relative_module_path(dir, f), f]))];
+   const ups = raws.map(([p]) => path.posix.normalize(p).split("/")
+     .filter((s) => s === "..").length);
+-  const anc = fs.realpathSync(path.dirname(file)).split("/")
+-    .slice(-Math.max(0, ...ups) || Infinity);
++  const maxUp = Math.max(0, ...ups);
++  const fromRoot = path.relative(path.parse(dir).root, dir);
++  const dirParts = fromRoot === "" ? [] : fromRoot.split(path.sep);
++  if (maxUp > dirParts.length) {
++    throw "Error: " + file + " cannot be published (an import climbs above the file system)";
++  }
++  const anc = maxUp === 0 ? [] : dirParts.slice(-maxUp);
+   const files: Record<string, string> = {};
+   for (const [raw, real] of raws) {
+     const p = path.posix.join(...anc, raw);
+@@ -829,7 +834,7 @@ async function book_read(file: string, base?: Bend.Book,
+     await Bend.book_load(book, file, "", seen, undefined, undefined, localOnly);
+     const laws = path.join(path.dirname(file), "LAWS.bend");
+     if (path.basename(file) === "PROOF.bend" && fs.existsSync(laws)
+-      && !seen.has(fs.realpathSync(laws))) {
++      && !Bend.book_seen(seen, fs.realpathSync(laws))) {
+       throw "Error: PROOF.bend must import ./LAWS.bend";
+     }
+     Bend.book_valid(book, base?.order.length ?? 0);

@@ -48,6 +48,9 @@ composition, not a pin acceptance or native/GPU parity. Bend 2.0.32's
 [new release assessment](../docs/evidence/toolchain-2032-scout/README.md)
 is separate: do not transfer 2.0.28 patch applicability or test evidence
 to that newer compiler.
+The [2.0.32 carry-forward ledger](2032/README.md) tracks the separate
+001→002→005 replay, unfinished 004 worker rebase, upstream 006 disposition,
+and excluded experimental 003 without moving the pin.
 3. Run each patch's deterministic fixtures on the isolated compiler. For the
    required 001+002 combination, run `node bend2/toolchain-patches/verify-stack.mjs
    <disposable-compiler-directory>` after 001's fixture generator; the exact

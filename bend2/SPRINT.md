@@ -1649,3 +1649,11 @@ now replays exactly after 001 and passes a bounded deterministic layout,
 direct local-only denial, CLI-isolation and successful C/JS byte-parity gate.
 Its recursive-import and imported-name assertions await the 005 Windows path
 rebase; this is not full compiler, proof, or pin acceptance.
+The [isolated 2.0.32 carry-forward ledger](toolchain-patches/2032/README.md)
+now binds ordered 001→002→005 source replay and the focused Windows importer
+gate, including a reviewed parent-foreign-JS package-assembly regression fix.
+`ArithmeticProof.bend` loads and passes the bounded derived source type/promise
+probe (7 files, 543 definitions, zero network attempts), but the broader
+`CHECK.bend` type-check did not finish under either 120 or 300 seconds with
+a 64-MiB worker stack. This is a timeout, not a Law counterexample. 004,
+BendTT, full mutations, browser/native/GPU and pin amendment remain open.
