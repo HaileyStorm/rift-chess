@@ -1737,6 +1737,9 @@ now has an explicit menu/controller/scene/chrome selection boundary, a shared
 exclusive lock, and per-module source/export/output bindings. No full module
 emission beyond the small selected-root fixtures has yet completed; the
 production cache loader and whole browser build still use the 2.0.27 pin.
+The clean `dcfeeed` source passed all four source-only 2.0.32 preflights and
+invalid-selection controls; Windows had less than the 2.5-GiB free-RAM floor,
+so no full-module emission was attempted.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

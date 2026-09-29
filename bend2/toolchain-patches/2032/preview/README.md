@@ -118,3 +118,12 @@ This source change has not emitted a full controller, scene, chrome or menu
 module under 2.0.32. Preflight and source-only checks are distinct from
 emission, production cache wiring, a rendered interaction matrix, GPU/native
 performance, frozen proofs, a pin amendment, and owner visual acceptance.
+
+At clean source commit `dcfeeedf3b0ed0aa5bf3b914cf373c86e13b5dbc` (tree
+`e746fdcb967e5ae144576a3e10d4ba8696971ca5`), all four read-only
+preflights passed: menu `884b8865`, controller `3dcf32b5`, scene `367fb9a0`,
+and chrome `e5412da0` (binding SHA-256 prefixes). Four malformed/unknown
+argument forms exited nonzero. The lifecycle and exact LF/CRLF compiler
+fixture tests also passed. Free physical RAM was 2,504,196,096 bytes at the
+follow-up check, below the 2.5-GiB admission floor; no Worker or full-module
+cache was launched on Windows.
