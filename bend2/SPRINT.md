@@ -1529,8 +1529,9 @@ also passed 24 scenarios/685 checks with zero defects on the exact deployed
 build. Faster arbitrary views, constrained devices, native GPU and owner
 visual acceptance remain open. A read-only review of the still-simplified
 during-orbit glyphs identified `PieceArt.camera_draw_min`, not the separate
-fast-piece proxy, as the narrow Bend-owned visual path; no visual source was
-changed or accepted from that mapping alone.
+fast-piece proxy, as the narrow Bend-owned visual path. An isolated Black
+glyph contrast draft is being tested; the published build remains unchanged
+and no visual source is accepted from the mapping alone.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:
@@ -1539,7 +1540,14 @@ only if the unprivileged profiler and existing owned observer can do so without
 an install, privilege change or fixture drift. If preflight fails, it stops
 without a run. This is not a CUDA episode or a retry of the terminal 250-ms
 GPU-on failure, and a CPU-off profile cannot by itself attribute the CUDA-on
-231.063-ms gap. No result is assumed from posting the request.
+231.063-ms gap. The [Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882450783)
+stopped at preflight: unprivileged `perf stat -e task-clock -- true` had no
+supported events with `perf_event_paranoid=4`, UID 1000 and no effective
+capabilities. No target, observer or profiler ran; no GPU lease was requested.
+The [native trace evidence](docs/evidence/native-2028-gpu/README.md#cpu-only-profiler-control-stopped-at-preflight)
+retains its host-local blocker hash and the unrepaired CUDA-on failure. Do
+not substitute a privileged or alternate profiler without a separately
+reviewed authority and exact diagnostic path.
 
 The canonical 2.0.28 pin still needs the owner's migration choice recorded in
 the [assessment](docs/TOOLCHAIN_2_0_28_ASSESSMENT.md#canonical-pin-gate-blocked-under-the-current-frozen-contract):

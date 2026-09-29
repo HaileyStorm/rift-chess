@@ -322,3 +322,21 @@ target and released claim remain authoritative. The original full-window
 CUDA-on 250 ms gate remains **terminal FAIL**. A new CPU-work attribution
 probe would require separately reviewed exact hooks and fresh authority;
 this readout does not grant an acceptance retry.
+
+## CPU-only profiler control stopped at preflight
+
+The [one-shot Linux reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882450783)
+to [request 5882158917](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
+re-bound the exact retained c30 source, generated C, CUDA-capable ELF and
+seven assets, and found no live target/observer process or relevant claim
+conflict. The unprivileged `/usr/bin/perf` 7.0.12 admission command
+`perf stat -e task-clock -- true` exited 1 with no supported events;
+`perf_event_paranoid` was 4, effective UID 1000 and CapEff 0. Under the
+request's stop condition, no game process, X.Org observer or profiler ran,
+no second-click/clock binding was tested, and no privilege change, alternate
+tool or retry was made. The exact host-local claim was reported released.
+Host-local blocker JSON SHA-256 is
+`eaf95fc9b95380ba4a34c1badaed323040f14a651a9b1c54fca4a85f506d2228`;
+its bytes were not transferred to Windows. This is a preflight resource stop,
+not CPU-work attribution. The CUDA-on 231.063-ms gap remains unexplained and
+the original full-window 250-ms deselection gate remains **terminal FAIL**.
