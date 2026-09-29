@@ -11,65 +11,81 @@ import ../../lib/grid8/SpatialFast.bend as SpatialFast
 def dummy_palette() -> SpatialBoard.Palette:
   SpatialBoard.Palette{0,0,0,0,0,0,0}
 
-def tree(+depth: Nat, +size: U32, excluded: Bool, full: Bool,
-  region: SpatialFast.Region, +x: F32, +y: F32, +q: Quad.Shape,
+type Cell is Data:
+  Excluded{}
+  Fill{}
+  Skip{full: Bool}
+  Split{}
+
+def classified_cell(region: SpatialFast.Region, +x: F32, +y: F32,
+  +size: U32, +q: Quad.Shape) -> Cell:
+  match region:
+    case SpatialFast.Fill{old_color}: Fill{}
+    case SpatialFast.Skip{}: Skip{Facet.inside_pixels(q,x,y,size)}
+    case SpatialFast.Split{}: Split{}
+
+def child_cell(excluded: Bool, +x: F32, +y: F32, +size: U32,
+  +q: Quad.Shape, +inverse: SpatialFast.Inverse,
+  +mask: Board.Mask) -> Cell:
+  # Bend evaluates arguments eagerly. Reject wall-exterior cells before the
+  # affine board classification and the inside-quad test.
+  match excluded:
+    case True{}: Excluded{}
+    case False{}:
+      classified_cell(SpatialFast.classify(inverse,F32.to_u32(x),
+        F32.to_u32(y),size,mask,dummy_palette()),x,y,size,q)
+
+def tree(+depth: Nat, +size: U32, cell: Cell,
+  +x: F32, +y: F32, +q: Quad.Shape,
   +inverse: SpatialFast.Inverse, +mask: Board.Mask, +color: U32,
   image: Image) -> Image:
-  match depth excluded region:
-    case 0n True{} _: image
-    case 0n False{} SpatialFast.Fill{old_color}: image
-    case 0n False{} SpatialFast.Skip{}:
+  match depth cell:
+    case 0n Excluded{}: image
+    case 0n Fill{}: image
+    case 0n Skip{full}:
       Facet.tree(depth,size,False{},full,x,y,q,color,255,image)
-    case 0n False{} SpatialFast.Split{}: image
-    case 1n+rest True{} _: image
-    case 1n+rest False{} SpatialFast.Fill{old_color}: image
-    case 1n+rest False{} SpatialFast.Skip{}:
+    case 0n Split{}: image
+    case 1n+rest Excluded{}: image
+    case 1n+rest Fill{}: image
+    case 1n+rest Skip{full}:
       Facet.tree(depth,size,False{},full,x,y,q,color,255,image)
-    case 1n+rest False{} SpatialFast.Split{}:
+    case 1n+rest Split{}:
       match image:
             case Pix{+background}:
               +half = U32.div(size,2)
               +delta = U32.to_f32(half)
               +xx = F32.add(x,delta)
               +yy = F32.add(y,delta)
-              tl tr bl br = tree(rest,half,Facet.outside_pixels(q,x,y,half),
-                  Facet.inside_pixels(q,x,y,half),
-                  SpatialFast.classify(inverse,F32.to_u32(x),F32.to_u32(y),half,mask,
-                    dummy_palette()),x,y,q,inverse,mask,color,Pix{background})
-                tree(rest,half,Facet.outside_pixels(q,xx,y,half),
-                  Facet.inside_pixels(q,xx,y,half),
-                  SpatialFast.classify(inverse,F32.to_u32(xx),F32.to_u32(y),half,mask,
-                    dummy_palette()),xx,y,q,inverse,mask,color,Pix{background})
-                tree(rest,half,Facet.outside_pixels(q,x,yy,half),
-                  Facet.inside_pixels(q,x,yy,half),
-                  SpatialFast.classify(inverse,F32.to_u32(x),F32.to_u32(yy),half,mask,
-                    dummy_palette()),x,yy,q,inverse,mask,color,Pix{background})
-                tree(rest,half,Facet.outside_pixels(q,xx,yy,half),
-                  Facet.inside_pixels(q,xx,yy,half),
-                  SpatialFast.classify(inverse,F32.to_u32(xx),F32.to_u32(yy),half,mask,
-                    dummy_palette()),xx,yy,q,inverse,mask,color,Pix{background})
+              tl tr bl br = tree(rest,half,child_cell(Facet.outside_pixels(q,x,y,half),
+                  x,y,half,q,inverse,mask),
+                  x,y,q,inverse,mask,color,Pix{background})
+                tree(rest,half,child_cell(Facet.outside_pixels(q,xx,y,half),
+                  xx,y,half,q,inverse,mask),
+                  xx,y,q,inverse,mask,color,Pix{background})
+                tree(rest,half,child_cell(Facet.outside_pixels(q,x,yy,half),
+                  x,yy,half,q,inverse,mask),
+                  x,yy,q,inverse,mask,color,Pix{background})
+                tree(rest,half,child_cell(Facet.outside_pixels(q,xx,yy,half),
+                  xx,yy,half,q,inverse,mask),
+                  xx,yy,q,inverse,mask,color,Pix{background})
               Qua{tl,tr,bl,br}
             case Qua{old_tl,old_tr,old_bl,old_br}:
               +half = U32.div(size,2)
               +delta = U32.to_f32(half)
               +xx = F32.add(x,delta)
               +yy = F32.add(y,delta)
-              tl tr bl br = tree(rest,half,Facet.outside_pixels(q,x,y,half),
-                  Facet.inside_pixels(q,x,y,half),
-                  SpatialFast.classify(inverse,F32.to_u32(x),F32.to_u32(y),half,mask,
-                    dummy_palette()),x,y,q,inverse,mask,color,old_tl)
-                tree(rest,half,Facet.outside_pixels(q,xx,y,half),
-                  Facet.inside_pixels(q,xx,y,half),
-                  SpatialFast.classify(inverse,F32.to_u32(xx),F32.to_u32(y),half,mask,
-                    dummy_palette()),xx,y,q,inverse,mask,color,old_tr)
-                tree(rest,half,Facet.outside_pixels(q,x,yy,half),
-                  Facet.inside_pixels(q,x,yy,half),
-                  SpatialFast.classify(inverse,F32.to_u32(x),F32.to_u32(yy),half,mask,
-                    dummy_palette()),x,yy,q,inverse,mask,color,old_bl)
-                tree(rest,half,Facet.outside_pixels(q,xx,yy,half),
-                  Facet.inside_pixels(q,xx,yy,half),
-                  SpatialFast.classify(inverse,F32.to_u32(xx),F32.to_u32(yy),half,mask,
-                    dummy_palette()),xx,yy,q,inverse,mask,color,old_br)
+              tl tr bl br = tree(rest,half,child_cell(Facet.outside_pixels(q,x,y,half),
+                  x,y,half,q,inverse,mask),
+                  x,y,q,inverse,mask,color,old_tl)
+                tree(rest,half,child_cell(Facet.outside_pixels(q,xx,y,half),
+                  xx,y,half,q,inverse,mask),
+                  xx,y,q,inverse,mask,color,old_tr)
+                tree(rest,half,child_cell(Facet.outside_pixels(q,x,yy,half),
+                  x,yy,half,q,inverse,mask),
+                  x,yy,q,inverse,mask,color,old_bl)
+                tree(rest,half,child_cell(Facet.outside_pixels(q,xx,yy,half),
+                  xx,yy,half,q,inverse,mask),
+                  xx,yy,q,inverse,mask,color,old_br)
               Qua{tl,tr,bl,br}
 
 def draw_valid(valid: Bool, +depth: Nat, +size: U32, +q: Quad.Shape,
@@ -78,9 +94,8 @@ def draw_valid(valid: Bool, +depth: Nat, +size: U32, +q: Quad.Shape,
   match valid:
     case False{}: image
     case True{}:
-      tree(depth,size,Facet.outside_pixels(q,0.0,0.0,size),
-        Facet.inside_pixels(q,0.0,0.0,size),
-        SpatialFast.classify(inverse,0,0,size,mask,dummy_palette()),
+      tree(depth,size,child_cell(Facet.outside_pixels(q,0.0,0.0,size),
+        0.0,0.0,size,q,inverse,mask),
         0.0,0.0,q,inverse,mask,color,image)
 
 def draw(+depth: Nat, +size: U32, +q: Quad.Shape,

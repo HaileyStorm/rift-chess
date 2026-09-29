@@ -2,6 +2,7 @@
 // existing depth-9 board slot. A compact tree may replace nearest2 only if
 // every tested source pixel and its actual aligned chrome embed match.
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import scene from '../../.artifacts/bend2/v2-preview/selected-js/scene.js';
 import control from '../../.artifacts/bend2/v2-preview/selected-js/controller.js';
@@ -42,6 +43,7 @@ const views = [
   { $: 'View', yaw: 180, pitch: 55, zoom: 100 },
 ];
 let compared = 0;
+const aggregate = crypto.createHash('sha256');
 function nodes(node) {
   return node.$ === 'Pix' ? 1 : 1 + nodes(node.tl) + nodes(node.tr) + nodes(node.bl) + nodes(node.br);
 }
@@ -59,6 +61,7 @@ for (const layout of layouts) for (const view of views) for (let theme = 0; them
   const after = pixels(menu.compose(layout.packet.render.depth, layout.packet.plan,
     source, chrome), layout.width, layout.height);
   assert.ok(before.equals(after), `depth-8 source misinterpreted at ${layout.name}/yaw ${view.yaw}/theme ${theme}`);
+  aggregate.update(after);
   compared += before.length;
   counts.push({ layout: layout.name, yaw: view.yaw, theme,
     compactNodes: nodes(source), expandedNodes: nodes(expanded) });
@@ -86,6 +89,7 @@ function stats(rows, key) {
     p90Ms: +sorted[Math.ceil(sorted.length * 0.9) - 1].toFixed(2) };
 }
 console.log(JSON.stringify({ ok: true, views: views.length, layouts: layouts.length, themes: 2, counts,
-  comparedBytes: compared, timing: Object.fromEntries(Object.entries(timing).map(([mode, rows]) =>
+  comparedBytes: compared, aggregateSha256: aggregate.digest('hex'),
+  timing: Object.fromEntries(Object.entries(timing).map(([mode, rows]) =>
     [mode, { samples: rows.length, tree: stats(rows, 'treeMs'), full: stats(rows, 'fullMs') }])),
   scope: 'Finite selected-JS exact pixels and interleaved same-process timing; not a proof or browser/native frame budget' }));
