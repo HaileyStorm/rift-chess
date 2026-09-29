@@ -84,3 +84,29 @@ the summary binds clean source `9d4a532` and content version `e788562833af84fd68
 This is real Chrome coverage on this host, not a physical-device latency
 bound or owner visual sign-off. Native GPU, constrained-device motion latency,
 physical audio and owner visual acceptance remain open.
+
+## Bounded Chrome heap diagnostic
+
+`browser-v2-live.mjs` now accepts `BEND_LIVE_BUILD_JSON` and
+`BEND_EXPECTED_BUILD` to compare the served `build.json` byte-for-byte with
+the clean local manifest before interaction. `BEND_CHROME_HEAP_MB=128` passes
+Chrome's `--max-old-space-size=128` flag; `BEND_LIVE_WRITE_RESULT=1` writes
+the full result to a unique ignored artifact directory. This V8 old-generation
+setting is **not** a physical RAM, GPU, total-process or device cap.
+
+The exact hosted `e788562833af84fd6840` build completed cool and Warm Court
+orbit, move, settled refinement and mobile/menu interaction with no browser
+errors under that flag. One cool/Warm pair reported drag reply P90 of
+54.4/83.3 ms; another reported 317.3/157.2 ms. The latter full-result JSON
+SHA-256 values are respectively
+`d9ce78d5eb7877d0fa337bd8f9d9c968dbc47aefade85351ccf19917dcea789e`
+and `e8db2df4591e7ddb2f3dce5a4dd33144c482bd30a1ee04de3f2aa0ca6a3627c`.
+Both bind clean source `9d4a532`, build version `e788562833af84fd6840`
+and `build.json` SHA-256
+`85c194ad428b32874e978bd1389fb3e69c67dc3377a72aa8f273e76f22287996`.
+The slower samples spent about 120–124 ms P90 traversing the pixel tree; no
+new page error or stale-frame defect was observed. Two local baseline/new-build
+128-MiB pairs had reply P90 41.3/71.7 ms and 44.8/57.8 ms; another pair was
+about 59.8/59.9 ms. Input coalescing and host load varied, so these are
+diagnostic samples, not a portable latency bound, established speedup or
+physical low-memory acceptance. Device-class orbit responsiveness remains open.

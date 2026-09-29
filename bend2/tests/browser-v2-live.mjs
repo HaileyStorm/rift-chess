@@ -1,11 +1,28 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
 const url = process.env.BEND_TEST_URL || 'http://127.0.0.1:4185/';
 const artifact = process.env.BEND_LIVE_ARTIFACT || '.artifacts/bend2/v2-preview';
+const heapMb = process.env.BEND_CHROME_HEAP_MB ? Number(process.env.BEND_CHROME_HEAP_MB) : null;
+assert.ok(heapMb === null || (Number.isInteger(heapMb) && heapMb >= 128 && heapMb <= 1024));
+let buildBinding = null;
+if (process.env.BEND_LIVE_BUILD_JSON) {
+  const local = fs.readFileSync(process.env.BEND_LIVE_BUILD_JSON);
+  const response = await fetch(new URL('build.json', url), { cache: 'no-store' });
+  assert.equal(response.status, 200);
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()), local,
+    'Served build differs from the exact local manifest');
+  const build = JSON.parse(local);
+  if (process.env.BEND_EXPECTED_BUILD) assert.equal(build.version, process.env.BEND_EXPECTED_BUILD);
+  buildBinding = { version: build.version, sourceRevision: build.sourceRevision,
+    sha256: crypto.createHash('sha256').update(local).digest('hex') };
+}
 await mkdir(artifact, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const browser = await chromium.launch({ channel: 'chrome', headless: true,
+  ...(heapMb ? { args: [`--js-flags=--max-old-space-size=${heapMb}`] } : {}) });
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await context.newPage();
 const errors = [];
@@ -188,7 +205,7 @@ try {
     assert.ok(fullMotion.every(frame => frame.pixelStats.visited < 150000),
       'the 512px board slot reused the compact 256px motion tree');
   }
-  console.log(JSON.stringify({ ok: true, url, initial, mobile,
+  const result = JSON.stringify({ ok: true, url, heapMb, buildBinding, initial, mobile,
     warm: process.env.BEND_LIVE_WARM === '1',
     refinements,
     qualityProbes: qualityProbes.map(({ physicalEdge, sampleCount, measuredScale,
@@ -203,7 +220,10 @@ try {
         pixelMs: +frame.pixelMs.toFixed(2), treeMs: +frame.treeMs.toFixed(2),
         traversalMs: +frame.traversalMs.toFixed(2), sceneTimes: frame.sceneTimes,
         ...frame.pixelStats })) },
-    errors }, (_key, value) => typeof value === 'bigint' ? String(value) : value));
+    errors }, (_key, value) => typeof value === 'bigint' ? String(value) : value);
+  if (process.env.BEND_LIVE_WRITE_RESULT === '1')
+    fs.writeFileSync(`${artifact}/result.json`, `${result}\n`, { flag: 'wx' });
+  console.log(result);
 } finally {
   await context.close();
   await browser.close();

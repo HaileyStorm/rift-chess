@@ -1555,6 +1555,13 @@ check timed out at its 120-second wrapper bound without a verdict; the child
 was observed absent afterward, so that attempt is neither a pass nor a
 source counterexample.
 
+The [128-MiB Chrome V8 old-generation diagnostic](docs/evidence/v2-motion-brass-edge/README.md#bounded-chrome-heap-diagnostic)
+completed exact-build-bound cool and Warm Court orbit interactions without
+browser errors, but repeated drag P90 samples ranged from roughly 54 to
+317 ms and local old/new pairs were mixed under varying load. The flag does
+not constrain physical RAM or establish rapid orbit on a device; constrained
+hardware measurement remains an explicit acceptance gap.
+
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:
 bind the original second-release input and monotonic CPU/scheduling samples
