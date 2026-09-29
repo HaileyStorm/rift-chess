@@ -83,8 +83,9 @@ complete 004/107-case acceptance gate.
 The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
 [five additional consumers](../native-cli-2032/consumers/README.md) remain
 separate versioned source candidates. The latter passes exact-hash patch
-preflight and pure list controls only; neither patched application entry nor
-any native CLI scenario has been accepted under 2.0.32.
+preflight, pure list controls, and a small helper-only 2.0.32 source check;
+none of its five patched application entries or any native CLI scenario has
+been accepted under 2.0.32.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

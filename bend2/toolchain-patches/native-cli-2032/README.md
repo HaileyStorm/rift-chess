@@ -42,8 +42,10 @@ not establish them. The canonical source and Git index remain unchanged.
 
 The [separately versioned five-consumer candidate](consumers/README.md)
 covers the other `IO.args()` entrypoints without editing their original
-sources. Its exact-hash preflight and pure list controls pass; the zero-context
-patch is not yet applied, Bend-typechecked or tested in a native command path.
+sources. Its exact-hash preflight and pure list controls pass, and the small
+shared helper typechecks under the exact derived 2.0.32 source compiler. The
+zero-context patch is not yet applied or tested as a five-entry application
+closure or native command path.
 
 Keep the historical 2.0.27 CLI source and its Linux receipt
 `bend2/docs/evidence/native-cli-linux-2-0-27/receipt.json` unchanged. Remove

@@ -1675,8 +1675,9 @@ type-checks under the exact derived 2.0.32 compiler (Base plus adapter,
 [five remaining `IO.args` consumers](toolchain-patches/native-cli-2032/consumers/README.md)
 now have a separate hash-bound zero-context patch candidate; read-only
 `git apply --check` and pure exact-one-drop controls pass without editing
-their sources. Independent review found no omitted consumer, but neither
-those patched entries nor the helper have been Bend-typechecked or run.
+their sources. The shared helper passed a bounded 2.0.32 source check
+(3 files/493 definitions, zero holes/network); independent review found no
+omitted consumer. The five patched entries have not been typechecked or run.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
