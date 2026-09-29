@@ -1705,3 +1705,13 @@ temporary-directory identity checks; the repaired tests cover both plus
 worker/parent fetch denial. This is not independent Node or browser Worker
 execution, the original per-call scheduler, `@N`/native-`!` runtime semantics,
 107-case worker acceptance, or a pin amendment.
+The [004 phase-four browser slice](toolchain-patches/004-web-workers/rebase-2032/phase4-browser/README.md)
+passed in system Chrome 154.0.8037.58 against the exact derived
+001→002→005→004 parser stack: an explicitly selected `require` export ran
+through a real module Worker and returned 40, while `never_call` returned 42
+locally without creating another Worker. A statically blocked required root
+was rejected by the phase-three pre-dispatch path. The fixture observed zero
+external requests and Node/worker fetches, and removed its identity-checked
+temporary outputs. This is one source-bound browser vertical slice, not the
+full 004 scheduler, 107-case worker matrix, game integration, pin amendment,
+or browser/native/GPU/release acceptance.

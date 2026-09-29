@@ -63,6 +63,15 @@ subsequent lifecycle-only failure tests pass after independent review, but
 the repaired emitter has not been run on a higher-memory host; controller,
 scene and chrome emission remain unattempted.
 
+The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
+passes one real Chrome module-Worker `require` call and one local `never`
+call from exact selected roots on the derived 001→002→005→phase2 compiler.
+The blocked required policy is rejected in phase-three pre-dispatch; it is
+not an independent browser scheduler negative. Its source, patches and
+generated modules are hash-bound, with zero outside requests and exact
+temporary-output cleanup. This is not a production browser build or the
+complete 004/107-case acceptance gate.
+
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without
 installing anything implicitly, run the complete mutation/conformance and
