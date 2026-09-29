@@ -1569,6 +1569,11 @@ ground and compact pieces separately but did not reproduce or attribute that
 tail. The finite motion-extent check now includes accepted Front 65° and
 compared 152,043,520 bytes across 30 cases. No scene/camera behavior changed,
 and there is no speed or device acceptance claim from this diagnostic.
+A same-pixel affine/mask-reuse candidate did not improve the local ground
+phase and was removed. The selected-JS phase probe under a 128-MiB Node old
+generation showed allocation-sensitive ground/piece tails and a separate GC
+trace recorded a 51-ms full collection; that is a lead for attribution, not
+proof that GC caused the Chrome tail or a constrained-device result.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:

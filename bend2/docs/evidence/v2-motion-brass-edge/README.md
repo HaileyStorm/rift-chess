@@ -130,6 +130,26 @@ the hosted low-heap ~120 ms Bend-pointer tail; a speculative pixel-port change
 would target the separately measured smaller traversal phase. The generated
 function signature is checked before instrumentation, so this diagnostic
 must be updated rather than silently trusted after an emitter change.
+The probe now also prints SHA-256 for its four complete 256×256 pixel buffers;
+for the unchanged selected scene they are, in view order 345°/67°, Front
+0°/65°, 75°/55°, 180°/65°:
+`70e3f84693336a4ca384ea7ae00b876d9c15700e6fdc4a1f6d68144ac22bd552`,
+`936b4549bb27d65b97abb0fb7c44d54d9dd231314f8ee2c41c0aae201f58f3f4`,
+`66762084dd49014ade83755d1a3de1f8377d3bf11ad4fe9b4115b475bcaef585`,
+and `730413f42f0a1ebba7adb250c6cfeca76c4b6730a93aacc2a840777eab4a2399`.
+
+A single source-checked `fast_ground.context` trial reused its affine, inverse
+and mask instead of recomputing them. The emitted scene preserved all four
+pixel hashes, but adjacent local phase readings gave no observed ground gain
+(about 8 ms P90 before and after); the trial was removed and the selected
+scene re-emitted to the original SHA-256 above. Under
+`node --max-old-space-size=128`, the unchanged probe completed with ground
+20.32 ms and compact pieces 24.72 ms P90 in one 28-call sample. A separate
+`--trace-gc` run recorded repeated young collections and a 51.41 ms
+mark-compact collection under allocation pressure; its timings are perturbed
+by tracing. This supports testing allocation/GC as a cause of long tails, but
+does **not** attribute the hosted Chrome spike or establish a physical-memory
+bound. No source optimization or latency claim was promoted.
 
 The existing finite `browser-v2-motion-extent.mjs` check now includes the
 accepted Front 65° alongside its four previous views. It passed 30 complete

@@ -1,6 +1,7 @@
 // Diagnostic only: time the generated Bend motion stages without editing its
 // source or mistaking scene construction for PixelPort traversal.
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import scene from '../../.artifacts/bend2/v2-preview/selected-js/scene.js';
 import control from '../../.artifacts/bend2/v2-preview/selected-js/controller.js';
@@ -57,6 +58,7 @@ const views = [
   { $: 'View', yaw: 75, pitch: 55, zoom: 100 },
   { $: 'View', yaw: 180, pitch: 65, zoom: 115 },
 ];
+const pixelSha256 = [];
 function renderMeasured(frame) {
   try { return instrumented.fast_camera256_for_512(frame, underlay); }
   catch (error) { throw new Error(`Instrumented scene failed: ${error.message}`); }
@@ -66,6 +68,8 @@ for (const view of views) {
   const original = new PixelPort().render(scene.fast_camera256_for_512(frame, underlay), 256, 256, 256);
   const measured = new PixelPort().render(renderMeasured(frame), 256, 256, 256);
   assert.deepEqual(Buffer.from(measured), Buffer.from(original), `Instrumented motion changed pixels at yaw ${view.yaw}`);
+  pixelSha256.push({ yaw: view.yaw, pitch: view.pitch,
+    sha256: crypto.createHash('sha256').update(Buffer.from(measured)).digest('hex') });
 }
 globalThis.__orbitPhaseRows.length = 0;
 for (let round = 0; round < 9; round++) for (const view of views) {
@@ -77,6 +81,6 @@ const stats = name => {
   return { medianMs: +sorted[Math.floor(sorted.length / 2)].toFixed(2),
     p90Ms: +sorted[Math.ceil(sorted.length * 0.9) - 1].toFixed(2) };
 };
-console.log(JSON.stringify({ ok: true, samples: rows.length, exactViews: views.length,
+console.log(JSON.stringify({ ok: true, samples: rows.length, exactViews: views.length, pixelSha256,
   stages: Object.fromEntries([...stages.map(([name]) => name), 'feedback'].map(name => [name, stats(name)])),
   scope: 'instrumented selected-JS scene only; not browser/device latency or a native verdict' }));
