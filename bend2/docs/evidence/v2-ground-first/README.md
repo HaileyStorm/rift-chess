@@ -95,7 +95,12 @@ zero defects (start, corrupt-plate fallback, camera, persistence, mobile and
 two import-gesture cases). The ignored summary is
 `.artifacts/bend2/playtest-stage2/ground-first-hosted-20260929/summary.json`,
 SHA-256 `6c6eca1b81d305a10e5e222cbe8e3994f436cd1070e2a9c6aa218a8958a8a573`.
-The 24/685 result is the local same-content clean build, not a full hosted
-matrix. The 7.35 MB addition, variable cold timing, arbitrary-view speed,
-low-memory devices, GPU, physical audio and owner visual acceptance remain
-separate evidence requirements.
+The subsequent uninterrupted full hosted run on the same deployed build
+passed 24 scenarios and 685 checks with zero defects. Its ignored
+`.artifacts/bend2/playtest-stage2/ground-first-hosted-full-20260929/summary.json`
+is SHA-256 `8d4f4dad20464d1454a3e64627945ad7a63fdc83adedd2439e97de7403b9db97`;
+the summary binds the served manifest to clean source `c8f8eee` and content
+version `12e233fd9c7ca2c09fe4`. This is rendered Chrome coverage on this
+host, not physical-device reliability or owner visual approval. The 7.35 MB
+addition, variable cold timing, arbitrary-view speed, low-memory devices,
+GPU and physical audio remain separate evidence requirements.

@@ -1523,9 +1523,14 @@ its tested draft. The exact clean-build rendered matrix passed 24 scenarios,
 685 checks, zero defects. The separate Pages commit `c85f5dc` reported built;
 [live verification](docs/evidence/v2-ground-first/README.md#hosted-preview)
 matched 24/24 Bend build entries and two unchanged original-site baselines,
-and seven hosted scenarios passed 65 checks with zero defects. Faster
-arbitrary views, constrained devices, native GPU, full hosted matrix and
-owner visual acceptance remain open.
+and seven hosted scenarios passed 65 checks with zero defects. The later
+uninterrupted [full hosted matrix](docs/evidence/v2-ground-first/README.md#hosted-preview)
+also passed 24 scenarios/685 checks with zero defects on the exact deployed
+build. Faster arbitrary views, constrained devices, native GPU and owner
+visual acceptance remain open. A read-only review of the still-simplified
+during-orbit glyphs identified `PieceArt.camera_draw_min`, not the separate
+fast-piece proxy, as the narrow Bend-owned visual path; no visual source was
+changed or accepted from that mapping alone.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:
