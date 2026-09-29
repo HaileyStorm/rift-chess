@@ -1732,6 +1732,11 @@ Windows CRLF SHA. Exact blob normalization proves the same postimage, not a
 compiler failure. The [portable EOL binding](toolchain-patches/2032/preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
 now checks both exact working-file modes and rejects mixed/tampered source;
 it still needs a clean-checkout Linux preflight and menu emission receipt.
+The [one-module 2.0.32 cache preview](toolchain-patches/2032/preview/README.md#one-module-cache-integration-candidate)
+now has an explicit menu/controller/scene/chrome selection boundary, a shared
+exclusive lock, and per-module source/export/output bindings. No full module
+emission beyond the small selected-root fixtures has yet completed; the
+production cache loader and whole browser build still use the 2.0.27 pin.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

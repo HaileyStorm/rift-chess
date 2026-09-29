@@ -1,21 +1,25 @@
 # 2.0.32 selected-cache preview
 
-`emit-menu.mjs` emits only the complete `moduleSpecs.menu` export set through
-the reviewed explicit-root adapter. It reads the exact 001→002→005→phase2
+`emit-menu.mjs` retains its historical filename but now emits exactly one
+explicit `moduleSpecs` key per run: `menu` by default, or `controller`,
+`scene`, or `chrome` with `--module <name>`. Each key uses its complete named
+export set through the reviewed explicit-root adapter; an empty, unknown, or
+all-roots selection is not accepted. It reads the exact 001→002→005→phase2
 derived compiler without changing the pin or live build tools, snapshots the
-compiler/patch/helper and full menu source closure before loading, then checks
+compiler/patch/helper and selected source closure before loading, then checks
 the same binding again before writing a manifest. Each run is serialized by an
-exclusive lock and stored in a unique ignored directory under
+exclusive shared lock and stored in a unique ignored directory under
 `.artifacts/bend2/2032-preview/`; prior outputs are retained.
 
 The Bun worker has a five-minute parent-enforced timeout and checks free
 physical RAM against 2.5 GiB before load, before emission, and before writing.
-If memory falls below the threshold, it stops; controller, scene, and chrome
-are never part of this emitter.
+If memory falls below the threshold, it stops; it never implicitly advances
+from one selected module to another.
 
-The worker lease is created with exclusive-create semantics and records
-`workerMayBeLive: true`; it is removed only after a matching file-identity check
-and an observed worker exit. Timeout requests termination and then waits up to
+The shared lease is created with exclusive-create semantics and records
+`workerMayBeLive: true`. Before Worker start, an admission failure releases the
+owned lease by file identity. Once a Worker starts, it is removed only after a
+matching file-identity check and an observed worker exit. Timeout requests termination and then waits up to
 ten seconds for exit. If exit is not observed, the lease remains and later runs
 fail closed rather than reclaiming it. The manifest is written and verified as
 a temporary file, then linked atomically to its final name without overwrite
@@ -23,16 +27,18 @@ only after source binding and output bytes are rechecked.
 
 Run the provider-free lifecycle failure-injection checks with
 `node bend2/toolchain-patches/2032/preview/lifecycle.test.mjs`. These tests do
-not load Bend or emit the menu module.
+not load Bend or emit a selected module.
 
 Run with the repository-local Bun executable after checking the ignored target
 and free physical RAM:
 
 ```powershell
 & .artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe run bend2/toolchain-patches/2032/preview/emit-menu.mjs
+node bend2/toolchain-patches/2032/preview/emit-menu.mjs --module controller --preflight-only
+# A separate reviewed one-shot may use --module controller (or scene/chrome).
 ```
 
-This is one selected-library cache emission, not whole-app/browser, proof,
+This is one selected-library cache emission per explicit invocation, not whole-app/browser, proof,
 native, GPU, or toolchain-pin acceptance.
 
 ## Windows admission stop and lifecycle repair, 2026-09-29
@@ -95,3 +101,20 @@ fixture test
 `4931ac18016a4c1474aa77eb74372f87db428d346c09892ad3ec6c0e60c63412`,
 emitter `93696fec322898f414d6478056d954884047cee2f5783a77f2e0a99c7a20266e`.
 No menu JS/manifest or browser acceptance follows from EOL equivalence alone.
+
+## One-module cache integration candidate
+
+The post-202c0eb generalization changes only this versioned preview and its
+worker, not `emit-selected.ts`, `selected-modules.mjs`, `loader-v2.ts`,
+`build.ts`, the pinned compiler, or the published TypeScript application.
+The preview keeps the historical `menu-emitter.lock` as its one shared lease
+across all module names, plus one bounded Worker per explicit module,
+names each output/manifest after that module, and binds its source closure,
+export order, derived compiler EOL, and result bytes independently. `chrome`
+is a diagnostic cache target; the current `worker-v2.ts` consumes controller,
+scene, and MenuAA rather than `ChromeRaster`.
+
+This source change has not emitted a full controller, scene, chrome or menu
+module under 2.0.32. Preflight and source-only checks are distinct from
+emission, production cache wiring, a rendered interaction matrix, GPU/native
+performance, frozen proofs, a pin amendment, and owner visual acceptance.

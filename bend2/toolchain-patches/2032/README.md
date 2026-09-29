@@ -75,6 +75,10 @@ CRLF expectation despite the exact Git postimage. No later patch or Bun worker
 ran. The [portable preview binding](preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
 now accepts only the two exact EOL postimages and needs a fresh Linux
 preflight/menu receipt; this is not a pin, GPU or publication result.
+The [versioned one-module cache preview](preview/README.md#one-module-cache-integration-candidate)
+subsequently generalized the historical menu-only script to accept one
+explicit menu/controller/scene/chrome export set at a time. This is a source
+candidate, not a produced four-cache set or a production loader/build change.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`
