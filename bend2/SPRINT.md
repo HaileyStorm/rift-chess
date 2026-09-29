@@ -1592,9 +1592,11 @@ reference replay and captures did not. A speculative oracle cache was tested
 and removed. A deterministic 100-quiet-move witness now shortens only the
 auto100 boundary import; the original 304-command prompt/history scenario
 remains. The strengthened focused browser case passed 39 checks with zero
-defects, including Bend/reference quiet counts at 99 and 100. A final full
-matrix of 24 scenarios/689 checks is required before treating the harness
-revision as accepted; the game build and frozen semantics are unchanged.
+defects, including Bend/reference quiet counts at 99 and 100. The final
+committed-harness full matrix passed 24 scenarios/689 checks with zero
+defects on the same clean game build. Its local summed scenario time was
+1,533.4 s versus 1,758.3 s in the prior unchanged-fixture run, without a
+portable speed claim; the game build and frozen semantics are unchanged.
 
 The next [C30 CPU-only profiling control request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5882158917)
 is a single, conditional Linux attempt against the retained exact c30 package:
@@ -1624,3 +1626,10 @@ reapplied, while experimental 003 was never in the reviewed main stack.
 Keep the clean 2.0.27 canonical pin and every frozen Law until the separate
 derived-compiler review, exact proof/mutation/browser/native gates and the
 guide's chained amendment pass. No 2.0.32 acceptance is yet claimed.
+The first [pristine 2.0.32 source-only proof-load probe](docs/evidence/toolchain-2032-scout/README.md#owner-target-and-first-pristine-source-probe-2026-09-29)
+stopped on the Windows nested-import path (`../ProofKit.bend` resolving to
+`/Users/Haile/...`), before checker or BendTT execution. The isolated
+derived checkout is available for ordered patch rebases, starting with 001;
+005 remains a concrete prerequisite for this host. No frozen file or pin
+changed, and BendTT was not invoked because it would attempt a kernel build
+outside the workspace without an installed local Lean/BENDTT runtime.

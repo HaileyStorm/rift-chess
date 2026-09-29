@@ -48,8 +48,15 @@ sample versus 247.4 s for the old 303-action import; this is a host-local
 sample, not a general speed bound. The strengthened focused summary SHA-256 is
 `a47a8301b958e8a962454748c2c91468b96d9b4d309b91ccbd81e73f9f9df762`.
 
-The final unchanged-source full matrix with the short terminal witness and
-four added boundary assertions is pending. It must still pass 24 scenarios
-and 689 checks with zero defects; a focused case is not a substitute. No
-game source, frozen Law, accepted camera, canonical Bend pin, native GPU or
-published site changes in this test-harness cleanup.
+The final full matrix from committed harness revision `e96f824` passed all
+24 scenarios and **689 checks** with zero defects. Its served-manifest binding
+remained the same clean Bend build and its explicit full-coverage guard passed.
+The ignored summary is
+`.artifacts/bend2/playtest-stage2/matrix-final-e96f824-20260929/summary.json`,
+SHA-256 `44be8efbdead22f75e0029e12b39afd8279577ae07c4fe0c162a9bcb040814cb`.
+Summed scenario time was 1,533.4 s here versus 1,758.3 s in the earlier
+unchanged-fixture timing pass; host load and run order varied, so this is a
+local example, not a device or portable speed bound. Draw-terminals was
+279.4 s and draw-prompt still exercised the long record for 258.9 s.
+No game source, frozen Law, accepted camera, canonical Bend pin, native GPU or
+published site changed in this test-harness cleanup.

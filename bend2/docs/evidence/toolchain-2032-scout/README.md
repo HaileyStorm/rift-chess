@@ -107,6 +107,37 @@ search. This is a concrete compatibility risk from source, not a witnessed
 
 No official 2.0.32 package, Bun/Windows path-adapter evaluation, frozen Law
 check, mutation gate, browser build, CPU native or GPU run was performed.
-Keep the 2.0.27 pin and old immutable proof evidence. Whether to pursue a
-versioned 2.0.28 migration or assess 2.0.32 through its own reviewed
-proof/CLI migration remains the owner's target decision.
+Keep the 2.0.27 pin and old immutable proof evidence. At this source-inventory
+checkpoint, the 2.0.28 versus 2.0.32 target was still the owner's decision.
+
+## Owner target and first pristine source probe, 2026-09-29
+
+The owner now prefers a versioned checker and all applicable downstream
+patches carried directly to 2.0.32, if feasible. Patch 001 (arity), 002
+(layout), 005 (Windows paths), and 004 (worker backend) each require a fresh
+rebase and own regression gate; experimental 003 was outside the reviewed
+main stack and the 006 alias distinction is already in pristine 2.0.32.
+None of the 2.0.28 patch receipts transfers to this target.
+
+The clean exact-tag scout remains at
+`573002f01ec6c52416d44489543f69a9625facf8`; a separate ignored
+`derived-2032` checkout was created at that same commit. The canonical
+2.0.27 compiler remains clean and unmoved. The bounded source-only
+`toolchain-patches/2032/probe-pristine.ts` (SHA-256
+`a3a9beb1ddcc61e17716373f3bb5b83e756df405b4f4b07d381f2e9a27856dfd`)
+checked exact Git identities, disabled telemetry/network fetch, and tried
+the unchanged frozen `ArithmeticProof.bend` (SHA-256
+`149f4a311b6da1ef8e45a2eb2b62626f5d24804ba4091f3e15ee422ee18602a8`).
+Pristine 2.0.32 stopped at `book_load`: its nested `../ProofKit.bend` import
+resolved to `/Users/Haile/OneDrive/Documents/ChatGPT/ProofKit.bend` on this
+Windows host. No checker, promise negatives or BendTT verdict ran. This is a
+concrete 005-style path migration need, not a Law counterexample; do not
+weaken the frozen source or paper over it with copied files.
+
+The 2.0.32 BendTT verdict would build a kernel under the user profile when
+`BENDTT` is unset. This host currently exposes neither `BENDTT` nor
+`lean`/`leanc`; the source probe intentionally does not call `Safe.safe_check`
+or install anything. A kernel-specific mathematical verdict still needs an
+explicitly staged, reviewed runtime and separate evidence after source/checker
+compatibility. No proof, native, GPU, browser or pin-amendment pass follows
+from this stopped probe.
