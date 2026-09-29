@@ -10,7 +10,7 @@ older versioned 2.0.27/2.0.28 patch receipts remain unchanged. The pristine
 | 001 | [Arity diagnostics](../001-arity/rebase-2032/README.md) | Rebased; bounded FID rejection, CID constructor boundary and successful-byte comparison passed. Extreme CID overflow is unproved. |
 | 002 | [Layout reporting](../002-layout/rebase-2032/README.md) | Rebased; exact layout, local-only direct denials and successful C/JS parity passed. Recursive import fence is combined with 005 below. |
 | 005 | [Windows imports/identity](../005-windows-import-path/rebase-2032/README.md) | Rebased; native nested paths, recursive denial, identity/cycle, junction, package assembly including foreign parent JS, and synthetic cross-volume gates passed on Windows. |
-| 004 | Web Worker backend | Not rebased yet; 2.0.32 removed the selected-root JS emitter interface, so the old patch/107-test receipt cannot transfer. |
+| 004 | [Web Worker backend](../004-web-workers/rebase-2032/README.md) | A reviewed selected-root export adapter and partial reachable-promise negative screen pass a small Node worker fixture; parser/policy/runtime/browser backend is **not rebased**. The old 107-test receipt cannot transfer. |
 | 006 | Alias equality | 2.0.32 already has the alias-shadow distinction; do not replay 2.0.28's corrective patch. Retain its historical receipt. |
 | 003 | Join-capture boxing | Experimental and not in the reviewed main stack; no silent inclusion. |
 

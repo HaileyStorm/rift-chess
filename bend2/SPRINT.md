@@ -1657,3 +1657,12 @@ probe (7 files, 543 definitions, zero network attempts), but the broader
 `CHECK.bend` type-check did not finish under either 120 or 300 seconds with
 a 64-MiB worker stack. This is a timeout, not a Law counterexample. 004,
 BendTT, full mutations, browser/native/GPU and pin amendment remain open.
+The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
+now passes an exact-source Bun fixture: only requested exports, a direct and
+isolated Node worker result of 42, distinct in-memory reachable unsafe/
+foreign/unfilled rejections, and unchanged raw synchronous JS bytes before
+and after selection. Independent review confirms this narrow export seam,
+not full worker eligibility. Higher-order/intrinsic/F32 screening,
+`require`/`never`, Web Worker runtime/hosting, 107 tests and browser proof
+remain open; the temporary adapter must be reconciled or removed when 004
+is fully ported.
