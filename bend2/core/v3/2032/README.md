@@ -117,10 +117,16 @@ isolated raised-bound run at 177 seconds of typechecking. A second all-shards
 run reached Ordering and then timed out at 240 seconds after Canonical passed
 at 219 seconds; its exit was observed. Only Canonical and Ordering now get
 a bounded 360-second deadline for timing headroom; the Range pair remains
-at 240 seconds, all other shards at 120 seconds. These are source/promise checks only,
+at 240 seconds. These are source/promise checks only,
 not CHECK/BendTT or a passed all-shards run. No Law counterexample was
 observed. The script SHA-256 is reported by each exact run rather than
 hard-coded here.
+
+The next clean-source route passed Ordering but stopped at `PROOF.bend`'s
+120-second typecheck deadline (observed Worker exit); that shard had passed
+individually in 86 seconds. Its diagnostic deadline is now 240 seconds with
+the original 512-MiB heap cap. All other shards retain 120 seconds. This
+changed time only, and the revised route has not yet completed all 18 entries.
 
 The runner now uses the reviewed exact LF/CRLF compiler postimage binder,
 including its mixed/tampered-source negatives. The same stack can be

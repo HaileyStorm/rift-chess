@@ -1672,8 +1672,11 @@ isolate a 512-MiB memory lower bound. Two all-shards routes
 stopped at RangeBridge (120 seconds) and Ordering (240 seconds), respectively,
 with owned Worker exits observed and no Law counterexample. The runner now
 accepts only the exact LF or CRLF derived compiler postimage, and gives
-Canonical/Ordering a bounded 360-second timing margin; that revised full
-route has not yet passed. The aggregate
+Canonical/Ordering a bounded 360-second timing margin. The clean revised
+route passed those two but stopped at `PROOF.bend`'s 120-second typecheck
+deadline despite its earlier 86-second individual pass; its Worker exited.
+Only that shard now gets a 240-second deadline at the original 512-MiB heap
+cap. An all-shards pass remains open. The aggregate
 `CHECK.bend`/BendTT/mutation gates remain unverified; these are source and
 promise screens, not mathematical proof acceptance.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)

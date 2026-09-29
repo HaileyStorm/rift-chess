@@ -152,6 +152,8 @@ if (!isMainThread) {
       ? { heapMiB: 1024, timeoutMs: 360_000 }
       : ['RangeBridgeProof.bend', 'RangeCompositionProof.bend'].includes(name)
         ? { heapMiB: 1024, timeoutMs: 240_000 }
+        : name === 'PROOF.bend'
+          ? { heapMiB: 512, timeoutMs: 240_000 }
         : { heapMiB: 512, timeoutMs: 120_000 };
     const heapMiB = raisedHeap ? 1024 : policy.heapMiB;
     const timeoutMs = extendedTimeout ? 240_000 : policy.timeoutMs;
