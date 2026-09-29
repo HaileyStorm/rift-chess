@@ -1638,3 +1638,9 @@ now has an exact pristine/derived C+JS byte-comparison gate for its FID
 247/248 rejection and four CID constructor widths through 256. It restores
 the source return-binder diagnostic; extreme encoded-CID overflow, full
 stack replay and all proof/runtime/browser/native acceptance remain open.
+The [separately versioned 2.0.32 synthetic checker](core/v3/2032/README.md)
+passes five exact-scout local controls: one source/type-and-promise positive,
+distinct TODO/unsafe/foreign negatives, and a compiler-owned-name rejection.
+It adapts the 2.0.32 `hols`-only book shape without changing frozen v2. This
+is not the frozen closure, BendTT kernel verdict, six Law mutations, or an
+accepted pin; Windows nested imports still stop that closure before checking.
