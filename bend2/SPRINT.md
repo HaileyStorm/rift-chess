@@ -1680,6 +1680,15 @@ matches a fresh 001→002→005→004-phase2 replay, and reserved-name/foreign
 collision and invalid-root controls reject. It does not yet wire the
 production selected caches or `build.ts`, nor prove controller/scene/chrome/
 menu multi-export emission or a rendered 2.0.32 browser build.
+The [2.0.32 menu preview attempt](toolchain-patches/2032/preview/README.md)
+stopped after loading/checking the source, before JS emission, when Windows
+free RAM fell to 1.97 GiB below its 2.5 GiB floor. It left no output or
+manifest; the empty ignored run directory is retained and the lock was
+released. Independent review then drove exit-gated worker settlement,
+identity-checked exclusive lock cleanup, and final-manifest commit ordering;
+provider-free lifecycle failure injections pass. The repaired emitter needs
+a separate higher-memory one-module run, not a lower Windows threshold or a
+claim of browser acceptance.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

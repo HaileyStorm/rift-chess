@@ -56,6 +56,13 @@ compiler and matches no-suffix JavaScript bytes against an independent stack
 replay. It has not replaced `emit-selected.ts`, the cache binding, or
 `build.ts`; exact 2.0.32 browser build/render evidence remains open.
 
+The [separate 2.0.32 menu preview emitter](preview/README.md) stopped on
+Windows after source load/type-check when free RAM fell to 1.97 GiB, below
+its 2.5 GiB pre-emission floor. No JS or final manifest was produced. Its
+subsequent lifecycle-only failure tests pass after independent review, but
+the repaired emitter has not been run on a higher-memory host; controller,
+scene and chrome emission remain unattempted.
+
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without
 installing anything implicitly, run the complete mutation/conformance and
