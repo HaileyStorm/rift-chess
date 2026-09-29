@@ -62,6 +62,14 @@ its 2.5 GiB pre-emission floor. No JS or final manifest was produced. Its
 subsequent lifecycle-only failure tests pass after independent review, but
 the repaired emitter has not been run on a higher-memory host; controller,
 scene and chrome emission remain unattempted.
+The first Linux menu handoff stopped before compiler execution because the
+pristine 2.0.32 Git object was absent. A separate one-shot acquisition
+verified and retained the official tag in an isolated scout, but stopped at
+the next source gate: the host's partial Rift clone lacks 63 objects from
+exact 8096edc, including a patch blob. Neither handoff produced JS or a
+manifest. A third bounded request permits a complete isolated Rift source
+checkout, then one menu-only attempt after exact host-local preflight; it is
+pending and does not authorize pin movement, GPU or publication.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`
@@ -71,6 +79,12 @@ not an independent browser scheduler negative. Its source, patches and
 generated modules are hash-bound, with zero outside requests and exact
 temporary-output cleanup. This is not a production browser build or the
 complete 004/107-case acceptance gate.
+
+The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
+[five additional consumers](../native-cli-2032/consumers/README.md) remain
+separate versioned source candidates. The latter passes exact-hash patch
+preflight and pure list controls only; neither patched application entry nor
+any native CLI scenario has been accepted under 2.0.32.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

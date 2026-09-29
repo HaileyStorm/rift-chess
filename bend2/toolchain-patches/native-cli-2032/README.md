@@ -40,6 +40,11 @@ run as a native executable. Unknown-command dispatch and snapshot behavior
 need a version-bound CLI matrix after that integration; a pure list test does
 not establish them. The canonical source and Git index remain unchanged.
 
+The [separately versioned five-consumer candidate](consumers/README.md)
+covers the other `IO.args()` entrypoints without editing their original
+sources. Its exact-hash preflight and pure list controls pass; the zero-context
+patch is not yet applied, Bend-typechecked or tested in a native command path.
+
 Keep the historical 2.0.27 CLI source and its Linux receipt
 `bend2/docs/evidence/native-cli-linux-2-0-27/receipt.json` unchanged. Remove
 this migration adapter/patch only after a reviewed 2.0.32 CLI source has

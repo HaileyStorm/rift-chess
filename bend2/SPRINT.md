@@ -1671,8 +1671,12 @@ now passes its pure exact-one-leading-program removal test and exact-source
 patch preflight without editing the 2.0.27 entry. The small adapter also
 type-checks under the exact derived 2.0.32 compiler (Base plus adapter,
 491 definitions, zero network attempts). It is not yet applied to a
-2.0.32 application closure or validated in a native command matrix; other
-`IO.args` consumers remain in the migration inventory.
+2.0.32 application closure or validated in a native command matrix. The
+[five remaining `IO.args` consumers](toolchain-patches/native-cli-2032/consumers/README.md)
+now have a separate hash-bound zero-context patch candidate; read-only
+`git apply --check` and pure exact-one-drop controls pass without editing
+their sources. Independent review found no omitted consumer, but neither
+those patched entries nor the helper have been Bend-typechecked or run.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
@@ -1689,6 +1693,15 @@ identity-checked exclusive lock cleanup, and final-manifest commit ordering;
 provider-free lifecycle failure injections pass. The repaired emitter needs
 a separate higher-memory one-module run, not a lower Windows threshold or a
 claim of browser acceptance.
+The first [Linux handoff](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5891808080)
+stopped during read-only preflight because the pristine 2.0.32 Git object was
+absent there. A distinct [official-source acquisition](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5892440451)
+verified and retained that exact tag in an isolated clean scout, but stopped
+before compiler execution: the host's partial Rift clone lacked 63 objects
+from exact source commit 8096edc, including a patch blob. No JS or manifest
+exists from either handoff. A [third one-shot request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5895339046)
+permits a complete isolated public Rift source checkout and the same bounded
+menu-only CPU attempt after exact source/claim/memory gates; it is pending.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

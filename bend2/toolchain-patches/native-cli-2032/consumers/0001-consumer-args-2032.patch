@@ -1,0 +1,45 @@
+diff --git a/bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend b/bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend
+--- a/bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend
++++ b/bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend
+@@ -1,0 +2 @@
++import ../../../../../toolchain-patches/native-cli-2032/consumers/Consumers2032.bend as CliArgs
+@@ -290,1 +291,2 @@
+-  IO.bind(List<&1, String>, Unit, IO.args(), with_args)
++  IO.bind(List<String>, Unit, IO.args(),
++    raw => IO.bind(List<String>, Unit, CliArgs.users(raw), with_args))
+diff --git a/bend2/lib/graphics/v2/bench/gpu/PlanReadback.bend b/bend2/lib/graphics/v2/bench/gpu/PlanReadback.bend
+--- a/bend2/lib/graphics/v2/bench/gpu/PlanReadback.bend
++++ b/bend2/lib/graphics/v2/bench/gpu/PlanReadback.bend
+@@ -1,0 +2 @@
++import ../../../../../toolchain-patches/native-cli-2032/consumers/Consumers2032.bend as CliArgs
+@@ -123,1 +124,2 @@
+-  IO.bind(List<&1, String>, Unit, IO.args(), with_args)
++  IO.bind(List<String>, Unit, IO.args(),
++    raw => IO.bind(List<String>, Unit, CliArgs.users(raw), with_args))
+diff --git a/bend2/tests/piece-sprites/PieceRenderBench.bend b/bend2/tests/piece-sprites/PieceRenderBench.bend
+--- a/bend2/tests/piece-sprites/PieceRenderBench.bend
++++ b/bend2/tests/piece-sprites/PieceRenderBench.bend
+@@ -2,0 +3 @@
++import ../../toolchain-patches/native-cli-2032/consumers/Consumers2032.bend as CliArgs
+@@ -304,1 +305,2 @@
+-  IO.bind(List<&1, String>, Unit, IO.args(), with_args)
++  IO.bind(List<String>, Unit, IO.args(),
++    raw => IO.bind(List<String>, Unit, CliArgs.users(raw), with_args))
+diff --git a/bend2/tests/piece-sprites/DecodePageTest.bend b/bend2/tests/piece-sprites/DecodePageTest.bend
+--- a/bend2/tests/piece-sprites/DecodePageTest.bend
++++ b/bend2/tests/piece-sprites/DecodePageTest.bend
+@@ -1,0 +2 @@
++import ../../toolchain-patches/native-cli-2032/consumers/Consumers2032.bend as CliArgs
+@@ -38,1 +39,2 @@
+-  IO.bind(List<&1, String>, Unit, IO.args(), with_args)
++  IO.bind(List<String>, Unit, IO.args(),
++    raw => IO.bind(List<String>, Unit, CliArgs.users(raw), with_args))
+diff --git a/bend2/tests/piece-sprites/BoardSceneSpriteBench.bend b/bend2/tests/piece-sprites/BoardSceneSpriteBench.bend
+--- a/bend2/tests/piece-sprites/BoardSceneSpriteBench.bend
++++ b/bend2/tests/piece-sprites/BoardSceneSpriteBench.bend
+@@ -1,0 +2 @@
++import ../../toolchain-patches/native-cli-2032/consumers/Consumers2032.bend as CliArgs
+@@ -94,1 +95,2 @@
+-  IO.bind(List<&1, String>, Unit, IO.args(), with_args)
++  IO.bind(List<String>, Unit, IO.args(),
++    raw => IO.bind(List<String>, Unit, CliArgs.users(raw), with_args))
