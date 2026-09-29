@@ -20,12 +20,15 @@ adapter's actual Bend definitions through the local pinned loader:
 $env:BEND_NO_TELEMETRY = '1'
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/native-cli-2032/test.mjs
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/native-cli-2032/preflight.mjs
+& .artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe run bend2/toolchain-patches/native-cli-2032/test-source-2032.mjs
 ```
 
 The pure adapter test passes under the repository's pinned 2.0.27 loader;
 it also preserves an unknown first user command for the existing error path.
-This does not prove that the full entry checks or runs under 2.0.32. The 2.0.32
-whole-entry check has not been run in this lane, and this is not a native C,
+The separate exact-derived-2.0.32 source-only test loaded Base plus
+`Args2032.bend` (491 definitions), type-checked with zero holes and zero
+network attempts. It does not prove that the patched full entry checks or
+runs under 2.0.32. The whole-entry check has not been run, and this is not a native C,
 GUI, PCM, or Linux acceptance test.
 
 Root repaired the hunk context and `preflight.mjs` now passes both the exact

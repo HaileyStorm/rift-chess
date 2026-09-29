@@ -1668,7 +1668,9 @@ remain open; the temporary adapter must be reconciled or removed when 004
 is fully ported.
 The [separate NativeCLI 2.0.32 IO.args adapter](toolchain-patches/native-cli-2032/README.md)
 now passes its pure exact-one-leading-program removal test and exact-source
-patch preflight without editing the 2.0.27 entry. It is not yet applied to a
+patch preflight without editing the 2.0.27 entry. The small adapter also
+type-checks under the exact derived 2.0.32 compiler (Base plus adapter,
+491 definitions, zero network attempts). It is not yet applied to a
 2.0.32 application closure or validated in a native command matrix; other
 `IO.args` consumers remain in the migration inventory.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
