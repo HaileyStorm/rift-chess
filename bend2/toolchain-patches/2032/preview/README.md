@@ -93,14 +93,33 @@ node bend2/toolchain-patches/2032/preview/emit-menu.mjs --preflight-only
 ```
 
 The first command passed on Windows, including mixed/tampered/inconsistent
-negative controls. The second requires a committed clean source checkout and
-has not been run on Linux; it neither constructs a Worker nor writes output.
-Current source SHA-256: EOL helper
+negative controls. At this historical `202c0eb` checkpoint, the second still
+needed a committed clean Linux checkout; it neither constructs a Worker nor
+writes output. Source SHA-256 at that checkpoint: EOL helper
 `4bd8f6191b65fdfeb74372f95834fa6c4d017f0027162861b575c3dd428810e4f168`,
 fixture test
 `4931ac18016a4c1474aa77eb74372f87db428d346c09892ad3ec6c0e60c63412`,
 emitter `93696fec322898f414d6478056d954884047cee2f5783a77f2e0a99c7a20266e`.
 No menu JS/manifest or browser acceptance follows from EOL equivalence alone.
+
+The later [one-shot Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5900839111)
+bound exact clean Rift source `202c0eb3d6cffa80cb4a27cdd166af4d0c994197`
+(tree `abb60fbd40cb34daef0de848827c04a0927cb12f`) and pristine Bend
+2.0.32, applied 001→002→005→phase2 004 to a separate LF derived clone, and
+passed the exact EOL fixture plus menu preflight (binding SHA-256
+`a8a4b82173c7e4555f1b9001b0c67fdd2ac8fb12401ccfcca06e7ace0638fb07`).
+One bounded CPU-only Bun 1.4.2 Worker emitted the complete named MenuAA
+cache: `menu.js` 214,509 bytes, SHA-256
+`a7d33ce2b2a8aa0ebbb520896b527a3d7161d47974cb9bb45259ce8c55da1506`;
+final manifest SHA-256
+`1adad60f5ecc3aa123a08dfad7427e123da9c905b2937d919d0cdab40b6d1663`.
+Whole command 7,504 ms, measured peak process RSS 2,575,104 KiB, zero
+network calls; the report says the lock and pending manifest were absent and
+the host-local claim released. Consolidated host-local receipt SHA-256
+`fbf71c78e56c43dcbd0f8d171bcf43316678c426d64c0c5cef8a7d940a4abcae`.
+This is a Linux host report for that exact older menu-only source revision,
+not a cache for the later generalized emitter, the other three modules, a
+browser build, proof, pin amendment, native/GPU run, or owner acceptance.
 
 ## One-module cache integration candidate
 

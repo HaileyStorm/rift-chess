@@ -1665,9 +1665,15 @@ a 64-MiB worker stack. This is a timeout, not a Law counterexample. 004,
 BendTT, full mutations, browser/native/GPU and pin amendment remain open.
 The [versioned individual proof-shard diagnostic](core/v3/2032/README.md#frozen-proof-source-shards-diagnostic-not-the-aggregate-gate)
 now binds the frozen source closure and Node/derived-compiler identity.
-Adjudication through NoWrap passed individually on Windows; Canonical and
-Ordering needed measured 1-GiB/240-second exceptions after default typecheck
-resource stops, then each passed. The all-shards route and aggregate
+All 18 proof entries have passed individual source/promise checks on Windows.
+Canonical, Ordering, RangeBridge and RangeComposition passed with 1-GiB and
+extended time after default-bound typecheck stops; those samples do not
+isolate a 512-MiB memory lower bound. Two all-shards routes
+stopped at RangeBridge (120 seconds) and Ordering (240 seconds), respectively,
+with owned Worker exits observed and no Law counterexample. The runner now
+accepts only the exact LF or CRLF derived compiler postimage, and gives
+Canonical/Ordering a bounded 360-second timing margin; that revised full
+route has not yet passed. The aggregate
 `CHECK.bend`/BendTT/mutation gates remain unverified; these are source and
 promise screens, not mathematical proof acceptance.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
@@ -1730,12 +1736,16 @@ verified a complete exact Rift source checkout and patch-001 Git postimage,
 but stopped before patch 002: LF working bytes differed from the historical
 Windows CRLF SHA. Exact blob normalization proves the same postimage, not a
 compiler failure. The [portable EOL binding](toolchain-patches/2032/preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
-now checks both exact working-file modes and rejects mixed/tampered source;
-it still needs a clean-checkout Linux preflight and menu emission receipt.
+now checks both exact working-file modes and rejects mixed/tampered source.
+The subsequent [one-shot Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5900839111)
+passed exact-source LF preflight and emitted the full MenuAA selected cache
+at `202c0eb` (214,509 bytes, SHA-256 `a7d33ce2b2a8aa0ebbb520896b527a3d7161d47974cb9bb45259ce8c55da1506`),
+with zero network calls and no surviving Worker/lock. That older menu-only
+source is not a same-revision cache member of the later generalized candidate.
 The [one-module 2.0.32 cache preview](toolchain-patches/2032/preview/README.md#one-module-cache-integration-candidate)
 now has an explicit menu/controller/scene/chrome selection boundary, a shared
 exclusive lock, and per-module source/export/output bindings. No full module
-emission beyond the small selected-root fixtures has yet completed; the
+emission from that generalized source has yet completed; the
 production cache loader and whole browser build still use the 2.0.27 pin.
 The clean `dcfeeed` source passed all four source-only 2.0.32 preflights and
 invalid-selection controls; Windows had less than the 2.5-GiB free-RAM floor,

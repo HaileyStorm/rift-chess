@@ -103,11 +103,26 @@ Run `node bend2/core/v3/2032/shards.mjs --only ArithmeticProof.bend` for a
 bounded selected diagnostic. The all-shards route is also diagnostic and
 cannot replace frozen aggregate `CHECK.bend`, BendTT, mutation suite, or the
 guide's pin amendment. The default is 512 MiB old-generation/120 seconds;
-only CanonicalProof and OrderingProof have measured 1-GiB/240-second
-exceptions after default typecheck resource stops. On Windows both
-subsequently passed individual source/promise checks (Canonical typecheck
-about 112–117 seconds, Ordering about 161 seconds). An earlier all-shards
-run reached Ordering before its default timeout; the current revised runner
-has not completed all entries. No Law counterexample was observed. Its
-current script SHA-256 is
-`035dea8b041517bbcc7712a59c95937af4680c294d311fd53a42417ec5ee274a`.
+CanonicalProof, OrderingProof, RangeBridgeProof, and RangeCompositionProof
+passed with 1-GiB/raised-timeout exceptions after default-bound typecheck
+stops. Heap and deadline changed together; a 512-MiB lower bound was not
+isolated.
+On the later Windows run, Canonical passed at 195 seconds of typechecking and
+Ordering at 233 seconds, uncomfortably near their 240-second deadline. The all-shards
+diagnostic then stopped at RangeBridge's old 120-second limit; its worker
+exit was observed. An isolated RangeBridge check passed under the raised
+bound at 135 seconds of typechecking. The three remaining small shards passed
+at default bounds; RangeComposition stopped at 120 seconds then passed an
+isolated raised-bound run at 177 seconds of typechecking. A second all-shards
+run reached Ordering and then timed out at 240 seconds after Canonical passed
+at 219 seconds; its exit was observed. Only Canonical and Ordering now get
+a bounded 360-second deadline for timing headroom; the Range pair remains
+at 240 seconds, all other shards at 120 seconds. These are source/promise checks only,
+not CHECK/BendTT or a passed all-shards run. No Law counterexample was
+observed. The script SHA-256 is reported by each exact run rather than
+hard-coded here.
+
+The runner now uses the reviewed exact LF/CRLF compiler postimage binder,
+including its mixed/tampered-source negatives. The same stack can be
+checked on Linux without accepting a changed compiler; no Linux shard run
+has yet verified this portability.

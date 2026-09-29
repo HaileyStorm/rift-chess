@@ -73,12 +73,16 @@ verified exact 8096edc source and the pristine 2.0.32 scout, then stopped
 after patch 001 because the Linux LF working SHA differed from the Windows
 CRLF expectation despite the exact Git postimage. No later patch or Bun worker
 ran. The [portable preview binding](preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
-now accepts only the two exact EOL postimages and needs a fresh Linux
-preflight/menu receipt; this is not a pin, GPU or publication result.
+now accepts only the two exact EOL postimages. The subsequent
+[Linux one-shot](preview/README.md#exact-lfcrlf-source-binding-after-linux-preflight-stop)
+passed preflight and emitted the full MenuAA selected cache at source `202c0eb`;
+this is not a pin, browser, GPU or publication result.
 The [versioned one-module cache preview](preview/README.md#one-module-cache-integration-candidate)
 subsequently generalized the historical menu-only script to accept one
 explicit menu/controller/scene/chrome export set at a time. This is a source
-candidate, not a produced four-cache set or a production loader/build change.
+candidate, not a produced same-revision four-cache set or a production
+loader/build change. Its own four Windows preflights passed but no full
+module has yet been emitted from the generalized source revision.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`

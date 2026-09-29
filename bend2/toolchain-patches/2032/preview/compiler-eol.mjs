@@ -17,7 +17,26 @@ export const compilerSourceHashes = Object.freeze({
     lf: '91c032a8e908a7ffe4fb38e98589cbf9719788fdc9407b36bea8930694c51c51',
   }),
 });
+export const compilerBaseHashes = Object.freeze({
+  crlf: 'a548d71e16e3e1b19f08ab187c1b04afabb7a3cf5fefa067004b77b6eaca9ba0',
+  lf: '485705690d8927389bd156f18e42653176a5e139afe363a7e9bc217eb6f5e716',
+});
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
+
+export function bindCompilerBaseEol(bytes, mode) {
+  assert.ok(Buffer.isBuffer(bytes), 'compiler Base reader did not return bytes');
+  assert.ok(mode === 'crlf' || mode === 'lf', 'unknown compiler EOL mode');
+  const text = bytes.toString('utf8');
+  const crlf = (text.match(/\r\n/g) ?? []).length;
+  const bareLf = (text.match(/(?<!\r)\n/g) ?? []).length;
+  assert.ok((crlf > 0) !== (bareLf > 0), 'mixed or absent Base line endings');
+  assert.equal(crlf ? 'crlf' : 'lf', mode, 'Base/compiler EOL modes differ');
+  const actual = sha256(bytes);
+  assert.equal(actual, compilerBaseHashes[mode], 'derived compiler Base changed');
+  const normalized = sha256(Buffer.from(text.replace(/\r\n/g, '\n'), 'utf8'));
+  assert.equal(normalized, compilerBaseHashes.lf, 'Git/LF Base postimage changed');
+  return { path: 'bend2/base.bend', sha256: actual, normalizedSha256: normalized };
+}
 
 export function bindCompilerEol(readBytes) {
   const files = [];

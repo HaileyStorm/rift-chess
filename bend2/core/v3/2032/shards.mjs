@@ -10,6 +10,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import { verifyV2, requiredProofs } from '../../../tools/freeze-v2.mjs';
 import { proofVerdict, proofNegativeControls } from '../proof-authority.mjs';
 import { settleWorker } from '../../../toolchain-patches/2032/preview/lifecycle.mjs';
+import { bindCompilerEol, bindCompilerBaseEol } from '../../../toolchain-patches/2032/preview/compiler-eol.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -22,12 +23,6 @@ const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (file) => sha(fs.readFileSync(file));
 const git = (directory, ...args) => execFileSync('git', ['-C', directory, ...args],
   { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).replace(/\r\n/g, '\n').trimEnd();
-const compiler = {
-  'bend2/bend.ts': '2def95c26e150c5a66a1a8ba3e5dd6ec5de3a8dd822627976f606a273b0cea88',
-  'bend2/comp.ts': '4f420f4a9b9efadfb5708fa2e20703fbc44e130365805c4b1be09f3c276e39b1',
-  'bend2/main.ts': 'e41167de4f0a5e00a6bc6e2ab3bdcdbb4920ef4edfc60631cd12225a03102cae',
-  'bend2/base.bend': 'a548d71e16e3e1b19f08ab187c1b04afabb7a3cf5fefa067004b77b6eaca9ba0',
-};
 function binding() {
   const frozen = verifyV2();
   assert.equal(git(derived, 'rev-parse', 'HEAD'), '573002f01ec6c52416d44489543f69a9625facf8');
@@ -37,15 +32,22 @@ function binding() {
   assert.equal(git(scout, 'status', '--porcelain', '--untracked-files=all'), '');
   assert.equal(git(canonical, 'rev-parse', 'HEAD'), 'd37909174ebd664338ae3194799a9e0899dedd51');
   assert.equal(git(canonical, 'status', '--porcelain', '--untracked-files=all'), '');
-  for (const [relative, expected] of Object.entries(compiler)) {
-    assert.equal(fileHash(path.join(derived, relative)), expected, relative);
-  }
+  const compilerEol = bindCompilerEol((relative) =>
+    fs.readFileSync(path.join(derived, relative)));
+  const compilerBase = bindCompilerBaseEol(
+    fs.readFileSync(path.join(derived, 'bend2/base.bend')), compilerEol.eol);
   assert.equal(fileHash(path.join(root, 'bend2/core/v3/proof-authority.mjs')),
     '3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013');
   assert.equal(fileHash(path.join(root, 'bend2/toolchain-patches/2032/preview/lifecycle.mjs')),
     '91d8b5c325a48602d0d6860624ab0abf9d5428d374a12d85988cb866a732fbc8');
+  const eolBinderSha256 = fileHash(path.join(root,
+    'bend2/toolchain-patches/2032/preview/compiler-eol.mjs'));
+  assert.equal(eolBinderSha256,
+    'cb1cbb64e07e32c30cb9199424ec84e87cfcc516427c035a51fa6f7a84eacc27',
+    'reviewed exact-EOL binder changed');
   return { frozenSha256: frozen.sha256, frozenFiles: frozen.manifest.files,
-    compiler, scriptSha256: fileHash(self), runtime: {
+    compilerEol, compilerBase, eolBinderSha256,
+    scriptSha256: fileHash(self), runtime: {
       nodeVersion: process.version, nodeExeSha256: fileHash(process.execPath),
       platform: process.platform, arch: process.arch,
     } };
@@ -141,11 +143,16 @@ if (!isMainThread) {
   const before = binding();
   const results = [];
   for (const name of only ? [only] : proofs) {
-    // Canonical and Ordering stopped in typecheck at default bounds, then
-    // each passed as a 1-GiB/240s shard; no other limit is inferred.
+    // Four default-bound typecheck timeouts preceded successful 1-GiB runs;
+    // heap and time changed together, so this does not isolate memory need.
+    // Canonical and Ordering passed close to 240s and Ordering also timed out
+    // there, so retain a bounded
+    // 360s margin only for those two; the Range pair passed below 240s.
     const policy = ['CanonicalProof.bend', 'OrderingProof.bend'].includes(name)
-      ? { heapMiB: 1024, timeoutMs: 240_000 }
-      : { heapMiB: 512, timeoutMs: 120_000 };
+      ? { heapMiB: 1024, timeoutMs: 360_000 }
+      : ['RangeBridgeProof.bend', 'RangeCompositionProof.bend'].includes(name)
+        ? { heapMiB: 1024, timeoutMs: 240_000 }
+        : { heapMiB: 512, timeoutMs: 120_000 };
     const heapMiB = raisedHeap ? 1024 : policy.heapMiB;
     const timeoutMs = extendedTimeout ? 240_000 : policy.timeoutMs;
     const progress = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT));
@@ -174,6 +181,8 @@ if (!isMainThread) {
   console.log(JSON.stringify({ schema: 'rift-v2-proof-shards-2032/1',
     allShardsSourcePassed: !only, selectedShardSourcePassed: Boolean(only),
     frozenSha256: before.frozenSha256, scriptSha256: before.scriptSha256,
+    compilerEol: before.compilerEol, compilerBase: before.compilerBase,
+    eolBinderSha256: before.eolBinderSha256,
     workerStackMiB: 64, runtime: before.runtime,
     entries: results.map(({ entry, loadedFiles, definitions, owned, bindingSha256,
       heapMiB, timeoutMs }) => ({ entry, loadedFiles, definitions, owned,
