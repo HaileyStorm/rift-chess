@@ -126,7 +126,23 @@ The next clean-source route passed Ordering but stopped at `PROOF.bend`'s
 120-second typecheck deadline (observed Worker exit); that shard had passed
 individually in 86 seconds. Its diagnostic deadline is now 240 seconds with
 the original 512-MiB heap cap. All other shards retain 120 seconds. This
-changed time only, and the revised route has not yet completed all 18 entries.
+changed time only; at that checkpoint the revised route had not completed
+all 18 entries.
+
+The final clean `99d8034` Windows run of `node bend2/core/v3/2032/shards.mjs`
+exited 0 with `allShardsSourcePassed: true` for all 18 frozen CHECK proof
+entries. It bound frozen manifest SHA-256
+`c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf`,
+runner SHA-256
+`8be2860c4ade693913803cb5a07f60c85b29430bd4da28a5dbebaac4a7ad1aaa`,
+exact CRLF compiler plus Base postimages and Node v24.12.0 executable SHA-256
+`2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8`.
+Canonical/Ordering used 1 GiB/360 seconds, the Range pair 1 GiB/240
+seconds, PROOF 512 MiB/240 seconds, and the other thirteen 512 MiB/120
+seconds; all passed without a resource stop on this sample. Canonical took
+290 seconds of typechecking, illustrating host-load variance rather than a
+portable performance claim. A Linux run and the actual aggregate
+`CHECK.bend`/BendTT/mutation verdict remain unverified.
 
 The runner now uses the reviewed exact LF/CRLF compiler postimage binder,
 including its mixed/tampered-source negatives. The same stack can be

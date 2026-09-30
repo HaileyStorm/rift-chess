@@ -1676,9 +1676,15 @@ Canonical/Ordering a bounded 360-second timing margin. The clean revised
 route passed those two but stopped at `PROOF.bend`'s 120-second typecheck
 deadline despite its earlier 86-second individual pass; its Worker exited.
 Only that shard now gets a 240-second deadline at the original 512-MiB heap
-cap. An all-shards pass remains open. The aggregate
+cap. An all-shards pass was still open at that checkpoint. The aggregate
 `CHECK.bend`/BendTT/mutation gates remain unverified; these are source and
 promise screens, not mathematical proof acceptance.
+The subsequent clean `99d8034` bounded Windows run passed all 18 individual
+proof-entry source/promise shards in one sequential invocation with exact
+LF/CRLF compiler/Base binding and the frozen v2 manifest; the runner reports
+`allShardsSourcePassed: true`. Canonical typechecking took 290 seconds on
+that sample. This does not establish aggregate CHECK, BendTT, Linux parity,
+or the 2.0.32 mutation gate.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/
