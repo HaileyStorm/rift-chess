@@ -81,8 +81,19 @@ The [versioned one-module cache preview](preview/README.md#one-module-cache-inte
 subsequently generalized the historical menu-only script to accept one
 explicit menu/controller/scene/chrome export set at a time. This is a source
 candidate, not a produced same-revision four-cache set or a production
-loader/build change. Its own four Windows preflights passed but no full
-module has yet been emitted from the generalized source revision.
+loader/build change at that checkpoint. Its own four Windows preflights
+passed but no full module had then been emitted from that revision.
+The later [Linux CPU-only result](preview/README.md#four-selected-modules-emitted-on-linux)
+emitted all four from exact clean `6c795db` with checked outputs/manifests
+and zero reported network calls. Consumer-set validation, browser bundling,
+rendered interactions, pin review, native and GPU gates remain open.
+The [versioned four-cache verifier](cache-set/README.md) and
+[cache-only browser loader](browser-loader/README.md) now pass synthetic
+consistency, tamper/path/runtime negatives, and a real Bun two-Worker bundle
+using synthetic selected JS. The real bundle entrypoint pins all four raw
+Linux manifest/output digests and their paths to the independent host report.
+It has not yet consumed the Linux files or run a browser; the 2.0.27
+production builder and prepared-ground path remain unchanged.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`

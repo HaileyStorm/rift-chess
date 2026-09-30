@@ -1759,6 +1759,17 @@ production cache loader and whole browser build still use the 2.0.27 pin.
 The clean `dcfeeed` source passed all four source-only 2.0.32 preflights and
 invalid-selection controls; Windows had less than the 2.5-GiB free-RAM floor,
 so no full-module emission was attempted.
+The subsequent [Linux CPU-only four-module result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5901345715)
+emitted same-source `6c795db` menu/controller/scene/chrome selected caches
+sequentially with checked final manifests, zero reported network calls and
+no retained live Worker/lock. Chrome peaked at 9,059,724 KiB RSS. The
+consumer cache-set gate and a real 2.0.32 browser build/playtest remain open.
+The separately versioned four-cache verifier now passes synthetic positive,
+binding/tamper and path controls; its real-bundle caller pins the four raw
+Linux receipt digests independently. A real Bun build of the current Worker
+and sprite-helper entrypoints passes with **synthetic** selected JS only.
+Actual Linux-cache bundling, served interaction and production build wiring
+are not yet verified; canonical 2.0.27 remains untouched.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

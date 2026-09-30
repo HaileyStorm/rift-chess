@@ -133,8 +133,8 @@ export order, derived compiler EOL, and result bytes independently. `chrome`
 is a diagnostic cache target; the current `worker-v2.ts` consumes controller,
 scene, and MenuAA rather than `ChromeRaster`.
 
-This source change has not emitted a full controller, scene, chrome or menu
-module under 2.0.32. Preflight and source-only checks are distinct from
+At the initial Windows checkpoint this source change had not emitted any
+full module under 2.0.32. Preflight and source-only checks are distinct from
 emission, production cache wiring, a rendered interaction matrix, GPU/native
 performance, frozen proofs, a pin amendment, and owner visual acceptance.
 
@@ -146,3 +146,37 @@ argument forms exited nonzero. The lifecycle and exact LF/CRLF compiler
 fixture tests also passed. Free physical RAM was 2,504,196,096 bytes at the
 follow-up check, below the 2.5-GiB admission floor; no Worker or full-module
 cache was launched on Windows.
+
+## Four selected modules emitted on Linux
+
+The [single sequential CPU-only Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5901345715)
+binds clean generalized source `6c795db32c7cf5d9abb432b1235fd51e9b417ae4`
+(tree `6db022c0e5d8e80bb10d4072165373bc95fa6ba1`), exact LF
+001→002→005→phase2 004 derived compiler, clean pristine 2.0.32 scout and
+unchanged 2.0.27 canonical pin. Exact EOL fixture and four source-only
+preflights passed before one Worker per module. The host reports each Worker
+exit 0, final bytes/manifest checked, zero network calls, no leftover
+pending manifest/lock/live Worker, and at least 88 GiB physical free at
+each admission.
+
+| Module | JS bytes | JS SHA-256 | Manifest SHA-256 | Peak RSS KiB |
+| --- | ---: | --- | --- | ---: |
+| menu | 214,509 | `a7d33ce2b2a8aa0ebbb520896b527a3d7161d47974cb9bb45259ce8c55da1506` | `b40330a3bd427a73b79055c8ec0da5c191135197704645e298f3be5a246e405f` | 2,622,892 |
+| controller | 631,152 | `1cf9558d288f7b42b756202b9a033e25c89759ad54f439329eb74ac030ec6532` | `6ef31933673cd7644d355172b90b73b21c07b4699ad7092ad71c997714c852c5` | 2,961,616 |
+| scene | 340,729 | `ac2fd2a75e6e56d42e8cbc39aafcf1fc3f6ca1d26eb4777cc2373c96301e14b5` | `62abf36933329080dd4f2ee282b3451155efdd2e9e7fb779de3bc3d0dbf10e88` | 432,736 |
+| chrome | 437,150 | `a029723ac363d7a35b6e051f805c510193b29925439ac1b94459f78481c4632b` | `893ce07fd2420ae2edc895f87c62fb2096f7f974560ff29c8a3d0de697a045b2` | 9,059,724 |
+
+Consolidated host-local receipt SHA-256 is
+`5894405e88a725830d6ed81cdd22b6d63a197941f1325a737ff8b27e32879e26`.
+These four same-source outputs are codegen evidence, not a verified
+four-cache consumer set, bundled or rendered browser application, GPU/native
+run, proof verdict, pin amendment, publication or owner acceptance. Exact
+retained paths and file availability were subsequently [read back without a
+new run](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5901585228):
+all four manifests/JS outputs remain ordinary files with the hashes above
+under that host's ignored `.artifacts/bend2/2032-preview/` workspace. The
+four exact manifest paths are menu `menu-2026-09-29T23-54-01-009Z-491494`,
+controller `controller-2026-09-29T23-55-21-546Z-495026`, scene
+`scene-2026-09-29T23-55-46-420Z-496191`, and chrome
+`chrome-2026-09-29T23-56-10-836Z-497629`, each with its matching
+`<module>.manifest.json` in that directory. Nothing was copied to Windows.
