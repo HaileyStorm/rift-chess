@@ -50,8 +50,8 @@ const actualImports = [...fs.readFileSync(checkPath, 'utf8')
   .matchAll(/^import \.\/([^ ]+) as /gm)].map((match) => match[1]).sort();
 assert.deepEqual(actualImports, expectedImports,
   'frozen CHECK entry differs from the exact declarations/witness/API set');
-const stages = ['module-init', 'binding', 'load', 'typecheck', 'promise-screen',
-  'closure', 'post-binding', 'result'];
+const stages = ['module-init', 'binding', 'load', 'typecheck', 'closure',
+  'namespace-guard', 'promise-screen', 'post-binding', 'result'];
 
 function binding() {
   const frozen = verifyV2();
@@ -141,15 +141,28 @@ if (!isMainThread) {
     assert.equal(book.hols, 0, 'aggregate CHECK has unfilled laws or TODOs');
     assert.equal(Object.hasOwn(book, 'open'), false,
       '2.0.32 Book hole shape drifted');
-    mark('promise-screen');
-    const verdict = proofVerdict(Bend, { ...book, open: 0 });
-    assert.equal(fetches, 0);
     mark('closure');
     const closure = loadedClosure(seen, before);
     assert.equal(closure.find((file) => file.path === 'bend2/core/v2/CHECK.bend')?.sha256,
       before.frozenFiles['bend2/core/v2/CHECK.bend']);
     assert.equal(closure.find((file) => file.path === '<derived>/bend2/base.bend')?.sha256,
       before.compilerBase.sha256);
+    mark('namespace-guard');
+    const Comp = await import(pathToFileURL(path.join(derived, 'bend2/comp.ts')).href);
+    const originalOrder = book.order;
+    const view = { ...book, order: [] };
+    assert.strictEqual(view.tlds, book.tlds);
+    assert.strictEqual(view.ctrs, book.ctrs);
+    assert.equal(view.order.length, 0);
+    // 2.0.32 file_book invokes its private book_owned on the *full* tlds/ctrs
+    // before traversing roots. An empty export set avoids compiling any def.
+    const fixedRuntime = Comp.js_lib(view, true);
+    assert.ok(typeof fixedRuntime === 'string' && fixedRuntime.length > 0);
+    assert.strictEqual(book.order, originalOrder);
+    assert.equal(view.order.length, 0);
+    mark('promise-screen');
+    const verdict = proofVerdict(Bend, { ...book, open: 0 });
+    assert.equal(fetches, 0);
     mark('post-binding');
     assert.deepEqual(binding(), before, 'source/compiler binding changed during CHECK');
     mark('result');
@@ -158,7 +171,8 @@ if (!isMainThread) {
       frozenSha256: before.frozenSha256, compilerEol: before.compilerEol.eol,
       loadedFiles: closure.length, definitions: book.order.length, owned: verdict.own.length,
       holes: book.hols, fetches, timingsMs,
-      scope: 'aggregate frozen CHECK source/type/promise screen only; no BendTT kernel, mutation, conformance, native, browser, GPU or pin acceptance' });
+      namespaceGuard: 'successor 2.0.32 compiler-owned guard via empty-root js_lib; no definition emission',
+      scope: 'aggregate frozen CHECK source/type/namespace/promise screen only; no BendTT kernel, mutation, conformance, native, browser, GPU or pin acceptance' });
   } catch (error) {
     const detail = error?.$ === 'Err' && Bend ? Bend.err_show(error)
       : error?.message ?? String(error);

@@ -1689,9 +1689,12 @@ The [separate aggregate CHECK source diagnostic](core/v3/2032/README.md#separate
 now has a bounded single-Worker candidate with complete frozen import-cone
 matching, exact compiler/source binding, a host-local exclusive liveness lease,
 and conservative Linux cgroup admission. Its clean-source preflight and
-synthetic negatives are pending after commit; no aggregate Worker, BendTT,
-mutation, or checker-parity verdict is claimed. The old compiler-owned
-namespace guard is not exported by 2.0.32 and remains a separate parity gap.
+synthetic negatives passed at `cb08193`; no aggregate Worker, BendTT,
+mutation, or complete checker-parity verdict is claimed. A further candidate
+exercises 2.0.32's successor compiler-owned namespace guard via an empty-root
+public `js_lib` path, with exact-byte and collision controls pending its own
+clean-source test. This is not the old guard's identical reserved-name set or
+a full JS build.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/

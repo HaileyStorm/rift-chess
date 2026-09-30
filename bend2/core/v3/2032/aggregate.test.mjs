@@ -4,12 +4,13 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { verifyV2 } from '../../../tools/freeze-v2.mjs';
 import { assertExactLoadedClosure, effectiveFreeBytes, expectedCheckClosure,
   runLeasedWorker } from './aggregate-safety.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+process.env.BEND_NO_TELEMETRY = '1';
 const script = path.join(root, 'bend2/core/v3/2032/aggregate.mjs');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const frozen = verifyV2();
@@ -21,6 +22,20 @@ assert.throws(() => assertExactLoadedClosure(expected, expected.filter((name) =>
   !name.endsWith('CanonicalLaws.bend'))), /complete frozen CHECK import cone/);
 assert.throws(() => assertExactLoadedClosure(expected, [...expected, 'extra.bend']),
   /complete frozen CHECK import cone/);
+const compilerDir = path.join(root, '.artifacts/bend2/toolchain-patches/derived-2032/bend2');
+const Bend = await import(pathToFileURL(path.join(compilerDir, 'bend.ts')).href);
+const Comp = await import(pathToFileURL(path.join(compilerDir, 'comp.ts')).href);
+const empty = Bend.book_nil();
+assert.ok(Comp.js_lib({ ...empty, order: [] }, true).length > 0);
+const ownedCollision = Bend.book_nil();
+ownedCollision.tlds.IO = { b: false };
+assert.throws(() => Comp.js_lib({ ...ownedCollision, order: [] }, true),
+  /name the compiler encodes itself/);
+const foreignCollision = Bend.book_nil();
+foreignCollision.tlds.X = { $: 'Def', i: [], b: false };
+foreignCollision.ctrs.X = {};
+assert.throws(() => Comp.js_lib({ ...foreignCollision, order: [] }, true),
+  /names both a constructor and a foreign def/);
 assert.equal(effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
   read: (file) => file.endsWith('memory.max') ? '30000\n' : '25000\n' }), 5_000);
 assert.throws(() => effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
@@ -81,5 +96,6 @@ console.log(JSON.stringify({ schema: 'rift-v2-aggregate-2032-preflight-test/1',
   frozenSha256: receipt.frozenSha256, compilerEol: receipt.compilerEol.eol,
   scriptSha256: receipt.scriptSha256, controls: ['complete-closure',
     'omitted-law', 'unexpected-source', 'cgroup-limit', 'lease-uncertain-exit',
-    'exclusive-admission', 'invalid-cli', 'exact-read-only-preflight'],
+    'exclusive-admission', 'successor-owned-name', 'foreign-constructor-collision',
+    'invalid-cli', 'exact-read-only-preflight'],
   scope: 'source/patch/runtime binding only; aggregate Worker and BendTT not run' }));

@@ -158,11 +158,15 @@ LF/CRLF compiler and Base bytes, patch hashes, helper/runtime identity and
 the complete expected transitive import cone before checking; the compiler's
 actual loaded paths and their hashes are compared after checking. It reports
 stage-attributed resource stops and rejects TODO/open, reachable unsafe and
-foreign promises. The old 2.0.27 compiler-owned namespace guard is private in
-2.0.32 and is not reached here; this is not full checker parity.
+foreign promises. It reaches 2.0.32's private compiler-owned namespace guard
+through `Comp.js_lib` with a view retaining all checked declarations and an
+empty export order. This produces only the fixed runtime, not a definition
+build; its reserved-name set is not identical to the old 2.0.27 guard, and
+this is not full checker parity.
 The source-only `--preflight-only` mode launches no Worker; run
 `node bend2/core/v3/2032/aggregate.test.mjs` on a clean checkout for exact
-closure/omission, cgroup-v2 admission, exclusive lease, invalid-CLI and
+closure/omission, owned-name/foreign-constructor collisions, cgroup-v2
+admission, exclusive lease, invalid-CLI and
 read-only preflight controls.
 
 An actual aggregate attempt requires reviewed Node 24 without inherited Node
