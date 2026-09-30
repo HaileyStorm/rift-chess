@@ -75,6 +75,11 @@ assert.ok(receipt.cases.every(c => c.target.startsWith('bend2/core/v2/') &&
   c.loadedFiles > 1 && /^[a-f0-9]{64}$/.test(c.mutatedSha256)));
 assert.equal(receipt.patchHashes.length, 4);
 assert.equal(receipt.runtime.executableSha256, sha(fs.readFileSync(process.execPath)));
+assert.equal(receipt.runtimeProbe.emptyRootNamespaceGuard, true);
+assert.equal(receipt.runtimeProbe.ownedNameRejected, true);
+assert.equal(receipt.runtimeProbe.foreignConstructorRejected, true);
+assert.equal(receipt.runtimeProbe.fetches, 0);
+assert.deepEqual(receipt.runtimeProbe.tsImports, ['bend.ts', 'comp.ts']);
 assert.match(receipt.scope, /no mutation Worker or BendTT/);
 console.log(JSON.stringify({ schema: 'rift-v2-mutations-2032-preflight-test/1',
   passed: true, sourceCommit: receipt.sourceCommit,
@@ -82,5 +87,5 @@ console.log(JSON.stringify({ schema: 'rift-v2-mutations-2032-preflight-test/1',
   controls: ['specific-type-mismatch', 'load-error-not-a-rejection',
     'missing-mismatch-not-a-rejection', 'wrapped-uncertain-exit-lease',
     'exclusive-admission', 'invalid-options', 'frozen-six-case-cones',
-    'read-only-preflight'],
+    'ts-import-probe', 'read-only-preflight'],
   scope: 'source/compiler/anchor binding only; mutation Workers and BendTT not run' }));

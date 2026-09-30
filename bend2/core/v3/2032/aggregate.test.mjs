@@ -6,13 +6,25 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { verifyV2 } from '../../../tools/freeze-v2.mjs';
-import { assertExactLoadedClosure, effectiveFreeBytes, expectedCheckClosure,
-  runLeasedWorker } from './aggregate-safety.mjs';
+import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
+  expectedCheckClosure, runLeasedWorker } from './aggregate-safety.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 process.env.BEND_NO_TELEMETRY = '1';
 const script = path.join(root, 'bend2/core/v3/2032/aggregate.mjs');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+assertProofNodeRuntime({ version: 'v22.23.1', platform: 'linux',
+  execArgv: [], nodeOptions: '' });
+assertProofNodeRuntime({ version: 'v24.12.0', platform: 'win32',
+  execArgv: [], nodeOptions: '' });
+assert.throws(() => assertProofNodeRuntime({ version: 'v22.23.1', platform: 'win32',
+  execArgv: [], nodeOptions: '' }), /unreviewed proof Node runtime/);
+assert.throws(() => assertProofNodeRuntime({ version: 'v24.12.0', platform: 'linux',
+  execArgv: [], nodeOptions: '' }), /unreviewed proof Node runtime/);
+assert.throws(() => assertProofNodeRuntime({ version: 'v24.12.0', platform: 'darwin',
+  execArgv: [], nodeOptions: '' }), /unreviewed proof Node runtime/);
+assert.throws(() => assertProofNodeRuntime({ version: 'v24.12.0', platform: 'win32',
+  execArgv: ['--import=unreviewed'], nodeOptions: '' }), /inherited Node flags/);
 const frozen = verifyV2();
 const expected = expectedCheckClosure(root, path.join(root, 'bend2/core/v2/CHECK.bend'),
   frozen.manifest.files, path.join(root, '.artifacts/bend2/toolchain-patches/derived-2032/bend2/base.bend'));
@@ -87,6 +99,11 @@ assert.equal(receipt.patches.length, 4);
 assert.equal(receipt.safetySha256, sha(fs.readFileSync(path.join(root,
   'bend2/core/v3/2032/aggregate-safety.mjs'))));
 assert.equal(receipt.expectedLoadedFiles, expected.length);
+assert.equal(receipt.runtimeProbe.emptyRootNamespaceGuard, true);
+assert.equal(receipt.runtimeProbe.ownedNameRejected, true);
+assert.equal(receipt.runtimeProbe.foreignConstructorRejected, true);
+assert.equal(receipt.runtimeProbe.fetches, 0);
+assert.deepEqual(receipt.runtimeProbe.tsImports, ['bend.ts', 'comp.ts']);
 assert.ok(['lf', 'crlf'].includes(receipt.compilerEol.eol));
 assert.equal(receipt.compilerBase.normalizedSha256,
   '485705690d8927389bd156f18e42653176a5e139afe363a7e9bc217eb6f5e716');
@@ -97,5 +114,6 @@ console.log(JSON.stringify({ schema: 'rift-v2-aggregate-2032-preflight-test/1',
   scriptSha256: receipt.scriptSha256, controls: ['complete-closure',
     'omitted-law', 'unexpected-source', 'cgroup-limit', 'lease-uncertain-exit',
     'exclusive-admission', 'successor-owned-name', 'foreign-constructor-collision',
-    'invalid-cli', 'exact-read-only-preflight'],
+    'node22-qualification', 'ts-import-probe', 'invalid-cli',
+    'exact-read-only-preflight'],
   scope: 'source/patch/runtime binding only; aggregate Worker and BendTT not run' }));

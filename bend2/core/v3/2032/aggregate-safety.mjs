@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { acquireOwnedLock, closeOwnedLock, releaseOwnedLock } from
   '../../../toolchain-patches/2032/preview/lifecycle.mjs';
 
@@ -75,4 +76,44 @@ export function effectiveFreeBytes({ platform = process.platform, hostFree,
       ? remaining : BigInt(available) : 0n);
   }
   return available;
+}
+
+export function assertProofNodeRuntime({ version = process.version,
+  platform = process.platform, execArgv = process.execArgv,
+  nodeOptions = process.env.NODE_OPTIONS ?? '' } = {}) {
+  assert.deepEqual(execArgv, [], 'proof Worker requires no inherited Node flags');
+  assert.equal(nodeOptions, '', 'proof Worker requires no NODE_OPTIONS');
+  assert.ok((platform === 'win32' && version === 'v24.12.0') ||
+    (platform === 'linux' && version === 'v22.23.1'),
+  `unreviewed proof Node runtime: ${version} on ${platform}`);
+}
+
+export async function probeProofNodeImports(derived) {
+  const previousFetch = globalThis.fetch;
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches++; throw Error('network denied in proof runtime probe'); };
+  try {
+    const Bend = await import(pathToFileURL(path.join(derived, 'bend2/bend.ts')).href);
+    const Comp = await import(pathToFileURL(path.join(derived, 'bend2/comp.ts')).href);
+    const book = Bend.book_nil();
+    const source = Comp.js_lib({ ...book, order: [] }, true);
+    assert.ok(typeof source === 'string' && source.length > 0);
+    assert.equal(book.order.length, 0);
+    const owned = Bend.book_nil();
+    owned.tlds.IO = { b: false };
+    assert.throws(() => Comp.js_lib({ ...owned, order: [] }, true),
+      /name the compiler encodes itself/);
+    const foreign = Bend.book_nil();
+    foreign.tlds.X = { $: 'Def', i: [], b: false };
+    foreign.ctrs.X = {};
+    assert.throws(() => Comp.js_lib({ ...foreign, order: [] }, true),
+      /names both a constructor and a foreign def/);
+    assert.equal(fetches, 0);
+    return { tsImports: ['bend.ts', 'comp.ts'], emptyRootNamespaceGuard: true,
+      ownedNameRejected: true, foreignConstructorRejected: true,
+      fixedRuntimeBytes: Buffer.byteLength(source), fetches,
+      scope: 'source-only runtime syntax and empty-root compiler guard; no CHECK, BendTT or mutation Worker' };
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
 }

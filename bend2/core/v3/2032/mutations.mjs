@@ -14,8 +14,8 @@ import { bindCompilerBaseEol, bindCompilerEol } from
   '../../../toolchain-patches/2032/preview/compiler-eol.mjs';
 import { finalizeOwnedManifest, settleWorker } from
   '../../../toolchain-patches/2032/preview/lifecycle.mjs';
-import { assertExactLoadedClosure, effectiveFreeBytes, expectedCheckClosure,
-  runLeasedWorker } from './aggregate-safety.mjs';
+import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
+  expectedCheckClosure, probeProofNodeImports, runLeasedWorker } from './aggregate-safety.mjs';
 import { typeMismatchEvidence } from './mutation-verdict.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
@@ -74,9 +74,7 @@ function binding() {
   assert.equal(git(scout, 'status', '--porcelain', '--untracked-files=all'), '');
   assert.equal(git(canonical, 'rev-parse', 'HEAD'), pin);
   assert.equal(git(canonical, 'status', '--porcelain', '--untracked-files=all'), '');
-  assert.deepEqual(process.execArgv, [], 'mutation Worker requires no inherited Node flags');
-  assert.equal(process.env.NODE_OPTIONS ?? '', '', 'mutation Worker requires no NODE_OPTIONS');
-  assert.match(process.version, /^v24\./, 'mutation Worker requires reviewed Node 24');
+  assertProofNodeRuntime();
   const compilerEol = bindCompilerEol(relative => fs.readFileSync(path.join(derived, relative)));
   const compilerBase = bindCompilerBaseEol(fs.readFileSync(base), compilerEol.eol);
   const pinnedFiles = [
@@ -213,6 +211,9 @@ if (!isMainThread) {
     'usage: mutations.mjs [--preflight-only | --only <frozen-case>]');
   const before = binding();
   const cones = Object.fromEntries(cases.map(spec => [spec.name, sourceCone(spec, before)]));
+  const runtimeProbe = await probeProofNodeImports(derived);
+  assert.deepEqual(binding(), before,
+    'source/compiler binding changed during mutation runtime probe');
   if (preflight) {
     console.log(JSON.stringify({ schema: 'rift-v2-mutations-2032-preflight/1', ok: true,
       sourceCommit: before.sourceCommit, sourceTree: before.sourceTree,
@@ -220,7 +221,7 @@ if (!isMainThread) {
       compilerBase: before.compilerBase, patchHashes: before.patchHashes,
       scriptSha256: before.scriptSha256, safetySha256: before.safetySha256,
       verdictSha256: before.verdictSha256,
-      runtime: before.runtime, cases: cases.map(c => ({ name: c.name,
+      runtime: before.runtime, runtimeProbe, cases: cases.map(c => ({ name: c.name,
         proof: c.proof, target: cones[c.name].target,
         loadedFiles: cones[c.name].expected.length + 1,
         mutatedSha256: cones[c.name].mutatedSha256 })),
@@ -332,6 +333,7 @@ if (!isMainThread) {
         safetySha256: before.safetySha256, verdictSha256: before.verdictSha256,
         compilerEol: before.compilerEol,
         compilerBase: before.compilerBase, patchHashes: before.patchHashes,
+        runtimeProbe,
         runtime: before.runtime, results,
         scope: 'derived 2.0.32 six frozen semantic mutations at source-type stage only; no aggregate CHECK, BendTT kernel, conformance, native/browser/GPU or pin amendment' };
       const bytes = Buffer.from(JSON.stringify(receipt, null, 2) + '\n');

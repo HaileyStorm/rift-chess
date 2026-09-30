@@ -1688,7 +1688,8 @@ or the 2.0.32 mutation gate.
 The [separate aggregate CHECK source diagnostic](core/v3/2032/README.md#separate-aggregate-check-migration-candidate)
 now has a bounded single-Worker candidate with complete frozen import-cone
 matching, exact compiler/source binding, a host-local exclusive liveness lease,
-and conservative Linux cgroup admission. Its clean-source preflight and
+and finite leaf-cgroup admission (hidden ancestor caps still require a separate
+host review before an 8-GiB Linux Worker). Its clean-source preflight and
 synthetic negatives passed at `cb08193`; no aggregate Worker, BendTT,
 mutation, or complete checker-parity verdict is claimed. A further candidate
 exercises 2.0.32's successor compiler-owned namespace guard via an empty-root
@@ -1702,6 +1703,11 @@ before one exact copied mutation, and counts only a subsequent Bend type
 mismatch after complete source loading; resource/load failures are not
 rejections. Its source-only preflight and first actual case remain pending,
 and it does not replace the frozen 2.0.27 suite or BendTT verdict.
+The Windows proof diagnostics use Node 24.12.0; the Linux host currently has
+Node 22.23.1. A conservative version-specific source-only `.ts` compiler
+import and empty-root namespace preflight is being carried into both 2.0.32
+runners, with exact executable SHA in their receipts. Linux preflight and
+Workers remain unverified; version support alone is not a proof result.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/

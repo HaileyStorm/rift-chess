@@ -13,8 +13,8 @@ import { proofVerdict } from '../proof-authority.mjs';
 import { bindCompilerEol, bindCompilerBaseEol } from
   '../../../toolchain-patches/2032/preview/compiler-eol.mjs';
 import { settleWorker } from '../../../toolchain-patches/2032/preview/lifecycle.mjs';
-import { assertExactLoadedClosure, effectiveFreeBytes, expectedCheckClosure,
-  runLeasedWorker } from './aggregate-safety.mjs';
+import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
+  expectedCheckClosure, probeProofNodeImports, runLeasedWorker } from './aggregate-safety.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -78,9 +78,7 @@ function binding() {
     '3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013');
   assert.equal(fileHash(path.join(root, 'bend2/toolchain-patches/2032/preview/lifecycle.mjs')),
     '91d8b5c325a48602d0d6860624ab0abf9d5428d374a12d85988cb866a732fbc8');
-  assert.deepEqual(process.execArgv, [], 'proof Worker requires no inherited Node flags');
-  assert.equal(process.env.NODE_OPTIONS ?? '', '', 'proof Worker requires no NODE_OPTIONS');
-  assert.match(process.version, /^v24\./, 'proof Worker requires reviewed Node 24');
+  assertProofNodeRuntime();
   const patches = patchSpecs.map(([relative, expected]) => {
     const actual = fileHash(path.join(root, relative));
     assert.equal(actual, expected, `patch stack changed: ${relative}`);
@@ -183,6 +181,9 @@ if (!isMainThread) {
     (process.argv.length === 3 && process.argv[2] === '--preflight-only'),
   'usage: aggregate.mjs [--preflight-only]');
   const before = binding();
+  const runtimeProbe = await probeProofNodeImports(derived);
+  assert.deepEqual(binding(), before,
+    'source/compiler binding changed during proof runtime probe');
   if (process.argv[2] === '--preflight-only') {
     console.log(JSON.stringify({ schema: 'rift-v2-aggregate-2032-preflight/1', ok: true,
       sourceCommit: before.sourceCommit, sourceTree: before.sourceTree,
@@ -190,6 +191,7 @@ if (!isMainThread) {
       compilerBase: before.compilerBase, patches: before.patches,
       scriptSha256: before.scriptSha256, safetySha256: before.safetySha256,
       expectedLoadedFiles: before.expectedLoadedPaths.length, runtime: before.runtime,
+      runtimeProbe,
       scope: 'read-only aggregate CHECK binding; no Worker, proof or pin verdict' }));
     process.exit(0);
   }
@@ -242,6 +244,7 @@ if (!isMainThread) {
     patches: before.patches, scriptSha256: before.scriptSha256,
     safetySha256: before.safetySha256,
     expectedLoadedFiles: before.expectedLoadedPaths.length,
-    runtime: before.runtime, workerHeapMiB, workerStackMiB, workerTimeoutMs,
+    runtime: before.runtime, runtimeProbe,
+    workerHeapMiB, workerStackMiB, workerTimeoutMs,
     freeBefore, scope: result.scope }));
 }
