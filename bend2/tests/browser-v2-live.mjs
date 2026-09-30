@@ -82,21 +82,37 @@ if (runtime.expectedVersion) assert.equal(browserVersion, runtime.expectedVersio
 context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await context.newPage();
 const errors = [];
+const requestFailures = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+page.on('crash', () => errors.push('page crashed'));
+page.on('requestfailed', request => requestFailures.push({
+  pathname: new URL(request.url()).pathname,
+  failure: request.failure()?.errorText ?? 'unknown',
+}));
 await page.addInitScript(() => {
   const NativeWorker = window.Worker;
   window.__frames = [];
   window.__events = [];
   window.__refinements = [];
+  window.__workerSignals = [];
   window.addEventListener('rift-bend-sprite-refined', event =>
     window.__refinements.push({ at: performance.now(), metrics: event.detail }));
   window.Worker = class extends NativeWorker {
     requests = new Map();
     constructor(...args) {
       super(...args);
+      window.__workerSignals.push({ kind: 'constructed' });
+      this.addEventListener('error', event => window.__workerSignals.push({
+        kind: 'error', message: String(event.message).slice(0, 500),
+      }));
+      this.addEventListener('messageerror', () => window.__workerSignals.push({ kind: 'messageerror' }));
       this.addEventListener('message', event => {
         const message = event.data;
+        if (['ready', 'fault', 'frame'].includes(message?.kind)) window.__workerSignals.push({
+          kind: message.kind, id: message.id ?? null,
+          ...(message.kind === 'fault' ? { message: String(message.message).slice(0, 500) } : {}),
+        });
         if (message.kind !== 'frame') return;
         const request = this.requests.get(message.id);
         window.__frames.push({ id: message.id, renderMs: message.renderMs,
@@ -151,7 +167,30 @@ async function squarePoint(file, rank, piece = false) {
     shown.plan.board.y + y * shown.plan.scale);
 }
   await page.goto(url, { waitUntil: 'networkidle' });
-  await settled();
+  try { await settled(); }
+  catch (error) {
+    const diagnostic = { schema: 'rift-bend-first-frame-failure/1', buildBinding,
+      browserVersion, errors: errors.slice(-16), requestFailures: requestFailures.slice(-16) };
+    try {
+      diagnostic.page = await page.evaluate(() => {
+        const canvas = document.querySelector('canvas');
+        return { canvas: canvas ? { ready: canvas.dataset.ready ?? null,
+          busy: canvas.getAttribute('aria-busy'), frame: canvas.dataset.frame ?? null,
+          width: canvas.width, height: canvas.height, presentationMode: canvas.dataset.presentationMode ?? null,
+        } : null, status: document.querySelector('[role="status"]')?.textContent?.slice(0, 500) ?? null,
+        shown: !!window.__shown, frames: window.__frames?.length ?? null,
+        events: window.__events?.length ?? null, workerSignals: window.__workerSignals?.slice(-16) ?? null };
+      });
+    } catch (diagnosticError) { diagnostic.pageError = String(diagnosticError).slice(0, 500); }
+    try {
+      await page.screenshot({ path: `${artifact}/first-frame-failure.png`, timeout: 10000 });
+      diagnostic.screenshot = 'first-frame-failure.png';
+    } catch (screenshotError) { diagnostic.screenshotError = String(screenshotError).slice(0, 500); }
+    try { fs.writeFileSync(`${artifact}/first-frame-failure.json`, `${JSON.stringify(diagnostic)}\n`, { flag: 'wx' }); }
+    catch (writeError) { diagnostic.writeError = String(writeError).slice(0, 500); }
+    console.error(JSON.stringify(diagnostic));
+    throw error;
+  }
   await page.waitForFunction(() => document.querySelector('canvas')?.dataset.spriteRoundTripMs,
     null, { timeout: 30000 });
   const initial = await page.locator('canvas').evaluate(canvas => ({ width: canvas.width,

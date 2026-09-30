@@ -1819,6 +1819,10 @@ wait. It produced no rendered screenshot or interaction result. The Playwright
 1.63/Chromium 140 pairing is outside that package's expected Chromium revision;
 the first-frame cause remains unclassified pending bounded browser/Worker
 diagnostics. No browser acceptance follows from this launch.
+The test now preserves a bounded first-frame failure snapshot (canvas/Worker
+signals, page errors, failed requests, and a screenshot when obtainable) in a
+fresh ignored run directory while retaining the original timeout. Its syntax
+and runtime-selection unit gate pass; it has not yet been replayed on Linux.
 The pinned production builder and published app remain unchanged.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
