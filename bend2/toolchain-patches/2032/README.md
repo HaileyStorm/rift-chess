@@ -10,7 +10,7 @@ older versioned 2.0.27/2.0.28 patch receipts remain unchanged. The pristine
 | 001 | [Arity diagnostics](../001-arity/rebase-2032/README.md) | Rebased; bounded FID rejection, CID constructor boundary and successful-byte comparison passed. Extreme CID overflow is unproved. |
 | 002 | [Layout reporting](../002-layout/rebase-2032/README.md) | Rebased; exact layout, local-only direct denials and successful C/JS parity passed. Recursive import fence is combined with 005 below. |
 | 005 | [Windows imports/identity](../005-windows-import-path/rebase-2032/README.md) | Rebased; native nested paths, recursive denial, identity/cycle, junction, package assembly including foreign parent JS, and synthetic cross-volume gates passed on Windows. |
-| 004 | [Web Worker backend](../004-web-workers/rebase-2032/README.md) | Reviewed selected-root adapter and [parser/static planner](../004-web-workers/rebase-2032/phase2/README.md) pass bounded gates. A [coarse selected-root runtime](../004-web-workers/rebase-2032/phase3/README.md) dispatches through Bun's Node Worker compatibility, with policy and cleanup negatives. The original per-call scheduler/browser backend is **not rebased**; old 107-test receipt cannot transfer. |
+| 004 | [Web Worker backend](../004-web-workers/rebase-2032/README.md) | Parser/static planner, coarse selected-root Node/Bun and browser runtimes, and a [strict one-call `U32` compiler-emitted browser slice](../004-web-workers/rebase-2032/phase5-percall/README.md) pass separate bounded gates. Full scheduling, eligibility, 107-test matrix and game integration are **not rebased**; old receipts cannot transfer. |
 | 006 | Alias equality | 2.0.32 already has the alias-shadow distinction; do not replay 2.0.28's corrective patch. Retain its historical receipt. |
 | 003 | Join-capture boxing | Experimental and not in the reviewed main stack; no silent inclusion. |
 
@@ -96,11 +96,14 @@ At that initial checkpoint it had not consumed the Linux files. The later
 [real-cache Worker bundle](browser-loader/README.md) on Linux succeeded with
 two byte-bound JS outputs; no browser was served or played. The 2.0.27
 production builder and prepared-ground path remain unchanged.
-The [separate local static-preview packer](browser-preview/README.md) now
-passes 21 synthetic path, manifest, asset and revision assertions. It is
-designed to consume the Linux bundle through an independently supplied raw
-manifest SHA-256 and package host/assets without touching `build.ts` or
-publishing; it has not yet run on that real Linux artifact or served a page.
+The [separate local static-preview packer](browser-preview/README.md) passes
+synthetic path, manifest, asset and revision assertions. It consumed the real
+Linux bundle and produced a byte-bound 16-file static package without touching
+`build.ts` or publishing. A cached Chromium 140 browser smoke navigated that
+package but timed out before the first ready frame; a later diagnostic attempt
+stopped at an isolated-checkout unit-test dependency before launch. The
+source-only test dependency has been removed, but a new Linux rendered result
+is pending. No browser acceptance is established.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`
@@ -110,6 +113,31 @@ not an independent browser scheduler negative. Its source, patches and
 generated modules are hash-bound, with zero outside requests and exact
 temporary-output cleanup. This is not a production browser build or the
 complete 004/107-case acceptance gate.
+The [phase-five per-call fixture](../004-web-workers/rebase-2032/phase5-percall/README.md)
+separately exercises an actual compiler-emitted required call in Chrome, with
+resumption, local `never`, protocol/timeout/termination negatives and late
+no-suffix C/JS byte parity. It supersedes phase four as the direction for a
+per-call backend, but does not make the coarse-root runtime or old 004 tests
+current-stack acceptance. Retain their receipts as stage provenance.
+
+## Active acceptance matrix
+
+| Evidence class | Current 2.0.32 gate | Acceptance still missing |
+| --- | --- | --- |
+| Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
+| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime and phase-five per-call fixture | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
+| Native | Six patched argv entries source-check; exact C emission/export | Linked 2.0.32 CPU binary and real argv/restart, GUI, PCM and GPU/device checks. |
+| Browser | Four selected caches, real bundle and static package; phase-five isolated browser Worker | First frame, hotseat/orbit/mobile, offline/package, production build and hosted/device evidence. |
+| Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
+
+Run source-only preflights as preflights, not acceptance substitutes. The
+historical [pre-phase-two selected-root fixture](../004-web-workers/rebase-2032/README.md)
+intentionally fails its compiler-byte guard on the current derived checkout;
+do not put it in the active final-stack run list. Individual shard runs are
+diagnostics for resource and source attribution, not an additional mandatory
+aggregate pass. Phase four and phase five test different implementations;
+carry useful browser-origin and cleanup controls into the eventual per-call
+matrix rather than counting both as interchangeable final gates.
 
 The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
 [five additional consumers](../native-cli-2032/consumers/README.md) remain

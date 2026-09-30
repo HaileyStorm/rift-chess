@@ -1872,3 +1872,7 @@ Independent review found no remaining blocking issue in this bounded slice.
 The pure-loop guard is defensive, not proved by a source-valid pure-loop case;
 full 004 eligibility/scheduling, its 107-case matrix, game integration and
 release gates remain open.
+The [2.0.32 acceptance matrix](toolchain-patches/2032/README.md#active-acceptance-matrix)
+separates active final-stack gates from historical stage receipts and source-only
+preflights; neither the older selected-root fixture nor individual shard
+diagnostics are a second full-stack acceptance gate.
