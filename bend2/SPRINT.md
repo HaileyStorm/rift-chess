@@ -1822,7 +1822,14 @@ diagnostics. No browser acceptance follows from this launch.
 The test now preserves a bounded first-frame failure snapshot (canvas/Worker
 signals, page errors, failed requests, and a screenshot when obtainable) in a
 fresh ignored run directory while retaining the original timeout. Its syntax
-and runtime-selection unit gate pass; it has not yet been replayed on Linux.
+and runtime-selection unit gate passed on Windows. A fresh [Linux attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5917952802)
+stopped before launch because that unit gate's default branch imported
+project-local Playwright from an isolated checkout without `node_modules`.
+This was a test dependency, not a diagnosis of the canvas timeout. The gate
+now tests the default route through an injected source-only loader and the
+explicit byte-binding route through a unique synthetic local package/core
+fixture. The live path still loads only an exact pinned real package; Linux
+browser diagnostics remain unrun pending a new immutable host request.
 The pinned production builder and published app remain unchanged.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,

@@ -60,7 +60,10 @@ export function packageTreeBinding(directory, expectedSha256, label) {
 // The default remains the established project-local Playwright + Chrome test.
 // A host-local cached alternative must be explicitly supplied and byte-bound;
 // it does not install or copy dependencies from another project.
-export async function browserV2Runtime(env = process.env) {
+// The optional default loader is a source-only unit-test seam. The live caller
+// supplies no override and still imports the project's Playwright dependency.
+export async function browserV2Runtime(env = process.env,
+  loadDefault = () => import('playwright')) {
   const keys = ['BEND_LIVE_PLAYWRIGHT_ENTRY', 'BEND_LIVE_PLAYWRIGHT_SHA256',
     'BEND_LIVE_PLAYWRIGHT_PACKAGE_SHA256', 'BEND_LIVE_PLAYWRIGHT_TREE_SHA256',
     'BEND_LIVE_PLAYWRIGHT_CORE_DIR', 'BEND_LIVE_PLAYWRIGHT_CORE_TREE_SHA256',
@@ -68,7 +71,7 @@ export async function browserV2Runtime(env = process.env) {
     'BEND_LIVE_BROWSER_VERSION'];
   const supplied = keys.filter(key => env[key] !== undefined && env[key] !== '');
   if (supplied.length === 0) {
-    const { chromium } = await import('playwright');
+    const { chromium } = await loadDefault();
     return { chromium, launch: { channel: 'chrome' },
       provenance: { mode: 'project-local-playwright-system-chrome' } };
   }

@@ -3,23 +3,32 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { browserV2Runtime, packageTreeSnapshot } from './browser-v2-runtime.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-const entry = path.join(root, 'node_modules/playwright/index.mjs');
-const pkg = path.join(root, 'node_modules/playwright/package.json');
-const packageRoot = path.dirname(entry);
-const coreRoot = path.join(path.dirname(packageRoot), 'playwright-core');
-const fallback = await browserV2Runtime({});
+let defaultImports = 0;
+const fallback = await browserV2Runtime({}, async () => {
+  defaultImports++;
+  return { chromium: { launch() {} } };
+});
 assert.equal(fallback.launch.channel, 'chrome');
 assert.equal(typeof fallback.chromium.launch, 'function');
-await assert.rejects(browserV2Runtime({ BEND_LIVE_PLAYWRIGHT_ENTRY: entry }),
-  /all 9 exact inputs/);
+assert.equal(defaultImports, 1);
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'rift-browser-runtime-'));
+const packageRoot = path.join(fixture, 'playwright');
+const coreRoot = path.join(fixture, 'playwright-core');
+const entry = path.join(packageRoot, 'index.mjs');
+const pkg = path.join(packageRoot, 'package.json');
+const corePkg = path.join(coreRoot, 'package.json');
 const browser = path.join(fixture, 'chromium');
 try {
+  await assert.rejects(browserV2Runtime({ BEND_LIVE_PLAYWRIGHT_ENTRY: entry }),
+    /all 9 exact inputs/);
+  fs.mkdirSync(packageRoot);
+  fs.mkdirSync(coreRoot);
+  fs.writeFileSync(entry, 'export const chromium = { launch() {} };\n', { flag: 'wx' });
+  fs.writeFileSync(pkg, '{"name":"playwright","version":"1.63.0","type":"module"}\n', { flag: 'wx' });
+  fs.writeFileSync(corePkg, '{"name":"playwright-core","version":"1.63.0"}\n', { flag: 'wx' });
   fs.writeFileSync(browser, 'owned synthetic executable bytes', { flag: 'wx' });
   if (process.platform === 'linux') fs.chmodSync(browser, 0o755);
   const env = {
@@ -33,7 +42,9 @@ try {
     BEND_LIVE_BROWSER_SHA256: sha(fs.readFileSync(browser)),
     BEND_LIVE_BROWSER_VERSION: '140.0.7339.16',
   };
-  const explicit = await browserV2Runtime(env);
+  const explicit = await browserV2Runtime(env, () => {
+    throw new Error('explicit mode must not load project-local Playwright');
+  });
   assert.equal(explicit.launch.executablePath, browser);
   assert.equal(explicit.expectedVersion, env.BEND_LIVE_BROWSER_VERSION);
   assert.equal(explicit.provenance.playwrightVersion, '1.63.0');
@@ -47,11 +58,12 @@ try {
   await assert.rejects(browserV2Runtime({ ...env, BEND_LIVE_BROWSER_VERSION: 'unknown' }),
     /exact dotted version/);
 } finally {
-  fs.unlinkSync(browser);
+  for (const file of [browser, entry, pkg, corePkg]) if (fs.existsSync(file)) fs.unlinkSync(file);
+  for (const directory of [packageRoot, coreRoot]) if (fs.existsSync(directory)) fs.rmdirSync(directory);
   fs.rmdirSync(fixture);
 }
 console.log(JSON.stringify({ schema: 'rift-bend-browser-v2-runtime-tests/1', passed: true,
-  controls: ['unchanged-default', 'all-nine-required', 'explicit-read-only-module',
+  controls: ['default-loader-shape', 'all-nine-required', 'synthetic-read-only-module',
     'executable-byte-tamper', 'package-byte-tamper', 'core-tree-tamper',
     'browser-version-shape'],
   scope: 'module selection and byte binding only; no browser launched or page rendered' }));
