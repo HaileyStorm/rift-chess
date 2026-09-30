@@ -181,3 +181,34 @@ A pass would prove only this derived compiler's source/type/promise screening
 of the complete frozen entry; it would not invoke the BendTT kernel, six
 semantic mutations, conformance, native/browser/GPU, or authorize a
 toolchain-pin amendment.
+
+## Separate six-case semantic mutation source screen
+
+`mutations.mjs` carries the six *unchanged* frozen v2 mutation anchors into
+the exact 2.0.32 derived compiler without altering `mutate-v2.mjs` or any
+Law. `--preflight-only` checks the frozen source, anchors, target transitive
+cones, patch/compiler bytes and Node runtime without copying files or starting
+a Worker. `--only <case>` selects one diagnostic; without an option all six
+run sequentially. Each case copies its frozen source cone into a unique ignored
+directory, checks the unmutated proof first, changes one copied target, then
+requires a Bend type mismatch after a successful load and exact closure check.
+The positive also checks zero holes, the successor compiler namespace guard,
+and reachable unsafe/foreign promises. A parse/load, network, resource, or
+liveness failure is not a semantic rejection. Each Worker exit must be
+observed; an uncertain exit preserves the host-local exclusive lease. The
+final receipt is written last and only after source rebinding. Do not reclaim
+a retained lease by elapsed time or PID guesswork. A Worker/check failure
+attempts a separate non-acceptance `positive.failure.json` or
+`negative.failure.json` with stage, elapsed time and observed/uncertain exit
+classification; copy/setup/final-receipt failures instead retain partial
+outputs and terminal diagnostics. A failed evidence write is surfaced in the
+terminal error.
+
+On a clean checkout, run `node bend2/core/v3/2032/mutations.mjs --preflight-only`
+first. The source runner requires Node 24 without inherited flags and at least
+4 GiB effective free RAM before each 512-MiB or 1-GiB Worker; Linux additionally
+requires a finite readable cgroup-v2 memory limit. The 2.0.27 mutation suite
+and its historical receipt remain the canonical frozen gate. A 2.0.32 source
+mutation pass would still not prove aggregate CHECK, BendTT kernel rejection,
+conformance, browser/native/GPU, or permit a pin amendment. No mutation Worker
+has run under this new runner yet.

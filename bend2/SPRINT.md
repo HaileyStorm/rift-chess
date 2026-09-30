@@ -1695,6 +1695,13 @@ exercises 2.0.32's successor compiler-owned namespace guard via an empty-root
 public `js_lib` path, with exact-byte and collision controls pending its own
 clean-source test. This is not the old guard's identical reserved-name set or
 a full JS build.
+The [separate 2.0.32 six-mutation source-screen candidate](core/v3/2032/README.md#separate-six-case-semantic-mutation-source-screen)
+preserves the frozen anchors and copies each transitive proof cone into an
+ignored case directory. It requires a positive type/namespace/promise screen
+before one exact copied mutation, and counts only a subsequent Bend type
+mismatch after complete source loading; resource/load failures are not
+rejections. Its source-only preflight and first actual case remain pending,
+and it does not replace the frozen 2.0.27 suite or BendTT verdict.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/
