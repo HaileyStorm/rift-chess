@@ -1822,14 +1822,18 @@ Independent review caught zero-argument policy loss and exponential diamond
 path expansion; both were repaired and a mixed normal/`never` diamond now
 retains its separate requirement and conflict. This does not emit a worker,
 run browser Worker tests, establish full worker eligibility, or move the pin.
-The [004 phase-three Node Worker slice](toolchain-patches/004-web-workers/rebase-2032/phase3/README.md)
-now passes a real selected-root Worker call under Bun's Node compatibility,
+The [004 phase-three selected-root Worker slice](toolchain-patches/004-web-workers/rebase-2032/phase3/README.md)
+now passes real selected-root Worker calls independently under exact Windows
+Bun 1.4.2 and Node v24.12.0 runtimes,
 `require`/`never` routing and visible optional fallback, pre-Worker rejection
 of blocked requirements, and cancellation/timeout/cleanup negatives.
 Independent review caught unhandled termination rejection and insufficient
 temporary-directory identity checks; the repaired tests cover both plus
-worker/parent fetch denial. This is not independent Node or browser Worker
-execution, the original per-call scheduler, `@N`/native-`!` runtime semantics,
+worker/parent fetch denial. Node and Bun emit different raw JS bytes because
+the compiler splices their runtime-specific `Bend.f32_round` function text;
+the test retains distinct SHA-256 pins and the same C byte pin, without
+claiming universal cross-runtime semantics. This is not the original per-call
+scheduler, `@N`/native-`!` runtime semantics,
 107-case worker acceptance, or a pin amendment.
 The [004 phase-four browser slice](toolchain-patches/004-web-workers/rebase-2032/phase4-browser/README.md)
 passed in system Chrome 154.0.8037.58 against the exact derived

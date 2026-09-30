@@ -5,7 +5,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker as NodeWorker } from 'node:worker_threads';
-import { invokeSelected } from './runtime.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
 let networkCalls = 0;
@@ -17,15 +16,47 @@ globalThis.fetch = async () => {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../../../../..');
 const derived = path.join(repo, '.artifacts/bend2/toolchain-patches/derived-2032');
+const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const host = process.versions.bun ? {
+  name: 'Bun', version: 'v26.3.0', bunVersion: '1.4.2',
+  executableSha256: '15277c59ccd6c6c20f8dc9716c2b59c1776320d606b6a8658f70be8799519ca4',
+  syncJsSha256: 'efe64dca089a1922152144681e772e75c59807be07dc0ff892d2b3349a11a874',
+} : {
+  name: 'Node', version: 'v24.12.0',
+  executableSha256: '2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8',
+  syncJsSha256: '3c99dcd84414a057fce65edb45dd69d600e6b57bee49aec23e7333130a510a1d',
+};
+assert.equal(process.platform, 'win32', 'phase3 runtime receipt is Windows-bound');
+assert.equal(process.arch, 'x64');
+assert.equal(process.version, host.version);
+if (host.bunVersion) assert.equal(process.versions.bun, host.bunVersion);
+assert.equal(sha(fs.readFileSync(process.execPath)), host.executableSha256);
+assert.equal(fs.realpathSync(derived), derived, 'phase3 derived compiler root redirected');
+const inputHashes = new Map([
+  [path.join(derived, 'bend2/bend.ts'), '2def95c26e150c5a66a1a8ba3e5dd6ec5de3a8dd822627976f606a273b0cea88'],
+  [path.join(derived, 'bend2/comp.ts'), '4f420f4a9b9efadfb5708fa2e20703fbc44e130365805c4b1be09f3c276e39b1'],
+  [path.join(derived, 'bend2/main.ts'), 'e41167de4f0a5e00a6bc6e2ab3bdcdbb4920ef4edfc60631cd12225a03102cae'],
+  [path.join(here, 'runtime.mjs'), '96530bd87f177b5a2c0452d4d72e548921b04854f77f583fb606a74f7249170f'],
+  [path.join(here, '../selected-module.mjs'), '1508c2620714fd0f96b531400510f1cf997671ec1a0dbc074a35484c24fc84c7'],
+  [path.join(here, 'node-worker.mjs'), 'd214c1201b90b65deac32f0523660730ffe3ebd3069753d85c7c9587e755b493'],
+  [path.join(here, 'fixtures/fetch-probe.mjs'), '24d648e7f4e6e4f4f966932a08e707b54db438024a822623f7dc8ea010dd71a5'],
+  [path.join(repo, 'bend2/toolchain-patches/004-web-workers/rebase-2032/phase2/fixtures/policies.bend'), '9204db93874b8c2a59ccae988211298e29d7c21945c06bae8452d6addafe9a6d'],
+  [path.join(repo, 'bend2/toolchain-patches/004-web-workers/rebase-2032/fixtures/selected-root.bend'), 'dac7bc132314f909bc25af27ade1b0f7a680a62bc39d8e4cea5aa4978f4a2415'],
+]);
+function assertInputs() {
+  for (const [file, expected] of inputHashes) {
+    const stat = fs.lstatSync(file);
+    assert.ok(stat.isFile() && !stat.isSymbolicLink(), `phase3 input is not regular: ${file}`);
+    assert.equal(fs.realpathSync(file), file, `phase3 input redirected: ${file}`);
+    assert.equal(sha(fs.readFileSync(file)), expected, `phase3 input drifted: ${file}`);
+  }
+}
+assertInputs();
+const self = fileURLToPath(import.meta.url);
+const testSha256 = sha(fs.readFileSync(self));
 const Bend = await import(pathToFileURL(path.join(derived, 'bend2/bend.ts')));
 const Comp = await import(pathToFileURL(path.join(derived, 'bend2/comp.ts')));
-const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
-for (const [file, expected] of Object.entries({
-  'bend2/bend.ts': '2def95c26e150c5a66a1a8ba3e5dd6ec5de3a8dd822627976f606a273b0cea88',
-  'bend2/comp.ts': '4f420f4a9b9efadfb5708fa2e20703fbc44e130365805c4b1be09f3c276e39b1',
-  'bend2/main.ts': 'e41167de4f0a5e00a6bc6e2ab3bdcdbb4920ef4edfc60631cd12225a03102cae',
-})) assert.equal(sha(fs.readFileSync(path.join(derived, file))), expected,
-  `phase3 compiler input drifted: ${file}`);
+const { invokeSelected } = await import(pathToFileURL(path.join(here, 'runtime.mjs')));
 
 async function load(file) {
   const book = Bend.book_nil();
@@ -248,8 +279,13 @@ try {
 const noSuffix = await load(path.join(repo,
   'bend2/toolchain-patches/004-web-workers/rebase-2032/fixtures/selected-root.bend'));
 assert.equal(sha(Buffer.from(Comp.js_lib(noSuffix, false))),
-  'efe64dca089a1922152144681e772e75c59807be07dc0ff892d2b3349a11a874');
+  host.syncJsSha256);
 assert.equal(sha(Buffer.from(Comp.compile_book(noSuffix))),
   '9cb68b124aa2865f21a3c1cdb633bf691d45d1f06a8eea496869d2585750a009');
 assert.equal(networkCalls, 0);
-console.log('phase3 selected-root worker runtime (Bun Node compatibility): PASS');
+assertInputs();
+assert.equal(sha(fs.readFileSync(self)), testSha256, 'phase3 test changed during run');
+console.log(JSON.stringify({ schema: 'rift-bend-2032-phase3-host/1', passed: true,
+  host, testSha256,
+  syncCSha256: '9cb68b124aa2865f21a3c1cdb633bf691d45d1f06a8eea496869d2585750a009',
+  networkCalls, scope: 'selected-root coarse Worker runtime on exact Windows host; not per-call scheduler or full 004' }));

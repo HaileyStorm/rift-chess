@@ -39,19 +39,28 @@ node --check bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/runtime.
 node --check bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/node-worker.mjs
 node --check bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/test.mjs
 node --check bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/fixtures/fetch-probe.mjs
+node --max-old-space-size=512 bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/test.mjs
 & .artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe run bend2/toolchain-patches/004-web-workers/rebase-2032/phase2/test.mjs
 & .artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe run bend2/toolchain-patches/004-web-workers/rebase-2032/phase3/test.mjs
 ```
 
-Observed on Bun 1.4.2. Dispatch runs through Bun's `node:worker_threads`
-compatibility implementation; Node v24.12.0 was used only for `node --check`,
-not as an independent dispatch host. The phase-two gate passed with raw
-no-suffix JavaScript SHA-256
-`efe64dca089a1922152144681e772e75c59807be07dc0ff892d2b3349a11a874` and C
-SHA-256 `9cb68b124aa2865f21a3c1cdb633bf691d45d1f06a8eea496869d2585750a009`.
-The phase-three test passed after actual worker-thread dispatch via Bun's Node
-compatibility path and repeats both raw output hash checks after planner/adapter
-calls. It covers a required-call root, an explicitly host-required root,
+The selected-root runtime gate now passes separately on exact Windows Bun
+1.4.2 and Node v24.12.0 executables, each with its own pinned SHA-256. Both
+actually dispatch worker threads; this is still a coarse whole-root Worker,
+not per-call 004 scheduling. The no-suffix C SHA-256 is the same on both:
+`9cb68b124aa2865f21a3c1cdb633bf691d45d1f06a8eea496869d2585750a009`.
+Raw JavaScript differs by runtime: Bun SHA-256
+`efe64dca089a1922152144681e772e75c59807be07dc0ff892d2b3349a11a874`,
+Node SHA-256 `3c99dcd84414a057fce65edb45dd69d600e6b57bee49aec23e7333130a510a1d`.
+An in-memory same-fixture comparison (exact derived compiler, Windows Node
+v24.12.0 vs Bun 1.4.2) produced 3,805 vs 3,739 JS code units; the first
+differing code unit was 1,650 at `const f32_round = function f32_round...`.
+Node preserved TypeScript-erasure whitespace/CRLF and `2 ** 128`, while Bun
+emitted a compact parameter and expanded numeric literal. `comp.ts` splices
+`${Bend.f32_round}` into the runtime, explaining this host-dependent prefix;
+the gate retains both raw byte pins rather than normalizing either. These
+fixture checks do not prove universal cross-runtime semantics or a canonical
+production build. The phase-three test covers a required-call root, an explicitly host-required root,
 equivalent sync/worker results, never-only local routing, visible optional
 fallback, required/conflicting negative policies, cancellation after Worker
 creation, and a real 1 ms Worker timeout with temp-module cleanup. A synthetic
@@ -81,15 +90,19 @@ and byte-for-byte ordinary JS/C parity. Current derived compiler hashes are:
 Phase-three source hashes:
 
 - `runtime.mjs`: `96530bd87f177b5a2c0452d4d72e548921b04854f77f583fb606a74f7249170f`
+- `../selected-module.mjs`: `1508c2620714fd0f96b531400510f1cf997671ec1a0dbc074a35484c24fc84c7`
 - `node-worker.mjs`: `d214c1201b90b65deac32f0523660730ffe3ebd3069753d85c7c9587e755b493`
-- `test.mjs`: `d786e55a0a964bbb1969f572021387639cfe638f7127445e69e6d4a09e1979f3`
+- Historical Bun-only `test.mjs` SHA-256: `d786e55a0a964bbb1969f572021387639cfe638f7127445e69e6d4a09e1979f3`.
+  Current dual-host `test.mjs` SHA-256: `59e986f5c13d646c356acb70c1f40b830ff18ef846cebadd5959ec7e46a570d9`.
+  The script reports its own source hash at the run checkpoint;
+  the historical hash remains provenance, not a current source pin.
 - `fixtures/fetch-probe.mjs`: `24d648e7f4e6e4f4f966932a08e707b54db438024a822623f7dc8ea010dd71a5`
 
 Residual runtime gaps: worker `error`/`exit` event behavior, a malformed reply,
 a non-cloneable result, and ADT argument/result marshalling are not covered by
 the executable gate. The protocol-mismatch probe covers a malformed request
 at the worker entry only; malformed-response handling is untested. No
-independent Node host, browser Worker, packaged/offline, parallelism benchmark,
+independent Linux Node host, full browser Worker scheduler, packaged/offline, parallelism benchmark,
 complete-004, frozen-proof, native/GPU, or release acceptance is established.
 Root integration must replay/generate the candidate patch and run the broader
 gates separately.
