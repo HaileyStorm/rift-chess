@@ -1812,7 +1812,13 @@ stopped before launch because the isolated clone lacked a resolvable
 Playwright package and Chrome channel. A reviewed optional cached-runtime
 test seam now requires full Playwright/core tree hashes, exact browser binary
 and version, a dedicated loopback origin and all served package hashes; its
-actual Linux identities, compatibility and rendered interaction remain open.
+actual Linux identities were matched for a one-shot cached Chromium 140 probe.
+The [probe](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5911436158)
+launched and navigated the static page, then timed out at the first ready-frame
+wait. It produced no rendered screenshot or interaction result. The Playwright
+1.63/Chromium 140 pairing is outside that package's expected Chromium revision;
+the first-frame cause remains unclassified pending bounded browser/Worker
+diagnostics. No browser acceptance follows from this launch.
 The pinned production builder and published app remain unchanged.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
@@ -1844,3 +1850,14 @@ external requests and Node/worker fetches, and removed its identity-checked
 temporary outputs. This is one source-bound browser vertical slice, not the
 full 004 scheduler, 107-case worker matrix, game integration, pin amendment,
 or browser/native/GPU/release acceptance.
+The [004 phase-five per-call slice](toolchain-patches/004-web-workers/rebase-2032/phase5-percall/README.md)
+then passed an exact ordered replay and a real Chrome 154 module-Worker test.
+In this strict one-call `U32 -> U32` shape, the compiled caller dispatched
+`identity(41)` remotely, received a task witness, resumed locally and returned
+42. `never` stayed local; unsupported required shapes rejected before Worker
+construction, and protocol/timeout/termination negatives did not silently
+fall back. Late no-suffix JS/C bytes still matched the phase-two baseline.
+Independent review found no remaining blocking issue in this bounded slice.
+The pure-loop guard is defensive, not proved by a source-valid pure-loop case;
+full 004 eligibility/scheduling, its 107-case matrix, game integration and
+release gates remain open.

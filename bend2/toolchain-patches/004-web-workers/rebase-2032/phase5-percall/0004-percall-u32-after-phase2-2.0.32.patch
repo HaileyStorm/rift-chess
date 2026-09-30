@@ -1,0 +1,294 @@
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index 7059ce5..7ded201 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -83,6 +83,7 @@ type File = {
+   uses: Map<Of<"Var">, Bind>;
+   rest: HTerm[];
+   def: Name;
++  webPerCall?: { caller: Name; callee: Name };
+ };
+ 
+ type Tpl = string | ((xs: string[]) => string);
+@@ -3328,8 +3329,13 @@ function js_sat(k: Name): string {
+     : "$" + String(c.charCodeAt(0)).padStart(3, "0")) + "$";
+ }
+ 
+-function js_call(fl: File, k: Name, args: HTerm[], tail: boolean): string {
++function js_call(fl: File, k: Name, args: HTerm[], tail: boolean,
++  web?: "require" | "never"): string {
+   let exprs = args.map((x) => js_expr(fl, x, null));
++  if (fl.webPerCall !== undefined && fl.seg.def === fl.webPerCall.caller
++    && k === fl.webPerCall.callee && web === "require") {
++    return `await __bendPerCallDispatch(${JSON.stringify(k)}, [${exprs.join(", ")}])`;
++  }
+   if (k === CLO_APPLY) {
+     const [f, x] = exprs;
+     return tail ? js_tail(fl, k, "run_tail(" + f + ", " + x + ")")
+@@ -3393,7 +3399,7 @@ function js_expr(fl: File, tm: HTerm, ty0: HTerm | null): string {
+     case "App": {
+       const m = term_spine(fl, x);
+       if (m.k !== null) {
+-        return js_call(fl, m.k, m.xs, false);
++        return js_call(fl, m.k, m.xs, false, m.web);
+       }
+       const y = call_eta(fl, x) ?? (m.t.$ !== "Ref" ? m.h : null);
+       if (y !== null) {
+@@ -3404,7 +3410,7 @@ function js_expr(fl: File, tm: HTerm, ty0: HTerm | null): string {
+       if (it?.call === true && it.C === undefined) {
+         lay_el(fl.book, m.all[0]);
+       }
+-      return js_call(fl, k, m.args, false);
++      return js_call(fl, k, m.args, false, m.web);
+     }
+     case "Ctr": {
+       const [adt, u] = ctr_adt(fl, x, ty);
+@@ -3480,7 +3486,7 @@ function js_func(fl: File, tm: HTerm, ty0: HTerm | null, args: string[]): void {
+       + "continue;");
+   }
+   file_push(fl, "return " + (ck.k === null ? js_expr(fl, x, ty)
+-    : js_call(fl, ck.k, ck.xs, true)) + ";");
++    : js_call(fl, ck.k, ck.xs, true, ck.web)) + ";");
+ }
+ 
+ function js_match(fl: File, x: HTerm, ty: HTerm | null, args: string[]): void {
+@@ -3547,7 +3553,7 @@ function js_def(fl: File, k: Name, def: Bend.Def): void {
+       file_push(fl, `return { $: "$FFI", run: $0eff[${n}].run, need: $0eff[${
+         n}].need, args: [${args}], kont: ${xs.at(-1)} };`));
+   }
+-  block(fl, `function ${js_sat(k)}(${params.join(", ")}) {`, () => {
++  block(fl, `${fl.webPerCall?.caller === k ? "async " : ""}function ${js_sat(k)}(${params.join(", ")}) {`, () => {
+     if (loop.length === 0) {
+       return js_func(fl, h!, def.T, params);
+     }
+@@ -3631,19 +3637,24 @@ function js_host(fl: File, k: Name): string {
+     Bend.ctx_nil());
+   const back = live.map(([, , A], i) =>
+     `${js_marshal(fl, A, true)}(${ps[i]});`);
++  if (fl.webPerCall?.caller === k) {
++    return `async (${ps.join(", ")}) => { const value = await run_loop(${js_sat(k)}(${xs.join(", ")})); const r = ${js_marshal(fl, ret, true)}(value); ${back.join(" ")} return r; }`;
++  }
+   return `(${ps.join(", ")}) => { const r = ${js_marshal(fl, ret, true)
+     }(run_loop(${js_sat(k)}(${xs.join(", ")}))); ${back.join(" ")} return r; }`;
+ }
+ 
+ // A module (for the .bend loader and -o <out>.mjs) roots and exports each
+ // def a host can call: filled, not Base's, not foreign, not IO.
+-export function js_lib(book: Bend.Book, mod = false): string {
++function js_lib_inner(book: Bend.Book, mod = false,
++  webPerCall?: { caller: Name; callee: Name }): string {
+   const outs = !mod ? null : [...new Set(book.order)].filter((k) => {
+     const tld = book.tlds[k];
+     return tld.$ === "Def" && tld.v !== null && tld.b !== true
+       && tld.x === 0 && tld.i === undefined && io_base(book, tld.T) === null;
+   });
+   const fl = file_book(book, outs ?? ["main"], true);
++  fl.webPerCall = webPerCall;
+   for (const [k, def] of done_defs(fl, (t) => done_live(t) || def_foreign(t))) {
+     memo_gc();
+     js_def(fl, k, def);
+@@ -3664,10 +3675,203 @@ export function js_lib(book: Bend.Book, mod = false): string {
+   const funs = [fl.seg, ...fl.spins].flatMap((f) => seg_text(f.lines, 0))
+     .join("\n").replace(/\x01([^\x02]*)\x02/g, (_, k) => jmp(k) ? "run_loop"
+       : "");
+-  return RUNTIME + effs + "// Program\n// =======\n\n"
++  const perCall = webPerCall === undefined ? "" : web_per_call_runtime();
++  return RUNTIME + perCall + effs + "// Program\n// =======\n\n"
+     + [funs, ...tabs].join("\n") + lib;
+ }
+ 
++export function js_lib(book: Bend.Book, mod = false): string {
++  return js_lib_inner(book, mod);
++}
++
++function web_per_call_u32_unary(book: Bend.Book, name: Name): boolean {
++  const def = book.tlds[name];
++  if (def?.$ !== "Def" || def.v === null || def.u === true || def.i !== undefined
++    || def.x !== 0 || def.b === true) return false;
++  const signature = Bend.tele_unbind(book, def.T);
++  const isU32 = (type: HTerm): boolean => {
++    const t = Bend.term_wnf(book, type);
++    return t.$ === "ADT" && t.k === "U32" && t.x.length === 0;
++  };
++  return signature.doms.length === 1 && quant_live(signature.doms[0][0])
++    && isU32(signature.doms[0][2]) && isU32(signature.ret)
++    && io_base(book, def.T) === null;
++}
++
++function web_per_call_runtime(): string {
++  return `
++export const __bendPerCallTaskWitnesses = [];
++let __bendPerCallNextTask = 0;
++function __bendPerCallExactKeys(value, names) {
++  return value !== null && typeof value === "object" && !Array.isArray(value)
++    && Object.keys(value).length === names.length
++    && names.every((name) => Object.prototype.hasOwnProperty.call(value, name));
++}
++function __bendPerCallDispatch(callee, args) {
++  if (!Array.isArray(args) || args.length !== 1 || !Number.isInteger(args[0])
++    || args[0] < 0 || args[0] > 4294967295) {
++    throw new TypeError("required worker accepts one U32 argument");
++  }
++  const requestId = ++__bendPerCallNextTask;
++  return new Promise((resolve, reject) => {
++    const worker = new Worker(new URL("./worker.mjs", import.meta.url), { type: "module" });
++    let settled = false;
++    const timer = setTimeout(() => finish(new Error("required worker timed out")), 5000);
++    const finish = (error, value) => {
++      if (settled) return;
++      settled = true;
++      clearTimeout(timer);
++      let resultError = error;
++      try {
++        worker.terminate();
++      } catch (cleanupError) {
++        if (resultError === null || resultError === undefined) {
++          resultError = cleanupError;
++        } else if (typeof resultError === "object") {
++          try { resultError.cleanupError = cleanupError; } catch {}
++        }
++      }
++      if (resultError) reject(resultError);
++      else resolve(value);
++    };
++    worker.onmessage = ({ data }) => {
++      if (!__bendPerCallExactKeys(data,
++        ["callee", "ok", "protocol", "requestId", "value", "witness"])
++        || !__bendPerCallExactKeys(data.witness,
++          ["callee", "fetchCalls", "kind", "value", "workerScope"])
++        || data.witness.kind !== "bend-percall-task/2032-1"
++        || data.protocol !== "bend-percall-worker/2032-1" || data.requestId !== requestId
++        || data.callee !== callee || data.ok !== true || !Number.isInteger(data.value)
++        || data.value < 0 || data.value > 4294967295
++        || data.witness?.workerScope !== true || data.witness?.callee !== callee
++        || data.witness?.value !== data.value || data.witness?.fetchCalls !== 0) {
++        finish(new Error("required worker task witness or reply mismatch"));
++        return;
++      }
++      __bendPerCallTaskWitnesses.push(Object.freeze({ ...data.witness, requestId }));
++      finish(null, data.value);
++    };
++    worker.onerror = (event) => finish(new Error(event.message || "required worker failed"));
++    worker.onmessageerror = () => finish(new Error("required worker reply could not be cloned"));
++    try {
++      worker.postMessage({ protocol: "bend-percall-worker/2032-1", requestId, callee, args });
++    } catch (error) {
++      finish(error);
++    }
++  });
++}
++`;
++}
++
++function web_per_call_worker(callee: Name): string {
++  return `
++const protocol = "bend-percall-worker/2032-1";
++const expectedCallee = ${JSON.stringify(callee)};
++let fetchCalls = 0;
++globalThis.fetch = async () => {
++  fetchCalls++;
++  throw new Error("network disabled in required worker");
++};
++self.onmessage = async ({ data }) => {
++  const { protocol: requestProtocol, requestId, callee, args } = data ?? {};
++  try {
++    if (requestProtocol !== protocol || !Number.isSafeInteger(requestId)
++      || callee !== expectedCallee || !Array.isArray(args) || args.length !== 1
++      || !Number.isInteger(args[0]) || args[0] < 0 || args[0] > 4294967295) {
++      throw new Error("invalid required worker request");
++    }
++    const module = await import("./callee.mjs");
++    const library = module?.default;
++    if (!library || Object.keys(library).length !== 1
++      || Object.keys(library)[0] !== expectedCallee || typeof library[expectedCallee] !== "function") {
++      throw new Error("required worker callee module mismatch");
++    }
++    const value = library[expectedCallee](args[0]);
++    if (value !== null && (typeof value === "object" || typeof value === "function")
++      && typeof value.then === "function") throw new Error("required callee returned a promise");
++    if (!Number.isInteger(value) || value < 0 || value > 4294967295) {
++      throw new Error("required callee returned a non-U32 value");
++    }
++    const witness = { kind: "bend-percall-task/2032-1", callee: expectedCallee,
++      workerScope: typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope,
++      value, fetchCalls };
++    self.postMessage({ protocol, requestId, callee, ok: true, value, witness });
++  } catch (error) {
++    self.postMessage({ protocol, requestId, callee: expectedCallee, ok: false,
++      error: String(error?.message ?? error).slice(0, 512), fetchCalls });
++  }
++};
++`;
++}
++
++export type WebPerCallBuild = {
++  schema: "bend-percall-build/2032-1";
++  caller: Name;
++  callee: Name;
++  entry: string;
++  files: Record<string, string>;
++  requirements: WorkerStaticPlan["requirements"];
++};
++
++/** Emit one strict per-call worker for one direct, closed U32 -> U32 requirement. */
++export function js_percall_lib(book: Bend.Book, caller: Name): WebPerCallBuild {
++  if (!book.order.includes(caller)) {
++    throw new Error("per-call worker caller must be a filled pure first-order U32 -> U32 definition: " + caller);
++  }
++  const rejectCallerTailLoop = (): void => {
++    const callerFile = file_book(book, [caller], true);
++    const callerLoop = loop_of(callerFile, caller);
++    if (callerLoop.length > 0) {
++      throw new Error("per-call worker caller cannot participate in a tail-call loop: "
++        + callerLoop.join(" -> "));
++    }
++  };
++  if (!web_per_call_u32_unary(book, caller)) {
++    throw new Error("per-call worker caller must be a filled pure first-order U32 -> U32 definition: " + caller);
++  }
++  rejectCallerTailLoop();
++  const plan = plan_web_workers(book, [caller]);
++  if (plan.conflicts.length > 0) {
++    throw new Error("strict per-call worker policy conflict: " + plan.conflicts[0].kind);
++  }
++  const callerStatus = plan.functions.find((fn) => fn.name === caller);
++  const unsupportedCaller = callerStatus?.reasons.filter((reason) =>
++    /^(unsafe_reachable|foreign_reachable|unfilled_reachable|template_reachable|f32_reachable|higher_order)/
++      .test(reason)) ?? [];
++  if (unsupportedCaller.length > 0) {
++    throw new Error("per-call worker caller has an unsupported dependency: " + unsupportedCaller[0]);
++  }
++  if (plan.requirements.length !== 1 || plan.requirements[0].from !== caller) {
++    throw new Error("strict per-call worker requires exactly one direct required call in the exported caller");
++  }
++  const requirement = plan.requirements[0];
++  if (requirement.max !== undefined) {
++    throw new Error("strict per-call worker does not implement a concurrent @N cap");
++  }
++  const callee = requirement.to;
++  const requireCalls = plan.calls.filter((call) => call.policy === "require");
++  if (requireCalls.length !== 1 || requireCalls[0].from !== caller
++    || requireCalls[0].to !== callee || requireCalls[0].native) {
++    throw new Error("strict per-call worker supports one direct web-only require call");
++  }
++  if (!web_per_call_u32_unary(book, callee)) {
++    throw new Error("required worker callee must be a pure first-order U32 -> U32 definition: " + callee);
++  }
++  const calleePlan = plan_web_workers(book, [callee]);
++  if (!calleePlan.sourceEligible || calleePlan.calls.length !== 0) {
++    throw new Error("required worker callee is outside the closed call-free U32 subset: " + callee);
++  }
++  const callerBook = { ...book, order: [caller] };
++  const calleeBook = { ...book, order: [callee] };
++  return { schema: "bend-percall-build/2032-1", caller, callee,
++    entry: "program.mjs", requirements: plan.requirements,
++    files: {
++      "program.mjs": js_lib_inner(callerBook, true, { caller, callee }),
++      "callee.mjs": js_lib_inner(calleeBook, true),
++      "worker.mjs": web_per_call_worker(callee),
++    } };
++}
++
+ export function js_book(book: Bend.Book): string {
+   const lib = js_lib(book);
+   const show = show_main(book);
