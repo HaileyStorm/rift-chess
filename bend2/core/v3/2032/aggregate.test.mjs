@@ -6,8 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { verifyV2 } from '../../../tools/freeze-v2.mjs';
-import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
-  expectedCheckClosure, runLeasedWorker } from './aggregate-safety.mjs';
+import { admittedMemorySnapshot, assertExactLoadedClosure, assertProofNodeRuntime,
+  visibleMemorySnapshot, expectedCheckClosure, runLeasedWorker } from './aggregate-safety.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 process.env.BEND_NO_TELEMETRY = '1';
@@ -48,16 +48,55 @@ foreignCollision.tlds.X = { $: 'Def', i: [], b: false };
 foreignCollision.ctrs.X = {};
 assert.throws(() => Comp.js_lib({ ...foreignCollision, order: [] }, true),
   /names both a constructor and a foreign def/);
-assert.equal(effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
-  read: (file) => file.endsWith('memory.max') ? '30000\n' : '25000\n' }), 5_000);
-assert.throws(() => effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
-  read: (file) => file.endsWith('memory.max') ? 'max\n' : '25000\n' }),
-  /finite cgroup-v2 memory limit/);
-assert.throws(() => effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
-  read: () => { const error = new Error('missing controller'); error.code = 'ENOENT'; throw error; } }),
+const cgroupFiles = {
+  '/proc/self/cgroup': '0::/user.slice/app.slice/test.scope\n',
+  '/proc/self/mountinfo': '36 24 0:33 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n',
+  '/sys/fs/cgroup/user.slice/memory.max': 'max\n',
+  '/sys/fs/cgroup/user.slice/app.slice/memory.max': 'max\n',
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': '30000\n',
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.current': '25000\n',
+};
+const memoryRead = (overrides = {}) => file => {
+  const bytes = { ...cgroupFiles, ...overrides }[file];
+  if (bytes !== undefined) return bytes;
+  const error = new Error(`missing controller: ${file}`);
+  error.code = 'ENOENT';
+  throw error;
+};
+const finite = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead() });
+assert.equal(finite.visibleUpperBoundBytes, 5_000);
+assert.equal(finite.mode, 'namespace-visible-v2-finite');
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead() }), /independently verified global cgroup ancestry/);
+const unlimited = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) });
+assert.equal(unlimited.visibleUpperBoundBytes, 40_000);
+assert.equal(unlimited.mode, 'namespace-visible-v2-unlimited');
+assert.equal(unlimited.visibleLimits.length, 4);
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) }),
+  /independently verified global cgroup ancestry/);
+const parentLimited = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/memory.max': '10000\n',
+    '/sys/fs/cgroup/user.slice/memory.current': '6000\n',
+    '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) });
+assert.equal(parentLimited.visibleUpperBoundBytes, 4_000);
+assert.equal(parentLimited.mode, 'namespace-visible-v2-finite');
+assert.equal(admittedMemorySnapshot({ platform: 'win32', hostFree: 40_000 }).availableBytes, 40_000);
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/proc/self/mountinfo':
+    '36 24 0:33 /user.slice /sys/fs/cgroup rw - cgroup2 cgroup rw\n' }) }),
+  /hides possible ancestor caps/);
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/memory.max': undefined }) }),
   /missing controller/);
-assert.throws(() => effectiveFreeBytes({ platform: 'linux', hostFree: 40_000,
-  read: () => 'invalid' }), /regular expression/);
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'invalid' }) }),
+  /malformed cgroup-v2 memory.max/);
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
+  read: memoryRead({ '/proc/self/cgroup': '3:memory:/user.slice\n' }) }),
+  /one cgroup-v2 process path/);
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'rift-aggregate-lease-'));
 const fixtureLock = path.join(fixture, 'worker.lock');
 try {

@@ -169,19 +169,23 @@ closure/omission, owned-name/foreign-constructor collisions, cgroup-v2
 admission, exclusive lease, invalid-CLI and
 read-only preflight controls.
 
-An actual aggregate attempt requires exact Node 24.12.0 on Windows or Node
-22.23.1 on Linux without inherited flags/preloads, plus the source-only
-compiler import/empty-root namespace preflight on that host. It requires at
-least 12 GiB effective free RAM (a finite readable
-cgroup-v2 memory limit is required on Linux), one 64-MiB-stack/8-GiB-old-generation Node
+Source-only preflight accepts exact Node 24.12.0 on Windows or Node 22.23.1
+on Linux without inherited flags/preloads and exercises the compiler import/
+empty-root namespace guard on that host. An actual aggregate Worker is
+currently Windows-only; it requires at least 12 GiB physical free RAM,
+one 64-MiB-stack/8-GiB-old-generation Node
 Worker, and a 900-second parent deadline. An exclusive ignored host-local
 lease prevents concurrent attempts; if the Worker exit cannot be observed,
 the lease remains and must not be reclaimed without host/process review.
-The current Linux admission reads a finite leaf cgroup-v2 limit and host free
-RAM; it cannot by itself rule out a lower hidden ancestor cap. Before an
-8-GiB Linux Worker, independently inspect the effective cgroup hierarchy and
-stop if its allocatable bound cannot be established. The source-only preflight
-does not assert memory eligibility.
+Linux memory inspection requires one unified cgroup-v2 path and mount root
+`/`. It reads the namespace-visible ancestors and reports the minimum of
+their finite `memory.max - memory.current` readings and host free RAM only as
+an **upper bound**. A cgroup namespace can hide a tighter outer cap even when
+mountinfo says `/`; therefore Linux Worker admission currently fails closed
+for both finite and unlimited visible hierarchies. A fresh trustworthy
+full-ancestry binding is required before enabling it. Windows takes two
+physical-free-memory snapshots before the actual Worker. Source-only Linux
+preflight does not attempt memory admission.
 These are admission and safety bounds, not measured peak cost or a guarantee
 that CHECK completes. No aggregate attempt has run under this candidate yet.
 A pass would prove only this derived compiler's source/type/promise screening
@@ -212,15 +216,13 @@ outputs and terminal diagnostics. A failed evidence write is surfaced in the
 terminal error.
 
 On a clean checkout, run `node bend2/core/v3/2032/mutations.mjs --preflight-only`
-first. The source runner requires exact Node 24.12.0 on Windows or Node
-22.23.1 on Linux without inherited flags, and its preflight imports the exact
-derived `.ts` compiler before any Worker. It requires at least
-4 GiB effective free RAM before each 512-MiB or 1-GiB Worker; Linux additionally
-requires a finite readable cgroup-v2 memory limit. The 2.0.27 mutation suite
+first. Source-only preflight accepts exact Node 24.12.0 on Windows or Node
+22.23.1 on Linux without inherited flags and imports the exact derived `.ts`
+compiler. A mutation Worker is currently Windows-only and requires at least
+4 GiB physical free RAM before each 512-MiB or 1-GiB Worker on Windows.
+Linux Worker admission is likewise disabled pending a trustworthy global
+cgroup-ancestry binding. The 2.0.27 mutation suite
 and its historical receipt remain the canonical frozen gate. A 2.0.32 source
 mutation pass would still not prove aggregate CHECK, BendTT kernel rejection,
 conformance, browser/native/GPU, or permit a pin amendment. No mutation Worker
 has run under this new runner yet.
-For a Linux Worker, review any lower ancestor cgroup cap before launch; the
-current leaf/host admission alone does not establish effective hierarchy
-headroom.

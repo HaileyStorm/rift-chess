@@ -58,24 +58,64 @@ export async function runLeasedWorker(lockPath, payload, run) {
   }
 }
 
-export function effectiveFreeBytes({ platform = process.platform, hostFree,
+export function visibleMemorySnapshot({ platform = process.platform, hostFree,
   read = (file) => fs.readFileSync(file, 'utf8') } = {}) {
   let available = hostFree;
   assert.ok(Number.isSafeInteger(available) && available >= 0);
-  if (platform === 'linux') {
-    // A v1, absent, or unlimited v2 controller cannot establish this process's
-    // effective memory admission from os.freemem(). Stop before creating a
-    // large Worker instead of assuming host-global free RAM is allocatable.
-    const limit = read('/sys/fs/cgroup/memory.max').trim();
-    assert.notEqual(limit, 'max', 'finite cgroup-v2 memory limit required on Linux');
-    const current = read('/sys/fs/cgroup/memory.current').trim();
-    assert.match(limit, /^\d+$/);
-    assert.match(current, /^\d+$/);
-    const remaining = BigInt(limit) - BigInt(current);
-    available = Number(remaining > 0n ? remaining < BigInt(available)
-      ? remaining : BigInt(available) : 0n);
+  if (platform !== 'linux') return { visibleUpperBoundBytes: available,
+    mode: 'host-free-observation', cgroupPath: null, visibleLimits: [] };
+  const cgroups = read('/proc/self/cgroup').trim().split(/\r?\n/);
+  const unified = cgroups.filter(line => line.startsWith('0::'));
+  assert.equal(unified.length, 1, 'one cgroup-v2 process path required');
+  const cgroupPath = unified[0].slice(3);
+  assert.ok(cgroupPath.startsWith('/'), 'cgroup-v2 path must be absolute');
+  const segments = cgroupPath.split('/').filter(Boolean);
+  assert.ok(segments.every(part => part !== '.' && part !== '..' &&
+    !part.includes('\\') && !part.includes('\0')),
+  'unsafe cgroup-v2 process path');
+  const mounts = read('/proc/self/mountinfo').split(/\r?\n/).filter(line => {
+    const parts = line.split(' - ');
+    return parts.length === 2 && parts[1].split(' ')[0] === 'cgroup2' &&
+      parts[0].split(' ')[4] === '/sys/fs/cgroup';
+  });
+  assert.equal(mounts.length, 1, 'one canonical cgroup-v2 mount required');
+  const mountRoot = mounts[0].split(' - ')[0].split(' ')[3];
+  assert.equal(mountRoot, '/', 'cgroup-v2 mount hides possible ancestor caps');
+  const mountpoint = '/sys/fs/cgroup';
+  const dirs = [mountpoint];
+  for (const part of segments) dirs.push(path.posix.join(dirs.at(-1), part));
+  const visibleLimits = [];
+  for (const dir of dirs) {
+    let max;
+    try { max = read(`${dir}/memory.max`).trim(); }
+    catch (error) {
+      if (dir !== mountpoint || error?.code !== 'ENOENT') throw error;
+      max = 'absent-root';
+    }
+    let current = null;
+    if (max !== 'max' && max !== 'absent-root') {
+      assert.match(max, /^\d+$/, 'malformed cgroup-v2 memory.max');
+      current = read(`${dir}/memory.current`).trim();
+      assert.match(current, /^\d+$/, 'malformed cgroup-v2 memory.current');
+      const remaining = BigInt(max) - BigInt(current);
+      available = Number(remaining > 0n && remaining < BigInt(available)
+        ? remaining : remaining <= 0n ? 0n : BigInt(available));
+    }
+    visibleLimits.push({ path: dir.slice(mountpoint.length) || '/', max, current });
   }
-  return available;
+  return { visibleUpperBoundBytes: available,
+    mode: visibleLimits.some(item => /^\d+$/.test(item.max))
+      ? 'namespace-visible-v2-finite' : 'namespace-visible-v2-unlimited',
+    cgroupPath, mountRoot, visibleLimits };
+}
+
+export function admittedMemorySnapshot(options = {}) {
+  const snapshot = visibleMemorySnapshot(options);
+  const platform = options.platform ?? process.platform;
+  assert.equal(platform, 'win32',
+    'Linux proof Worker admission needs independently verified global cgroup ancestry');
+  return { ...snapshot, availableBytes: snapshot.visibleUpperBoundBytes,
+    mode: 'windows-host-free-admitted' };
 }
 
 export function assertProofNodeRuntime({ version = process.version,

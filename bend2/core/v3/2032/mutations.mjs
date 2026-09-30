@@ -14,7 +14,7 @@ import { bindCompilerBaseEol, bindCompilerEol } from
   '../../../toolchain-patches/2032/preview/compiler-eol.mjs';
 import { finalizeOwnedManifest, settleWorker } from
   '../../../toolchain-patches/2032/preview/lifecycle.mjs';
-import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
+import { admittedMemorySnapshot, assertExactLoadedClosure, assertProofNodeRuntime,
   expectedCheckClosure, probeProofNodeImports, runLeasedWorker } from './aggregate-safety.mjs';
 import { typeMismatchEvidence } from './mutation-verdict.mjs';
 
@@ -256,7 +256,8 @@ if (!isMainThread) {
           const heapMiB = spec.proof === 'CanonicalProof.bend' ? 1024 : 512;
           const timeoutMs = spec.proof === 'CanonicalProof.bend' ? 360_000
             : spec.proof === 'PROOF.bend' ? 240_000 : 120_000;
-          const freeBefore = effectiveFreeBytes({ hostFree: os.freemem() });
+          const memoryBefore = admittedMemorySnapshot({ hostFree: os.freemem() });
+          const freeBefore = memoryBefore.availableBytes;
           assert.ok(freeBefore >= 4 * 1024 ** 3,
             `stop before mutation Worker: effective free RAM ${freeBefore} B below 4 GiB`);
           const progress = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT));
@@ -276,7 +277,7 @@ if (!isMainThread) {
             assert.equal(result.ok, true);
             assert.equal(result.caseName, spec.name);
             assert.equal(result.variant, variant);
-            const record = { ...result, heapMiB, timeoutMs, freeBefore };
+            const record = { ...result, heapMiB, timeoutMs, freeBefore, memoryBefore };
             stage = 'success-record';
             fs.writeFileSync(path.join(caseDir, `${variant}.json`),
               JSON.stringify(record, null, 2) + '\n', { flag: 'wx' });
@@ -288,7 +289,7 @@ if (!isMainThread) {
               accepted: false, finalReceipt: false, sourceCommit: before.sourceCommit,
               scriptSha256: before.scriptSha256, case: spec.name, variant,
               parentStage: stage, workerStage, elapsedMs: Date.now() - started,
-              heapMiB, timeoutMs, freeBefore,
+              heapMiB, timeoutMs, freeBefore, memoryBefore,
               timedOut: error?.timedOut === true,
               workerMayBeLive: error?.workerMayBeLive === true,
               exitObserved: exitObserved ? true

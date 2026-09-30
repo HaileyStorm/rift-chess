@@ -1688,14 +1688,13 @@ or the 2.0.32 mutation gate.
 The [separate aggregate CHECK source diagnostic](core/v3/2032/README.md#separate-aggregate-check-migration-candidate)
 now has a bounded single-Worker candidate with complete frozen import-cone
 matching, exact compiler/source binding, a host-local exclusive liveness lease,
-and finite leaf-cgroup admission (hidden ancestor caps still require a separate
-host review before an 8-GiB Linux Worker). Its clean-source preflight and
-synthetic negatives passed at `cb08193`; no aggregate Worker, BendTT,
-mutation, or complete checker-parity verdict is claimed. A further candidate
-exercises 2.0.32's successor compiler-owned namespace guard via an empty-root
-public `js_lib` path, with exact-byte and collision controls pending its own
-clean-source test. This is not the old guard's identical reserved-name set or
-a full JS build.
+and namespace-visible cgroup diagnostics. Linux Worker admission remains
+disabled until a trustworthy global ancestry binding; visible caps and host
+free RAM alone are only upper bounds. Windows and Linux source-only
+preflights passed at `6c8625a` with exact compiler import and successor
+namespace-guard collision controls. The old guard's reserved-name set is not
+identical, and this is not a full JS build. No aggregate Worker, BendTT,
+mutation, or complete checker-parity verdict is claimed.
 The [separate 2.0.32 six-mutation source-screen candidate](core/v3/2032/README.md#separate-six-case-semantic-mutation-source-screen)
 preserves the frozen anchors and copies each transitive proof cone into an
 ignored case directory. It requires a positive type/namespace/promise screen

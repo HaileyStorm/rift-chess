@@ -13,7 +13,7 @@ import { proofVerdict } from '../proof-authority.mjs';
 import { bindCompilerEol, bindCompilerBaseEol } from
   '../../../toolchain-patches/2032/preview/compiler-eol.mjs';
 import { settleWorker } from '../../../toolchain-patches/2032/preview/lifecycle.mjs';
-import { assertExactLoadedClosure, assertProofNodeRuntime, effectiveFreeBytes,
+import { admittedMemorySnapshot, assertExactLoadedClosure, assertProofNodeRuntime,
   expectedCheckClosure, probeProofNodeImports, runLeasedWorker } from './aggregate-safety.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
@@ -195,7 +195,8 @@ if (!isMainThread) {
       scope: 'read-only aggregate CHECK binding; no Worker, proof or pin verdict' }));
     process.exit(0);
   }
-  const freeBefore = effectiveFreeBytes({ hostFree: os.freemem() });
+  const memoryBefore = admittedMemorySnapshot({ hostFree: os.freemem() });
+  const freeBefore = memoryBefore.availableBytes;
   assert.ok(freeBefore >= minimumFreeBytes,
     `stop before aggregate Worker: effective free RAM ${freeBefore} B below ${minimumFreeBytes} B`);
   const outputParent = path.join(root, '.artifacts/bend2');
@@ -210,12 +211,13 @@ if (!isMainThread) {
   const lockPath = path.join(outputRoot, 'aggregate.lock');
   const progress = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT));
   const started = Date.now();
-  let result;
+  let result, admittedMemory;
   try { result = await runLeasedWorker(lockPath, JSON.stringify({
     schema: 'rift-v2-aggregate-2032-lease/1', sourceCommit: before.sourceCommit,
     parentPid: process.pid, startedAt: new Date().toISOString(),
     workerMayBeLive: true }) + '\n', async () => {
-    const admittedFree = effectiveFreeBytes({ hostFree: os.freemem() });
+    admittedMemory = admittedMemorySnapshot({ hostFree: os.freemem() });
+    const admittedFree = admittedMemory.availableBytes;
     assert.ok(admittedFree >= minimumFreeBytes,
       `stop before Worker: effective free RAM ${admittedFree} B below ${minimumFreeBytes} B`);
     const worker = new Worker(new URL(import.meta.url), { type: 'module',
@@ -246,5 +248,5 @@ if (!isMainThread) {
     expectedLoadedFiles: before.expectedLoadedPaths.length,
     runtime: before.runtime, runtimeProbe,
     workerHeapMiB, workerStackMiB, workerTimeoutMs,
-    freeBefore, scope: result.scope }));
+    freeBefore, memoryBefore, admittedMemory, scope: result.scope }));
 }
