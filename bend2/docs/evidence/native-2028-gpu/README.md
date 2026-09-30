@@ -140,7 +140,8 @@ One [new CPU-only status/ownership control](https://github.com/HaileyStorm/Coord
 requires restoring the original `status != 0` check, preserving the scoped
 authority/readiness fixes, rechecking wrong-cookie denial and verifying a
 private-cookie status-0 reply with a returned PID equal to the owned window
-process. Its result is pending; it grants no GPU authority. The c30 original
+process. At that checkpoint its result was pending; the result immediately
+below later resolved it without granting GPU authority. The c30 original
 250 ms GPU-on failure remains unchanged.
 
 ## CPU-only XRes positive control passed
@@ -340,3 +341,19 @@ Host-local blocker JSON SHA-256 is
 its bytes were not transferred to Windows. This is a preflight resource stop,
 not CPU-work attribution. The CUDA-on 231.063-ms gap remains unexplained and
 the original full-window 250-ms deselection gate remains **terminal FAIL**.
+
+## Next diagnostic boundary: synchronization is a hypothesis
+
+The [later source readout](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5901463312)
+found that retained c30 generated C calls `cuCtxSynchronize` after `gpu_run`,
+while the phase interposer above did not time that call. The 231.063-ms host
+gap could include synchronization, but no device timing or explanation has
+been measured. An independent read-only review recommends first binding the
+exact retained C/ELF symbols and CUDA ABI, then adding a pass-through
+`cuCtxSynchronize` entry/exit marker to that same monotonic phase tracer.
+Only a newly leased, single correlated second-release episode can partition
+its own pre-sync, sync and post-sync intervals; it cannot retroactively
+partition the old episode. Even a long host synchronization is not proof of
+kernel duration. No synchronization removal, GPU retry, acceptance or
+default change is authorized by this analysis. The original full-window
+250-ms CUDA-on verdict remains terminal **FAIL**.
