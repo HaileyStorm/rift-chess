@@ -1796,11 +1796,19 @@ and manifest SHA-256 `d6df02c1264589ac886775acc1c9f8713e1b34d7e9daf2752290e6a1a9
 No browser render, app interaction, native/GPU result, pin amendment or
 publication is inferred.
 The [versioned local static-preview candidate](toolchain-patches/2032/browser-preview/README.md)
-passes 21 synthetic assertions and a separate in-memory Bun build of the
-generic host entrypoint. It binds the four exact Linux cache receipts and
+passed source-only synthetic controls and a separate in-memory Bun build of
+the generic host entrypoint. It binds the four exact Linux cache receipts and
 source-`81de054` Worker bundle before packaging host/assets into a unique
-ignored local directory. No real package or Chrome interaction has yet run;
-it does not modify the pinned production builder or published app.
+ignored local directory. The [Linux one-shot static package](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5905192468)
+then exited 0 with a 16-file manifest, exact byte map and zero reported
+network calls. This remains CPU-only package evidence, not a rendered game.
+The [first browser request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5909839125)
+stopped before launch because the isolated clone lacked a resolvable
+Playwright package and Chrome channel. A reviewed optional cached-runtime
+test seam now requires full Playwright/core tree hashes, exact browser binary
+and version, a dedicated loopback origin and all served package hashes; its
+actual Linux identities, compatibility and rendered interaction remain open.
+The pinned production builder and published app remain unchanged.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.

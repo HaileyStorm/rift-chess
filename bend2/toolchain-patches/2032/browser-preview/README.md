@@ -58,3 +58,30 @@ BEND_NO_TELEMETRY=1 BUN_BIN=.artifacts/toolchains/runtime/bin/bun node bend2/too
 The expected SHA must come from a separate trusted readback, not be computed
 from the selected manifest by the packer. The output path is printed only after
 the complete local package and byte map have been written.
+
+## Guarded local browser runtime alternative
+
+The first Linux browser request stopped before launch: the isolated clone had
+neither a resolvable Playwright package nor a Chrome channel. Cached Chromium
+and Playwright in another local project are *not* silently substituted. The
+existing `bend2/tests/browser-v2-live.mjs` keeps its project-local Playwright/
+system-Chrome default. Its optional cached-runtime path requires nine explicit
+inputs: `BEND_LIVE_PLAYWRIGHT_ENTRY`, `BEND_LIVE_PLAYWRIGHT_SHA256`,
+`BEND_LIVE_PLAYWRIGHT_PACKAGE_SHA256`, `BEND_LIVE_PLAYWRIGHT_TREE_SHA256`,
+`BEND_LIVE_PLAYWRIGHT_CORE_DIR`, `BEND_LIVE_PLAYWRIGHT_CORE_TREE_SHA256`,
+`BEND_LIVE_BROWSER_EXECUTABLE`, `BEND_LIVE_BROWSER_SHA256`, and
+`BEND_LIVE_BROWSER_VERSION`. Both complete local package trees are bounded,
+hashed before import and rechecked after. The runtime must be an explicitly
+reviewed stable host-local dependency tree, not a remote supply-chain proof.
+
+This mode also requires an absolute exact `BEND_LIVE_BUILD_JSON` path,
+`BEND_LIVE_BUILD_SHA256`, and `BEND_EXPECTED_BUILD`; a fresh absolute
+`BEND_LIVE_ARTIFACT` direct child of ignored
+`.artifacts/bend2/2032-browser-live/`; and `BEND_TEST_URL` on a new non-default
+`127.0.0.1` loopback port. It checks served `build.json` and every package
+file hash before browser launch. Older cached Chromium may be incompatible
+with Playwright 1.63, and this package lacks prepared ground and bot Worker
+libraries. `node bend2/tests/browser-v2-runtime.test.mjs` tests only module
+selection and byte guards; it does not launch or accept a browser, canvas,
+offline mode, hosted release, or device performance. The explicit path needs
+exact Linux identities and a fresh bounded run request.
