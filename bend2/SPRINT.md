@@ -1685,6 +1685,13 @@ LF/CRLF compiler/Base binding and the frozen v2 manifest; the runner reports
 `allShardsSourcePassed: true`. Canonical typechecking took 290 seconds on
 that sample. This does not establish aggregate CHECK, BendTT, Linux parity,
 or the 2.0.32 mutation gate.
+The [separate aggregate CHECK source diagnostic](core/v3/2032/README.md#separate-aggregate-check-migration-candidate)
+now has a bounded single-Worker candidate with complete frozen import-cone
+matching, exact compiler/source binding, a host-local exclusive liveness lease,
+and conservative Linux cgroup admission. Its clean-source preflight and
+synthetic negatives are pending after commit; no aggregate Worker, BendTT,
+mutation, or checker-parity verdict is claimed. The old compiler-owned
+namespace guard is not exported by 2.0.32 and remains a separate parity gap.
 The [2.0.32 004 selected-root compatibility slice](toolchain-patches/004-web-workers/rebase-2032/README.md)
 now passes an exact-source Bun fixture: only requested exports, a direct and
 isolated Node worker result of 42, distinct in-memory reachable unsafe/

@@ -148,3 +148,32 @@ The runner now uses the reviewed exact LF/CRLF compiler postimage binder,
 including its mixed/tampered-source negatives. The same stack can be
 checked on Linux without accepting a changed compiler; no Linux shard run
 has yet verified this portability.
+
+## Separate aggregate CHECK migration candidate
+
+`aggregate.mjs` adds a single bounded Worker for the exact frozen
+`CHECK.bend` import set on the reviewed 001→002→005→phase2-004 derived
+2.0.32 compiler. It binds the frozen manifest, source checkout, exact
+LF/CRLF compiler and Base bytes, patch hashes, helper/runtime identity and
+the complete expected transitive import cone before checking; the compiler's
+actual loaded paths and their hashes are compared after checking. It reports
+stage-attributed resource stops and rejects TODO/open, reachable unsafe and
+foreign promises. The old 2.0.27 compiler-owned namespace guard is private in
+2.0.32 and is not reached here; this is not full checker parity.
+The source-only `--preflight-only` mode launches no Worker; run
+`node bend2/core/v3/2032/aggregate.test.mjs` on a clean checkout for exact
+closure/omission, cgroup-v2 admission, exclusive lease, invalid-CLI and
+read-only preflight controls.
+
+An actual aggregate attempt requires reviewed Node 24 without inherited Node
+flags/preloads and at least 12 GiB effective free RAM (a finite readable
+cgroup-v2 memory limit is required on Linux), one 64-MiB-stack/8-GiB-old-generation Node
+Worker, and a 900-second parent deadline. An exclusive ignored host-local
+lease prevents concurrent attempts; if the Worker exit cannot be observed,
+the lease remains and must not be reclaimed without host/process review.
+These are admission and safety bounds, not measured peak cost or a guarantee
+that CHECK completes. No aggregate attempt has run under this candidate yet.
+A pass would prove only this derived compiler's source/type/promise screening
+of the complete frozen entry; it would not invoke the BendTT kernel, six
+semantic mutations, conformance, native/browser/GPU, or authorize a
+toolchain-pin amendment.
