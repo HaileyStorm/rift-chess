@@ -42,6 +42,9 @@ const result = await Bun.build({
 });
 assert.equal(result.success, true, result.logs.map(String).join('\n'));
 assert.equal(result.outputs.filter((file) => file.path.endsWith('.js')).length, 1);
+for (const file of [...helper.outputs, ...result.outputs])
+  assert.equal(Buffer.from(await file.arrayBuffer()).length, file.size,
+    'Bun in-memory artifact bytes differ from reported size');
 assert.equal(networkCalls, 0);
 console.log(JSON.stringify({ schema: 'rift-bend-2032-worker-bundle-synthetic/1',
   passed: true, outputs: [...helper.outputs, ...result.outputs].map((file) => ({
