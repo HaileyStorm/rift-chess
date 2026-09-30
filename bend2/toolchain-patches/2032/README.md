@@ -92,8 +92,15 @@ The [versioned four-cache verifier](cache-set/README.md) and
 consistency, tamper/path/runtime negatives, and a real Bun two-Worker bundle
 using synthetic selected JS. The real bundle entrypoint pins all four raw
 Linux manifest/output digests and their paths to the independent host report.
-It has not yet consumed the Linux files or run a browser; the 2.0.27
+At that initial checkpoint it had not consumed the Linux files. The later
+[real-cache Worker bundle](browser-loader/README.md) on Linux succeeded with
+two byte-bound JS outputs; no browser was served or played. The 2.0.27
 production builder and prepared-ground path remain unchanged.
+The [separate local static-preview packer](browser-preview/README.md) now
+passes 21 synthetic path, manifest, asset and revision assertions. It is
+designed to consume the Linux bundle through an independently supplied raw
+manifest SHA-256 and package host/assets without touching `build.ts` or
+publishing; it has not yet run on that real Linux artifact or served a page.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`

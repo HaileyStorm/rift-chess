@@ -1768,8 +1768,22 @@ The separately versioned four-cache verifier now passes synthetic positive,
 binding/tamper and path controls; its real-bundle caller pins the four raw
 Linux receipt digests independently. A real Bun build of the current Worker
 and sprite-helper entrypoints passes with **synthetic** selected JS only.
-Actual Linux-cache bundling, served interaction and production build wiring
-are not yet verified; canonical 2.0.27 remains untouched.
+At that checkpoint, actual Linux-cache bundling, served interaction and
+production build wiring were not yet verified; canonical 2.0.27 was untouched.
+The subsequent [Linux real-cache bundle](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5904459791)
+used a verified host-local Bun 1.4.2 copy after an explicit terminal
+missing-runtime stop. One source-`81de054` mixed-revision CPU-only invocation
+consumed the four source-`6c795db` caches and produced a 110,863-byte
+sprite-helper JS and 427,262-byte main Worker JS, both with recorded SHA-256
+and manifest SHA-256 `d6df02c1264589ac886775acc1c9f8713e1b34d7e9daf2752290e6a1a9481f3a`.
+No browser render, app interaction, native/GPU result, pin amendment or
+publication is inferred.
+The [versioned local static-preview candidate](toolchain-patches/2032/browser-preview/README.md)
+passes 21 synthetic assertions and a separate in-memory Bun build of the
+generic host entrypoint. It binds the four exact Linux cache receipts and
+source-`81de054` Worker bundle before packaging host/assets into a unique
+ignored local directory. No real package or Chrome interaction has yet run;
+it does not modify the pinned production builder or published app.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,
 metadata, malformed, fail-closed policy and no-suffix C/JS byte comparisons.
