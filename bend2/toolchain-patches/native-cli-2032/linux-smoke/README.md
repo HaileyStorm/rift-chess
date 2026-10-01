@@ -26,13 +26,14 @@ not from a synthetic approximation. The first
 [Linux export attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5922864402)
 stopped at the older Windows-CRLF-only gate before writing C; its failure
 artifacts remain historical. The newly pinned Linux LF source-export and
-native executable tests still require their own fresh run. Any other output
+native executable tests subsequently ran once. Any other output
 or mixed EOL remains a terminal diagnostic, not authority to reuse bytes.
 
 The second phase requires an explicit already-installed Clang 18+ path on
 the same Linux host. It rebinds the source receipt, compiler and C bytes,
 uses one CPU thread and fixed C11/O2/pthread/math flags, verifies ELF target,
-then runs isolated program-only, `help`, runtime `-- --help`, and
+then runs isolated program-only, `help`, runtime `-- help` (exactly compared
+with direct `help`), runtime `-- --help`, and
 `new B prompt` → `move 3980` → new-process `show` cases. Rotating save-slot
 sequences and hashes are recorded. Each subprocess has a bounded output and
 deadline. A leader is signaled only through its live child handle before an
@@ -64,9 +65,22 @@ exit states, hashes and partial failure artifacts. Host-level supervision
 must preserve uncertain child/descendant state and the exact claim; do not
 reclaim a claim or delete an output merely because a timeout elapsed.
 
-The Windows pure contract, actual-Windows-artifact EOL equivalence,
-six-entry materialization/patch-postimage gate, and syntax checks passed.
-The earlier Linux lifecycle fixture passed, but the LF-adjusted exporter
-and real native phase have **not** run. Even a full pass proves only
+The [fresh Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5924048963)
+passed the LF C export and Clang18 link: exact local C was 2,189,657 bytes,
+and the x86-64 ELF was 1,831,568 bytes/SHA-256
+`91fe043c4d428f1b4e1321a66b28954bee73d79ad25391f1daae27408c604350`.
+Program-only and `help` passed. The `-- --help` process exited 0 but the
+smoke stopped at an exact stderr oracle mismatch: `Unknown command.\n\n`
+versus one expected LF. `NativeCLI.bend` supplies an LF to `IO.print_err`,
+and the pinned and derived C `io_errs` effects append another LF. The
+versioned harness now requires exactly two LFs and rejects the old one-LF
+oracle in its pure test. The stopped run, ELF, and failure receipts are
+retained; write/restart has **not** run. A new isolated export/compile/smoke
+one-shot is needed; the prior run may not be overwritten or silently resumed.
+The added `-- help` case tests the separator with a distinct valid command;
+the unknown-command output alone cannot prove the identity of the `--help`
+operand. The source-literal test reads the exact `3080ad5` Git blob, not the
+current application working file.
+Even a full pass proves only
 this 2.0.32 CPU CLI/argv/restart slice, not native GUI, PCM, GPU,
 mathematical/BendTT proof, browser, pin amendment or release acceptance.

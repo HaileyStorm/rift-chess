@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  EXPECTED_C, WINDOWS_C, INPUT_HASHES, LINUX_NODE_SHA256, ORIGINAL_SOURCE_HASHES, ROOT, SCENARIOS, SOURCE_HASHES,
-  WRITE_RESTART_STEPS, assertLinuxCBytes, assertRegularFile, clangCompileArguments, expectedCandidateSources,
+  BASE_APP_COMMIT, EXPECTED_C, WINDOWS_C, INPUT_HASHES, LINUX_NODE_SHA256,
+  ORIGINAL_SOURCE_HASHES, PASSTHROUGH_STDERR,
+  ROOT, SCENARIOS, SOURCE_HASHES, WRITE_RESTART_STEPS, assertLinuxCBytes,
+  assertPassthroughStderr, assertRegularFile, clangCompileArguments, expectedCandidateSources,
   parseExportArguments, parseNativeArguments, readAndValidateInputFiles,
   sha256Bytes,
 } from './common.mjs';
@@ -41,6 +44,17 @@ assert.equal(WINDOWS_C.bytes - EXPECTED_C.bytes, WINDOWS_C.crlfPairs,
 assert.throws(() => assertLinuxCBytes('not raw C bytes'), /raw bytes/);
 assert.throws(() => assertLinuxCBytes(Buffer.from('different output\n')), /byte length/);
 assert.throws(() => assertLinuxCBytes(Buffer.alloc(EXPECTED_C.bytes, 10)), /reviewed LF digest/);
+const nativeBase = execFileSync('git', ['-C', ROOT, 'show',
+  `${BASE_APP_COMMIT}:bend2/NativeCLI.bend`], { timeout: 30_000, maxBuffer: 4 * 1024 * 1024 });
+assert.equal(sha256Bytes(nativeBase), ORIGINAL_SOURCE_HASHES['bend2/NativeCLI.bend'],
+  'pinned base NativeCLI bytes differ');
+assert.match(nativeBase.toString('utf8'),
+  /IO\.print_err\("Unknown command\.\\n"\)/,
+  'the pinned base candidate no longer supplies the explicit LF');
+assert.equal(PASSTHROUGH_STDERR, 'Unknown command.\n\n');
+assert.doesNotThrow(() => assertPassthroughStderr(PASSTHROUGH_STDERR));
+assert.throws(() => assertPassthroughStderr('Unknown command.\n'),
+  /unexpected exact stderr/);
 if (process.env.BEND_REVIEW_WINDOWS_C) {
   const file = path.resolve(process.env.BEND_REVIEW_WINDOWS_C);
   assertRegularFile(file);
@@ -80,6 +94,7 @@ assert.deepEqual(clangCompileArguments('/run/NativeCLI.c', '/run/NativeCLI'), [
 assert.deepEqual(SCENARIOS.map(({ id, args }) => [id, [...args]]), [
   ['program-only', ['--threads', '1']],
   ['help', ['--threads', '1', 'help']],
+  ['dash-dash-help-word', ['--threads', '1', '--', 'help']],
   ['dash-dash-help', ['--threads', '1', '--', '--help']],
 ]);
 assert.ok(SCENARIOS.every(({ args }) => args[0] === '--threads' && args[1] === '1'));

@@ -24,6 +24,13 @@ export const EXPECTED_C = Object.freeze({
   sha256: 'e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4',
   newlineMode: 'LF',
 });
+// NativeCLI passes a string ending in LF to IO.print_err; the pinned and
+// derived C effect append one more LF. Retain exact stderr, not a loose match.
+export const PASSTHROUGH_STDERR = 'Unknown command.\n\n';
+export function assertPassthroughStderr(value) {
+  assert.equal(value, PASSTHROUGH_STDERR,
+    'unexpected exact stderr for the explicit -- --help invocation');
+}
 export const SOURCE_HASHES = Object.freeze({
   'bend2/NativeCLI.bend': 'c637e16ce6c81c91be30a5ab9b690da880e5dd3e85b4c6be0e06609138dd471e',
   'bend2/lib/graphics/v2/bench/gpu/PlanProfile.bend': 'c92fa44415cbf9286b0b451694a408fb84d54f4250487bb9856485b3cf83ded6',
@@ -372,6 +379,7 @@ export function clangCompileArguments(cSource, binary) {
 export const SCENARIOS = Object.freeze([
   Object.freeze({ id: 'program-only', args: Object.freeze(['--threads', '1']), requiredText: Object.freeze(['Layout B', 'White to move', 'LEGAL ACTIONS']) }),
   Object.freeze({ id: 'help', args: Object.freeze(['--threads', '1', 'help']), requiredText: Object.freeze(['Commands:', 'LEGAL ACTIONS']) }),
+  Object.freeze({ id: 'dash-dash-help-word', args: Object.freeze(['--threads', '1', '--', 'help']), requiredText: Object.freeze(['Commands:', 'LEGAL ACTIONS']) }),
   Object.freeze({ id: 'dash-dash-help', args: Object.freeze(['--threads', '1', '--', '--help']), requiredText: Object.freeze(['Unknown command.', 'Commands:']) }),
 ]);
 

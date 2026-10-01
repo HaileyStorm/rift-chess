@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  BASE_APP_COMMIT, CANONICAL_PIN, EXPECTED_C, HERE, ROOT,
+  BASE_APP_COMMIT, CANONICAL_PIN, EXPECTED_C, HERE, ROOT, assertPassthroughStderr,
   SCENARIOS, SOURCE_HASHES, WRITE_RESTART_STEPS, assertLinuxCBytes, assertRealDirectory,
   assertRunDirectory, assertRegularFile, bindLinuxNode, clangCompileArguments, isolatedEnvironment,
   gitText, makeExclusiveDirectory, parseNativeArguments, readAndValidateInputFiles,
@@ -181,14 +181,14 @@ function validateScenarioOutput(id, stdout, stderr) {
     assert.doesNotMatch(stdout, /Unknown command\./, 'program-only invocation unexpectedly dispatched a command');
     return;
   }
-  if (id === 'help') {
+  if (id === 'help' || id === 'dash-dash-help-word') {
     assert.equal(stderr, '', 'help invocation unexpectedly wrote to stderr');
     assert.equal(countText(stdout, 'Commands:'), 2, 'help output shape changed');
     assert.ok(stdout.includes('LEGAL ACTIONS'), 'help invocation omitted the initial action list');
     return;
   }
   if (id === 'dash-dash-help') {
-    assert.equal(stderr, 'Unknown command.\n', 'runtime -- did not preserve --help as one application argument');
+    assertPassthroughStderr(stderr);
     assert.equal(countText(stdout, 'Commands:'), 2, 'passthrough help output shape changed');
     assert.ok(stdout.includes('LEGAL ACTIONS'), 'passthrough help omitted the rendered application state');
     return;
@@ -299,11 +299,16 @@ async function runAndRecord(executable, args, runDirectory, id, options) {
 async function runBasicScenarios(binary, runDirectory) {
   const scenarioRoot = makeExclusiveDirectory(runDirectory, 'scenarios');
   const results = [];
+  let directHelpOutput;
   for (const spec of SCENARIOS) {
     const scenarioDirectory = makeExclusiveDirectory(scenarioRoot, spec.id);
     const saveDirectory = makeExclusiveDirectory(scenarioDirectory, 'save');
     const outcome = await invoke(binary, spec.args, scenarioDirectory, saveDirectory, spec.id, runDirectory);
     validateScenarioOutput(spec.id, outcome.stdout, outcome.stderr);
+    if (spec.id === 'help') directHelpOutput = outcome.stdout;
+    if (spec.id === 'dash-dash-help-word')
+      assert.equal(outcome.stdout, directHelpOutput,
+        'runtime -- help differs from the same direct application command');
     const files = safeEntries(saveDirectory);
     assert.deepEqual(files, [], `${spec.id} unexpectedly wrote native save data`);
     results.push({ id: spec.id, args: spec.args, status: outcome.status,
