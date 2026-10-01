@@ -1870,7 +1870,12 @@ reproduces the mismatch and shows stable common-root namespaces can preserve
 the shared tag. Preloading each entry's direct dependencies under that
 namespace and then loading the root empty also preserves bare public export
 keys in the small fixture. The selected-cache emitter now binds that helper,
-but no repaired real cache or rendered browser result has been produced.
+and a [separately versioned `2032-2` verifier](toolchain-patches/2032/cache-set-v2/README.md)
+retains the historical strict `2032-1` path while checking the stable-import
+metadata, one common source revision, four byte-bound closures and exact bare
+export properties. Its 28 synthetic tamper controls pass, including same-line
+extra/duplicate export rejection; no real positive cache has been verified.
+No repaired real cache or rendered browser result has been produced.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or
 GPU/browser acceptance is inferred.
