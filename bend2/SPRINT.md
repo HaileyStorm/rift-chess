@@ -1976,7 +1976,7 @@ restart ran. The cache clone lacked its own ignored Bun executable; the older
 Bun recovery had placed a copy in another checkout, so no real v2 verifier or
 bundle ran. [Corrected CLI](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925336497)
 and [no-overwrite Bun-placement/bundle](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925342479)
-requests are distinct queued one-shots, serialized after the
+requests were distinct queued one-shots, serialized after the
 [NativeV2 source/lifecycle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925094768).
 None is acceptance until a terminal host result and independent review.
 The [NativeV2 Linux source/lifecycle reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925374006)
@@ -1993,6 +1993,15 @@ provenance before launching the official `--verdict` path. Both approvals are
 still null. Its synthetic binding/lease/result controls passed independent
 review; the Linux process-group lifecycle suite and any actual kernel verdict
 remain unrun. This is not a frozen proof completion or pin-amendment receipt.
+The [corrected Linux 2.0.32 NativeCLI terminal receipt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5926835878)
+passed a fresh 2,189,657-byte LF C export (SHA-256
+`e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4`),
+Clang18 x86-64 ELF (SHA-256
+`91fe043c4d428f1b4e1321a66b28954bee73d79ad25391f1daae27408c604350`),
+exact program/help/separator argv cases and `new B prompt` → `move 3980` →
+new-process `show` with two distinct hashed rotating save slots. The prior
+malformed-fetch stop remains separate. This is CPU CLI argv/write/restart
+evidence only; NativeV2 GUI/PCM, GPU, proof and pin acceptance remain open.
 The [2.0.32 phase-seven Worker runtime slice](toolchain-patches/004-web-workers/rebase-2032/phase7-required-fanout/README.md)
 passed deterministic cap/queue/cancellation/strict-failure controls and one
 real local Chrome module-Worker pool run, with source-slot results and no
