@@ -1978,3 +1978,11 @@ and [no-overwrite Bun-placement/bundle](https://github.com/HaileyStorm/Coordinat
 requests are distinct queued one-shots, serialized after the
 [NativeV2 source/lifecycle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925094768).
 None is acceptance until a terminal host result and independent review.
+The [NativeV2 Linux source/lifecycle reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925374006)
+passed exact candidate/compiler/source preflights and owned process-lifecycle
+controls, but the old main-thread `book_load` raised `Maximum call stack size
+exceeded` before any successful source/type receipt. It did not run C
+emission or GUI. The [revised source-only gate](toolchain-patches/native-v2-2032/events/README.md)
+uses an observed, 120-second-bounded 64-MiB Node Worker and passed ten
+portable lifecycle controls plus independent review. A fresh Linux run on
+these new bytes is required before the separate C/ELF/package one-shot.

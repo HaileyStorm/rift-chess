@@ -40,11 +40,13 @@ pure controls exercise the event-to-input mapping and zoom direction; they do
 not execute Bend or claim typechecking, compiler emission, GUI interaction, or
 native behavior.
 
-Remaining evidence includes applying this patch in the isolated 2.0.32
-application candidate, source/type checking that candidate, and the supported
-Linux C emission/build and GUI-input, PCM, and restart gates. No full NativeV2
-check/emission, native build, GPU run, provider contact, or toolchain/pin
-change is part of this preflight.
+The isolated 2.0.32 application candidate now has this patch applied. Its
+initial Linux source-load attempt reached the main-thread loader and failed
+with `Maximum call stack size exceeded` before C emission. Remaining evidence
+includes rerunning the source/type check with the bounded worker and the
+supported Linux C emission/build and GUI-input, PCM, and restart gates. No
+full NativeV2 check/emission, native build, GPU run, provider contact, or
+toolchain/pin change is part of this preflight.
 
 The separate Linux `source-check.mjs` accepts only an absolute, isolated Git
 candidate at commit `216567d9cdc927cf0b4e00632a80260f9901f4fa` with
@@ -53,16 +55,35 @@ the postimage SHA-256
 `9fe46e219123e3f59958de98c6f9b65fc618cca85ca0325740dffc30e8aef292`,
 every tracked Bend source against that Git tree, the clean 2.0.27 pin,
 pristine 2.0.32 scout, LF derived compiler/Base, exact Node 22.23.1 runtime,
-and the actual loaded import closure. With `BEND_NO_TELEMETRY=1`, run it
-only on Linux under a separate owner supervisor and source/memory admission:
+the actual loaded import closure, and the hashes of both gate scripts. The
+compiler import, `book_load`, and `book_valid` run in
+`source-check-worker.mjs` with a 64 MiB thread stack, a 120-second owned
+timeout, and an observed exit/result pair. The parent still checks the exact
+closure and repeats all source/compiler/patch identity checks after worker
+exit. If Node rejects worker termination before an exit event is observed,
+the gate fails with exit state explicitly unknown and retains its exit
+observer; that is not treated as worker quiescence. With
+`BEND_NO_TELEMETRY=1`, run it only on Linux under a separate owner supervisor
+and source/memory admission:
 
 ```sh
 BEND_NO_TELEMETRY=1 node --max-old-space-size=1024 bend2/toolchain-patches/native-v2-2032/events/source-check.mjs /absolute/isolated/event-patched-checkout
 ```
 
+Portable worker lifecycle controls can run on Windows or Linux without
+emitting C or touching the toolchain:
+
+```sh
+node bend2/toolchain-patches/native-v2-2032/events/source-check.test.mjs
+```
+
 The one-file `materialization.test.mjs` checks the patch postimage in a
 fresh ignored directory and cleans only its own verified files on success.
-It passed on Windows; Linux has not run it. The no-emission Linux source
-check itself has **not** run. A source pass would not validate C emission,
+It passed on Windows; Linux has not run it. The earlier Linux source check
+reached the main-thread loader but failed with `Maximum call stack size
+exceeded` before C emission. That failed receipt is historical evidence and
+must remain intact; the bounded-worker revision needs a new immutable Linux
+request and result. The no-emission Linux source check has not yet passed. A
+source pass would not validate C emission,
 the new 2.0.32 Window/Audio effect ABIs, GUI input, PCM routing, restart,
 GPU, frozen proofs or a pin amendment.

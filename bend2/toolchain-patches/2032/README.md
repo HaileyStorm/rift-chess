@@ -134,7 +134,7 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
 | Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary per-call and phase-six narrow binary-U32 per-call fixtures | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
-| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. A separate NativeV2 Linux CPU build harness passes deterministic source-only tests, not a build. | Full exact argv/write/restart receipt after source-pin preflight stopped; NativeV2 C/ELF/package, GUI, PCM and GPU/device checks. |
+| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. NativeV2 Linux process lifecycle controls passed, but main-thread source load stopped on stack overflow; a 64-MiB Worker source gate passes portable synthetic tests only. | Full exact argv/write/restart receipt; successful NativeV2 source/type check, C/ELF/package, GUI, PCM and GPU/device checks. |
 | Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier and Worker bundle after a missing host-local Bun prerequisite; then static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
 
@@ -189,8 +189,16 @@ NativeV2 source check, GUI/PCM run or macOS input policy.
 The [separate NativeV2 2.0.32 Linux CPU harness](../native-v2-2032/linux-cpu/README.md)
 binds the event-patched source, derived compiler, cgroup memory admission,
 Clang/X11/ALSA preflight and package assets. Its deterministic tests and
-independent source review passed on Windows; Linux process lifecycle, actual
-C emission, ELF/package, GUI, PCM and restart remain unrun.
+independent source review passed on Windows. Its Linux process-lifecycle
+controls passed separately; actual C emission, ELF/package, GUI, PCM and
+restart remain unrun.
+The [Linux source/lifecycle reply](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925374006)
+passed source/candidate/compiler byte preflights and owned normal/timeout/
+output-limit process controls, but `book_load` on the old main-thread source
+gate raised `Maximum call stack size exceeded` before a source receipt.
+The [bounded 64-MiB Worker source gate](../native-v2-2032/events/README.md)
+now passes portable lifecycle tests and independent review; it still requires
+one fresh exact Linux source-check result before any C/ELF request.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

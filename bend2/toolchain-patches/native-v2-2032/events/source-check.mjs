@@ -5,11 +5,15 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { loadSourceInBoundedWorker, SOURCE_CHECK_WORKER_STACK_MB,
+  SOURCE_CHECK_WORKER_TIMEOUT_MS } from './source-check-worker.mjs';
 import { bindCompilerBaseEol, bindCompilerEol } from '../../2032/preview/compiler-eol.mjs';
 
 const root = fs.realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..'));
 const script = fileURLToPath(import.meta.url);
 const eolHelper = path.join(root, 'bend2/toolchain-patches/2032/preview/compiler-eol.mjs');
+const sourceWorkerScript = path.join(root,
+  'bend2/toolchain-patches/native-v2-2032/events/source-check-worker.mjs');
 const candidateCommit = '216567d9cdc927cf0b4e00632a80260f9901f4fa';
 const candidateTree = '4fa21705820578137a6c2cb7dfaa41b413c23567';
 const scoutCommit = '573002f01ec6c52416d44489543f69a9625facf8';
@@ -48,8 +52,10 @@ realFile(nodeExecutable);
 assert.equal(fileSha(nodeExecutable), nodeSha256, 'Linux Node executable changed');
 realFile(script);
 realFile(eolHelper);
+realFile(sourceWorkerScript);
 const scriptSha256 = fileSha(script);
 const eolHelperSha256 = fileSha(eolHelper);
+const sourceWorkerSha256 = fileSha(sourceWorkerScript);
 const sourceHead = git(root, 'rev-parse', 'HEAD');
 assert.equal(process.argv.length, 3, 'usage: node --max-old-space-size=1024 source-check.mjs <absolute-candidate>');
 assert.ok(path.isAbsolute(process.argv[2]), 'candidate path must be absolute');
@@ -113,25 +119,19 @@ const baseBinding = bindCompilerBaseEol(fs.readFileSync(base), compiler.eol);
 const before = { candidateStatus: git(candidate, 'status', '--porcelain', '--untracked-files=all'),
   sourceSha256: boundSources, compiler, base: baseBinding,
   derivedStatus: git(derived, 'status', '--porcelain', '--untracked-files=all'),
-  patchSha256: fileSha(patch), scriptSha256, eolHelperSha256, sourceHead };
+  patchSha256: fileSha(patch), scriptSha256, eolHelperSha256, sourceWorkerSha256, sourceHead };
 
-let fetches = 0;
-globalThis.fetch = async () => { fetches++; throw Error('source gate prohibits network fetch'); };
-const Bend = await import(pathToFileURL(path.join(derived, 'bend2/bend.ts')).href);
-const book = Bend.book_nil();
-const seen = new Map();
-try {
-  await Bend.book_load(book, path.join(candidate, 'bend2/NativeV2.bend'), '', seen);
-  Bend.book_valid(book);
-} catch (error) {
-  throw new Error((error?.$ === 'Err' ? Bend.err_show(error)
-    : error?.message ?? String(error)).slice(0, 1800));
-}
-assert.equal(book.hols, 0, 'NativeV2 source contains holes');
-assert.equal(book.tlds.main?.$, 'Def');
+const sourceResult = await loadSourceInBoundedWorker({
+  compilerUrl: pathToFileURL(path.join(derived, 'bend2/bend.ts')).href,
+  entryFile: path.join(candidate, 'bend2/NativeV2.bend'),
+});
+const { book, seenFiles, fetches } = sourceResult;
+assert.equal(book.holes, 0, 'NativeV2 source contains holes');
+assert.equal(book.mainTag, 'Def');
 assert.equal(fetches, 0, 'NativeV2 source check attempted a network fetch');
+assert.ok(Array.isArray(seenFiles), 'source worker returned no loaded-file list');
 const closure = [];
-for (const file of seen.keys()) {
+for (const file of seenFiles) {
   const real = fs.realpathSync(file);
   assert.equal(real, file, 'loaded source identity changed');
   realFile(real);
@@ -164,14 +164,17 @@ assert.deepEqual(bindCompilerBaseEol(fs.readFileSync(base), compiler.eol), befor
 assert.equal(fileSha(patch), before.patchSha256);
 assert.equal(fileSha(script), before.scriptSha256);
 assert.equal(fileSha(eolHelper), before.eolHelperSha256);
+assert.equal(fileSha(sourceWorkerScript), before.sourceWorkerSha256);
 assert.equal(fetches, 0);
 console.log(JSON.stringify({ schema: 'rift-native-v2-2032-source-check/1', passed: true,
   evidenceClass: 'Linux-derived-source-load-typecheck-only',
   candidateCommit, candidateTree, eventPatchSha256: patchSha256,
-  sourceCheckoutHead: sourceHead, scriptSha256, eolHelperSha256,
+  sourceCheckoutHead: sourceHead, scriptSha256, eolHelperSha256, sourceWorkerSha256,
+  worker: { stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB, timeoutMs: SOURCE_CHECK_WORKER_TIMEOUT_MS,
+    observedExit: true },
   node: { version: process.version, executableSha256: nodeSha256 },
   compilerEol: compiler.eol, compiler: compiler.files, base: baseBinding,
   entrySha256: nativePatched, trackedBendFiles: entries.length,
-  loadedFiles: seen.size, definitions: book.order.length, holes: book.hols,
+  loadedFiles: seenFiles.length, definitions: book.definitions, holes: book.holes,
   fetches, closure: Object.fromEntries(closure),
   scope: 'NativeV2 2.0.32 source/type check only; no C emission, GUI, PCM, GPU, proof, pin or release' }));
