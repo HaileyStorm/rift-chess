@@ -58,15 +58,18 @@ browser-loader/bundle-real.mjs and browser-preview/pack-static.mjs still call
 cache-set/verify.mjs. Separately versioned browser-loader-v2 and
 browser-preview-v2 candidates now call this verifier. The four-cache receipt
 pin is armed; one real v2 verifier and Worker/helper bundle passed on Linux.
-The separate static packer's Worker-bundle pin remains unarmed pending an
-independent review of the complete manifest; no static or browser run passed.
+The complete manifest was independently reviewed and an isolated exact-source
+pre-height branch arms its Worker-bundle pin. This later visual-source branch
+keeps its own pin unarmed; the older caches cannot verify its changed Bend
+files. The isolated branch's first static invocation stopped before the
+packer on an unset Linux `BUN_BIN`; no static or browser run passed.
 
 A future active consumer migration can use the versioned candidates while
 keeping the verified { modules, commonBinding, registrySha256 } result shape.
 Single-commit emission and exact real-cache verification now hold only for the
 older cache source; a separately reviewed consumer migration and fresh
 selected caches for the later
-height-only BoardScene source remain. Retain v1 until its consumers and
+height-only BoardScene and rift-pick source remain. Retain v1 until its consumers and
 evidence references have been migrated and the v2 path has rendered real-
 browser evidence; do not delete historical v1 receipts or provenance to make
 the candidate appear authoritative.

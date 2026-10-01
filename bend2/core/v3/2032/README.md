@@ -215,8 +215,14 @@ admission before a Worker. The distinct
 passed one observed Worker on exact clean source `baa5fba` in 125.058 seconds:
 57 files loaded, 1,577 definitions typechecked, 955 owned definitions,
 zero holes/fetches, and 2,204,404 KiB reported peak child rusage RSS.
-Its raw receipt awaits independent review and approval. The scoped pass proves
-only this derived compiler's source/type/promise screening
+Its [independent raw-receipt review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936578099)
+rejected approval: the producer's scope prefix differed from the strict gate
+and its final JSON omitted the already-checked EOL binder hash. Main also has
+later source changes outside that gate's lineage allowance. An isolated
+[`codex/bend2032-proof-receipt`](https://github.com/HaileyStorm/rift-chess/tree/codex/bend2032-proof-receipt)
+branch corrects only the producer metadata, preserves the rejected raw
+receipt, and requires a fresh Linux run and independent review. The scoped
+pass proves only this derived compiler's source/type/promise screening
 of the complete frozen entry; it would not invoke the BendTT kernel, six
 semantic mutations, conformance, native/browser/GPU, or authorize a
 toolchain-pin amendment.

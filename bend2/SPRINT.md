@@ -2112,6 +2112,39 @@ offline module-worker refinement. Native current-source retest, physical
 audio, GPU/device performance, full atlas-aware picking and owner visual
 acceptance remain open; the full 24/689 run was local, not hosted.
 
+The later [rift-pick consistency release](docs/evidence/v2-rift-pick-consistency/README.md)
+keeps that exact camera, piece height and atlas while suppressing an occupied
+ghost piece under a missing tile in both the legacy renderer and picker.
+Clean source `45d7041` built preview `8235c81a27d4030e143b`: a newly
+bound local 24-scenario/689-check matrix passed with zero defects, Pages
+commit `81e8725` reported built, the live 24-file verifier matched the
+unchanged original-site baselines, and an exact-build hosted extended Chrome
+run passed 13 interaction/offline checks with zero page errors. The rejected
+lower-base trial and remaining atlas-hit mismatch are recorded separately;
+the owner has not approved the visual result.
+
+The [repaired 8-GiB NativeV2 source check](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5933439172)
+passed on Linux for the retained pre-height event-patched candidate: 82
+loaded files, 3,060 definitions, zero holes/fetches and observed Worker exit.
+It is not C, GUI, PCM or current-visual native parity. A
+[new CPU C/ELF/package request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936397367)
+is queued after host-local receipt/static work. The first pre-height
+[static-package result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5934342873)
+stopped before the packer because the wrapper's `BUN_BIN` was unset and its
+Windows default path absent on Linux; all four caches and the reviewed bundle
+remained intact. A [distinct exact-Linux-Bun request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936378960)
+is queued, not a replay or a 2.0.32 browser result. The frozen CHECK aggregate
+Worker passed, but its [independent raw-receipt review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936578099)
+rejected BendTT approval: the emitted scope prefix and absent binder field did
+not match the unchanged strict contract; eight later main-branch paths also
+exceeded its lineage allowlist. An isolated
+[`codex/bend2032-proof-receipt`](https://github.com/HaileyStorm/rift-chess/tree/codex/bend2032-proof-receipt)
+branch starts at the aggregate source and corrects only the producer's two
+metadata fields without changing the checker or approval gate. A
+[distinct fresh aggregate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936734129)
+is queued; the rejected raw receipt remains immutable. Exact Lean 4.34
+tools/prebuilt kernel remain absent for BendTT.
+
 A further pitch-interpolated lower-base trial was **discarded**, not published.
 The initial formula moved the matrix foot from square 27 to square 19 at yaw
 26°/pitch 41°/zoom 75 where the prior placement stayed on 27. A more

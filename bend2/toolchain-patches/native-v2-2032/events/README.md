@@ -102,8 +102,10 @@ and explicit Worker limits have a portable child-process regression. A distinct
 Linux one-shot reached the repaired Worker but stopped at its 1024 MiB requested
 old-generation limit with an observed `ERR_WORKER_OUT_OF_MEMORY` exit in 7.111 s,
 before producing a source/type receipt. This 8192 MiB revision retains the same
-Worker lifecycle and strict source/closure bindings; it requires a new immutable
-Linux request with a reviewed memory admission, not a replay of the prior run. The
-no-emission Linux source check has not yet passed. A source pass would not validate C emission,
+Worker lifecycle and strict source/closure bindings. Its
+[distinct Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5933439172)
+passed one observed source/type Worker after two host/effective-cgroup
+admissions over 24 GiB: 82 loaded files, 3,060 definitions, zero holes/fetches,
+and no C emission. That pass does not validate C emission,
 the new 2.0.32 Window/Audio effect ABIs, GUI input, PCM routing, restart,
 GPU, frozen proofs or a pin amendment.
