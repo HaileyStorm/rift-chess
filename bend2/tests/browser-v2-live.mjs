@@ -170,7 +170,10 @@ async function squarePoint(file, rank, piece = false) {
   try { await settled(); }
   catch (error) {
     const diagnostic = { schema: 'rift-bend-first-frame-failure/1', buildBinding,
-      browserVersion, errors: errors.slice(-16), requestFailures: requestFailures.slice(-16) };
+      browserVersion, errors: errors.slice(-16).map(value => String(value).slice(0, 500)),
+      requestFailures: requestFailures.slice(-16).map(({ pathname, failure }) => ({
+        pathname: pathname.slice(0, 200), failure: String(failure).slice(0, 200),
+      })) };
     try {
       diagnostic.page = await page.evaluate(() => {
         const canvas = document.querySelector('canvas');
