@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   BASE_APP_COMMIT, CANONICAL_PIN, EXPECTED_C, HERE, ROOT,
-  SCENARIOS, SOURCE_HASHES, WRITE_RESTART_STEPS, assertRealDirectory,
+  SCENARIOS, SOURCE_HASHES, WRITE_RESTART_STEPS, assertLinuxCBytes, assertRealDirectory,
   assertRunDirectory, assertRegularFile, bindLinuxNode, clangCompileArguments, isolatedEnvironment,
   gitText, makeExclusiveDirectory, parseNativeArguments, readAndValidateInputFiles,
   readBlobs, readSafeJson, readTreeBendSources, runOwnedProcess, safeEntries,
@@ -76,6 +76,7 @@ function assertSourceReceipt(runDirectory) {
   assert.equal(receipt.source.fetches, 0);
   assert.equal(receipt.emittedC.bytes, EXPECTED_C.bytes);
   assert.equal(receipt.emittedC.sha256, EXPECTED_C.sha256);
+  assert.equal(receipt.emittedC.newlineMode, EXPECTED_C.newlineMode);
   assert.equal(receipt.emittedC.generatedLocally, true);
   assert.equal(receipt.nativeBinaryBuilt, false);
   assert.deepEqual(receipt.inputFiles, readAndValidateInputFiles(), 'source-bound patch/test inputs changed');
@@ -117,8 +118,7 @@ function assertSourceReceipt(runDirectory) {
     receipt.sourceBindingSha256, 'source binding digest does not match its recorded inputs');
   const cSource = path.join(runDirectory, receipt.emittedC.file);
   assertRegularFile(cSource);
-  assert.equal(fs.statSync(cSource).size, EXPECTED_C.bytes);
-  assert.equal(sha256File(cSource), EXPECTED_C.sha256);
+  assertLinuxCBytes(fs.readFileSync(cSource));
   assert.equal(exporter.schema, 'rift-native-cli-2032-linux-export-process/1');
   assert.equal(exporter.ok, true);
   assert.equal(exporter.runDirectory, runDirectory);
@@ -411,7 +411,7 @@ async function main() {
     assertRunDirectory(runDirectory);
     const binary = path.join(runDirectory, 'NativeCLI');
     assertAbsent(binary);
-    assert.equal(sha256File(cSource), EXPECTED_C.sha256, 'C source changed before native compilation');
+    assertLinuxCBytes(fs.readFileSync(cSource));
     const compileArgs = clangCompileArguments(cSource, binary);
     const compile = await runAndRecord(clang, compileArgs, runDirectory, 'clang-compile', {
         cwd: runDirectory, env, timeoutMs: 180_000, maxOutputBytes: 2 * 1024 * 1024,
@@ -422,7 +422,7 @@ async function main() {
     assert.equal(compile.stderr.length, 0, 'Clang emitted unexpected compile diagnostics');
     assert.equal(fs.realpathSync(clangSupplied), clang, 'Clang symlink target changed during compile');
     assert.equal(sha256File(clang), clangIdentity.sha256, 'supplied Clang binary changed during compile');
-    assert.equal(sha256File(cSource), EXPECTED_C.sha256, 'C source changed during native compilation');
+    assertLinuxCBytes(fs.readFileSync(cSource));
     assertRegularFile(binary, { executable: true });
     assertElf(binary);
     const binarySha = sha256File(binary);
@@ -441,7 +441,7 @@ async function main() {
       nativeSmoke: sha256File(scriptPath) }, runnerScriptsBefore,
     'native-smoke scripts changed during native scenarios');
     assertCandidateTree(path.join(runDirectory, receipt.candidate.directory), receipt);
-    assert.equal(sha256File(cSource), EXPECTED_C.sha256, 'C artifact changed during native run');
+    assertLinuxCBytes(fs.readFileSync(cSource));
     assert.equal(sha256File(path.join(runDirectory, 'source-export.json')), receiptHash,
       'source export receipt changed during native run');
     assert.equal(sha256File(path.join(runDirectory, 'export-process.json')), processHash,
@@ -465,6 +465,7 @@ async function main() {
         compileStatus: compile.status, compileSignal: compile.signal,
       },
       cSource: { bytes: EXPECTED_C.bytes, sha256: EXPECTED_C.sha256,
+        newlineMode: EXPECTED_C.newlineMode,
         file: path.basename(cSource), generatedLocally: true },
       nativeBinary: { file: path.basename(binary), sha256: binarySha, format: 'ELF',
         cpuArchitecture: process.arch, threads: 1 },

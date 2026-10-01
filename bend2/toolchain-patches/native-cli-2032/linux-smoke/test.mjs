@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import {
-  EXPECTED_C, INPUT_HASHES, LINUX_NODE_SHA256, ORIGINAL_SOURCE_HASHES, ROOT, SCENARIOS, SOURCE_HASHES,
-  WRITE_RESTART_STEPS, clangCompileArguments, expectedCandidateSources,
+  EXPECTED_C, WINDOWS_C, INPUT_HASHES, LINUX_NODE_SHA256, ORIGINAL_SOURCE_HASHES, ROOT, SCENARIOS, SOURCE_HASHES,
+  WRITE_RESTART_STEPS, assertLinuxCBytes, assertRegularFile, clangCompileArguments, expectedCandidateSources,
   parseExportArguments, parseNativeArguments, readAndValidateInputFiles,
+  sha256Bytes,
 } from './common.mjs';
 
 assert.deepEqual(Object.keys(SOURCE_HASHES).sort(), [
@@ -25,9 +27,34 @@ assert.deepEqual(expectedCandidateSources(ORIGINAL_SOURCE_HASHES, true), SOURCE_
 assert.throws(() => expectedCandidateSources(ORIGINAL_SOURCE_HASHES, undefined),
   /candidate phase must be explicit/);
 assert.deepEqual(EXPECTED_C, {
+  bytes: 2189657,
+  sha256: 'e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4',
+  newlineMode: 'LF',
+});
+assert.deepEqual(WINDOWS_C, {
   bytes: 2189927,
   sha256: '373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281',
+  crlfPairs: 270,
 });
+assert.equal(WINDOWS_C.bytes - EXPECTED_C.bytes, WINDOWS_C.crlfPairs,
+  'reviewed cross-host C difference must be exactly one byte per CRLF pair');
+assert.throws(() => assertLinuxCBytes('not raw C bytes'), /raw bytes/);
+assert.throws(() => assertLinuxCBytes(Buffer.from('different output\n')), /byte length/);
+assert.throws(() => assertLinuxCBytes(Buffer.alloc(EXPECTED_C.bytes, 10)), /reviewed LF digest/);
+if (process.env.BEND_REVIEW_WINDOWS_C) {
+  const file = path.resolve(process.env.BEND_REVIEW_WINDOWS_C);
+  assertRegularFile(file);
+  const windows = fs.readFileSync(file);
+  assert.equal(windows.length, WINDOWS_C.bytes);
+  assert.equal(sha256Bytes(windows), WINDOWS_C.sha256);
+  const text = windows.toString('utf8');
+  assert.ok(Buffer.from(text, 'utf8').equals(windows), 'Windows C is not valid UTF-8');
+  assert.equal((text.match(/\r\n/g) ?? []).length, WINDOWS_C.crlfPairs);
+  assert.equal((text.match(/\r/g) ?? []).length, WINDOWS_C.crlfPairs,
+    'Windows C contains a carriage return outside a CRLF pair');
+  assert.deepEqual(assertLinuxCBytes(Buffer.from(text.replaceAll('\r\n', '\n'), 'utf8')),
+    EXPECTED_C, 'the exact Windows C must normalize to the reviewed Linux C digest');
+}
 assert.equal(LINUX_NODE_SHA256,
   '93956de2e59480474a7b46571da1651180b1a050cdf32641ebec4ce6e478e068');
 

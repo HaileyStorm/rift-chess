@@ -1742,11 +1742,19 @@ at the generated POSIX `sys/mman.h` include, absent on that toolchain; no
 Linux compile or native runtime/argv acceptance is inferred.
 The [Linux-local 2.0.32 CLI smoke candidate](toolchain-patches/native-cli-2032/linux-smoke/README.md)
 reconstructs exact patched Bend sources from the Git base in fresh ignored
-storage, binds the derived compiler's host EOL and known C digest before
+storage, binds the derived compiler's host EOL and reviewed C digest before
 local emission, then conditionally compiles and runs isolated argv/restart
-cases. Syntax, Windows pure contract and six-entry patch-materialization
-checks pass; Linux lifecycle, C
-export, compile and executable scenarios remain unrun. The Windows C
+cases. The first [Linux one-shot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5922864402)
+passed syntax, pure, materialization and lifecycle controls but stopped before
+writing C: its 2,189,657-byte LF emission did not match the Windows CRLF
+digest then required by the checker. A read-only check of the retained Windows
+2,189,927-byte C artifact found exactly 270 CRLF pairs and no lone CR;
+normalizing only those pairs produced precisely the Linux-reported SHA-256
+`e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4`.
+The harness now pins that exact LF digest and rejects any CR or other C bytes,
+while retaining the old Windows hash and failed Linux receipt. The updated
+pure gate passed against the actual Windows C. A fresh Linux C write, Clang
+compile and executable argv/restart scenarios remain unrun. The Windows C
 artifact is not transferred or counted as native acceptance.
 The separate [2.0.32 NativeV2 event adapter](toolchain-patches/native-v2-2032/events/README.md)
 now passes a Windows exact-source/read-only patch and pure X11 wheel-direction

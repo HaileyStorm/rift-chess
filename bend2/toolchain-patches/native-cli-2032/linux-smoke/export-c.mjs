@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   BASE_APP_COMMIT, BEND_RELEASE, CANONICAL_PIN, EXPECTED_C, HERE,
-  ORIGINAL_SOURCE_HASHES, ROOT, SOURCE_HASHES, assertRealDirectory, assertRegularFile,
+  ORIGINAL_SOURCE_HASHES, ROOT, SOURCE_HASHES, assertLinuxCBytes, assertRealDirectory, assertRegularFile,
   assertRunDirectory, bindLinuxNode, createRunDirectory, gitText, helperPath, isolatedEnvironment,
   expectedCandidateSources, makeExclusiveDirectory, readAndValidateInputFiles, readBlobs, readSafeJson,
   parseExportArguments, readTreeBendSources, runOwnedProcess, sha256Bytes, sha256File,
@@ -197,9 +197,7 @@ async function runChild(runDirectory, identity) {
     const includesAlsa = cText.includes('#include <alsa/');
     const bangs = !/^#define BANGS\s+0$/m.test(cText);
     partial.emittedC = { bytes: cBytes.length, sha256: cSha256 };
-    assert.equal(cBytes.length, EXPECTED_C.bytes, 'Linux-emitted C byte length differs from the known candidate');
-    assert.equal(cSha256, EXPECTED_C.sha256,
-      `Linux-emitted C differs from the known candidate digest: expected ${EXPECTED_C.sha256}, got ${cSha256}`);
+    assertLinuxCBytes(cBytes);
     assert.equal(includesX11, false, 'CLI C contains an X11 include');
     assert.equal(includesAlsa, false, 'CLI C contains an ALSA include');
     assert.equal(bangs, false, 'CLI C enables GPU BANGS');
@@ -236,7 +234,7 @@ async function runChild(runDirectory, identity) {
         fetches, closure: Object.fromEntries(closure),
       },
       emittedC: {
-        file: 'NativeCLI.c', bytes: cBytes.length, sha256: cSha256,
+        file: 'NativeCLI.c', bytes: cBytes.length, sha256: cSha256, newlineMode: 'LF',
         includesX11, includesAlsa, bangs, generatedLocally: true,
       },
       nativeBinaryBuilt: false, nativeRuntimeTested: false,
@@ -249,7 +247,7 @@ async function runChild(runDirectory, identity) {
     const written = writeExclusive(cPath, cBytes);
     assert.deepEqual(written, { bytes: EXPECTED_C.bytes, sha256: EXPECTED_C.sha256 });
     assertRegularFile(cPath);
-    assert.equal(sha256File(cPath), EXPECTED_C.sha256);
+    assertLinuxCBytes(fs.readFileSync(cPath));
     assert.deepEqual(readAndValidateInputFiles(), before.inputFiles,
       'source input changed during C file write');
     assert.deepEqual(snapshotToolchainStack(), before.toolchain,
@@ -303,7 +301,8 @@ async function main() {
     assert.equal(receipt.candidate.baseCommit, BASE_APP_COMMIT);
     assert.deepEqual(receipt.emittedC, {
       file: 'NativeCLI.c', bytes: EXPECTED_C.bytes, sha256: EXPECTED_C.sha256,
-      includesX11: false, includesAlsa: false, bangs: false, generatedLocally: true,
+      newlineMode: EXPECTED_C.newlineMode, includesX11: false, includesAlsa: false,
+      bangs: false, generatedLocally: true,
     });
     assert.deepEqual(readSafeJson(path.join(runDirectory, 'source-export.json')), receipt,
       'source receipt differs from supervised exporter result');

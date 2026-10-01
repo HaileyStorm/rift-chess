@@ -12,10 +12,22 @@ The LF/CRLF compiler postimages are bound by the existing EOL helper. It
 reads the exact Git Bend-source blobs at application commit `3080ad5`,
 materializes them in a fresh ignored directory, and applies the two pinned
 NativeCLI/consumer argument patches there. It checks all source bytes and
-the actual loaded import cone before locally emitting C. The known
-2,189,927-byte C SHA-256 `373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281`
-must match **before** any C file is written. A mismatch is a terminal
-diagnostic, not authority to reuse Windows bytes or weaken the binding.
+the actual loaded import cone before locally emitting C. The reviewed Linux
+LF output must be exactly 2,189,657 bytes/SHA-256
+`e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4`,
+with no carriage returns, **before** any C file is written. The earlier
+Windows CRLF output remains separately pinned at 2,189,927 bytes/SHA-256
+`373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281`.
+The retained Windows artifact has exactly 270 CRLF pairs and no lone CR;
+replacing those pairs with LF gives exactly the Linux-reported length and
+digest. This was checked from the actual retained Windows artifact with
+`BEND_REVIEW_WINDOWS_C=<absolute path to NativeCLI.c> node .../test.mjs`,
+not from a synthetic approximation. The first
+[Linux export attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5922864402)
+stopped at the older Windows-CRLF-only gate before writing C; its failure
+artifacts remain historical. The newly pinned Linux LF source-export and
+native executable tests still require their own fresh run. Any other output
+or mixed EOL remains a terminal diagnostic, not authority to reuse bytes.
 
 The second phase requires an explicit already-installed Clang 18+ path on
 the same Linux host. It rebinds the source receipt, compiler and C bytes,
@@ -52,8 +64,9 @@ exit states, hashes and partial failure artifacts. Host-level supervision
 must preserve uncertain child/descendant state and the exact claim; do not
 reclaim a claim or delete an output merely because a timeout elapsed.
 
-The Windows pure contract, six-entry materialization/patch-postimage gate,
-and syntax checks passed; the Linux lifecycle
-fixture and both real phases have **not** run. Even a full pass proves only
+The Windows pure contract, actual-Windows-artifact EOL equivalence,
+six-entry materialization/patch-postimage gate, and syntax checks passed.
+The earlier Linux lifecycle fixture passed, but the LF-adjusted exporter
+and real native phase have **not** run. Even a full pass proves only
 this 2.0.32 CPU CLI/argv/restart slice, not native GUI, PCM, GPU,
 mathematical/BendTT proof, browser, pin amendment or release acceptance.

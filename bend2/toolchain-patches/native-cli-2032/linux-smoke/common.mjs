@@ -14,9 +14,15 @@ export const BASE_APP_COMMIT = '3080ad508fd73c1730a82c9393890cc199426918';
 export const BEND_RELEASE = '573002f01ec6c52416d44489543f69a9625facf8';
 export const CANONICAL_PIN = 'd37909174ebd664338ae3194799a9e0899dedd51';
 export const LINUX_NODE_SHA256 = '93956de2e59480474a7b46571da1651180b1a050cdf32641ebec4ce6e478e068';
-export const EXPECTED_C = Object.freeze({
+export const WINDOWS_C = Object.freeze({
   bytes: 2189927,
   sha256: '373f735cd13c42b2a2f307646bfd08931c93e0fc599c362a12676ffdc4a77281',
+  crlfPairs: 270,
+});
+export const EXPECTED_C = Object.freeze({
+  bytes: 2189657,
+  sha256: 'e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4',
+  newlineMode: 'LF',
 });
 export const SOURCE_HASHES = Object.freeze({
   'bend2/NativeCLI.bend': 'c637e16ce6c81c91be30a5ab9b690da880e5dd3e85b4c6be0e06609138dd471e',
@@ -59,6 +65,13 @@ export const INPUT_HASHES = Object.freeze({
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 export const sha256Bytes = sha256;
 export const sha256File = (file) => sha256(fs.readFileSync(file));
+export function assertLinuxCBytes(bytes) {
+  assert.ok(Buffer.isBuffer(bytes), 'C output must be raw bytes');
+  assert.equal(bytes.length, EXPECTED_C.bytes, 'Linux-emitted C byte length differs from the reviewed LF output');
+  assert.equal(sha256Bytes(bytes), EXPECTED_C.sha256, 'Linux-emitted C differs from the reviewed LF digest');
+  assert.equal(bytes.includes(13), false, 'Linux-emitted C contains a carriage return');
+  return { bytes: bytes.length, sha256: EXPECTED_C.sha256, newlineMode: EXPECTED_C.newlineMode };
+}
 export const helperPath = (relative) => path.join(ROOT, ...relative.split('/'));
 export const toolchainPaths = () => ({
   scout: path.join(ROOT, '.artifacts/toolchains/bend-2.0.32-scout'),
