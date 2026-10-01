@@ -34,10 +34,31 @@ async function main() {
   const Comp = await import(pathToFileURL(path.join(workerData.derived, 'bend2/comp.ts')));
   const { emitSelectedLibrary2032 } = await import(pathToFileURL(
     path.join(workerData.repo, 'bend2/toolchain-patches/2032/build-adapter/selected-library.mjs')));
+  const { loadWithStableImports } = await import(pathToFileURL(
+    path.join(workerData.repo, 'bend2/toolchain-patches/2032/tag-identity/preload-root.mjs')));
   const book = Bend.book_nil();
   const loadStart = performance.now();
-  await Bend.book_load(book, workerData.entry.replaceAll('\\', '/'), '', new Map());
-  Bend.book_valid(book);
+  let tagIdentity;
+  try {
+    tagIdentity = await loadWithStableImports(Bend, book,
+      workerData.entry.replaceAll('\\', '/'), path.join(workerData.repo, 'bend2'));
+    Bend.book_valid(book);
+  } catch (error) {
+    throw new Error((error?.$ === 'Err' ? Bend.err_show(error)
+      : error?.message ?? String(error)).slice(0, 1200));
+  }
+  const loadedBendSources = [...tagIdentity.seen.keys()].map(file => {
+    const real = fs.realpathSync(file);
+    assert.equal(real, file, 'loaded Bend source path changed identity');
+    const stat = fs.lstatSync(real);
+    assert.ok(stat.isFile() && !stat.isSymbolicLink(), 'loaded source is not a regular file');
+    const relative = path.relative(workerData.repo, real).replaceAll('\\', '/');
+    assert.ok(relative !== '..' && !relative.startsWith('../') && !path.isAbsolute(relative),
+      'loaded Bend source escaped the bound repository/toolchain roots');
+    return { path: relative, sha256: sha256(fs.readFileSync(real)) };
+  }).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(loadedBendSources, workerData.bendSourceFiles,
+    'actual loaded Bend closure differs from the source-bound import graph');
   assert.equal(book.hols, 0, 'selected module has unfilled laws or TODOs');
   const loadMs = performance.now() - loadStart;
   const memoryAfterLoad = checkFreeMemory('selected JavaScript emission');
@@ -61,6 +82,9 @@ async function main() {
     output: { bytes: bytes.length, sha256: sha256(bytes) },
     timing: { loadMs: Math.round(loadMs), emitMs: Math.round(emitMs), workerMs: Math.round(performance.now() - started) },
     memory: { beforeLoad: memoryBeforeLoad, afterLoad: memoryAfterLoad, afterEmit: memoryAfterEmit },
+    tagIdentity: { policy: 'stable-imports-empty-root/1',
+      preloaded: tagIdentity.preloaded, rootNamespace: tagIdentity.seen.get(fs.realpathSync(workerData.entry)),
+      loadedBendFiles: loadedBendSources.length },
     networkCalls,
   });
 }

@@ -102,8 +102,14 @@ Linux bundle and produced a byte-bound 16-file static package without touching
 `build.ts` or publishing. A cached Chromium 140 browser smoke navigated that
 package but timed out before the first ready frame; a later diagnostic attempt
 stopped at an isolated-checkout unit-test dependency before launch. The
-source-only test dependency has been removed, but a new Linux rendered result
-is pending. No browser acceptance is established.
+source-only test dependency was removed. The next diagnostic launched and
+captured a first-frame
+Worker fault on root-dependent `Scene.Frame` constructor tags. The
+[source-bound two-library reproduction](tag-identity/README.md) demonstrates
+the same 2.0.32 tag mismatch and a stable-dependency preload that retains
+bare public exports. The selected-cache emitter carries that change but has
+not produced a repaired real four-cache set. No rendered browser acceptance
+is established.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`

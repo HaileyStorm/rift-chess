@@ -1837,7 +1837,7 @@ The [probe](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-59
 launched and navigated the static page, then timed out at the first ready-frame
 wait. It produced no rendered screenshot or interaction result. The Playwright
 1.63/Chromium 140 pairing is outside that package's expected Chromium revision;
-the first-frame cause remains unclassified pending bounded browser/Worker
+at that checkpoint the first-frame cause was unclassified pending browser/Worker
 diagnostics. No browser acceptance follows from this launch.
 The test now preserves a bounded first-frame failure snapshot (canvas/Worker
 signals, page errors, failed requests, and a screenshot when obtainable) in a
@@ -1849,7 +1849,23 @@ This was a test dependency, not a diagnosis of the canvas timeout. The gate
 now tests the default route through an injected source-only loader and the
 explicit byte-binding route through a unique synthetic local package/core
 fixture. The live path still loads only an exact pinned real package; Linux
-browser diagnostics remain unrun pending a new immutable host request.
+browser diagnostics were pending a new immutable host request at that checkpoint.
+The [subsequent Linux diagnostic](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5922751823)
+passed the dependency preflight and launched Chromium, but captured a Bend
+Worker fault on its first frame: a `../Scene.Frame` value was rejected where
+the consumer expected `graphics/Scene.Frame`. Canvas readiness and shown
+frames remained absent; the screenshot showed the error, not a rendered game.
+This matches the root-dependent constructor-tag class in upstream Bend
+[#1105](https://github.com/bendlang/bend/issues/1105). A
+[small exact 2.0.32 cross-library fixture](toolchain-patches/2032/tag-identity/README.md)
+reproduces the mismatch and shows stable common-root namespaces can preserve
+the shared tag. Preloading each entry's direct dependencies under that
+namespace and then loading the root empty also preserves bare public export
+keys in the small fixture. The selected-cache emitter now binds that helper,
+but no repaired real cache or rendered browser result has been produced.
+The original first-frame
+FAIL and all cached package evidence remain preserved; no interaction or
+GPU/browser acceptance is inferred.
 The pinned production builder and published app remain unchanged.
 The [004 phase-two parser/planner candidate](toolchain-patches/004-web-workers/rebase-2032/phase2/README.md)
 now replays exactly after 001→002→005 and passes source-only suffix,

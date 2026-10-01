@@ -10,6 +10,17 @@ compiler/patch/helper and selected source closure before loading, then checks
 the same binding again before writing a manifest. Each run is serialized by an
 exclusive shared lock and stored in a unique ignored directory under
 `.artifacts/bend2/2032-preview/`; prior outputs are retained.
+After the first-frame [constructor-tag fault](../tag-identity/README.md), the
+current emitter preloads each selected entry's direct imports under stable
+`bend2/`-relative namespaces, then loads the entry itself under the original
+empty namespace. This preserves the specified bare public export keys while
+normalizing shared imported ADT tags. The new helper is included in the
+source binding and manifest policy. The earlier Linux four-cache outputs and
+static package predate this change; their exact receipts remain historical,
+not evidence of a repaired browser build. No new real cache set has yet been
+emitted with this policy. New manifests use `rift-bend-selected-cache/2032-2`;
+the source-`6c795db` cache-set verifier accepts only the historical
+`2032-1` receipts and must not silently approve the new outputs.
 
 The Bun worker has a five-minute parent-enforced timeout and checks free
 physical RAM against 2.5 GiB before load, before emission, and before writing.

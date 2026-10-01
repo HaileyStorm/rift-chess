@@ -31,6 +31,8 @@ const lockPath = path.join(outputRoot, 'menu-emitter.lock');
 const adapterPath = path.join(repo, 'bend2/toolchain-patches/2032/build-adapter/selected-library.mjs');
 const selectedHelperPath = path.join(repo,
   'bend2/toolchain-patches/004-web-workers/rebase-2032/selected-module.mjs');
+const tagIdentityHelperPath = path.join(repo,
+  'bend2/toolchain-patches/2032/tag-identity/preload-root.mjs');
 const registryPath = path.join(repo, 'bend2/tools/selected-modules.mjs');
 const release = '573002f01ec6c52416d44489543f69a9625facf8';
 const canonicalPin = 'd37909174ebd664338ae3194799a9e0899dedd51';
@@ -92,6 +94,7 @@ function collectSourceClosure(entry) {
     registryPath,
     adapterPath,
     selectedHelperPath,
+    tagIdentityHelperPath,
     path.join(here, 'emit-menu.mjs'),
     path.join(here, 'emit-menu.worker.mjs'),
     path.join(here, 'compiler-eol.mjs'),
@@ -132,6 +135,7 @@ function bindingSnapshot() {
     patches,
     sourceFiles: collectSourceClosure(spec.entry),
     module: { name: moduleName, entry: spec.entry, exports: spec.exports },
+    tagIdentity: 'stable-imports-empty-root/1',
   };
 }
 function checkFreeMemory(stage) {
@@ -187,7 +191,17 @@ try {
   const result = await runWorker({
     repo, scout, derived, entry: path.join(repo, spec.entry), outputPath,
     exports: spec.exports,
+    bendSourceFiles: binding.sourceFiles.filter(file => file.path.endsWith('.bend')),
   });
+  assert.equal(result.tagIdentity?.policy, binding.tagIdentity,
+    'emission worker did not apply the bound tag-identity policy');
+  assert.equal(result.tagIdentity.rootNamespace, '',
+    'selected root lost its public empty namespace');
+  assert.ok(Array.isArray(result.tagIdentity.preloaded) && result.tagIdentity.preloaded.length > 0,
+    'selected module had no stable imported dependencies');
+  assert.equal(result.tagIdentity.loadedBendFiles,
+    binding.sourceFiles.filter(file => file.path.endsWith('.bend')).length,
+    'emission worker loaded a different Bend source closure');
   const outputStat = fs.lstatSync(outputPath);
   assert.ok(outputStat.isFile() && !outputStat.isSymbolicLink(), 'selected cache is not a regular file');
   const outputBytes = fs.readFileSync(outputPath);
@@ -204,10 +218,11 @@ try {
   assert.equal(result.networkCalls, 0);
 
   const manifest = {
-    schema: 'rift-bend-selected-cache/2032-1',
+    schema: 'rift-bend-selected-cache/2032-2',
     module: binding.module,
     bindingSha256,
     binding,
+    tagIdentity: result.tagIdentity,
     output: { file: `${moduleName}.js`, bytes: outputBytes.length, sha256: sha256(outputBytes) },
     timing: { elapsedMs: Math.round(performance.now() - start), ...result.timing },
     memory: { beforeWorker, ...result.memory, afterEmission: afterEmissionMemory,
