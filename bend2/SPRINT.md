@@ -1960,3 +1960,10 @@ X11/ALSA dependency probe, a 64-MiB compiler Worker stack, two fail-closed
 deterministic tests and independent review passed on Windows. The Linux
 lifecycle test skipped there; no 2.0.32 NativeV2 C, ELF, GUI, PCM, restart or
 GPU result follows until a fresh Linux-host run and separate interaction gates.
+The [004 phase-six narrow binary-U32 slice](toolchain-patches/004-web-workers/rebase-2032/phase6-two-u32/README.md)
+then passed a separate exact-stack replay and local Chrome 154 Worker probe.
+It adds a dense, two-U32-argument direct leaf while preserving unary calls,
+rejects holes at both dispatch boundaries, and retains late no-suffix JS/C
+byte parity. The accepted leaf returns its second formal, so exact first-slot
+value fidelity remains unproven despite presence/type/order checks. This is
+not the full 004 scheduler or a migrated 107-case matrix pass.

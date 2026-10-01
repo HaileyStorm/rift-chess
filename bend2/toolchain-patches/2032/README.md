@@ -133,7 +133,7 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | Evidence class | Current 2.0.32 gate | Acceptance still missing |
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
-| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime and phase-five per-call fixture | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
+| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary per-call and phase-six narrow binary-U32 per-call fixtures | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
 | Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. A separate NativeV2 Linux CPU build harness passes deterministic source-only tests, not a build. | Full exact argv/write/restart receipt after the stopped stderr oracle case; NativeV2 C/ELF/package, GUI, PCM and GPU/device checks. |
 | Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier, Worker bundle, static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
@@ -146,6 +146,11 @@ diagnostics for resource and source attribution, not an additional mandatory
 aggregate pass. Phase four and phase five test different implementations;
 carry useful browser-origin and cleanup controls into the eventual per-call
 matrix rather than counting both as interchangeable final gates.
+The [phase-six two-U32 per-call slice](../004-web-workers/rebase-2032/phase6-two-u32/README.md)
+passed a source-bound replay and local Chrome Worker witness with dense-index
+validation, unary carry-forward and late no-suffix JS/C parity. It does not
+establish first-slot value fidelity for arbitrary binary leaves, general
+eligibility/scheduling, or the old 107-case matrix on 2.0.32.
 
 The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
 [five additional consumers](../native-cli-2032/consumers/README.md) remain
