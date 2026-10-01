@@ -56,3 +56,10 @@ GUI framing/input, PCM/audio, persistence/restart, GPU, visual acceptance,
 frozen proof completion, pin amendment, and release remain separate gates.
 The existing 2.0.27 builder and its historical emitted-C hash are not used as
 acceptance evidence for this 2.0.32 candidate.
+
+The separate [Linux interactive gate](interactive/README.md) consumes only a
+completed, hash-bound package from this builder. It checks a real X11 frame,
+move/orbit/wheel input, rotating save/preferences slots, graceful close and
+same-data-dir restart. Routed PCM requires an explicit existing capture route;
+without it the GUI/restart result is partial and exits nonzero. Its portable
+contracts pass, but no 2.0.32 package or live X11/ALSA run has passed yet.

@@ -2010,3 +2010,12 @@ when Chrome was absent and an unobserved partial-startup rejection. This is
 not compiler-emitted sibling fan-out: the phase-six builder still rejects
 the multi-requirement caller. Full 004 eligibility, 107 cases, hosted play,
 native/GPU and pin acceptance remain open.
+The [separate 2.0.32 NativeV2 interactive candidate](toolchain-patches/native-v2-2032/linux-cpu/interactive/README.md)
+now passes portable package/ELF/asset, X11-coordinate, journal-slot,
+relaunch, process-lifecycle and PCM-overlap controls after independent review.
+It consumes the exact future Linux CPU package and requires real window/input,
+graceful close, same-data-dir restart and an explicit routed ALSA capture for
+a full result. Without PCM it records only partial GUI/restart evidence and
+exits nonzero. No 2.0.32 NativeV2 package or live X11/ALSA run is established
+by these tests; physical audibility, GPU and owner visual acceptance remain
+separate.
