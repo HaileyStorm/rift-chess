@@ -2042,11 +2042,18 @@ then passed on the same retained Linux checkout. The missing policy-floor and
 pre-policy commits were verified as actual ancestors; 28 cache tamper controls
 passed, and one real Bun 1.4.2 run emitted a hash-bound v2 Worker/helper pair
 with zero in-script fetch calls. The [terminal result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307)
-does not include a complete independent manifest review, static package or
-browser render. A bounded [host-local manifest review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929884459)
-is queued before any versioned static-bundle approval pin. These cache/bundle
-inputs predate the later height-only visual source; first render on them will
-not establish current visual parity.
+does not itself establish static packaging or browser rendering. The bounded
+[independent host-local manifest review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930184246)
+accepted the complete 6,061-byte manifest, its 18 source-file bindings,
+four cache inputs, Bun executable and both output bytes. An isolated
+[`codex/bend2032-bundle-pin`](https://github.com/HaileyStorm/rift-chess/tree/codex/bend2032-bundle-pin)
+branch descends from exact bundle source `52e102b`, arms only that reviewed
+pin and includes the separately versioned 2032-2 live browser gate. Its
+synthetic packer/live tests pass; no real static package or browser run follows
+from those tests. A [distinct Linux static-package request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930244611)
+is queued after the aggregate and NativeV2 source lanes. These cache/bundle
+inputs predate the later height-only visual source; even a successful first
+render on them will not establish current visual parity.
 The [64-MiB NativeV2 source-worker Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927807704)
 also stopped before `book_load`: Node 22 rejected the inherited parent heap
 flag in Worker `execArgv`. Its source, C and GUI gates remain unpassed. A
