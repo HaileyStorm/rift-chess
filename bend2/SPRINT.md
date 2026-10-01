@@ -2038,7 +2038,15 @@ test passed. The cache-set tamper suite stopped on its first case because the
 shallow clone lacked exact older policy-floor commit `03469c0`; no real v2
 verifier, Bun bundle, static package or browser run followed. A distinct
 [bounded history-and-bundle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927928849)
-is queued; it has no terminal result yet.
+then passed on the same retained Linux checkout. The missing policy-floor and
+pre-policy commits were verified as actual ancestors; 28 cache tamper controls
+passed, and one real Bun 1.4.2 run emitted a hash-bound v2 Worker/helper pair
+with zero in-script fetch calls. The [terminal result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307)
+does not include a complete independent manifest review, static package or
+browser render. A bounded [host-local manifest review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929884459)
+is queued before any versioned static-bundle approval pin. These cache/bundle
+inputs predate the later height-only visual source; first render on them will
+not establish current visual parity.
 The [64-MiB NativeV2 source-worker Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927807704)
 also stopped before `book_load`: Node 22 rejected the inherited parent heap
 flag in Worker `execArgv`. Its source, C and GUI gates remain unpassed. A

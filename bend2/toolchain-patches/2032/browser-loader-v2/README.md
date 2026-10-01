@@ -7,7 +7,8 @@ manifest contract; the canonical 2.0.27 loader, the historical 2032-1 bundle
 candidate and static packer, and their receipts are unchanged. A separately
 versioned browser-preview-v2 packer candidate now consumes this bundle format.
 The cache receipt pin is armed below; the static packer's separate bundle pin
-remains unarmed. No real bundle or static package has run.
+remains unarmed. A real cache-bound bundle has now run on Linux; no static
+package or rendered browser gate has run on that 2.0.32 output.
 
 The reviewed [four-cache receipt](receipts/stable-tag-41e48d9.json) records the
 independent Linux host-local readback from
@@ -23,10 +24,14 @@ mislocated receipt. The four paths passed as `--menu`, `--controller`,
 `--scene`, and `--chrome` must match that receipt byte-for-byte.
 
 The older Linux receipt belongs to the historical cache path and is not
-silently accepted as evidence for the new verifier. The four new JS/manifest
-outputs have been reported from Linux and pinned, but the real
-`verifyCacheSet2032V2`/Worker bundle has **not** run on those host-local bytes.
-Do not infer browser rendering, static packaging, or acceptance from the pin.
+silently accepted as evidence for the new verifier. The corrected same-source
+four-cache [Linux bundle result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307)
+verified the exact policy-floor ancestry, passed 28 cache-set tamper controls,
+and ran the real v2 verifier and one Bun 1.4.2 Worker/helper bundle. Independent
+host-local readback bound its 6,061-byte manifest SHA-256
+`ccdaf2e4048f9278e4db4436d646d508b5bdc87533446212dd5eb62ca67b6656`
+and both output hashes. This is CPU bundle evidence, not static packaging,
+browser rendering, or approval of the separate static-bundle pin.
 
 The runner also retains the local Bun version/executable binding, cache-only
 loader, fetch-denial guard (not complete network isolation), clean versioned-source binding, two-output
@@ -35,7 +40,7 @@ identity-checked lease, `wx` output creation, cache/source/output rechecks,
 and no-overwrite final-manifest commit. It emits only a Worker and its sprite
 helper to ignored `.artifacts/bend2/2032-browser-probe-v2/`. It does not
 generate Bend caches, render a page, execute a browser, or make a static app
-package. A future successful bundle would still not prove browser behavior,
+package. The successful bundle does not prove browser behavior,
 application compatibility, offline completeness, native/GPU behavior,
 publication, or pin adoption.
 
@@ -54,7 +59,7 @@ wrapper/preload; clean HEAD/tree and pre/post checks bind the wider checkout.
 They do not make a mutable filesystem an atomic input snapshot against
 transient swaps.
 
-After a real 2032-2 receipt and its reviewed pin exist, invoke with
+For a separately authorized replay after the 2032-2 receipt and reviewed pin, invoke with
 the repository-local Bun 1.4.2 through the project wrapper:
 
 ```powershell
@@ -67,4 +72,5 @@ node bend2/tools/bend.mjs --run bend2/toolchain-patches/2032/browser-loader-v2/b
 ```
 
 The candidate requires its source and receipt to be committed and the checkout
-clean. No browser render or static package is part of this gate.
+clean. Do not rerun the passed one-shot merely to exercise this command. No
+browser render or static package is part of this gate.

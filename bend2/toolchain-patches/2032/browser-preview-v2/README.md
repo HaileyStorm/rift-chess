@@ -56,11 +56,15 @@ and its template are not changed here. The pre/post source snapshots do not
 exclude a transient same-path swap during Bun's host build; use an owned,
 quiescent source checkout and do not claim atomic source capture from them.
 
-The approved cache receipt is present, but no real Worker bundle or approved
-bundle pin exists. Asset/license packaging, host `Bun.build`, static output
-creation, browser
-rendering, and offline behavior remain unrun. The existing
-`browser-v2-live.mjs` accepts only static schema `2032-1`; a separate v2 live
-browser gate is required for first render. A future successful package
-would still not prove browser acceptance, native/GPU behavior, publication, or
-release readiness.
+The approved cache receipt and a real Linux Worker/helper bundle now exist;
+the raw manifest and outputs were independently rehashed in the
+[terminal host result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307).
+An independent host-local review of the manifest's complete contents is
+queued before this packer's bundle pin can be armed. Asset/license packaging,
+the packer's host `Bun.build`, static output creation, browser rendering, and
+offline behavior remain unrun on 2.0.32. The older `browser-v2-live.mjs`
+accepts only static schema `2032-1`; the separately versioned
+[`browser-v2-live-2032`](../../../tests/browser-v2-live-2032/README.md)
+gate already exists for `2032-2` but its approved static-build pin is null.
+A future successful package would still not prove browser acceptance,
+native/GPU behavior, publication, or release readiness.
