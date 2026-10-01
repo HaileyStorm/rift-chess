@@ -2010,6 +2010,17 @@ when Chrome was absent and an unobserved partial-startup rejection. This is
 not compiler-emitted sibling fan-out: the phase-six builder still rejects
 the multi-requirement caller. Full 004 eligibility, 107 cases, hosted play,
 native/GPU and pin acceptance remain open.
+The [phase-eight compiler fan-out slice](toolchain-patches/004-web-workers/rebase-2032/phase8-compiler-fanout/README.md)
+now lowers one checked direct parallel let with three required U32 jobs and a
+local `never` sibling into the exact phase-seven two-Worker pool. The isolated
+2.0.32 patch-stack replay, negative boundaries, no-suffix JS/C byte parity,
+deterministic pool tests, and two invocations in real local Chrome 154 passed
+independent review. Completion order differed from source order, but both
+invocations returned ordered `[40, 2, 7, 40]` with zero outside fetches. A
+terminating Nat recursion reaches the async-cycle guard; an analogous U32
+self-call is rejected earlier by the pinned checker. This narrow shape does
+not satisfy the full 004 scheduler, old 107 cases, game integration, hosted
+browser/device or pin gate.
 The [separate 2.0.32 NativeV2 interactive candidate](toolchain-patches/native-v2-2032/linux-cpu/interactive/README.md)
 now passes portable package/ELF/asset, X11-coordinate, journal-slot,
 relaunch, process-lifecycle and PCM-overlap controls after independent review.

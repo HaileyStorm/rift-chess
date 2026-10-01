@@ -133,10 +133,20 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | Evidence class | Current 2.0.32 gate | Acceptance still missing |
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics, source-only aggregate preflight and guarded Linux memory-admission candidate](../../core/v3/2032/README.md); an unarmed, separately reviewed [BendTT verdict runner](../../core/v3/2032/bendtt-gate/README.md) | Complete `CHECK.bend` aggregate Worker, approved prebuilt BendTT kernel verdict and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
-| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary and phase-six binary per-call fixtures; phase-seven bounded pool/cap sibling runtime with real local Chrome | Compiler-emitted sibling fan-out, full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
+| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary and phase-six binary per-call fixtures; phase-seven bounded pool/cap sibling runtime; [phase-eight narrow compiler-emitted parallel-let fan-out](../004-web-workers/rebase-2032/phase8-compiler-fanout/README.md) with ordered results in real local Chrome | General 004 scheduler/eligibility, migrated 107-case matrix, app integration and browser/platform matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
 | Native | Six patched argv entries source-check; fresh LF C and Clang18 CLI ELF with exact argv/help and rotating-save/new-process restart passed on Linux. NativeV2 process controls and package-bound [interactive GUI/PCM/restart harness](../native-v2-2032/linux-cpu/interactive/README.md) pass portable tests only; its first bounded source Worker stopped at Node's inherited `execArgv` before loading source. | Fresh corrected NativeV2 source/type check, C/ELF/package, live X11/input, routed PCM, restart and GPU/device checks. |
 | Browser | Corrected same-source four-cache codegen and pinned host readback; host-local Bun 1.4.2 placement and hashes passed, but cache-set tamper controls stopped on an absent exact older Git object in the shallow clone. Phase-five isolated browser Worker passed. The old `2032-1` bundle/static package is historical. | Bounded ancestor-history recovery, real `2032-2` cache verifier and Worker bundle; then static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
+
+Matrix counts are not interchangeable: the historical 2.0.27 and 2.0.28
+worker suites each reported 107 cases on different compiler stacks; their
+separate 639- and 647-fixture comparisons cover parser/check/proof/emission
+outcomes, not 639 or 647 Worker executions. The 24-scenario/689-check visual
+playtest matrix covers rendered game behavior, not compiler scheduling. Retain
+those receipts as provenance and migrate worker cases by semantic invariant
+onto the 2.0.32 scheduler as each shape is supported. Do not count phase eight
+as a wholesale 107-case port or run obsolete old-compiler expectations as
+active final-stack gates.
 
 Run source-only preflights as preflights, not acceptance substitutes. The
 historical [pre-phase-two selected-root fixture](../004-web-workers/rebase-2032/README.md)

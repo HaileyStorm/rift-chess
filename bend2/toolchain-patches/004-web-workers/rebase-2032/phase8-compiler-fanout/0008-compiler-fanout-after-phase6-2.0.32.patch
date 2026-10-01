@@ -1,0 +1,419 @@
+diff --git a/bend2/comp.ts b/bend2/comp.ts
+index e910a76..fc14386 100644
+--- a/bend2/comp.ts
++++ b/bend2/comp.ts
+@@ -84,6 +84,7 @@ type File = {
+   rest: HTerm[];
+   def: Name;
+   webPerCall?: { caller: Name; callee: Name; arity: 1 | 2 };
++  webFanout?: { caller: Name; cap: number; helpers: Record<Name, 1 | 2> };
+ };
+ 
+ type Tpl = string | ((xs: string[]) => string);
+@@ -3471,6 +3472,15 @@ function js_func(fl: File, tm: HTerm, ty0: HTerm | null, args: string[]): void {
+     return js_match(fl, x, ty, args);
+   }
+   if (x.$ === "Let") {
++    if (fl.webFanout?.caller === fl.seg.def) {
++      const region = web_required_fanout_let(fl, x, fl.webFanout);
++      if (region !== null) {
++        return js_required_fanout_let(fl, x, ty, args, region);
++      }
++      if (x.v.some((value) => term_spine(fl, value).web === "require")) {
++        throw new Error("required sibling region changed after compiler validation");
++      }
++    }
+     return js_func(fl, js_open(fl, x), ty, args);
+   }
+   if (args.length > 0) {
+@@ -3553,7 +3563,7 @@ function js_def(fl: File, k: Name, def: Bend.Def): void {
+       file_push(fl, `return { $: "$FFI", run: $0eff[${n}].run, need: $0eff[${
+         n}].need, args: [${args}], kont: ${xs.at(-1)} };`));
+   }
+-  block(fl, `${fl.webPerCall?.caller === k ? "async " : ""}function ${js_sat(k)}(${params.join(", ")}) {`, () => {
++  block(fl, `${fl.webPerCall?.caller === k || fl.webFanout?.caller === k ? "async " : ""}function ${js_sat(k)}(${params.join(", ")}) {`, () => {
+     if (loop.length === 0) {
+       return js_func(fl, h!, def.T, params);
+     }
+@@ -3640,6 +3650,9 @@ function js_host(fl: File, k: Name): string {
+   if (fl.webPerCall?.caller === k) {
+     return `async (${ps.join(", ")}) => { const value = await run_loop(${js_sat(k)}(${xs.join(", ")})); const r = ${js_marshal(fl, ret, true)}(value); ${back.join(" ")} return r; }`;
+   }
++  if (fl.webFanout?.caller === k) {
++    return `async (${ps.join(", ")}) => { const value = await run_loop(${js_sat(k)}(${xs.join(", ")})); const r = ${js_marshal(fl, ret, true)}(value); ${back.join(" ")} return r; }`;
++  }
+   return `(${ps.join(", ")}) => { const r = ${js_marshal(fl, ret, true)
+     }(run_loop(${js_sat(k)}(${xs.join(", ")}))); ${back.join(" ")} return r; }`;
+ }
+@@ -3647,7 +3660,8 @@ function js_host(fl: File, k: Name): string {
+ // A module (for the .bend loader and -o <out>.mjs) roots and exports each
+ // def a host can call: filled, not Base's, not foreign, not IO.
+ function js_lib_inner(book: Bend.Book, mod = false,
+-  webPerCall?: { caller: Name; callee: Name; arity: 1 | 2 }): string {
++  webPerCall?: { caller: Name; callee: Name; arity: 1 | 2 },
++  webFanout?: { caller: Name; cap: number; helpers: Record<Name, 1 | 2> }): string {
+   const outs = !mod ? null : [...new Set(book.order)].filter((k) => {
+     const tld = book.tlds[k];
+     return tld.$ === "Def" && tld.v !== null && tld.b !== true
+@@ -3655,6 +3669,7 @@ function js_lib_inner(book: Bend.Book, mod = false,
+   });
+   const fl = file_book(book, outs ?? ["main"], true);
+   fl.webPerCall = webPerCall;
++  fl.webFanout = webFanout;
+   for (const [k, def] of done_defs(fl, (t) => done_live(t) || def_foreign(t))) {
+     memo_gc();
+     js_def(fl, k, def);
+@@ -3676,7 +3691,8 @@ function js_lib_inner(book: Bend.Book, mod = false,
+     .join("\n").replace(/\x01([^\x02]*)\x02/g, (_, k) => jmp(k) ? "run_loop"
+       : "");
+   const perCall = webPerCall === undefined ? "" : web_per_call_runtime(webPerCall.arity);
+-  return RUNTIME + perCall + effs + "// Program\n// =======\n\n"
++  const fanout = webFanout === undefined ? "" : web_required_fanout_runtime(webFanout);
++  return RUNTIME + perCall + fanout + effs + "// Program\n// =======\n\n"
+     + [funs, ...tabs].join("\n") + lib;
+ }
+ 
+@@ -3711,6 +3727,95 @@ function web_per_call_u32_binary(book: Bend.Book, name: Name): boolean {
+     && isU32(signature.ret) && io_base(book, def.T) === null;
+ }
+ 
++type WebRequiredFanoutTask =
++  | { slot: number; policy: "require"; helperId: Name; args: HTerm[] }
++  | { slot: number; policy: "never"; local: HTerm };
++
++type WebRequiredFanoutSite = { cap: number; tasks: WebRequiredFanoutTask[] };
++
++function web_required_fanout_let(fl: File, x: Of<"Let">,
++  config: { caller: Name; cap: number; helpers: Record<Name, 1 | 2> }): WebRequiredFanoutSite | null {
++  if (x.k.length < 3 || x.v.length !== x.k.length) return null;
++  const tasks: WebRequiredFanoutTask[] = [];
++  let required = 0;
++  let local = 0;
++  for (let slot = 0; slot < x.v.length; slot += 1) {
++    const call = term_spine(fl, x.v[slot]);
++    if (call.k === null || call.t.$ !== "Ref") return null;
++    const definition = fl.book.tlds[call.k];
++    if (definition?.$ !== "Def") return null;
++    const resultType = Bend.term_wnf(fl.book, Bend.tele_unbind(fl.book, definition.T).ret);
++    if (resultType.$ !== "ADT" || resultType.k !== "U32" || resultType.x.length !== 0) return null;
++    if (call.web === "require") {
++      const hasHelper = Object.prototype.hasOwnProperty.call(config.helpers, call.k);
++      const arity = hasHelper ? config.helpers[call.k] : undefined;
++      if (call.b === true || call.webMax !== config.cap || arity === undefined
++        || call.xs.length !== arity) return null;
++      tasks.push({ slot, policy: "require", helperId: call.k, args: call.xs });
++      required += 1;
++    } else if (call.web === "never" && call.b !== true && call.webMax === undefined) {
++      tasks.push({ slot, policy: "never", local: x.v[slot] });
++      local += 1;
++    } else {
++      return null;
++    }
++  }
++  return required >= 2 && local >= 1
++    ? { cap: config.cap, tasks } : null;
++}
++
++function js_required_fanout_let(fl: File, x: Of<"Let">, ty: HTerm | null,
++  args: string[], site: WebRequiredFanoutSite): void {
++  const region = name_local(fl, "worker_region");
++  const tasks = site.tasks.map((task) => task.policy === "require"
++    ? `{ slot: ${task.slot}, policy: "require", helperId: ${JSON.stringify(task.helperId)}, args: [${task.args.map((arg) => js_expr(fl, arg, null)).join(", ")}] }`
++    : `{ slot: ${task.slot}, policy: "never", local: () => ${js_expr(fl, task.local, null)} }`);
++  const regionId = `bend:${fl.webFanout!.caller}:parallel-let`;
++  file_push(fl, `const ${region} = await __bendRunRequiredFanout({ cap: ${site.cap}, regionId: ${JSON.stringify(regionId)}, tasks: [${tasks.join(", ")}] });`);
++  const values = x.k.map((parameter, slot) => {
++    const value = name_local(fl, parameter);
++    file_push(fl, `const ${value} = ${region}.values[${slot}];`);
++    return Bend.Var(value, 0);
++  });
++  return js_func(fl, x.f(values), ty, args);
++}
++
++function web_required_fanout_runtime(config: {
++  caller: Name; cap: number; helpers: Record<Name, 1 | 2>
++}): string {
++  const descriptors = Object.fromEntries(Object.entries(config.helpers)
++    .sort(([left], [right]) => left.localeCompare(right))
++    .map(([name, arity]) => [name, { arity }]));
++  const size = Math.min(16, config.cap);
++  return `
++import { createRequiredPool as __bendCreateRequiredPool } from "./pool.mjs";
++export let __bendRequiredFanoutWitness = null;
++let __bendRequiredPoolPromise;
++async function __bendRunRequiredFanout(region) {
++  if (__bendRequiredPoolPromise === undefined) {
++    __bendRequiredPoolPromise = __bendCreateRequiredPool({
++      size: ${size}, maxQueue: 128, maxJobsPerRegion: 128, maxActiveRegions: 64,
++      helpers: ${JSON.stringify(descriptors)},
++      workerFactory: () => new Worker(new URL("./worker.mjs", import.meta.url), { type: "module" }),
++    });
++  }
++  __bendRequiredFanoutWitness = null;
++  const pool = await __bendRequiredPoolPromise;
++  const result = await pool.runRegion(region);
++  __bendRequiredFanoutWitness = result;
++  return result;
++}
++export async function __bendCloseRequiredFanout() {
++  const pending = __bendRequiredPoolPromise;
++  __bendRequiredPoolPromise = undefined;
++  if (pending !== undefined) await (await pending).close();
++}
++export async function __bendRequiredFanoutStats() {
++  return __bendRequiredPoolPromise === undefined ? null : (await __bendRequiredPoolPromise).stats();
++}
++`;
++}
++
+ function web_per_call_runtime(arity: 1 | 2): string {
+   return `
+ export const __bendPerCallTaskWitnesses = [];
+@@ -3828,6 +3933,86 @@ self.onmessage = async ({ data }) => {
+ `;
+ }
+ 
++function web_required_fanout_worker(helpers: Record<Name, 1 | 2>): string {
++  const expected = Object.fromEntries(Object.entries(helpers)
++    .sort(([left], [right]) => left.localeCompare(right)));
++  return `
++import { requiredFanoutProtocol as protocol } from "./pool.mjs";
++const expectedHelpers = Object.freeze(${JSON.stringify(expected)});
++let fetchCalls = 0;
++let assignedWorkerId = null;
++globalThis.fetch = async () => {
++  fetchCalls += 1;
++  throw new Error("network disabled in required fan-out Worker");
++};
++let helpersPromise;
++async function helpers() {
++  helpersPromise ??= import("./helpers.mjs");
++  const module = await helpersPromise;
++  const library = module?.default;
++  const expectedNames = Object.keys(expectedHelpers).sort();
++  if (!library || Object.keys(library).sort().join("\\0") !== expectedNames.join("\\0")
++    || expectedNames.some((name) => typeof library[name] !== "function")) {
++    throw new Error("required fan-out helper module mismatch");
++  }
++  return library;
++}
++function exactKeys(value, expected) {
++  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
++  const got = Object.keys(value).sort();
++  const want = [...expected].sort();
++  return got.length === want.length && got.every((key, index) => key === want[index]);
++}
++function validU32Args(args, arity) {
++  if (!Array.isArray(args) || args.length !== arity) return false;
++  for (let index = 0; index < arity; index += 1) {
++    if (!Object.prototype.hasOwnProperty.call(args, index)
++      || !Number.isInteger(args[index]) || args[index] < 0 || args[index] > 0xffff_ffff) return false;
++  }
++  return true;
++}
++self.onmessage = async ({ data }) => {
++  if (exactKeys(data, ["type", "protocol", "workerId"])
++    && data.type === "hello" && data.protocol === protocol
++    && Number.isSafeInteger(data.workerId) && data.workerId >= 0) {
++    if (assignedWorkerId !== null) return;
++    assignedWorkerId = data.workerId;
++    self.postMessage({ type: "ready", protocol, workerId: data.workerId,
++      workerScope: typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope });
++    return;
++  }
++  const requestKeys = ["type", "protocol", "requestId", "invocationId", "regionId",
++    "sourceSlot", "helperId", "args"];
++  if (!exactKeys(data, requestKeys) || data.type !== "run" || data.protocol !== protocol
++    || assignedWorkerId === null || !Number.isSafeInteger(data.requestId) || data.requestId < 1
++    || !Number.isSafeInteger(data.invocationId) || data.invocationId < 1
++    || typeof data.regionId !== "string" || data.regionId.length < 1 || data.regionId.length > 128
++    || !Number.isSafeInteger(data.sourceSlot) || data.sourceSlot < 0
++    || !Object.prototype.hasOwnProperty.call(expectedHelpers, data.helperId)
++    || !validU32Args(data.args, expectedHelpers[data.helperId])) return;
++  const identity = { protocol, requestId: data.requestId, invocationId: data.invocationId,
++    regionId: data.regionId, sourceSlot: data.sourceSlot, helperId: data.helperId };
++  try {
++    const library = await helpers();
++    const value = library[data.helperId](...data.args);
++    if (value !== null && (typeof value === "object" || typeof value === "function")
++      && typeof value.then === "function") throw new Error("required helper returned a promise");
++    if (!Number.isInteger(value) || value < 0 || value > 0xffff_ffff) {
++      throw new Error("required helper returned a non-U32 value");
++    }
++    self.postMessage({ type: "result", ...identity, workerId: assignedWorkerId,
++      ok: true, value, workerScope: typeof WorkerGlobalScope !== "undefined"
++        && self instanceof WorkerGlobalScope, fetchCalls });
++  } catch (error) {
++    self.postMessage({ type: "result", ...identity, workerId: assignedWorkerId,
++      ok: false, error: String(error?.message ?? error).slice(0, 512),
++      workerScope: typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope,
++      fetchCalls });
++  }
++};
++`;
++}
++
+ export type WebPerCallBuild = {
+   schema: "bend-percall-build/2032-2";
+   caller: Name;
+@@ -3899,6 +4084,160 @@ export function js_percall_lib(book: Bend.Book, caller: Name): WebPerCallBuild {
+     } };
+ }
+ 
++export type WebRequiredFanoutBuild = {
++  schema: "bend-required-fanout-build/2032-1";
++  caller: Name;
++  cap: number;
++  entry: "program.mjs";
++  runtime: { file: "pool.mjs"; protocol: "rift-bend-required-fanout/2032-1";
++    sha256: "1ff820b742b263513d977e06e0aa06cb9b4bd59dbf7d70e0c6a79c6d9bacb37c" };
++  helperArities: Record<Name, 1 | 2>;
++  files: Record<"program.mjs" | "helpers.mjs" | "worker.mjs", string>;
++  requirements: WorkerStaticPlan["requirements"];
++  slots: { slot: number; policy: "require" | "never"; helperId?: Name }[];
++};
++
++/** Lower one checked parallel-let fan-out into the versioned bounded pool runtime. */
++export function js_required_fanout_lib(book: Bend.Book, caller: Name): WebRequiredFanoutBuild {
++  if (!book.order.includes(caller)) {
++    throw new Error("required fan-out caller must be a filled pure first-order U32 -> U32 definition: " + caller);
++  }
++  if ((`bend:${caller}:parallel-let`).length > 128) {
++    throw new Error("generated fan-out regionId exceeds the phase-seven runtime limit of 128 characters");
++  }
++  const plan = plan_web_workers(book, [caller]);
++  const callTargets = new Map<Name, Name[]>();
++  for (const call of plan.calls) {
++    const targets = callTargets.get(call.from) ?? [];
++    targets.push(call.to);
++    callTargets.set(call.from, targets);
++  }
++  const pending = [...callTargets.get(caller) ?? []];
++  const visited = new Set<Name>();
++  let recursive = false;
++  while (pending.length > 0) {
++    const target = pending.pop() as Name;
++    if (target === caller) { recursive = true; break; }
++    if (visited.has(target)) continue;
++    visited.add(target);
++    pending.push(...callTargets.get(target) ?? []);
++  }
++  if (recursive) {
++    throw new Error("required fan-out caller cannot be self- or mutually-recursive because its lowered calls are async");
++  }
++  const callerFile = file_book(book, [caller], true);
++  if (plan.conflicts.length > 0) {
++    throw new Error("strict required fan-out policy conflict: " + plan.conflicts[0].kind);
++  }
++  const callerStatus = plan.functions.find((fn) => fn.name === caller);
++  const unsupportedCaller = callerStatus?.reasons.filter((reason) =>
++    /^(unsafe_reachable|foreign_reachable|unfilled_reachable|template_reachable|f32_reachable|higher_order)/
++      .test(reason)) ?? [];
++  if (unsupportedCaller.length > 0) {
++    throw new Error("required fan-out caller has an unsupported dependency: " + unsupportedCaller[0]);
++  }
++
++  const regions: { term: Of<"Let">; calls: Spine[] }[] = [];
++  let sourceRequires = 0;
++  const visit = (term: HTerm, depth = 0): void => {
++    if (depth > 4096) throw new Error("required fan-out caller term exceeds the bounded source walk");
++    const node = term_force(term);
++    if (node.$ === "Let") {
++      const siblingCalls = node.v.map((value) => term_spine(callerFile, value));
++      const required = siblingCalls.filter((call) => call.web === "require");
++      if (required.length > 0) {
++        regions.push({ term: node, calls: required });
++        sourceRequires += required.length;
++      }
++      for (let slot = 0; slot < node.v.length; slot += 1) {
++        const call = siblingCalls[slot];
++        if (call.k !== null) for (const arg of call.xs) visit(arg, depth + 1);
++        else visit(node.v[slot], depth + 1);
++      }
++      visit(term_open(node).b, depth + 1);
++      return;
++    }
++    if (node.$ === "App") {
++      const call = term_spine(callerFile, node);
++      if (call.k !== null) {
++        if (call.web === "require") sourceRequires += 1;
++        for (const arg of call.xs) visit(arg, depth + 1);
++        return;
++      }
++    }
++    for (const child of term_kids(callerFile, node)) visit(child, depth + 1);
++  };
++  const callerFun = fun_of(callerFile, caller);
++  let callerBody = callerFun.h;
++  if (callerBody === null) throw new Error("required fan-out caller has no body");
++  callerBody = term_strip(callerBody);
++  for (let index = 0; index < callerFun.n; index += 1) {
++    const lambda = term_force(callerBody);
++    if (lambda.$ !== "Lam") throw new Error("required fan-out caller has an unsupported binder shape");
++    callerBody = term_strip(term_open(lambda).b);
++  }
++  visit(callerBody);
++  const candidateRegions = regions.filter(({ calls }) => calls.length >= 2);
++  if (candidateRegions.length !== 1 || regions.length !== 1
++    || sourceRequires !== candidateRegions[0]?.calls.length
++    || plan.requirements.length !== sourceRequires
++    || plan.requirements.some((requirement) => requirement.from !== caller)) {
++    throw new Error("strict required fan-out requires one direct parallel-let containing every required sibling call");
++  }
++  const candidate = candidateRegions[0];
++  const cap = candidate.calls[0].webMax;
++  if (cap === undefined || !Number.isSafeInteger(cap) || cap < 1 || cap > 1024
++    || candidate.calls.some((call) => call.webMax !== cap || call.b === true || call.k === null)) {
++    throw new Error("required sibling calls must share one positive @N worker cap in 1..1024");
++  }
++  const helpers: Record<Name, 1 | 2> = Object.create(null);
++  for (const call of candidate.calls) {
++    const helper = call.k!;
++    if (helper.length > 128 || !/^[A-Za-z_$][\w$.-]{0,127}$/.test(helper)) {
++      throw new Error("required helper ID exceeds the phase-seven pool limit or identifier syntax (128 characters)");
++    }
++    const arity = web_per_call_u32_unary(book, helper) ? 1
++      : web_per_call_u32_binary(book, helper) ? 2 : 0;
++    if (arity === 0) {
++      throw new Error("required helper must be a pure first-order U32 helper of arity one or two: " + helper);
++    }
++    const helperPlan = plan_web_workers(book, [helper]);
++    if (!helperPlan.sourceEligible || helperPlan.calls.length !== 0) {
++      throw new Error("required helper is outside the closed call-free U32 subset: " + helper);
++    }
++    if (helpers[helper] !== undefined && helpers[helper] !== arity) {
++      throw new Error("required helper signature changed within one fan-out region: " + helper);
++    }
++    helpers[helper] = arity;
++  }
++  const helperNames = Object.keys(helpers).sort();
++  const siteConfig = { caller, cap, helpers };
++  const site = web_required_fanout_let(callerFile, candidate.term, siteConfig);
++  if (site === null || site.tasks.length > 128) {
++    throw new Error("required parallel-let must contain two or more @N calls and at least one direct never sibling");
++  }
++  if (!web_per_call_u32_unary(book, caller)) {
++    throw new Error("required fan-out caller must be a filled pure first-order U32 -> U32 definition: " + caller);
++  }
++  const callerBook = { ...book, order: [caller] };
++  const helperBook = { ...book, order: helperNames };
++  return { schema: "bend-required-fanout-build/2032-1", caller, cap,
++    entry: "program.mjs",
++    runtime: { file: "pool.mjs", protocol: "rift-bend-required-fanout/2032-1",
++      sha256: "1ff820b742b263513d977e06e0aa06cb9b4bd59dbf7d70e0c6a79c6d9bacb37c" },
++    helperArities: helpers,
++    files: {
++      "program.mjs": js_lib_inner(callerBook, true, undefined, siteConfig),
++      "helpers.mjs": js_lib_inner(helperBook, true),
++      "worker.mjs": web_required_fanout_worker(helpers),
++    },
++    requirements: plan.requirements,
++    slots: site.tasks.map((task) => task.policy === "require"
++      ? { slot: task.slot, policy: task.policy, helperId: task.helperId }
++      : { slot: task.slot, policy: task.policy }),
++  };
++}
++
+ export function js_book(book: Bend.Book): string {
+   const lib = js_lib(book);
+   const show = show_main(book);
