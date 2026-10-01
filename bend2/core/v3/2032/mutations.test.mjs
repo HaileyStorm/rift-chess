@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requiredMutations, verifyV2 } from '../../../tools/freeze-v2.mjs';
-import { runLeasedWorker } from './aggregate-safety.mjs';
+import { admittedMemorySnapshot, runLeasedWorker } from './aggregate-safety.mjs';
 import { typeMismatchEvidence } from './mutation-verdict.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -26,6 +26,40 @@ for (const diagnostic of ['Error: parse failed',
   assert.throws(() => typeMismatchEvidence(bendError, () => diagnostic),
     /did not report|lacked a source location/);
 }
+const initCgroupNamespaceInode = 0xEFFFFFFB;
+const cgroup2SuperMagic = 0x63677270;
+const memoryFiles = new Map([
+  ['/proc/self/cgroup', '0::/parent/job\n'],
+  ['/proc/self/mountinfo', '36 24 0:33 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
+  ['/sys/fs/cgroup/cgroup.controllers', 'memory cpu\n'],
+  ['/sys/fs/cgroup/parent/memory.max', '12000\n'],
+  ['/sys/fs/cgroup/parent/memory.current', '7000\n'],
+  ['/sys/fs/cgroup/parent/job/memory.max', 'max\n'],
+  ['/sys/fs/cgroup/parent/job/memory.current', '3000\n'],
+]);
+const readMemoryFile = file => {
+  if (memoryFiles.has(file)) return memoryFiles.get(file);
+  const error = Error(`missing synthetic cgroup file: ${file}`);
+  error.code = 'ENOENT';
+  throw error;
+};
+const linuxMemory = admittedMemorySnapshot({ platform: 'linux', hostFree: 9_000,
+  stat: file => { assert.equal(file, '/proc/self/ns/cgroup');
+    return { ino: initCgroupNamespaceInode }; },
+  statfs: file => { assert.equal(file, '/sys/fs/cgroup'); return { type: cgroup2SuperMagic }; },
+  read: readMemoryFile });
+assert.equal(linuxMemory.availableBytes, 5_000,
+  'mutation admission includes finite parent headroom and host free memory');
+assert.equal(linuxMemory.cgroupNamespaceInode, initCgroupNamespaceInode);
+assert.equal(linuxMemory.ancestryMode, 'init-cgroup-namespace-visible-v2-full-ancestry');
+assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 9_000,
+  stat: () => ({ ino: initCgroupNamespaceInode - 1 }),
+  statfs: () => ({ type: cgroup2SuperMagic }), read: readMemoryFile }),
+  /requires the init cgroup namespace/);
+assert.equal(admittedMemorySnapshot({ platform: 'win32', hostFree: 9_000,
+  stat: () => { throw Error('Windows admission must not stat a Linux namespace'); },
+  statfs: () => { throw Error('Windows admission must not stat the cgroup filesystem'); } }).availableBytes,
+  9_000);
 const leaseFixture = fs.mkdtempSync(path.join(os.tmpdir(), 'rift-mutation-lease-'));
 const leasePath = path.join(leaseFixture, 'worker.lock');
 try {
@@ -86,6 +120,8 @@ console.log(JSON.stringify({ schema: 'rift-v2-mutations-2032-preflight-test/1',
   frozenSha256: receipt.frozenSha256, cases: receipt.cases.map(c => c.name),
   controls: ['specific-type-mismatch', 'load-error-not-a-rejection',
     'missing-mismatch-not-a-rejection', 'wrapped-uncertain-exit-lease',
-    'exclusive-admission', 'invalid-options', 'frozen-six-case-cones',
+    'exclusive-admission', 'init-cgroup-namespace-admission',
+    'finite-parent-headroom', 'non-init-namespace-rejection',
+    'windows-host-free-path-preserved', 'invalid-options', 'frozen-six-case-cones',
     'ts-import-probe', 'read-only-preflight'],
   scope: 'source/compiler/anchor binding only; mutation Workers and BendTT not run' }));

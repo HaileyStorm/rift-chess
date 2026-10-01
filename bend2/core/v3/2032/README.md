@@ -171,21 +171,38 @@ read-only preflight controls.
 
 Source-only preflight accepts exact Node 24.12.0 on Windows or Node 22.23.1
 on Linux without inherited flags/preloads and exercises the compiler import/
-empty-root namespace guard on that host. An actual aggregate Worker is
-currently Windows-only; it requires at least 12 GiB physical free RAM,
-one 64-MiB-stack/8-GiB-old-generation Node
+empty-root namespace guard on that host. An aggregate Worker requires at least
+12 GiB admitted free RAM, one 64-MiB-stack/8-GiB-old-generation Node
 Worker, and a 900-second parent deadline. An exclusive ignored host-local
 lease prevents concurrent attempts; if the Worker exit cannot be observed,
 the lease remains and must not be reclaimed without host/process review.
-Linux memory inspection requires one unified cgroup-v2 path and mount root
-`/`. It reads the namespace-visible ancestors and reports the minimum of
-their finite `memory.max - memory.current` readings and host free RAM only as
-an **upper bound**. A cgroup namespace can hide a tighter outer cap even when
-mountinfo says `/`; therefore Linux Worker admission currently fails closed
-for both finite and unlimited visible hierarchies. A fresh trustworthy
-full-ancestry binding is required before enabling it. Windows takes two
-physical-free-memory snapshots before the actual Worker. Source-only Linux
-preflight does not attempt memory admission.
+Linux admission now additionally requires
+`stat('/proc/self/ns/cgroup').ino === 0xEFFFFFFB` (the kernel's init cgroup
+namespace identity). This is checked on the current process itself; PID 1
+sharing a non-init namespace does not qualify it. The resolved
+`/sys/fs/cgroup` path must also report `statfsSync(...).type === 0x63677270`,
+the cgroup-v2 superblock magic, so a parent overmount cannot hide behind a
+stale mountinfo row. The host-visible topology
+must then contain exactly one `0::` process path and exactly one cgroup-v2
+mount, at `/sys/fs/cgroup` with mount root `/`; the cgroup path must be
+canonical. Every visible non-root ancestor must expose `memory.max` and a
+numeric `memory.current`. All mountinfo entries are parsed; a stacked
+non-cgroup2 mount at `/sys/fs/cgroup` or a nested mount
+that is equal to or an ancestor of any inspected cgroup directory or controller
+file is rejected, while a sibling-prefix or unrelated mount does not shadow
+the checked ancestry. The root's `memory.max` may be absent only when root
+`cgroup.controllers` explicitly lists `memory`. Missing or malformed ancestry,
+duplicate mounts/paths, inaccessible files, and non-init cgroup namespaces
+all fail closed. The admitted upper bound is
+the minimum of host free RAM and every finite ancestor's non-negative
+`memory.max - memory.current`; receipts record the namespace inode and
+verified filesystem magic with the
+`init-cgroup-namespace-visible-v2-full-ancestry` mode. The Windows path and
+its two physical-free-memory samples are unchanged. These checks establish
+an instantaneous upper bound, not a reservation: cgroup membership or limits
+can change after sampling, and the check does not prove peak Worker cost or
+completion. Actual Linux aggregate and mutation Workers remain unrun.
+Source-only Linux preflight does not attempt memory admission.
 These are admission and safety bounds, not measured peak cost or a guarantee
 that CHECK completes. No aggregate attempt has run under this candidate yet.
 A pass would prove only this derived compiler's source/type/promise screening
@@ -218,10 +235,10 @@ terminal error.
 On a clean checkout, run `node bend2/core/v3/2032/mutations.mjs --preflight-only`
 first. Source-only preflight accepts exact Node 24.12.0 on Windows or Node
 22.23.1 on Linux without inherited flags and imports the exact derived `.ts`
-compiler. A mutation Worker is currently Windows-only and requires at least
-4 GiB physical free RAM before each 512-MiB or 1-GiB Worker on Windows.
-Linux Worker admission is likewise disabled pending a trustworthy global
-cgroup-ancestry binding. The 2.0.27 mutation suite
+compiler. A mutation Worker requires at least 4 GiB admitted free RAM before
+each 512-MiB or 1-GiB Worker. Linux Worker admission uses the same init-cgroup
+namespace and complete visible-ancestry predicate described above; Windows
+continues to use physical free RAM. The 2.0.27 mutation suite
 and its historical receipt remain the canonical frozen gate. A 2.0.32 source
 mutation pass would still not prove aggregate CHECK, BendTT kernel rejection,
 conformance, browser/native/GPU, or permit a pin amendment. No mutation Worker

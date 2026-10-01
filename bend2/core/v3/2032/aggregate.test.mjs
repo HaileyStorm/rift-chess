@@ -51,8 +51,11 @@ assert.throws(() => Comp.js_lib({ ...foreignCollision, order: [] }, true),
 const cgroupFiles = {
   '/proc/self/cgroup': '0::/user.slice/app.slice/test.scope\n',
   '/proc/self/mountinfo': '36 24 0:33 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n',
+  '/sys/fs/cgroup/cgroup.controllers': 'cpu io memory\n',
   '/sys/fs/cgroup/user.slice/memory.max': 'max\n',
+  '/sys/fs/cgroup/user.slice/memory.current': '10000\n',
   '/sys/fs/cgroup/user.slice/app.slice/memory.max': 'max\n',
+  '/sys/fs/cgroup/user.slice/app.slice/memory.current': '8000\n',
   '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': '30000\n',
   '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.current': '25000\n',
 };
@@ -63,40 +66,130 @@ const memoryRead = (overrides = {}) => file => {
   error.code = 'ENOENT';
   throw error;
 };
+const INIT_CGROUP_NAMESPACE_INODE = 0xEFFFFFFB;
+const CGROUP2_SUPER_MAGIC = 0x63677270;
+const memoryStat = (ino = INIT_CGROUP_NAMESPACE_INODE) => file => {
+  assert.equal(file, '/proc/self/ns/cgroup');
+  return { ino };
+};
+const memoryStatfs = (type = CGROUP2_SUPER_MAGIC) => file => {
+  assert.equal(file, '/sys/fs/cgroup');
+  return { type };
+};
+const linuxMemoryOptions = (overrides = {}, ino = INIT_CGROUP_NAMESPACE_INODE) => ({
+  platform: 'linux', hostFree: 40_000, read: memoryRead(overrides),
+  stat: memoryStat(ino), statfs: memoryStatfs(),
+});
 const finite = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead() });
+  read: memoryRead(), stat: memoryStat(), statfs: memoryStatfs() });
 assert.equal(finite.visibleUpperBoundBytes, 5_000);
 assert.equal(finite.mode, 'namespace-visible-v2-finite');
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead() }), /independently verified global cgroup ancestry/);
+assert.deepEqual(finite.visibleLimits[0], { path: '/', max: 'absent-root', current: null });
+assert.equal(finite.cgroupNamespaceInode, INIT_CGROUP_NAMESPACE_INODE);
+assert.equal(finite.cgroupFilesystemType, CGROUP2_SUPER_MAGIC);
+assert.equal(finite.ancestryMode, 'init-cgroup-namespace-visible-v2-full-ancestry');
+const admittedFinite = admittedMemorySnapshot(linuxMemoryOptions());
+assert.equal(admittedFinite.availableBytes, 5_000);
+assert.equal(admittedFinite.mode, 'linux-init-cgroup-full-ancestry-admitted');
+assert.equal(admittedMemorySnapshot({ ...linuxMemoryOptions(), hostFree: 2_000 }).availableBytes,
+  2_000, 'host free memory remains an upper bound on cgroup headroom');
 const unlimited = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) });
+  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }),
+  stat: memoryStat(), statfs: memoryStatfs() });
 assert.equal(unlimited.visibleUpperBoundBytes, 40_000);
 assert.equal(unlimited.mode, 'namespace-visible-v2-unlimited');
 assert.equal(unlimited.visibleLimits.length, 4);
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) }),
-  /independently verified global cgroup ancestry/);
+assert.equal(admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' })).availableBytes, 40_000);
 const parentLimited = visibleMemorySnapshot({ platform: 'linux', hostFree: 40_000,
   read: memoryRead({ '/sys/fs/cgroup/user.slice/memory.max': '10000\n',
     '/sys/fs/cgroup/user.slice/memory.current': '6000\n',
-    '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }) });
+    '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' }),
+  stat: memoryStat(), statfs: memoryStatfs() });
 assert.equal(parentLimited.visibleUpperBoundBytes, 4_000);
 assert.equal(parentLimited.mode, 'namespace-visible-v2-finite');
-assert.equal(admittedMemorySnapshot({ platform: 'win32', hostFree: 40_000 }).availableBytes, 40_000);
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/proc/self/mountinfo':
-    '36 24 0:33 /user.slice /sys/fs/cgroup rw - cgroup2 cgroup rw\n' }) }),
+assert.equal(admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/memory.max': '10000\n',
+  '/sys/fs/cgroup/user.slice/memory.current': '6000\n',
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'max\n' })).availableBytes, 4_000);
+assert.equal(admittedMemorySnapshot({ platform: 'win32', hostFree: 40_000,
+  stat: () => { throw Error('Windows admission must not inspect cgroup namespace'); },
+  statfs: () => { throw Error('Windows admission must not inspect cgroup filesystem'); } }).availableBytes,
+40_000);
+assert.equal(admittedMemorySnapshot({ platform: 'win32', hostFree: 40_000 }).mode,
+  'windows-host-free-admitted');
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({ '/proc/self/mountinfo':
+    '36 24 0:33 /user.slice /sys/fs/cgroup rw - cgroup2 cgroup rw\n' })),
   /hides possible ancestor caps/);
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/sys/fs/cgroup/user.slice/memory.max': undefined }) }),
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/memory.max': undefined })),
   /missing controller/);
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'invalid' }) }),
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max': 'invalid' })),
   /malformed cgroup-v2 memory.max/);
-assert.throws(() => admittedMemorySnapshot({ platform: 'linux', hostFree: 40_000,
-  read: memoryRead({ '/proc/self/cgroup': '3:memory:/user.slice\n' }) }),
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/app.slice/test.scope/memory.current': 'not-numeric\n' })),
+  /malformed cgroup-v2 memory.current/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/user.slice/app.slice/memory.current': undefined })),
+  /missing controller/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/cgroup': '3:memory:/user.slice\n' })),
   /one cgroup-v2 process path/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/cgroup': '0::/user.slice\n0::/user.slice/app.slice\n' })),
+  /one cgroup-v2 process path/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/cgroup': '0::/user.slice/../app.slice\n' })),
+  /cgroup-v2 process path must be canonical/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': '36 24 0:33 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'
+    + '41 24 0:38 / /other/cgroup rw - cgroup2 cgroup rw\n' })),
+  /one cgroup-v2 mount required/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + '42 36 0:39 / /sys/fs/cgroup/user.slice rw - tmpfs tmpfs rw\n' })),
+  /cgroup ancestry path is shadowed by nested mount/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + '42 36 0:39 / /sys/fs/cgroup rw - overlay overlay rw\n' })),
+  /another filesystem mount shadows the canonical cgroup-v2 root/);
+assert.equal(admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + '42 36 0:39 / /sys/fs/cgroup/user.slice-sibling rw - tmpfs tmpfs rw\n'
+    + '43 36 0:40 / /sys/fs/cgroup/unrelated rw - overlay overlay rw\n' })).availableBytes,
+  5_000, 'sibling-prefix and unrelated mounts do not shadow the checked ancestry');
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + '42 36 0:39 / /sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max rw - tmpfs tmpfs rw\n' })),
+  /cgroup ancestry path is shadowed by nested mount/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': '' })), /one cgroup-v2 mount required/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': 'not-a-mountinfo-entry\n' })), /malformed mountinfo entry/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/cgroup.controllers': 'cpu io\n' })),
+  /root memory.max is absent without cgroup-v2 memory controller proof/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/cgroup.controllers': undefined })), /missing controller/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/sys/fs/cgroup/cgroup.controllers': 'memory memory\n' })),
+  /malformed cgroup-v2 root controller list/);
+let nonInitReads = 0;
+assert.throws(() => admittedMemorySnapshot({ ...linuxMemoryOptions(),
+  stat: memoryStat(INIT_CGROUP_NAMESPACE_INODE - 1),
+  read: file => { nonInitReads++; return memoryRead()(file); } }),
+  /requires the init cgroup namespace/);
+assert.equal(nonInitReads, 0, 'non-init namespace is rejected before inspecting the visible hierarchy');
+assert.throws(() => admittedMemorySnapshot({ ...linuxMemoryOptions(),
+  stat: () => { const error = Error('namespace stat unavailable'); error.code = 'EACCES'; throw error; } }),
+  /namespace stat unavailable/);
+assert.throws(() => admittedMemorySnapshot({ ...linuxMemoryOptions(),
+  statfs: memoryStatfs(0x01021994) }),
+  /not backed by the cgroup-v2 filesystem/);
+assert.throws(() => admittedMemorySnapshot({ ...linuxMemoryOptions(),
+  statfs: () => { const error = Error('cgroup statfs unavailable'); error.code = 'EIO'; throw error; } }),
+  /cgroup statfs unavailable/);
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'rift-aggregate-lease-'));
 const fixtureLock = path.join(fixture, 'worker.lock');
 try {
@@ -151,7 +244,13 @@ console.log(JSON.stringify({ schema: 'rift-v2-aggregate-2032-preflight-test/1',
   passed: true, sourceCommit: receipt.sourceCommit,
   frozenSha256: receipt.frozenSha256, compilerEol: receipt.compilerEol.eol,
   scriptSha256: receipt.scriptSha256, controls: ['complete-closure',
-    'omitted-law', 'unexpected-source', 'cgroup-limit', 'lease-uncertain-exit',
+    'omitted-law', 'unexpected-source', 'init-cgroup-namespace',
+    'canonical-path-and-single-mount', 'nested-mount-shadow-rejection',
+    'same-mountpoint-overmount-rejection', 'malformed-mountinfo-rejection',
+    'cgroup2-superblock-magic', 'wrong-or-unavailable-statfs-rejection',
+    'sibling-and-unrelated-mount-allowance', 'root-memory-controller-proof',
+    'nonroot-memory-max-current', 'finite-parent-limit', 'host-free-upper-bound',
+    'windows-host-free-path-preserved', 'lease-uncertain-exit',
     'exclusive-admission', 'successor-owned-name', 'foreign-constructor-collision',
     'node22-qualification', 'ts-import-probe', 'invalid-cli',
     'exact-read-only-preflight'],

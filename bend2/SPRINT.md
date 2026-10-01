@@ -1688,9 +1688,10 @@ or the 2.0.32 mutation gate.
 The [separate aggregate CHECK source diagnostic](core/v3/2032/README.md#separate-aggregate-check-migration-candidate)
 now has a bounded single-Worker candidate with complete frozen import-cone
 matching, exact compiler/source binding, a host-local exclusive liveness lease,
-and namespace-visible cgroup diagnostics. Linux Worker admission remains
-disabled until a trustworthy global ancestry binding; visible caps and host
-free RAM alone are only upper bounds. Windows and Linux source-only
+and namespace-visible cgroup diagnostics. A later guarded Linux admission
+candidate requires the kernel's initial cgroup namespace, a verified cgroup2
+filesystem and complete unshadowed ancestry; synthetic checks pass, but no
+actual Linux proof Worker has used it. Windows and Linux source-only
 preflights passed at `6c8625a` with exact compiler import and successor
 namespace-guard collision controls. The old guard's reserved-name set is not
 identical, and this is not a full JS build. No aggregate Worker, BendTT,

@@ -5,6 +5,9 @@ import { pathToFileURL } from 'node:url';
 import { acquireOwnedLock, closeOwnedLock, releaseOwnedLock } from
   '../../../toolchain-patches/2032/preview/lifecycle.mjs';
 
+const INIT_CGROUP_NAMESPACE_INODE = 0xEFFFFFFB;
+const CGROUP2_SUPER_MAGIC = 0x63677270;
+
 // Derive the expected load set from the frozen source bytes, independently of
 // the compiler's `seen` map. Base is the sole non-local import in this cone.
 export function expectedCheckClosure(root, checkPath, frozenFiles, derivedBase) {
@@ -58,45 +61,110 @@ export async function runLeasedWorker(lockPath, payload, run) {
   }
 }
 
+function decodeMountInfoPath(value) {
+  assert.ok(!/\\(?!040|011|012|134)/.test(value), 'malformed mountinfo path escape');
+  const decoded = value.replace(/\\(040|011|012|134)/g,
+    (_, octal) => String.fromCharCode(Number.parseInt(octal, 8)));
+  assert.ok(decoded.startsWith('/') && path.posix.normalize(decoded) === decoded,
+    'mountinfo path must be absolute and canonical');
+  return decoded;
+}
+
+function parseMountInfo(text) {
+  return text.split(/\r?\n/).filter(Boolean).map(line => {
+    const parts = line.split(' - ');
+    assert.equal(parts.length, 2, 'malformed mountinfo entry');
+    const fields = parts[0].trim().split(/\s+/);
+    const superFields = parts[1].trim().split(/\s+/);
+    assert.ok(fields.length >= 6 && /^\d+$/.test(fields[0]) &&
+      /^\d+$/.test(fields[1]) && /^\d+:\d+$/.test(fields[2]) &&
+      superFields.length >= 3, 'malformed mountinfo fields');
+    return { id: fields[0], root: decodeMountInfoPath(fields[3]),
+      mountpoint: decodeMountInfoPath(fields[4]), filesystem: superFields[0] };
+  });
+}
+
+function sameOrAncestorPath(ancestor, target) {
+  return target === ancestor || target.startsWith(`${ancestor}/`);
+}
+
 export function visibleMemorySnapshot({ platform = process.platform, hostFree,
-  read = (file) => fs.readFileSync(file, 'utf8') } = {}) {
+  read = (file) => fs.readFileSync(file, 'utf8'),
+  stat = (file) => fs.statSync(file),
+  statfs = (file) => fs.statfsSync(file) } = {}) {
   let available = hostFree;
   assert.ok(Number.isSafeInteger(available) && available >= 0);
   if (platform !== 'linux') return { visibleUpperBoundBytes: available,
     mode: 'host-free-observation', cgroupPath: null, visibleLimits: [] };
+  const namespaceInode = stat('/proc/self/ns/cgroup')?.ino;
+  assert.equal(namespaceInode, INIT_CGROUP_NAMESPACE_INODE,
+    'Linux proof Worker requires the init cgroup namespace to establish global cgroup ancestry');
+  const cgroupFilesystemType = statfs('/sys/fs/cgroup')?.type;
+  assert.equal(cgroupFilesystemType, CGROUP2_SUPER_MAGIC,
+    'canonical cgroup path is not backed by the cgroup-v2 filesystem');
   const cgroups = read('/proc/self/cgroup').trim().split(/\r?\n/);
   const unified = cgroups.filter(line => line.startsWith('0::'));
   assert.equal(unified.length, 1, 'one cgroup-v2 process path required');
   const cgroupPath = unified[0].slice(3);
   assert.ok(cgroupPath.startsWith('/'), 'cgroup-v2 path must be absolute');
+  assert.equal(path.posix.normalize(cgroupPath), cgroupPath,
+    'cgroup-v2 process path must be canonical');
   const segments = cgroupPath.split('/').filter(Boolean);
   assert.ok(segments.every(part => part !== '.' && part !== '..' &&
     !part.includes('\\') && !part.includes('\0')),
   'unsafe cgroup-v2 process path');
-  const mounts = read('/proc/self/mountinfo').split(/\r?\n/).filter(line => {
-    const parts = line.split(' - ');
-    return parts.length === 2 && parts[1].split(' ')[0] === 'cgroup2' &&
-      parts[0].split(' ')[4] === '/sys/fs/cgroup';
-  });
-  assert.equal(mounts.length, 1, 'one canonical cgroup-v2 mount required');
-  const mountRoot = mounts[0].split(' - ')[0].split(' ')[3];
-  assert.equal(mountRoot, '/', 'cgroup-v2 mount hides possible ancestor caps');
   const mountpoint = '/sys/fs/cgroup';
+  const mounts = parseMountInfo(read('/proc/self/mountinfo'));
+  const cgroupMounts = mounts.filter(entry => entry.filesystem === 'cgroup2');
+  assert.equal(cgroupMounts.length, 1, 'one cgroup-v2 mount required');
+  const cgroupMount = cgroupMounts[0];
+  assert.equal(cgroupMount.mountpoint, mountpoint, 'one canonical cgroup-v2 mount required');
+  const mountRoot = cgroupMount.root;
+  assert.equal(mountRoot, '/', 'cgroup-v2 mount hides possible ancestor caps');
   const dirs = [mountpoint];
   for (const part of segments) dirs.push(path.posix.join(dirs.at(-1), part));
+  const protectedPaths = new Set([`${mountpoint}/cgroup.controllers`]);
+  for (const dir of dirs) {
+    protectedPaths.add(dir);
+    protectedPaths.add(`${dir}/memory.max`);
+    protectedPaths.add(`${dir}/memory.current`);
+  }
+  for (const entry of mounts) {
+    const nested = entry.mountpoint.startsWith(`${mountpoint}/`);
+    if (entry.mountpoint === mountpoint) {
+      assert.equal(entry, cgroupMount,
+        'another filesystem mount shadows the canonical cgroup-v2 root');
+    } else if (nested && [...protectedPaths].some(target =>
+      sameOrAncestorPath(entry.mountpoint, target))) {
+      throw new Error(`cgroup ancestry path is shadowed by nested mount ${entry.mountpoint}`);
+    }
+  }
   const visibleLimits = [];
   for (const dir of dirs) {
     let max;
     try { max = read(`${dir}/memory.max`).trim(); }
     catch (error) {
       if (dir !== mountpoint || error?.code !== 'ENOENT') throw error;
+      const controllers = read(`${mountpoint}/cgroup.controllers`).trim().split(/\s+/).filter(Boolean);
+      assert.equal(new Set(controllers).size, controllers.length,
+        'malformed cgroup-v2 root controller list');
+      assert.ok(controllers.every(name => /^[a-z_]+$/.test(name)),
+        'malformed cgroup-v2 root controller list');
+      assert.ok(controllers.includes('memory'),
+        'root memory.max is absent without cgroup-v2 memory controller proof');
       max = 'absent-root';
     }
     let current = null;
-    if (max !== 'max' && max !== 'absent-root') {
-      assert.match(max, /^\d+$/, 'malformed cgroup-v2 memory.max');
+    if (dir !== mountpoint) {
       current = read(`${dir}/memory.current`).trim();
       assert.match(current, /^\d+$/, 'malformed cgroup-v2 memory.current');
+    }
+    if (max !== 'max' && max !== 'absent-root') {
+      assert.match(max, /^\d+$/, 'malformed cgroup-v2 memory.max');
+      if (current === null) {
+        current = read(`${dir}/memory.current`).trim();
+        assert.match(current, /^\d+$/, 'malformed cgroup-v2 memory.current');
+      }
       const remaining = BigInt(max) - BigInt(current);
       available = Number(remaining > 0n && remaining < BigInt(available)
         ? remaining : remaining <= 0n ? 0n : BigInt(available));
@@ -106,14 +174,19 @@ export function visibleMemorySnapshot({ platform = process.platform, hostFree,
   return { visibleUpperBoundBytes: available,
     mode: visibleLimits.some(item => /^\d+$/.test(item.max))
       ? 'namespace-visible-v2-finite' : 'namespace-visible-v2-unlimited',
+    cgroupNamespaceInode: namespaceInode,
+    cgroupFilesystemType,
+    ancestryMode: 'init-cgroup-namespace-visible-v2-full-ancestry',
     cgroupPath, mountRoot, visibleLimits };
 }
 
 export function admittedMemorySnapshot(options = {}) {
   const snapshot = visibleMemorySnapshot(options);
   const platform = options.platform ?? process.platform;
-  assert.equal(platform, 'win32',
-    'Linux proof Worker admission needs independently verified global cgroup ancestry');
+  if (platform === 'linux') return { ...snapshot,
+    availableBytes: snapshot.visibleUpperBoundBytes,
+    mode: 'linux-init-cgroup-full-ancestry-admitted' };
+  assert.equal(platform, 'win32');
   return { ...snapshot, availableBytes: snapshot.visibleUpperBoundBytes,
     mode: 'windows-host-free-admitted' };
 }
