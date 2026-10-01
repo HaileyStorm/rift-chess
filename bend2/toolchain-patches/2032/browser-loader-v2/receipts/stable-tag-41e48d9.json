@@ -1,0 +1,42 @@
+{
+  "schema": "rift-bend-2032-browser-loader-v2-cache-receipt/1",
+  "cacheSchema": "rift-bend-selected-cache/2032-2",
+  "cacheSource": {
+    "commit": "41e48d9229ddceb0befed04a5f6d4824467de26c",
+    "tree": "7b9f2131d7b28e5acd52f3b59f9c123d34a728e3"
+  },
+  "manifests": {
+    "menu": {
+      "manifestPath": ".artifacts/bend2/2032-preview/menu-2026-10-01T03-27-52-699Z-35187/menu.manifest.json",
+      "manifestSha256": "4baf0ae67200b3d7d3660c61daf2b818ce372cf8ae8f12ef90265990063eb0ad",
+      "outputBytes": 210459,
+      "outputSha256": "bdc1ae7854d0d6f81a1c60572931afb23a10eefba6e2d8bef3ca3b56488c9c84",
+      "sourceCommit": "41e48d9229ddceb0befed04a5f6d4824467de26c",
+      "sourceTree": "7b9f2131d7b28e5acd52f3b59f9c123d34a728e3"
+    },
+    "controller": {
+      "manifestPath": ".artifacts/bend2/2032-preview/controller-2026-10-01T03-28-17-479Z-36537/controller.manifest.json",
+      "manifestSha256": "9803a5db25f568c47d79ef52bcaf86b071780e0c78658fd61dc2538489cd9094",
+      "outputBytes": 631152,
+      "outputSha256": "1cf9558d288f7b42b756202b9a033e25c89759ad54f439329eb74ac030ec6532",
+      "sourceCommit": "41e48d9229ddceb0befed04a5f6d4824467de26c",
+      "sourceTree": "7b9f2131d7b28e5acd52f3b59f9c123d34a728e3"
+    },
+    "scene": {
+      "manifestPath": ".artifacts/bend2/2032-preview/scene-2026-10-01T03-28-37-737Z-37310/scene.manifest.json",
+      "manifestSha256": "a759e29f0af64ea49f6ac48e45fa13fe7ac6c9f81a6642eeca969722a1d03268",
+      "outputBytes": 343669,
+      "outputSha256": "e3cf8c99a15767c5d159472499a37bb8ce29544a46d834ab0f0dad6447b6ad07",
+      "sourceCommit": "41e48d9229ddceb0befed04a5f6d4824467de26c",
+      "sourceTree": "7b9f2131d7b28e5acd52f3b59f9c123d34a728e3"
+    },
+    "chrome": {
+      "manifestPath": ".artifacts/bend2/2032-preview/chrome-2026-10-01T03-28-50-973Z-37961/chrome.manifest.json",
+      "manifestSha256": "2c19e609dd81007c68bded9afde67591f37bcf046ac68d2cd048c48bea590bfb",
+      "outputBytes": 436784,
+      "outputSha256": "67993b480f5c3c4fe96a22d9ecf73877f58ea352aa9a0d80ea7bc30815f82669",
+      "sourceCommit": "41e48d9229ddceb0befed04a5f6d4824467de26c",
+      "sourceTree": "7b9f2131d7b28e5acd52f3b59f9c123d34a728e3"
+    }
+  }
+}
