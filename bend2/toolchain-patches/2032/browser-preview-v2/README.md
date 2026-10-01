@@ -8,17 +8,18 @@ the `rift-bend-selected-cache/2032-2` manifests with
 It reuses the v1 packer's safe file and asset helpers; the v1 packer and shared
 `bend2/platform/browser/sw.js` are unchanged.
 
-Two independent source pins must be reviewed before packaging can run:
+Two independent source pins gate packaging:
 
 - [`browser-loader-v2/approved-receipt.mjs`](../browser-loader-v2/approved-receipt.mjs)
-  must bind a real four-cache receipt, its exact raw SHA-256, and cache source.
+  now binds the reported four-cache receipt, its exact raw SHA-256, and cache
+  source.
 - [`approved-bundle.mjs`](approved-bundle.mjs) must bind the generated Worker
   manifest path, raw SHA-256, source revision/tree, and cache source.
 
-Both are deliberately `null` here. A caller-supplied `--manifest` and
-`--sha256` cannot arm the bundle pin, and a self-computed receipt hash cannot
-arm the cache pin. The packer derives the four manifest paths from the approved
-receipt, re-runs the v2 verifier, and matches the resulting raw manifests and
+The bundle pin is deliberately `null` here. A caller-supplied `--manifest` and
+`--sha256` cannot arm it, and a self-computed receipt hash cannot override
+the reviewed cache pin. The packer derives the four manifest paths from the
+approved receipt, re-runs the v2 verifier, and matches the raw manifests and
 outputs to the receipt and Worker manifest before packaging.
 
 The pure synthetic contract checks are:
@@ -55,8 +56,9 @@ and its template are not changed here. The pre/post source snapshots do not
 exclude a transient same-path swap during Bun's host build; use an owned,
 quiescent source checkout and do not claim atomic source capture from them.
 
-No real 2032-2 receipt or approved pin is present, so real cache verification,
-asset/license packaging, host `Bun.build`, static output creation, browser
+The approved cache receipt is present, but no real Worker bundle or approved
+bundle pin exists. Asset/license packaging, host `Bun.build`, static output
+creation, browser
 rendering, and offline behavior remain unrun. The existing
 `browser-v2-live.mjs` accepts only static schema `2032-1`; a separate v2 live
 browser gate is required for first render. A future successful package

@@ -1882,18 +1882,21 @@ and a [separately versioned `2032-2` verifier](toolchain-patches/2032/cache-set-
 retains the historical strict `2032-1` path while checking the stable-import
 metadata, one common source revision, four byte-bound closures and exact bare
 export properties. Its 28 synthetic tamper controls pass, including same-line
-extra/duplicate export rejection; no real positive cache has been verified.
+extra/duplicate export rejection. A [Linux terminal result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5924179844)
+then emitted all four `2032-2` caches at clean source `41e48d9`, with stable
+import identities, bare exports and separately rehashed JS/manifest bytes.
+The host-reported values have a committed reviewed receipt and distinct raw
+receipt pin; the real four-cache verifier has not yet run on those files.
 The [versioned Worker-bundle candidate](toolchain-patches/2032/browser-loader-v2/README.md)
 now consumes only that verifier plus a committed, independently reviewed
-four-cache receipt. Its approval pin is deliberately unarmed until real Linux
-manifest/output hashes and a common source revision are reported and reviewed;
-synthetic input tests pass, but no v2 Worker bundle or static package was made.
+four-cache receipt. Its cache pin now binds the Linux readback and synthetic
+input tests pass, but no real v2 Worker bundle or static package was made.
 The [separate v2 static packer candidate](toolchain-patches/2032/browser-preview-v2/README.md)
 retains the old packer, checks the v2 bundle/cache receipt contracts, and
 requires a second unarmed reviewed bundle pin. Its pure manifest tests and
 scope-isolated service-worker activation test pass, including nested scopes;
 no real static package, offline check or v2-schema browser playtest exists.
-No repaired real cache or rendered browser result has been produced.
+Corrected real caches exist on Linux; no rendered browser result has been produced.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or
 GPU/browser acceptance is inferred.

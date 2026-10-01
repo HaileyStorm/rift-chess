@@ -42,7 +42,9 @@ Tests create synthetic schema-shaped bytes solely as tamper substrates and
 assert rejection after changing one property at a time. They do not run the
 emitter, certify a positive cache set, or establish output authenticity. A
 manifest's output digest is self-described; trusted artifact authenticity still
-needs externally pinned receipts or equivalent independent evidence.
+needs externally pinned receipts or equivalent independent evidence. A reviewed
+Linux four-cache readback is now pinned in browser-loader-v2/receipts; the
+verifier has not yet been run on those real host-local outputs.
 
 ## Consumer seam and retained v1 history
 
@@ -50,8 +52,9 @@ This candidate is not a real-cache-accepted production path. The existing v1
 verifier, receipts, and consumer imports remain untouched. In particular,
 browser-loader/bundle-real.mjs and browser-preview/pack-static.mjs still call
 cache-set/verify.mjs. Separately versioned browser-loader-v2 and
-browser-preview-v2 candidates now call this verifier but remain unarmed until
-independently reviewed cache and bundle receipts exist.
+browser-preview-v2 candidates now call this verifier. The four-cache receipt
+pin is armed; the separate Worker-bundle pin remains unarmed and no real
+v2 verifier/bundle/static run has passed.
 
 A future active consumer migration can use the versioned candidates while
 keeping the verified { modules, commonBinding, registrySha256 } result shape.

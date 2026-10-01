@@ -5,16 +5,16 @@ sprite-helper entrypoints with the four explicitly selected Bend caches. It
 uses `cache-set-v2/verify.mjs` and the `rift-bend-selected-cache/2032-2`
 manifest contract; the canonical 2.0.27 loader, the historical 2032-1 bundle
 candidate and static packer, and their receipts are unchanged. A separately
-versioned browser-preview-v2 packer candidate now consumes this bundle format,
-but both candidates remain unarmed and unrun with real caches.
+versioned browser-preview-v2 packer candidate now consumes this bundle format.
+The cache receipt pin is armed below; the static packer's separate bundle pin
+remains unarmed. No real bundle or static package has run.
 
-Before a real bundler run, provide a versioned JSON receipt matching
-[`receipt.schema.json`](receipt.schema.json), commit it below this directory,
-and obtain its raw SHA-256 independently. Then populate the deliberately
-unarmed [`approved-receipt.mjs`](approved-receipt.mjs) pin through a separate
-owner-reviewed source change with the exact receipt path, raw SHA-256, and
-cache source commit/tree. A caller's receipt plus caller-computed hash alone
-cannot arm the bundler. The receipt names each exact
+The reviewed [four-cache receipt](receipts/stable-tag-41e48d9.json) records the
+independent Linux host-local readback from
+[comment 5924179844](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5924179844).
+[`approved-receipt.mjs`](approved-receipt.mjs) separately pins its committed
+raw bytes and source revision/tree. A caller's receipt plus caller-computed
+hash alone cannot arm the bundler. The receipt names each exact
 repository-relative manifest path, raw manifest SHA-256, output byte count and
 SHA-256, plus the common cache source commit and tree (repeated per module so
 mixed bindings fail closed). The runner requires both `--receipt` and
@@ -22,12 +22,11 @@ mixed bindings fail closed). The runner requires both `--receipt` and
 mislocated receipt. The four paths passed as `--menu`, `--controller`,
 `--scene`, and `--chrome` must match that receipt byte-for-byte.
 
-No 2032-2 real-cache receipt or approved pin is supplied here. The older Linux receipt belongs
-to the historical cache path and is not silently accepted as evidence for the
-new verifier. Do not fill this gap with self-computed hashes or synthetic
-cache bytes. Until one independently pinned four-cache receipt has been
-reviewed and all four local outputs pass `verifyCacheSet2032V2`, the real-cache
-Worker bundle remains unverified.
+The older Linux receipt belongs to the historical cache path and is not
+silently accepted as evidence for the new verifier. The four new JS/manifest
+outputs have been reported from Linux and pinned, but the real
+`verifyCacheSet2032V2`/Worker bundle has **not** run on those host-local bytes.
+Do not infer browser rendering, static packaging, or acceptance from the pin.
 
 The runner also retains the local Bun version/executable binding, cache-only
 loader, fetch-denial guard (not complete network isolation), clean versioned-source binding, two-output

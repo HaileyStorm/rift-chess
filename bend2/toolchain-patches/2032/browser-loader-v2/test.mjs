@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { approvedReceipt } from './approved-receipt.mjs';
@@ -40,6 +41,12 @@ if (approvedReceipt === null) {
   assert.throws(() => assertApprovedReceipt(approvedReceipt, receiptPath, receiptSha, receipt),
     /no independently reviewed/);
 } else {
+  const raw = fs.readFileSync(path.join(repoRoot, approvedReceipt.path));
+  assert.equal(sha(raw), approvedReceipt.sha256,
+    'approved receipt raw bytes differ from the independently reviewed pin');
+  const approvedShape = validateReceiptShape(JSON.parse(raw.toString('utf8')));
+  assert.doesNotThrow(() => assertApprovedReceipt(approvedReceipt,
+    approvedReceipt.path, approvedReceipt.sha256, approvedShape));
   const matchingShape = structuredClone(receipt);
   matchingShape.cacheSource = approvedReceipt.cacheSource;
   for (const entry of Object.values(matchingShape.manifests)) {
