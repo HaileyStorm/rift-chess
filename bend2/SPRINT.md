@@ -2104,3 +2104,19 @@ and the exact-build hosted extended 13-check Chrome run passed, including
 offline module-worker refinement. Native current-source retest, physical
 audio, GPU/device performance, full atlas-aware picking and owner visual
 acceptance remain open; the full 24/689 run was local, not hosted.
+
+A further pitch-interpolated lower-base trial was **discarded**, not published.
+The initial formula moved the matrix foot from square 27 to square 19 at yaw
+26°/pitch 41°/zoom 75 where the prior placement stayed on 27. A more
+conservative cap had no *new foot-center* misses in a finite 60,480-view,
+241,920-sample geometry sweep (four central squares and three zooms), but the
+existing base already missed 6,996 such samples, and neither formula binds
+atlas alpha to the controller's legacy 24×36 pick mask. The retained base
+remains .22 with its .17 contact shadow; a presentation-bound atlas hit path
+is still needed before lowering it. Separately, `Picking.pick` and the legacy
+`Scene.pieces` fallback now both suppress occupied entries under missing tiles.
+The focused Bend/JS test passed 2,523 camera, overlap, pixel and rift-hit
+checks, including three distinct visible-versus-hidden rendered probes;
+`Application.bend` and `ApplicationControl.bend` source checks passed. This
+bounded rift consistency fix does not prove full atlas-aware picking, 2.0.32
+browser parity or visual acceptance.

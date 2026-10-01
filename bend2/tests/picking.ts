@@ -3,6 +3,8 @@ import Camera from '../graphics/Camera.bend';
 import Model from '../core/Model.bend';
 import Picking from '../graphics/Picking.bend';
 import Sprites from '../graphics/Sprites.bend';
+import Scene from '../graphics/Scene.bend';
+import Pixel from '../lib/graphics/pixels/Pixel.bend';
 
 type ViewValue = { $: 'View'; yaw: number; pitch: number; zoom: number };
 type BendList = { $: 'Nil' } | { $: 'Con'; head: any; tail: BendList };
@@ -181,6 +183,40 @@ for (const current of [views[0], views[3], views[4], views[8], views[10]]) {
     `outside image pick at ${current.yaw}/${current.pitch}`);
 }
 
+// A malformed or in-flight position can retain an occupied board entry under
+// a missing macro. The renderer hides that piece; its old silhouette must not
+// steal an otherwise distinct board/background click.
+const hiddenPosition = { ...position,
+  holes: Model.macro_mask(Model.macro_of(pieceSquare)) };
+let hiddenProbes = 0;
+for (const current of [view(0, 35, 100), view(180, 35, 100), view(345, 67, 115)]) {
+  const basis = Camera.basis(current);
+  const cx = Camera.center_x(pieceSquare, basis), cy = Camera.center_y(pieceSquare, basis);
+  let found = false;
+  for (let y = 0; y < 36 && !found; y++) for (let x = 0; x < 24; x++) {
+    if (!Sprites.alpha(pieceCode, x, y)) continue;
+    const pointerX = cx - 12 + x, pointerY = cy - 32 + y;
+    const floor = Camera.square_at(pointerX, pointerY, basis);
+    if (floor === pieceSquare || Picking.pick(position, pointerX, pointerY, basis) !== pieceSquare)
+      continue;
+    check(Picking.pick(hiddenPosition, pointerX, pointerY, basis) === floor,
+      `hidden-rift sprite cannot steal ${current.yaw}/${current.pitch} click`);
+    const order = Camera.depth_order(basis);
+    const visible = Scene.pieces(order, position.board, position.holes, 21760, 16,
+      64, 64, 64, 0, basis, { $: 'Pix', color: 0 });
+    const hidden = Scene.pieces(order, hiddenPosition.board, hiddenPosition.holes,
+      21760, 16, 64, 64, 64, 0, basis, { $: 'Pix', color: 0 });
+    check(Pixel.sample_xy(9n, pointerX, pointerY, visible) !== 0,
+      `legacy visible piece covers ${current.yaw}/${current.pitch} probe`);
+    check(Pixel.sample_xy(9n, pointerX, pointerY, hidden) === 0,
+      `legacy renderer must not draw the hidden ${current.yaw}/${current.pitch} piece`);
+    hiddenProbes++;
+    found = true;
+    break;
+  }
+  check(found, `hidden-rift overlap sample exists at ${current.yaw}/${current.pitch}`);
+}
+
 const overlapPosition = boardWithPieces({ 27: 6, 35: 6 });
 for (const current of [view(0, 35, 100), view(180, 35, 100)]) {
   const basis = Camera.basis(current);
@@ -209,6 +245,6 @@ for (const current of [view(0, 35, 100), view(180, 35, 100)]) {
   check(overlapChecks > 0, `overlap sample exists at ${current.yaw}/${current.pitch}`);
 }
 
-console.log(JSON.stringify({ ok: true, checks,
-  classification: 'camera projection/inverse, rounded depth order, and rotated opaque/transparent sprite picking',
+console.log(JSON.stringify({ ok: true, checks, hiddenProbes,
+  classification: 'camera projection/inverse, rounded depth order, rift ghost suppression, and rotated opaque/transparent sprite picking',
   elapsedMs: performance.now() - started }));

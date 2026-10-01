@@ -257,16 +257,19 @@ def dying_at(show: Bool, +square: U32, code: U32, progress: U32, +camera: Camera
     case False{}: image
     case True{}: Sprites.dying(True{}, code, Camera.center_x(square, camera), Camera.center_y(square, camera), progress, image)
 
-def pieces(order: List<&2, U32>, +board: List<&2, U32>, +action: U32, +progress: U32,
+def pieces(order: List<&2, U32>, +board: List<&2, U32>, +holes: U32, +action: U32, +progress: U32,
   +selected: U32, +hovered: U32, +victim: U32, +victim_code: U32, +camera: Camera.Basis, image: Image) -> Image:
   match order:
     case Nil{}: image
     case +square <> rest:
       +code = Model.board_get(board, square)
-      +a = dying_at(Bool.and(U32.is_eq(victim, square), U32.is_lt(progress, 16)), square, victim_code, progress, camera, image)
-      +b = piece_at(Model.occupied(code), square, code, action, progress,
+      +present = Model.present(holes, square)
+      +a = dying_at(Bool.and(present,
+        Bool.and(U32.is_eq(victim, square), U32.is_lt(progress, 16))),
+        square, victim_code, progress, camera, image)
+      +b = piece_at(Bool.and(present, Model.occupied(code)), square, code, action, progress,
         U32.is_eq(selected, square), U32.is_eq(hovered, square), camera, a)
-      pieces(rest, board, action, progress, selected, hovered, victim, victim_code, camera, b)
+      pieces(rest, board, holes, action, progress, selected, hovered, victim, victim_code, camera, b)
 
 def impact.show(show: Bool, +square: U32, +progress: U32, +camera: Camera.Basis, image: Image) -> Image:
   match show:
@@ -425,10 +428,11 @@ def ground_on(background: Image, frame: Frame) -> Image:
 
 def pieces_on(ground: Image, frame: Frame) -> Image:
   match frame:
-    case Frame{position, +previous, selected, hovered, targets, tile, tileTargets, +lastAction, +progress, theme, view, shifts, check}:
+    case Frame{+position, +previous, selected, hovered, targets, tile, tileTargets, +lastAction, +progress, theme, view, shifts, check}:
       +camera = Camera.basis(view)
       +victim = capture_square(Model.decode(lastAction), previous)
-      +e = pieces(Camera.depth_order(camera), Model.pos_board(position), lastAction, progress, selected, hovered, victim,
+      +e = pieces(Camera.depth_order(camera), Model.pos_board(position), Model.pos_holes(position),
+        lastAction, progress, selected, hovered, victim,
         Model.board_get(Model.pos_board(previous), victim), camera, ground)
       impact(Model.decode(lastAction), previous, progress, camera, e)
 
