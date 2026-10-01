@@ -243,3 +243,16 @@ and its historical receipt remain the canonical frozen gate. A 2.0.32 source
 mutation pass would still not prove aggregate CHECK, BendTT kernel rejection,
 conformance, browser/native/GPU, or permit a pin amendment. No mutation Worker
 has run under this new runner yet.
+
+## Separate full-CHECK BendTT verdict candidate
+
+The [versioned BendTT gate](bendtt-gate/README.md) binds a successful frozen
+aggregate receipt and an independently reviewed prebuilt kernel before it can
+invoke the derived 2.0.32 `main.ts CHECK.bend --verdict` path. Both approval
+modules are currently `null`: there is no approved Linux aggregate result or
+kernel binary. Its synthetic authority, lineage, admission, receipt and
+process-result tests pass, but no Bun/Lean/BendTT command was run. The
+[owned Linux process-group supervisor](bendtt-supervisor.mjs) passed only
+portable policy controls on Windows; its five actual Linux lifecycle cases
+remain unrun. A verdict will require those controls and an exact, quiescent
+host run; a source-only aggregate pass does not imply a kernel proof.

@@ -1987,3 +1987,9 @@ emission or GUI. The [revised source-only gate](toolchain-patches/native-v2-2032
 uses an observed, 120-second-bounded 64-MiB Node Worker and passed ten
 portable lifecycle controls plus independent review. A fresh Linux run on
 these new bytes is required before the separate C/ELF/package one-shot.
+The [isolated 2.0.32 BendTT verdict candidate](core/v3/2032/bendtt-gate/README.md)
+now requires a reviewed full-CHECK aggregate receipt and prebuilt-kernel
+provenance before launching the official `--verdict` path. Both approvals are
+still null. Its synthetic binding/lease/result controls passed independent
+review; the Linux process-group lifecycle suite and any actual kernel verdict
+remain unrun. This is not a frozen proof completion or pin-amendment receipt.
