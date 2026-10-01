@@ -134,8 +134,8 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
 | Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary per-call and phase-six narrow binary-U32 per-call fixtures | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
-| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. A separate NativeV2 Linux CPU build harness passes deterministic source-only tests, not a build. | Full exact argv/write/restart receipt after the stopped stderr oracle case; NativeV2 C/ELF/package, GUI, PCM and GPU/device checks. |
-| Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier, Worker bundle, static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
+| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. A separate NativeV2 Linux CPU build harness passes deterministic source-only tests, not a build. | Full exact argv/write/restart receipt after source-pin preflight stopped; NativeV2 C/ELF/package, GUI, PCM and GPU/device checks. |
+| Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier and Worker bundle after a missing host-local Bun prerequisite; then static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
 
 Run source-only preflights as preflights, not acceptance substitutes. The
@@ -151,6 +151,11 @@ passed a source-bound replay and local Chrome Worker witness with dense-index
 validation, unary carry-forward and late no-suffix JS/C parity. It does not
 establish first-slot value fidelity for arbitrary binary leaves, general
 eligibility/scheduling, or the old 107-case matrix on 2.0.32.
+The [first real `2032-2` verifier/bundle attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925213267)
+stopped before source transition or Node tests because the four-cache clone
+lacked its own ignored Bun runtime. The older Bun recovery belonged to a
+different checkout. A [new no-overwrite host-local placement and bundle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925342479)
+is queued after the corrected CLI lane; it is not a bundle result.
 
 The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
 [five additional consumers](../native-cli-2032/consumers/README.md) remain
@@ -170,8 +175,13 @@ The [Linux-local CPU CLI smoke candidate](../native-cli-2032/linux-smoke/README.
 passed exact LF C emission and Clang18 linking on Linux. Program-only and
 `help` passed; the `-- --help` process exited 0 but the harness stopped on a
 one-LF versus two-LF stderr oracle before write/restart. The new exact oracle
-and `-- help` comparison pass pure tests; their fresh Linux native run is
-pending, not assumed successful. The separate
+and `-- help` comparison pass pure tests; a fresh Linux native run remains
+pending. The [terminal source-pin stop](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925191062)
+preceded all CLI tests in the first fresh attempt: its fetch command had an
+extra SHA character absent from the original 40-character mailbox pin. A
+[distinct corrected request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925336497)
+is queued after the NativeV2 source/lifecycle one-shot; no CLI restart pass is
+claimed. The separate
 [NativeV2 event adapter](../native-v2-2032/events/README.md) adds only the
 2.0.32 `Look`/`Scroll` match arms in a versioned X11 candidate. Its Windows
 exact-source and pure wheel-direction preflight passed; this is not an actual

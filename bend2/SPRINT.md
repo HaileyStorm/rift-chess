@@ -1967,3 +1967,14 @@ rejects holes at both dispatch boundaries, and retains late no-suffix JS/C
 byte parity. The accepted leaf returns its second formal, so exact first-slot
 value fidelity remains unproven despite presence/type/order checks. This is
 not the full 004 scheduler or a migrated 107-case matrix pass.
+Two subsequent [Linux CLI](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925191062)
+and [real four-cache bundle](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925213267)
+one-shots stopped at preflight. The CLI host fetch used an extra SHA character
+absent from the original 40-character mailbox pin; no CLI code or native
+restart ran. The cache clone lacked its own ignored Bun executable; the older
+Bun recovery had placed a copy in another checkout, so no real v2 verifier or
+bundle ran. [Corrected CLI](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925336497)
+and [no-overwrite Bun-placement/bundle](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925342479)
+requests are distinct queued one-shots, serialized after the
+[NativeV2 source/lifecycle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925094768).
+None is acceptance until a terminal host result and independent review.
