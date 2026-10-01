@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rift-bend-2032-browser-loader-v2-cache-receipt/1",
+  "title": "Independently pinned 2.0.32 selected-cache receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cacheSchema", "cacheSource", "manifests"],
+  "properties": {
+    "schema": {
+      "const": "rift-bend-2032-browser-loader-v2-cache-receipt/1"
+    },
+    "cacheSchema": {
+      "const": "rift-bend-selected-cache/2032-2"
+    },
+    "cacheSource": {
+      "$ref": "#/$defs/source"
+    },
+    "manifests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["menu", "controller", "scene", "chrome"],
+      "properties": {
+        "menu": { "$ref": "#/$defs/cache" },
+        "controller": { "$ref": "#/$defs/cache" },
+        "scene": { "$ref": "#/$defs/cache" },
+        "chrome": { "$ref": "#/$defs/cache" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitObject": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {
+        "commit": { "$ref": "#/$defs/gitObject" },
+        "tree": { "$ref": "#/$defs/gitObject" }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifestPath", "manifestSha256", "outputBytes", "outputSha256", "sourceCommit", "sourceTree"],
+      "properties": {
+        "manifestPath": {
+          "type": "string",
+          "pattern": "^\\.artifacts/bend2/2032-preview/.+\\.manifest\\.json$"
+        },
+        "manifestSha256": { "$ref": "#/$defs/sha256" },
+        "outputBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "outputSha256": { "$ref": "#/$defs/sha256" },
+        "sourceCommit": { "$ref": "#/$defs/gitObject" },
+        "sourceTree": { "$ref": "#/$defs/gitObject" }
+      }
+    }
+  }
+}

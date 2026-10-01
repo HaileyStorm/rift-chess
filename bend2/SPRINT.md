@@ -1875,6 +1875,11 @@ retains the historical strict `2032-1` path while checking the stable-import
 metadata, one common source revision, four byte-bound closures and exact bare
 export properties. Its 28 synthetic tamper controls pass, including same-line
 extra/duplicate export rejection; no real positive cache has been verified.
+The [versioned Worker-bundle candidate](toolchain-patches/2032/browser-loader-v2/README.md)
+now consumes only that verifier plus a committed, independently reviewed
+four-cache receipt. Its approval pin is deliberately unarmed until real Linux
+manifest/output hashes and a common source revision are reported and reviewed;
+synthetic input tests pass, but no v2 Worker bundle or static package was made.
 No repaired real cache or rendered browser result has been produced.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or
