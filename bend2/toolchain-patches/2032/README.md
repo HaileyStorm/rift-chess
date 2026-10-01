@@ -107,9 +107,11 @@ captured a first-frame
 Worker fault on root-dependent `Scene.Frame` constructor tags. The
 [source-bound two-library reproduction](tag-identity/README.md) demonstrates
 the same 2.0.32 tag mismatch and a stable-dependency preload that retains
-bare public exports. The selected-cache emitter carries that change but has
-not produced a repaired real four-cache set. No rendered browser acceptance
-is established.
+bare public exports. The [Linux stable-tag result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5924179844)
+emitted four same-source `2032-2` caches with independently rehashed output
+and manifest bytes. The reviewed receipt is pinned, but real v2 cache-set
+verification and the corrected Worker/static bundle have not run. No rendered
+browser acceptance is established.
 
 The [phase-four browser fixture](../004-web-workers/rebase-2032/phase4-browser/README.md)
 passes one real Chrome module-Worker `require` call and one local `never`
@@ -132,8 +134,8 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
 | Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime and phase-five per-call fixture | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
-| Native | Six patched argv entries source-check; exact C emission/export | Linked 2.0.32 CPU binary and real argv/restart, GUI, PCM and GPU/device checks. |
-| Browser | Four selected caches, real bundle and static package; phase-five isolated browser Worker | First frame, hotseat/orbit/mobile, offline/package, production build and hosted/device evidence. |
+| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed | Full exact argv/write/restart receipt after the stopped stderr oracle case; NativeV2 GUI, PCM and GPU/device checks. |
+| Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier, Worker bundle, static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
 
 Run source-only preflights as preflights, not acceptance substitutes. The
@@ -150,19 +152,21 @@ The [NativeCLI IO.args migration](../native-cli-2032/README.md) and its
 separate versioned source candidates. The latter passes exact-hash patch
 preflight, pure list controls, and a small helper-only 2.0.32 source check.
 All six patched argv entries also pass source `book_load`/`book_valid` in a
-separate isolated candidate with zero holes/network. No native CLI scenario
-has been accepted under 2.0.32.
+separate isolated candidate with zero holes/network. A Linux 2.0.32 CLI ELF
+has since passed program-only and `help`; complete argv/restart remains open.
 The isolated NativeCLI source then emitted C bytes in memory under a bounded,
 source-checked child, with no artifact, link or native runtime test; the
 [receipt](../native-cli-2032/consumers/C_EMISSION_RECEIPT.json) remains a
 compiler-emission result only.
 A [separate C artifact](../native-cli-2032/consumers/C_ARTIFACT_RECEIPT.json)
 matches those emitted bytes and has a bound manifest. A Windows clang syntax
-probe failed on missing POSIX `sys/mman.h`; Linux native build/argv acceptance
-has not run.
+probe failed on missing POSIX `sys/mman.h`; it is not a Linux build verdict.
 The [Linux-local CPU CLI smoke candidate](../native-cli-2032/linux-smoke/README.md)
-passed Windows patch materialization and pure controls; its Linux C export,
-compile and executable cases remain unrun. The separate
+passed exact LF C emission and Clang18 linking on Linux. Program-only and
+`help` passed; the `-- --help` process exited 0 but the harness stopped on a
+one-LF versus two-LF stderr oracle before write/restart. The new exact oracle
+and `-- help` comparison pass pure tests; their fresh Linux native run is
+pending, not assumed successful. The separate
 [NativeV2 event adapter](../native-v2-2032/events/README.md) adds only the
 2.0.32 `Look`/`Scroll` match arms in a versioned X11 candidate. Its Windows
 exact-source and pure wheel-direction preflight passed; this is not an actual
