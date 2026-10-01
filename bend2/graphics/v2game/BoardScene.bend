@@ -1326,7 +1326,7 @@ def sprite_width(+size: U32, camera: Camera.Basis) -> F32:
   F32.mul(sprite_board_pitch(size, camera), 1.16)
 
 def sprite_height(+size: U32, camera: Camera.Basis) -> F32:
-  F32.mul(sprite_board_pitch(size, camera), 1.04)
+  F32.mul(sprite_board_pitch(size, camera), 1.00)
 
 def sprite_matrix(+width: F32, +height: F32, center: Quad.Point) -> Transform.Matrix:
   match center:

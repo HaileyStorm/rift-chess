@@ -14,12 +14,19 @@ must not contain pixels for the current or previous pieces.
 Sprites remain screen-facing at every camera yaw and pitch. Their anchors use
 the same projected board centers and interpolated motion points as the proxy
 scene; draw order follows `Camera.depth_order`. Each sprite's axis-aligned quad
-uses 1.16 of the projected board pitch for width and 1.04 for height, with a
+uses 1.16 of the projected board pitch for width and 1.00 for height, with a
 0.22-width screen-down base shift so pieces sit forward on their squares. Rift
 holes suppress both current and dying sprites. Captured art drifts upward and
 fades during the first half of the existing 16-step action transition. The
 atlas is fixed-front artwork, so this renderer does not claim true 3D rotation
 or perspective.
+
+The height-only refinement leaves the base and contact-shadow offsets intact.
+The tempting lower-base trial crossed the adjacent-square boundary at minimum
+Front pitch while the controller still uses the legacy picking silhouette, so
+it was not promoted. The focused projection test covers Front 65°, default
+67°, and the minimum 35° Front from both sides; rendered picking remains a
+separate interaction gate.
 
 `BoardScene.fast_feedback_on_pieces512(frame, pieces_image)` is a separate,
 cached UI feedback stage. It adds a bright cyan silhouette ring and square

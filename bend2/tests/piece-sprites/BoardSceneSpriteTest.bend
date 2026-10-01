@@ -114,8 +114,18 @@ def contact_shadow_is_bounded() -> Bool:
 
 # The screen-facing court pieces should remain close to one projected rank
 # tall and have a base that visibly rests below the square center in Front.
+def low_pitch_foot_stays_on_square(+yaw: U32) -> Bool:
+  +square: U32 = 27
+  +camera = Camera.basis(Camera.View{yaw,35,115})
+  +center = board_center(square,camera)
+  +matrix = BoardScene.sprite_matrix(BoardScene.sprite_width(512,camera),
+    BoardScene.sprite_height(512,camera),center)
+  +foot = Transform.point(matrix,Quad.Point{0.5,1.0})
+  U32.is_eq(Camera.square_at(Ortho.pixel(BoardScene.point_x(foot)),
+    Ortho.pixel(BoardScene.point_y(foot)),camera),square)
+
 def front_rank_projection_is_compact() -> Bool:
-  +camera = Camera.basis(Camera.View{0,90,115})
+  +camera = Camera.basis(Camera.View{0,65,115})
   +pitch = BoardScene.sprite_board_pitch(512,camera)
   +height = BoardScene.sprite_height(512,camera)
   +center = board_center(4,camera)
@@ -123,9 +133,15 @@ def front_rank_projection_is_compact() -> Bool:
     height,center)
   +foot = F32.sub(BoardScene.point_y(Transform.point(matrix,
     Quad.Point{0.5,1.0})),BoardScene.point_y(center))
-  Bool.and(F32.is_le(height,F32.mul(pitch,1.08)),
-    Bool.and(F32.is_ge(foot,F32.mul(pitch,0.24)),
-      F32.is_le(foot,F32.mul(pitch,0.32))))
+  +default_camera = Camera.basis(Camera.default_view())
+  +default_height = BoardScene.sprite_height(512,default_camera)
+  +default_pitch = BoardScene.sprite_board_pitch(512,default_camera)
+  Bool.and(F32.is_le(height,F32.mul(pitch,1.01)),
+    Bool.and(F32.is_le(default_height,F32.mul(default_pitch,1.01)),
+      Bool.and(F32.is_ge(foot,F32.mul(pitch,0.24)),
+        Bool.and(F32.is_le(foot,F32.mul(pitch,0.32)),
+          Bool.and(low_pitch_foot_stays_on_square(0),
+            low_pitch_foot_stays_on_square(180))))))
 
 def ground_frame(+square: U32, +holes: U32, +theme: U32,
   view: Camera.View) -> Scene.Frame:
