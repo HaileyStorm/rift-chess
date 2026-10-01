@@ -154,6 +154,13 @@ A [separate C artifact](../native-cli-2032/consumers/C_ARTIFACT_RECEIPT.json)
 matches those emitted bytes and has a bound manifest. A Windows clang syntax
 probe failed on missing POSIX `sys/mman.h`; Linux native build/argv acceptance
 has not run.
+The [Linux-local CPU CLI smoke candidate](../native-cli-2032/linux-smoke/README.md)
+passed Windows patch materialization and pure controls; its Linux C export,
+compile and executable cases remain unrun. The separate
+[NativeV2 event adapter](../native-v2-2032/events/README.md) adds only the
+2.0.32 `Look`/`Scroll` match arms in a versioned X11 candidate. Its Windows
+exact-source and pure wheel-direction preflight passed; this is not an actual
+NativeV2 source check, GUI/PCM run or macOS input policy.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

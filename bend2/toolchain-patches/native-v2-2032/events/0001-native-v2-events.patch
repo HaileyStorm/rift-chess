@@ -1,0 +1,13 @@
+diff --git a/bend2/NativeV2.bend b/bend2/NativeV2.bend
+--- a/bend2/NativeV2.bend
++++ b/bend2/NativeV2.bend
+@@ -384,4 +384,9 @@ def events_go(events: List<Event>, +alt_mask: U32, +ctrl_mask: U32,
+       events_go(rest, alt_mask, ctrl_mask, shift_mask,
+         T.PointerMove{x, y} <> acc, closed)
++    case Look{_, _} <> rest:
++      events_go(rest, alt_mask, ctrl_mask, shift_mask, acc, closed)
++    case Scroll{x, y, _, dy} <> rest:
++      events_go(rest, alt_mask, ctrl_mask, shift_mask,
++        T.Wheel{x, y, F32.sub(0.0, F32.mul(dy, 100.0))} <> acc, closed)
+ 
+ def events(events: List<Event>, alt_mask: U32, ctrl_mask: U32,

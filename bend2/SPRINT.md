@@ -1748,6 +1748,13 @@ cases. Syntax, Windows pure contract and six-entry patch-materialization
 checks pass; Linux lifecycle, C
 export, compile and executable scenarios remain unrun. The Windows C
 artifact is not transferred or counted as native acceptance.
+The separate [2.0.32 NativeV2 event adapter](toolchain-patches/native-v2-2032/events/README.md)
+now passes a Windows exact-source/read-only patch and pure X11 wheel-direction
+preflight. It adds the new Base `Look`/`Scroll` cases only in a versioned
+patch, leaves the 2.0.27 GUI source unchanged, and explicitly limits the
+`-100 × dy` scale to Linux X11 pending macOS input-unit review. The actual
+NativeV2 closure has not been type-checked under 2.0.32, built or played;
+GUI, PCM and restart acceptance remain open.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
