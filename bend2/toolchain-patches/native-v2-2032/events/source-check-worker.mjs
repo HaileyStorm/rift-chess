@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 export const SOURCE_CHECK_WORKER_STACK_MB = 64;
+export const SOURCE_CHECK_WORKER_OLD_GENERATION_MB = 1024;
 export const SOURCE_CHECK_WORKER_TIMEOUT_MS = 120_000;
+
+function sourceWorkerEnvironment() {
+  return { BEND_NO_TELEMETRY: '1' };
+}
 
 const errorText = error => error instanceof Error
   ? (error.stack ?? error.message).slice(0, 1800)
@@ -11,8 +16,10 @@ const errorText = error => error instanceof Error
 
 export function observeSourceWorker(worker, { timeoutMs = SOURCE_CHECK_WORKER_TIMEOUT_MS,
   label = 'source-check worker' } = {}) {
-  assert.ok(Number.isSafeInteger(timeoutMs) && timeoutMs > 0,
-    'worker timeout must be a positive safe integer');
+  const validTimeout = Number.isSafeInteger(timeoutMs) && timeoutMs > 0;
+  const invalidTimeout = validTimeout ? undefined
+    : new Error('worker timeout must be a positive safe integer');
+  const effectiveTimeoutMs = validTimeout ? timeoutMs : SOURCE_CHECK_WORKER_TIMEOUT_MS;
   return new Promise((resolve, reject) => {
     let response;
     let gotResponse = false;
@@ -31,7 +38,9 @@ export function observeSourceWorker(worker, { timeoutMs = SOURCE_CHECK_WORKER_TI
       if (settled || exitCode === undefined) return;
       settled = true;
       cleanup();
-      if (timedOut) {
+      if (invalidTimeout) {
+        reject(new Error(`${label} rejected invalid timeout after observed exit ${exitCode}: ${errorText(invalidTimeout)}`));
+      } else if (timedOut) {
         reject(new Error(`${label} exceeded its ${timeoutMs} ms timeout (exit ${exitCode})`));
       } else if (workerError) {
         reject(new Error(`${label} failed: ${errorText(workerError)}`));
@@ -43,9 +52,7 @@ export function observeSourceWorker(worker, { timeoutMs = SOURCE_CHECK_WORKER_TI
         const detail = response && typeof response.error === 'string'
           ? response.error : 'worker returned a malformed failure result';
         reject(new Error(`${label} failed: ${detail}`));
-      } else {
-        resolve(response.result);
-      }
+      } else resolve(response.result);
     };
     const rejectUnobservedExit = reason => {
       if (exitCode !== undefined) {
@@ -103,10 +110,11 @@ export function observeSourceWorker(worker, { timeoutMs = SOURCE_CHECK_WORKER_TI
     const timer = setTimeout(() => {
       timedOut = true;
       requestTermination('worker timed out');
-    }, timeoutMs);
+    }, effectiveTimeoutMs);
     worker.on('message', onMessage);
     worker.on('error', onError);
     worker.on('exit', onExit);
+    if (invalidTimeout) requestTermination('invalid worker timeout');
   });
 }
 
@@ -115,13 +123,19 @@ export async function loadSourceInBoundedWorker({ compilerUrl, entryFile,
   assert.equal(typeof compilerUrl, 'string', 'compiler URL must be a string');
   assert.equal(typeof entryFile, 'string', 'entry source path must be a string');
   assert.ok(entryFile.length > 0, 'entry source path must not be empty');
+  assert.ok(Number.isSafeInteger(timeoutMs) && timeoutMs > 0,
+    'worker timeout must be a positive safe integer');
   const worker = new Worker(new URL(import.meta.url), {
     workerData: { operation: 'load-source', compilerUrl, entryFile },
-    execArgv: process.execArgv,
-    resourceLimits: { stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB },
+    // V8 heap flags accepted by the parent are rejected in worker execArgv.
+    // Apply the heap bound through Node's worker resource-limits API instead.
+    execArgv: [],
+    env: sourceWorkerEnvironment(),
+    resourceLimits: {
+      maxOldGenerationSizeMb: SOURCE_CHECK_WORKER_OLD_GENERATION_MB,
+      stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB,
+    },
   });
-  assert.equal(worker.resourceLimits.stackSizeMb, SOURCE_CHECK_WORKER_STACK_MB,
-    'Node did not apply the requested worker stack limit');
   return observeSourceWorker(worker, { timeoutMs, label: 'NativeV2 source loader' });
 }
 

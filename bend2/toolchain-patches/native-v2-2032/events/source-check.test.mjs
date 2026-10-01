@@ -1,14 +1,18 @@
 // Portable lifecycle controls for the Linux-only source-check worker.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { loadSourceInBoundedWorker, observeSourceWorker,
-  SOURCE_CHECK_WORKER_STACK_MB } from './source-check-worker.mjs';
+  SOURCE_CHECK_WORKER_OLD_GENERATION_MB, SOURCE_CHECK_WORKER_STACK_MB }
+  from './source-check-worker.mjs';
 
 const api = source => `data:text/javascript,${encodeURIComponent(source)}`;
 const entryFile = path.resolve('NativeV2-source-check-fixture.bend');
 const passed = [];
+assert.equal(SOURCE_CHECK_WORKER_STACK_MB, 64);
+assert.equal(SOURCE_CHECK_WORKER_OLD_GENERATION_MB, 1024);
 const check = async (name, run) => {
   await run();
   passed.push(name);
@@ -28,6 +32,65 @@ await check('source worker loads and validates in an isolated bounded thread', a
     seenFiles: [entryFile],
     fetches: 0,
   });
+});
+
+await check('source worker starts under a parent heap flag with explicit limits and a clean environment', async () => {
+  const workerModuleUrl = new URL('./source-check-worker.mjs', import.meta.url).href;
+  const childProgram = `
+    import assert from 'node:assert/strict';
+    import { loadSourceInBoundedWorker } from ${JSON.stringify(workerModuleUrl)};
+    assert.ok(process.execArgv.includes('--max-old-space-size=1024'),
+      'the child Node process did not receive its explicit old-generation flag');
+    const compilerSource = \`
+      export function book_nil() {
+        const allowed = ['BEND_NO_TELEMETRY'];
+        const environmentNames = Object.keys(process.env).map(name => name.toUpperCase());
+        if (environmentNames.some(name => !allowed.includes(name)))
+          throw new Error('source worker environment exceeds the explicit allowlist');
+        if (process.execArgv.length !== 0)
+          throw new Error('source worker inherited parent execArgv');
+        if (process.env.BEND_NO_TELEMETRY !== '1')
+          throw new Error('source worker lost BEND_NO_TELEMETRY');
+        return { hols: 0, order: [], tlds: {} };
+      }
+      export async function book_load(book, file, _source, seen) {
+        seen.set(file, true); book.order.push('main'); book.tlds.main = { $: 'Def' };
+      }
+      export function book_valid(book) { book.order.push('validated'); }
+    \`;
+    const result = await loadSourceInBoundedWorker({
+      compilerUrl: 'data:text/javascript,' + encodeURIComponent(compilerSource),
+      entryFile: 'Synthetic-child-source.bend',
+      timeoutMs: 10_000,
+    });
+    assert.deepEqual(result, {
+      book: { holes: 0, mainTag: 'Def', definitions: 2 },
+      seenFiles: ['Synthetic-child-source.bend'],
+      fetches: 0,
+    });
+    console.log(JSON.stringify({ passed: true }));
+  `;
+  const output = execFileSync(process.execPath, [
+    '--max-old-space-size=1024', '--input-type=module', '-e', childProgram,
+  ], {
+    encoding: 'utf8', timeout: 30_000, maxBuffer: 1024 * 1024,
+    env: { ...process.env, NODE_OPTIONS: '--trace-warnings',
+      NODE_PATH: 'source-check-test-sentinel', PATH: 'source-check-test-sentinel',
+      BEND_NO_TELEMETRY: '1', RIFT_SECRET_CANARY: 'must-not-leak',
+      BEND_LIB: 'must-not-leak', BEND_HUB: 'must-not-leak', HOME: 'must-not-leak' },
+  });
+  assert.deepEqual(JSON.parse(output.trim()), { passed: true });
+});
+
+await check('invalid timeout terminates only after lifecycle observation is attached', async () => {
+  const worker = new Worker('while (true) {}', { eval: true });
+  let observedExit = false;
+  worker.once('exit', () => { observedExit = true; });
+  await assert.rejects(observeSourceWorker(worker, {
+    timeoutMs: 0,
+  }), /rejected invalid timeout after observed exit/);
+  assert.equal(observedExit, true, 'invalid timeout was rejected before observing worker exit');
+  assert.equal(worker.threadId, -1, 'worker remained alive after invalid timeout rejection');
 });
 
 await check('source load failure is reported only after worker exit', async () => {
@@ -67,7 +130,6 @@ await check('abnormal exit without a result is observed', async () => {
     eval: true,
     resourceLimits: { stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB },
   });
-  assert.equal(worker.resourceLimits.stackSizeMb, SOURCE_CHECK_WORKER_STACK_MB);
   await assert.rejects(observeSourceWorker(worker, { timeoutMs: 10_000 }), /exited with code 7/);
 });
 
@@ -117,7 +179,6 @@ await check('hung worker is terminated at its owned timeout', async () => {
     eval: true,
     resourceLimits: { stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB },
   });
-  assert.equal(worker.resourceLimits.stackSizeMb, SOURCE_CHECK_WORKER_STACK_MB);
   await assert.rejects(observeSourceWorker(worker, { timeoutMs: 40 }), /exceeded its 40 ms timeout/);
 });
 

@@ -57,10 +57,23 @@ every tracked Bend source against that Git tree, the clean 2.0.27 pin,
 pristine 2.0.32 scout, LF derived compiler/Base, exact Node 22.23.1 runtime,
 the actual loaded import closure, and the hashes of both gate scripts. The
 compiler import, `book_load`, and `book_valid` run in
-`source-check-worker.mjs` with a 64 MiB thread stack, a 120-second owned
-timeout, and an observed exit/result pair. The parent still checks the exact
-closure and repeats all source/compiler/patch identity checks after worker
-exit. If Node rejects worker termination before an exit event is observed,
+`source-check-worker.mjs` configured with requested `resourceLimits` of a 64 MiB
+thread stack and a 1024 MiB old-generation heap, a 120-second owned timeout,
+and an observed exit/result pair. The parent’s exact
+`--max-old-space-size=1024` flag is not forwarded as Worker `execArgv` (Node
+rejects that V8 flag there); the worker receives an empty `execArgv`. The
+receipt labels these as configured requests only; it does not claim an
+independent measurement of effective heap under the parent flag. The worker
+environment is an explicit
+allowlist containing only `BEND_NO_TELEMETRY=1`. Portable controls launch a
+child Node process with the parent heap flag and canary values for
+`NODE_OPTIONS`, `NODE_PATH`, `PATH`, `BEND_LIB`, `BEND_HUB`, `HOME`, and a
+synthetic secret, then require a synthetic source Worker to start and finish
+without inheriting those values. A separate lifecycle control verifies that
+an invalid timeout is rejected only after the worker has been terminated and
+its exit observed.
+The parent still checks the exact closure and repeats all source/compiler/patch
+identity checks after worker exit. If Node rejects worker termination before an exit event is observed,
 the gate fails with exit state explicitly unknown and retains its exit
 observer; that is not treated as worker quiescence. With
 `BEND_NO_TELEMETRY=1`, run it only on Linux under a separate owner supervisor
@@ -81,9 +94,12 @@ The one-file `materialization.test.mjs` checks the patch postimage in a
 fresh ignored directory and cleans only its own verified files on success.
 It passed on Windows; Linux has not run it. The earlier Linux source check
 reached the main-thread loader but failed with `Maximum call stack size
-exceeded` before C emission. That failed receipt is historical evidence and
-must remain intact; the bounded-worker revision needs a new immutable Linux
-request and result. The no-emission Linux source check has not yet passed. A
-source pass would not validate C emission,
+exceeded` before C emission. A later bounded-worker attempt failed before
+loading source because Node rejected the parent's `--max-old-space-size=1024`
+when it was forwarded as Worker `execArgv` (`ERR_WORKER_INVALID_EXEC_ARGV`).
+Keep both failed receipts as historical evidence. The exec-argv correction
+and explicit Worker limits now have a portable child-process regression, but
+this exact revision still needs a new immutable Linux request and result. The
+no-emission Linux source check has not yet passed. A source pass would not validate C emission,
 the new 2.0.32 Window/Audio effect ABIs, GUI input, PCM routing, restart,
 GPU, frozen proofs or a pin amendment.

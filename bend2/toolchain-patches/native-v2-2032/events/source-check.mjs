@@ -5,7 +5,8 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { loadSourceInBoundedWorker, SOURCE_CHECK_WORKER_STACK_MB,
+import { loadSourceInBoundedWorker, SOURCE_CHECK_WORKER_OLD_GENERATION_MB,
+  SOURCE_CHECK_WORKER_STACK_MB,
   SOURCE_CHECK_WORKER_TIMEOUT_MS } from './source-check-worker.mjs';
 import { bindCompilerBaseEol, bindCompilerEol } from '../../2032/preview/compiler-eol.mjs';
 
@@ -170,8 +171,10 @@ console.log(JSON.stringify({ schema: 'rift-native-v2-2032-source-check/1', passe
   evidenceClass: 'Linux-derived-source-load-typecheck-only',
   candidateCommit, candidateTree, eventPatchSha256: patchSha256,
   sourceCheckoutHead: sourceHead, scriptSha256, eolHelperSha256, sourceWorkerSha256,
-  worker: { stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB, timeoutMs: SOURCE_CHECK_WORKER_TIMEOUT_MS,
-    observedExit: true },
+  worker: { configuredResourceLimits: {
+    maxOldGenerationSizeMb: SOURCE_CHECK_WORKER_OLD_GENERATION_MB,
+    stackSizeMb: SOURCE_CHECK_WORKER_STACK_MB,
+  }, timeoutMs: SOURCE_CHECK_WORKER_TIMEOUT_MS, observedExit: true },
   node: { version: process.version, executableSha256: nodeSha256 },
   compilerEol: compiler.eol, compiler: compiler.files, base: baseBinding,
   entrySha256: nativePatched, trackedBendFiles: entries.length,

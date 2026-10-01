@@ -2019,3 +2019,19 @@ a full result. Without PCM it records only partial GUI/restart evidence and
 exits nonzero. No 2.0.32 NativeV2 package or live X11/ALSA run is established
 by these tests; physical audibility, GPU and owner visual acceptance remain
 separate.
+The [four-cache Bun recovery result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927416369)
+confirmed the same clean detached Linux checkout, all four cache hashes and
+the approved receipt, and placed a hash-checked host-local Bun 1.4.2 without
+overwriting a target. Eleven syntax checks and the browser-loader synthetic
+test passed. The cache-set tamper suite stopped on its first case because the
+shallow clone lacked exact older policy-floor commit `03469c0`; no real v2
+verifier, Bun bundle, static package or browser run followed. A distinct
+[bounded history-and-bundle request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927928849)
+is queued; it has no terminal result yet.
+The [64-MiB NativeV2 source-worker Linux result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5927807704)
+also stopped before `book_load`: Node 22 rejected the inherited parent heap
+flag in Worker `execArgv`. Its source, C and GUI gates remain unpassed. A
+locally tested corrective Worker candidate passed independent review and 12
+portable lifecycle checks, but not exact Linux Node 22.23.1; the
+earlier queued CPU-package one-shot still requires the original source gate
+to pass and cannot be treated as authorized by a later correction.
