@@ -1993,3 +1993,11 @@ provenance before launching the official `--verdict` path. Both approvals are
 still null. Its synthetic binding/lease/result controls passed independent
 review; the Linux process-group lifecycle suite and any actual kernel verdict
 remain unrun. This is not a frozen proof completion or pin-amendment receipt.
+The [2.0.32 phase-seven Worker runtime slice](toolchain-patches/004-web-workers/rebase-2032/phase7-required-fanout/README.md)
+passed deterministic cap/queue/cancellation/strict-failure controls and one
+real local Chrome module-Worker pool run, with source-slot results and no
+outside requests. An independent review caught and repaired a false green
+when Chrome was absent and an unobserved partial-startup rejection. This is
+not compiler-emitted sibling fan-out: the phase-six builder still rejects
+the multi-requirement caller. Full 004 eligibility, 107 cases, hosted play,
+native/GPU and pin acceptance remain open.

@@ -133,7 +133,7 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | Evidence class | Current 2.0.32 gate | Acceptance still missing |
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics, source-only aggregate preflight and guarded Linux memory-admission candidate](../../core/v3/2032/README.md); an unarmed, separately reviewed [BendTT verdict runner](../../core/v3/2032/bendtt-gate/README.md) | Complete `CHECK.bend` aggregate Worker, approved prebuilt BendTT kernel verdict and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
-| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary per-call and phase-six narrow binary-U32 per-call fixtures | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
+| Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime, phase-five unary and phase-six binary per-call fixtures; phase-seven bounded pool/cap sibling runtime with real local Chrome | Compiler-emitted sibling fan-out, full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
 | Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. NativeV2 Linux process lifecycle controls passed, but main-thread source load stopped on stack overflow; a 64-MiB Worker source gate passes portable synthetic tests only. | Full exact argv/write/restart receipt; successful NativeV2 source/type check, C/ELF/package, GUI, PCM and GPU/device checks. |
 | Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier and Worker bundle after a missing host-local Bun prerequisite; then static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
@@ -151,6 +151,12 @@ passed a source-bound replay and local Chrome Worker witness with dense-index
 validation, unary carry-forward and late no-suffix JS/C parity. It does not
 establish first-slot value fidelity for arbitrary binary leaves, general
 eligibility/scheduling, or the old 107-case matrix on 2.0.32.
+The [phase-seven required-sibling runtime slice](../004-web-workers/rebase-2032/phase7-required-fanout/README.md)
+passed local Chrome with a fixed pool, cap-2 distinct-helper participation,
+source-slot ordering, local `never`, cancellation/stale-reply and strict
+no-fallback controls. Its helper modules were selected from compiler output,
+but the compiler still rejects the multi-requirement caller; the pool and
+fan-out mapping are not compiler-emitted and no 107-case pass is inferred.
 The [first real `2032-2` verifier/bundle attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5925213267)
 stopped before source transition or Node tests because the four-cache clone
 lacked its own ignored Bun runtime. The older Bun recovery belonged to a
