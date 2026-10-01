@@ -2074,12 +2074,19 @@ passed exact-source preflight and 24 portable controls, but the real one-shot
 stopped before Worker construction when the mountinfo parser rejected an
 unrelated snapd nsfs pseudo-root as a non-absolute cgroup path. The reviewed
 local parser correction retains canonical checks for every mountpoint and
-the cgroup2 root, including protected-path overmount rejection. It needs a
-new immutable Linux run; no aggregate proof or six mutation Workers passed.
-At clean source `baa5fba`, the corrected 29-control aggregate preflight and
-six-case mutation preflight both passed on Windows without launching Workers;
-the [distinct Linux aggregate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929315635)
-is queued behind the existing browser and repaired native-source requests.
+the cgroup2 root, including protected-path overmount rejection. At clean
+source `baa5fba`, the corrected 29-control aggregate preflight and six-case
+mutation preflight passed on Windows without launching Workers. The
+[distinct Linux aggregate result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930891266)
+then passed one observed 125.058-second 8-GiB Worker on that exact clean
+source: the frozen 57-file CHECK cone loaded, 1,577 definitions typechecked,
+955 owned definitions screened, and zero holes/fetches reported. The repaired
+safety preflight and two full-ancestry memory admissions passed; exact claims,
+lock and processes closed. This is source/type/namespace/promise evidence,
+not a BendTT mathematical kernel verdict, six mutation Workers,
+native/browser/GPU result or pin amendment. A separately queued
+[raw receipt review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930982524)
+must bind the host-local aggregate bytes before a versioned approval.
 The [BendTT Linux supervisor/inventory result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928919833)
 passed six registered lifecycle cases but found neither the exact prebuilt
 kernel nor Lean 4.34 binaries. Both production approvals remain null and no

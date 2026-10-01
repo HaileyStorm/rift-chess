@@ -205,11 +205,18 @@ verified filesystem magic with the
 its two physical-free-memory samples are unchanged. These checks establish
 an instantaneous upper bound, not a reservation: cgroup membership or limits
 can change after sampling, and the check does not prove peak Worker cost or
-completion. Actual Linux aggregate and mutation Workers remain unrun.
+completion. The repaired Linux aggregate Worker passed as recorded below;
+the six mutation Workers remain unrun.
 Source-only Linux preflight does not attempt memory admission.
 These are admission and safety bounds, not measured peak cost or a guarantee
-that CHECK completes. No aggregate attempt has run under this candidate yet.
-A pass would prove only this derived compiler's source/type/promise screening
+that CHECK completes. The first Linux attempt stopped at nsfs pseudo-root
+admission before a Worker. The distinct
+[repaired aggregate result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930891266)
+passed one observed Worker on exact clean source `baa5fba` in 125.058 seconds:
+57 files loaded, 1,577 definitions typechecked, 955 owned definitions,
+zero holes/fetches, and 2,204,404 KiB reported peak child rusage RSS.
+Its raw receipt awaits independent review and approval. The scoped pass proves
+only this derived compiler's source/type/promise screening
 of the complete frozen entry; it would not invoke the BendTT kernel, six
 semantic mutations, conformance, native/browser/GPU, or authorize a
 toolchain-pin amendment.
