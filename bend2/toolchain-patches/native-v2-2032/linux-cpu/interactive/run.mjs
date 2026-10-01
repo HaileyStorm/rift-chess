@@ -9,10 +9,11 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { inflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import {
-  CANDIDATE_COMMIT, CANDIDATE_TREE, CANONICAL_COMMIT, EXPECTED_PACKAGE_PATHS,
+  CANONICAL_COMMIT, DEFAULT_CANDIDATE_PROFILE_ID, EXPECTED_PACKAGE_PATHS,
   NATIVE_PATCHED_SHA256, SCOUT_COMMIT,
   OUTPUT_RELATIVE, ROOT, assertLinuxNode, assertRealDirectory,
-  elfIdentity, gitText, OwnedProcessError, readJson, runOwnedProcess, sha256File,
+  elfIdentity, gitText, OwnedProcessError, readJson,
+  resolveCandidateProfile, runOwnedProcess, sha256File,
   snapshotCandidate,
 } from '../common.mjs';
 
@@ -65,23 +66,33 @@ function writeJsonExclusive(file, value) {
 
 export function parseArguments(args) {
   assert.ok(Array.isArray(args));
-  assert.equal(args.length, 6,
-    'usage: node run.mjs --candidate <absolute-event-checkout> --package <absolute-receipt.json> --package-sha256 <64-hex>');
+  assert.ok(args.length === 6 || args.length === 8,
+    'usage: node run.mjs --candidate <absolute-event-checkout> --package <absolute-receipt.json> --package-sha256 <64-hex> [--profile <closed-profile-id>]');
   assert.equal(args[0], '--candidate'); assert.equal(args[2], '--package');
   assert.equal(args[4], '--package-sha256');
   const candidate = safeAbsolute(args[1], '--candidate');
   const packageReceipt = safeAbsolute(args[3], '--package');
   const packageReceiptSha256 = requireSha(args[5], '--package-sha256');
-  return { candidate, packageReceipt, packageReceiptSha256 };
+  if (args.length === 8) assert.equal(args[6], '--profile');
+  const profileId = args[7] ?? DEFAULT_CANDIDATE_PROFILE_ID;
+  resolveCandidateProfile(profileId);
+  return { candidate, packageReceipt, packageReceiptSha256, profileId };
 }
 
-export function assertPackageReceiptShape(receipt, packageReceiptSha256) {
+export function assertPackageReceiptShape(receipt, packageReceiptSha256,
+  profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
+  const candidateProfile = resolveCandidateProfile(profileId);
   requireSha(packageReceiptSha256, 'selected package receipt SHA-256');
   assert.equal(receipt?.schema, 'rift-native-v2-2032-linux-cpu-package/1');
   assert.equal(receipt.ok, true);
   assert.equal(receipt.evidenceClass, 'source-bound-Linux-C-emission-and-ELF-link');
-  assert.equal(receipt.candidate?.commit, CANDIDATE_COMMIT);
-  assert.equal(receipt.candidate?.tree, CANDIDATE_TREE);
+  assert.equal(receipt.candidate?.commit, candidateProfile.sourceCommit);
+  assert.equal(receipt.candidate?.tree, candidateProfile.sourceTree);
+  assert.equal(receipt.candidate?.trackedBendFiles, candidateProfile.trackedBendFiles);
+  if (receipt.candidateProfile === undefined) {
+    assert.equal(profileId, DEFAULT_CANDIDATE_PROFILE_ID,
+      'legacy package without profile identity cannot satisfy a non-legacy selection');
+  } else assert.deepEqual(receipt.candidateProfile, candidateProfile);
   assert.equal(receipt.compiler?.scout?.head, SCOUT_COMMIT);
   assert.equal(receipt.compiler?.derived?.head, SCOUT_COMMIT);
   assert.equal(receipt.compiler?.derived?.compiler?.eol, 'lf');
@@ -90,8 +101,13 @@ export function assertPackageReceiptShape(receipt, packageReceiptSha256) {
   assert.equal(receipt.candidate?.sourceSha256?.['bend2/NativeV2.bend'], NATIVE_PATCHED_SHA256);
   assert.equal(receipt.source?.schema, 'rift-native-v2-2032-linux-source-check/1');
   assert.equal(receipt.source?.ok, true);
-  assert.equal(receipt.source?.candidate?.commit, CANDIDATE_COMMIT);
-  assert.equal(receipt.source?.candidate?.tree, CANDIDATE_TREE);
+  assert.equal(receipt.source?.candidate?.commit, candidateProfile.sourceCommit);
+  assert.equal(receipt.source?.candidate?.tree, candidateProfile.sourceTree);
+  assert.equal(receipt.source?.candidate?.trackedBendFiles, candidateProfile.trackedBendFiles);
+  if (receipt.source?.candidateProfile === undefined) {
+    assert.equal(profileId, DEFAULT_CANDIDATE_PROFILE_ID,
+      'legacy source receipt without profile identity cannot satisfy a non-legacy selection');
+  } else assert.deepEqual(receipt.source.candidateProfile, candidateProfile);
   assert.equal(receipt.source?.candidate?.entrySha256, NATIVE_PATCHED_SHA256);
   assert.equal(receipt.source?.networkFetches, 0);
   assert.equal(receipt.clang?.dependencyProbe?.exitCode, 0);
@@ -124,6 +140,15 @@ export function assertPackageReceiptShape(receipt, packageReceiptSha256) {
   return true;
 }
 
+export function assertProcessSuccessProfile(success, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
+  const candidateProfile = resolveCandidateProfile(profileId);
+  if (success?.candidateProfile === undefined) {
+    assert.equal(profileId, DEFAULT_CANDIDATE_PROFILE_ID,
+      'legacy process receipt without profile identity cannot satisfy a non-legacy selection');
+  } else assert.deepEqual(success.candidateProfile, candidateProfile);
+  return true;
+}
+
 function checkedPackageFile(packageDirectory, relative, binding, label) {
   assert.ok(typeof relative === 'string' && relative && !path.posix.isAbsolute(relative)
     && !relative.includes('\\') && relative.split('/').every((part) => part && part !== '.' && part !== '..'),
@@ -136,12 +161,13 @@ function checkedPackageFile(packageDirectory, relative, binding, label) {
   return { file, bytes };
 }
 
-export function verifyPackageOnDisk({ candidate, packageReceipt, packageReceiptSha256 }) {
+export function verifyPackageOnDisk({ candidate, packageReceipt, packageReceiptSha256,
+  profileId = DEFAULT_CANDIDATE_PROFILE_ID }) {
   safeAbsolute(candidate, 'candidate'); safeAbsolute(packageReceipt, 'package receipt');
   const receiptBytes = readRegular(packageReceipt, 'package receipt');
   assert.equal(digest(receiptBytes), packageReceiptSha256, 'selected package receipt bytes changed');
   const receipt = JSON.parse(receiptBytes.toString('utf8'));
-  assertPackageReceiptShape(receipt, packageReceiptSha256);
+  assertPackageReceiptShape(receipt, packageReceiptSha256, profileId);
   const packageDirectory = fs.realpathSync(path.dirname(packageReceipt));
   assert.equal(packageDirectory, path.resolve(path.dirname(packageReceipt)),
     'package directory path was redirected through a symlink');
@@ -155,10 +181,11 @@ export function verifyPackageOnDisk({ candidate, packageReceipt, packageReceiptS
   const success = readJson(successPath);
   assert.equal(success.schema, 'rift-native-v2-2032-linux-cpu-process/1');
   assert.equal(success.ok, true);
+  assertProcessSuccessProfile(success, profileId);
   assert.equal(success.runDirectory, buildRunDirectory);
   assert.equal(success.packageReceiptSha256, packageReceiptSha256);
 
-  const actualCandidate = snapshotCandidate(candidate);
+  const actualCandidate = snapshotCandidate(candidate, profileId);
   assert.deepEqual(actualCandidate, receipt.candidate, 'event-patched candidate changed since package build');
   assert.equal(actualCandidate.sourceSha256['bend2/NativeV2.bend'], NATIVE_PATCHED_SHA256);
 
@@ -179,7 +206,8 @@ export function verifyPackageOnDisk({ candidate, packageReceipt, packageReceiptS
   assert.deepEqual(runtimeManifest.files, Object.fromEntries(Object.entries(receipt.runtimeAssets.files)
     .filter(([relative]) => relative.startsWith('assets/'))));
   return { receipt, packageDirectory, buildRunDirectory, binaryPath,
-    packageReceiptSha256, candidate: actualCandidate,
+    packageReceiptSha256, profileId, candidateProfile: resolveCandidateProfile(profileId),
+    candidate: actualCandidate,
     verifiedFiles: [
       { path: packageReceipt, bytes: receiptBytes.length, sha256: packageReceiptSha256 },
       { path: binaryPath, bytes: binaryBytes.length, sha256: receipt.binary.sha256 },
@@ -1028,12 +1056,12 @@ async function runInteractive(args) {
   assert.equal(process.platform, 'linux', 'interactive gate can run only on Linux');
   assertLinuxNode();
   const selected = parseArguments(args);
+  let build = verifyPackageOnDisk(selected);
   const pcmDevice = process.env.RIFT_CHESS_PCM_DEVICE;
   const prerequisites = assertInteractivePrerequisites(pcmDevice);
   const originalWindows = await windowIds(prerequisites.tools, ROOT,
     isolatedGuiEnvironment(ROOT));
   assertTargetWindowCount(originalWindows.length, 'preflight');
-  let build = verifyPackageOnDisk(selected);
   const rootAtStart = currentRootBinding();
   assert.equal(rootAtStart.status, '', 'interactive gate requires a clean caller checkout');
   const runDirectory = makeRunDirectory();
@@ -1052,6 +1080,7 @@ async function runInteractive(args) {
   const receiptBase = { schema: 'rift-native-v2-2032-linux-interactive/1',
     evidenceClass: 'source-bound-live-Linux-X11-CPU-interaction-and-relaunch',
     startedAt: new Date().toISOString(), runner: { path: SCRIPT, sha256: SCRIPT_SHA256 },
+    candidateProfile: build.candidateProfile,
     input: selected, package: { receipt: selected.packageReceipt,
       receiptSha256: selected.packageReceiptSha256, buildRoot: build.receipt.root,
       candidate: build.candidate, artifacts: build.verifiedFiles },

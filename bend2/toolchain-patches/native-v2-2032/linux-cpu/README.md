@@ -1,14 +1,34 @@
 # Bend 2.0.32 NativeV2 Linux CPU candidate
 
 `build.mjs` is a separate, Linux-only source-to-ELF/package path for the exact
-event-patched NativeV2 candidate. It does not use or alter the canonical
-2.0.27 compiler pin, the upstream checkout, frozen Laws, or the published app.
-It requires a committed clean caller checkout and the isolated candidate at
-commit `216567d9cdc927cf0b4e00632a80260f9901f4fa`, tree
-`4fa21705820578137a6c2cb7dfaa41b413c23567`, with only the exact events patch
-working-tree change.
+event-patched NativeV2 candidate. Its closed registry retains
+`legacy-216567d9` as the default for existing invocations and adds the explicit
+`current-visual-45d7041e` profile for the newer board/picking sources. The
+current-visual profile pins commit `45d7041ea1e11db48017db96b886b24b60d501d3`,
+tree `5fe960b1ccbedf97c2460c4b7c2a63a124a3ce24`, and exactly 303 tracked Bend
+files; the legacy profile remains commit
+`216567d9cdc927cf0b4e00632a80260f9901f4fa`, tree
+`4fa21705820578137a6c2cb7dfaa41b413c23567`, and 284 files. No caller-provided
+hashes or fallback profile selection are accepted. Both profiles require the
+same exact NativeV2 original/postimage and events patch, and verify all other
+tracked source bytes against their selected Git tree. It does not use or alter
+the canonical 2.0.27 compiler pin, the upstream checkout, frozen Laws, or the
+published app. It requires a committed clean caller checkout and the isolated
+candidate with only the exact events patch working-tree change.
 
-The harness checks the full 284-file Bend source set against the candidate's
+The default remains the legacy profile for old callers. To select the exact
+current-visual candidate, pass its registry ID explicitly:
+
+```sh
+BEND_NO_TELEMETRY=1 node bend2/toolchain-patches/native-v2-2032/linux-cpu/build.mjs --candidate /absolute/path/to/current-visual-event-patched-candidate --profile current-visual-45d7041e
+```
+
+The selected profile ID, source commit/tree, and tracked-file count are bound
+in the build plan, source/Worker results, and package receipt. A profile
+mismatch stops before emission; an omitted profile never upgrades a
+current-visual candidate implicitly.
+
+The harness checks the selected profile's full Bend source set against its
 Git tree plus the bound NativeV2 patch postimage; it binds the clean 2.0.32
 scout, LF-derived compiler/Base, and clean 2.0.27 pin; source-loads and
 `book_valid`s that isolated entry; blocks `fetch`; and rechecks the bindings
@@ -46,7 +66,7 @@ BEND_NO_TELEMETRY=1 node bend2/toolchain-patches/native-v2-2032/linux-cpu/lifecy
 Then, once on the prepared Linux host under the owner supervisor:
 
 ```sh
-BEND_NO_TELEMETRY=1 node bend2/toolchain-patches/native-v2-2032/linux-cpu/build.mjs --candidate /absolute/path/to/event-patched-candidate
+BEND_NO_TELEMETRY=1 node bend2/toolchain-patches/native-v2-2032/linux-cpu/build.mjs --candidate /absolute/path/to/legacy-event-patched-candidate
 ```
 
 The output records a source-check result, C bytes/hash, Clang dependency/link

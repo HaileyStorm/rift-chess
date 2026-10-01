@@ -48,7 +48,14 @@ supported Linux C emission/build and GUI-input, PCM, and restart gates. No
 full NativeV2 check/emission, native build, GPU run, provider contact, or
 toolchain/pin change is part of this preflight.
 
-The separate Linux `source-check.mjs` accepts only an absolute, isolated Git
+The original Linux `source-check.mjs` is retained for the historical
+pre-height/pre-rift-pick candidate. For the current 303-source visual tree at
+`45d7041ea1e11db48017db96b886b24b60d501d3`, use the separately pinned
+[`current-visual` gate](current-visual/README.md) in an isolated candidate.
+Neither the older PASS nor the new portable controls establish a current-source
+Linux result.
+
+The original Linux `source-check.mjs` accepts only an absolute, isolated Git
 candidate at commit `216567d9cdc927cf0b4e00632a80260f9901f4fa` with
 this exact patch applied to `NativeV2.bend` and no other changes. It binds
 the postimage SHA-256

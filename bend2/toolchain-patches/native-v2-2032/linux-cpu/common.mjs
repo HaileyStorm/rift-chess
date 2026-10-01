@@ -12,6 +12,16 @@ export const OUTPUT_RELATIVE = '.artifacts/bend2/native-v2-2032-linux';
 export const OUTPUT_ROOT = path.join(ROOT, OUTPUT_RELATIVE);
 export const CANDIDATE_COMMIT = '216567d9cdc927cf0b4e00632a80260f9901f4fa';
 export const CANDIDATE_TREE = '4fa21705820578137a6c2cb7dfaa41b413c23567';
+export const LEGACY_CANDIDATE_PROFILE_ID = 'legacy-216567d9';
+export const CURRENT_VISUAL_CANDIDATE_PROFILE_ID = 'current-visual-45d7041e';
+export const DEFAULT_CANDIDATE_PROFILE_ID = LEGACY_CANDIDATE_PROFILE_ID;
+export const CANDIDATE_PROFILES = Object.freeze({
+  [LEGACY_CANDIDATE_PROFILE_ID]: Object.freeze({ id: LEGACY_CANDIDATE_PROFILE_ID,
+    sourceCommit: CANDIDATE_COMMIT, sourceTree: CANDIDATE_TREE, trackedBendFiles: 284 }),
+  [CURRENT_VISUAL_CANDIDATE_PROFILE_ID]: Object.freeze({ id: CURRENT_VISUAL_CANDIDATE_PROFILE_ID,
+    sourceCommit: '45d7041ea1e11db48017db96b886b24b60d501d3',
+    sourceTree: '5fe960b1ccbedf97c2460c4b7c2a63a124a3ce24', trackedBendFiles: 303 }),
+});
 export const SCOUT_COMMIT = '573002f01ec6c52416d44489543f69a9625facf8';
 export const CANONICAL_COMMIT = 'd37909174ebd664338ae3194799a9e0899dedd51';
 export const NATIVE_ORIGINAL_SHA256 = '29fc92d043aff032de13ceafad63ef4f101c72b08f93b7199c3ce40bd333cf6d';
@@ -41,6 +51,26 @@ export const EXPECTED_PACKAGE_PATHS = Object.freeze([
   'licenses/THIRD_PARTY_NOTICES.txt',
   'licenses/Bend-Apache-2.0.txt',
 ].sort());
+
+export function resolveCandidateProfile(profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
+  assert.equal(typeof profileId, 'string', 'candidate profile id must be a string');
+  assert.ok(Object.hasOwn(CANDIDATE_PROFILES, profileId), `candidate profile is not in the closed registry: ${profileId}`);
+  return CANDIDATE_PROFILES[profileId];
+}
+
+export function assertCandidateProfileBinding(candidateProfile, candidate = undefined) {
+  assert.ok(candidateProfile && typeof candidateProfile === 'object' && !Array.isArray(candidateProfile),
+    'candidate profile binding is required');
+  const profile = resolveCandidateProfile(candidateProfile.id);
+  assert.deepEqual(candidateProfile, profile, 'candidate profile binding differs from the closed registry');
+  if (candidate !== undefined) {
+    assert.equal(candidate.commit, profile.sourceCommit, 'candidate commit differs from selected profile');
+    assert.equal(candidate.tree, profile.sourceTree, 'candidate tree differs from selected profile');
+    assert.equal(candidate.trackedBendFiles, profile.trackedBendFiles,
+      'tracked Bend source count differs from selected profile');
+  }
+  return profile;
+}
 
 export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 export const sha256File = (file) => sha256(fs.readFileSync(file));
@@ -421,7 +451,7 @@ export function snapshotToolchains() {
     canonical: canonicalState, eolHelperSha256: sha256File(eolHelper) };
 }
 
-function parseGitTreeRecords(buffer) {
+function parseGitTreeRecords(buffer, expectedCount) {
   const records = [];
   for (const raw of buffer.toString('utf8').split('\0').filter(Boolean)) {
     const tab = raw.indexOf('\t');
@@ -434,7 +464,7 @@ function parseGitTreeRecords(buffer) {
     records.push({ relative, object });
   }
   records.sort((a, b) => a.relative.localeCompare(b.relative));
-  assert.equal(records.length, 284, 'tracked Bend source count changed');
+  assert.equal(records.length, expectedCount, 'tracked Bend source count changed');
   assert.equal(new Set(records.map((row) => row.relative)).size, records.length);
   return records;
 }
@@ -459,19 +489,22 @@ function readGitBlobs(candidate, objects) {
   return blobs;
 }
 
-export function snapshotCandidate(candidate) {
+export function snapshotCandidate(candidate, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
+  const profile = resolveCandidateProfile(profileId);
   assert.ok(path.isAbsolute(candidate), 'candidate must be an absolute path');
   const absolute = fs.realpathSync(candidate);
   assert.equal(absolute, candidate, 'candidate path was redirected');
   assertRealDirectory(absolute); assert.notEqual(absolute, ROOT);
-  assert.equal(gitText(absolute, ['rev-parse', 'HEAD']), CANDIDATE_COMMIT);
-  assert.equal(gitText(absolute, ['rev-parse', 'HEAD^{tree}']), CANDIDATE_TREE);
+  assert.equal(gitText(absolute, ['rev-parse', 'HEAD']), profile.sourceCommit);
+  assert.equal(gitText(absolute, ['rev-parse', 'HEAD^{tree}']), profile.sourceTree);
   assert.equal(gitText(absolute, ['diff', '--cached', '--name-only']), '');
   assert.equal(gitText(absolute, ['status', '--porcelain', '--untracked-files=all']), ' M bend2/NativeV2.bend');
   const patch = path.join(ROOT, 'bend2/toolchain-patches/native-v2-2032/events/0001-native-v2-events.patch');
   assertRegularFile(patch); assert.equal(sha256File(patch), PATCH_SHA256);
   const records = parseGitTreeRecords(gitBuffer(absolute,
-    ['ls-tree', '-r', '-z', CANDIDATE_COMMIT, '--', 'bend2']));
+    ['ls-tree', '-r', '-z', profile.sourceCommit, '--', 'bend2']), profile.trackedBendFiles);
+  assert.equal(records.length, profile.trackedBendFiles,
+    `tracked Bend source count differs from candidate profile ${profile.id}`);
   const blobs = readGitBlobs(absolute, records.map((row) => row.object));
   const sourceSha256 = {};
   for (const record of records) {
@@ -485,7 +518,7 @@ export function snapshotCandidate(candidate) {
     } else assert.equal(actual, baseDigest, `candidate source differs from base tree: ${record.relative}`);
     sourceSha256[record.relative] = actual;
   }
-  return { directory: absolute, commit: CANDIDATE_COMMIT, tree: CANDIDATE_TREE,
+  return { directory: absolute, commit: profile.sourceCommit, tree: profile.sourceTree,
     trackedBendFiles: records.length, sourceSha256, patchSha256: PATCH_SHA256 };
 }
 
@@ -558,19 +591,21 @@ export function makePackageDirectory(runDirectory, relative) {
 }
 
 export function assertInputSnapshot(before, candidate) {
-  assert.deepEqual(snapshotCandidate(candidate), before.candidate, 'candidate source changed during build');
+  const profileId = before.candidateProfile?.id ?? DEFAULT_CANDIDATE_PROFILE_ID;
+  if (before.candidateProfile) assertCandidateProfileBinding(before.candidateProfile, before.candidate);
+  assert.deepEqual(snapshotCandidate(candidate, profileId), before.candidate, 'candidate source changed during build');
   assert.deepEqual(snapshotToolchains(), before.toolchains, 'compiler stack changed during build');
   assert.deepEqual(collectRuntimeAssets(), before.assets, 'package inputs changed during build');
   assert.deepEqual(snapshotRoot(), before.root, 'source checkout changed during build');
   return true;
 }
 
-export function readBuildInputs(candidate, localScriptHashes = {}) {
+export function readBuildInputs(candidate, localScriptHashes = {}, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
   const patch = path.join(ROOT, 'bend2/toolchain-patches/native-v2-2032/events/0001-native-v2-events.patch');
   const helper = path.join(ROOT, 'bend2/toolchain-patches/2032/preview/compiler-eol.mjs');
   assertRegularFile(helper);
   assert.equal(sha256File(helper), 'cb1cbb64e07e32c30cb9199424ec84e87cfcc516427c035a51fa6f7a84eacc27');
-  const candidateSnapshot = snapshotCandidate(candidate);
+  const candidateSnapshot = snapshotCandidate(candidate, profileId);
   const assets = collectRuntimeAssets();
   for (const [relative, expected] of Object.entries(assets.inputSha256)) {
     const candidateFile = path.join(candidateSnapshot.directory, ...relative.split('/'));
@@ -578,7 +613,8 @@ export function readBuildInputs(candidate, localScriptHashes = {}) {
     assert.equal(sha256File(candidateFile), expected,
       `package input differs from event-patched candidate: ${relative}`);
   }
-  return { candidate: candidateSnapshot, toolchains: snapshotToolchains(),
+  return { candidateProfile: resolveCandidateProfile(profileId),
+    candidate: candidateSnapshot, toolchains: snapshotToolchains(),
     assets, root: snapshotRoot(), patchSha256: sha256File(patch),
     eolHelperSha256: sha256File(helper), localScriptHashes };
 }

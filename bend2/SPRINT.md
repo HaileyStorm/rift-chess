@@ -2160,3 +2160,34 @@ checks, including three distinct visible-versus-hidden rendered probes;
 `Application.bend` and `ApplicationControl.bend` source checks passed. This
 bounded rift consistency fix does not prove full atlas-aware picking, 2.0.32
 browser parity or visual acceptance.
+
+At the 2026-10-01 restart checkpoint, the distinct
+[explicit-Bun Linux package](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5937491141)
+passed one supervised invocation. Its retained pre-height `build.json` is
+8,178 bytes, SHA-256 `53a577f4ea4de539e138e292662b873f1846d6fb0da2fc764d7c55477d431271`,
+version `537e779892a4ec42b919`; the prior unset-`BUN_BIN` stop remains
+historical. This is a host-local static artifact, not an independently approved
+build pin, browser first frame, current-height visual, hosted or release result.
+The separate [current-visual NativeV2 source gate](toolchain-patches/native-v2-2032/events/current-visual/README.md)
+binds exact source `45d7041` and all 303 tracked Bend files, while the
+[closed CPU profile](toolchain-patches/native-v2-2032/linux-cpu/README.md)
+preserves the older 284-file default and requires explicit selection for the
+current source. Portable controls pass, but neither current-source Linux
+typecheck nor current-source C/ELF/GUI/PCM has run. The queued older CPU package
+and corrected frozen CHECK aggregate are distinct, still-pending Linux gates;
+their results must be reconciled after the restart without replaying requests.
+Checkpoint owner: Windows root task `01a0e046-72d7-7971-8d27-4d4018e066c0`,
+main checkout `C:\Users\Haile\OneDrive\Documents\ChatGPT\Rift Chess`, branch
+`codex/visual-overhaul`; current write scope is the NativeV2 event/current-visual
+and linux-cpu profiles plus this tracker. The precise checkpoint commit is the
+first descendant of `ca73bef` carrying this paragraph; verify live HEAD/status
+and structured claims before any takeover. Local commands
+`node bend2/toolchain-patches/native-v2-2032/events/current-visual/test.mjs`,
+`node bend2/toolchain-patches/native-v2-2032/linux-cpu/test.mjs`,
+`node bend2/toolchain-patches/native-v2-2032/linux-cpu/interactive/test.mjs`,
+and `git diff --check` passed; these
+are portable controls, not Linux native acceptance. Next: inspect the retained
+host-local static manifest before any build-pin adoption, reconcile queued
+Linux CPU/aggregate terminals, then request a separately admitted current-visual
+NativeV2 source/type run and package/interaction gates. Preserve the 2.0.27
+pin, frozen Laws, pre-height receipts and all unrelated patches.

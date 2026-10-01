@@ -4,11 +4,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  CANDIDATE_COMMIT, CANDIDATE_TREE, CANONICAL_COMMIT, EXPECTED_PACKAGE_PATHS,
+  CANDIDATE_COMMIT, CANDIDATE_PROFILES, CANDIDATE_TREE, CANONICAL_COMMIT,
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID, DEFAULT_CANDIDATE_PROFILE_ID,
+  EXPECTED_PACKAGE_PATHS, LEGACY_CANDIDATE_PROFILE_ID,
   MEMORY_FLOOR_BYTES, NATIVE_PATCHED_SHA256, PATCH_SHA256, SCOUT_COMMIT, WORKER_STACK_SIZE_MB,
-  assertAssetRows, cgroupHeadroomFromRows, clangCompileArguments, elfIdentity,
+  assertAssetRows, assertCandidateProfileBinding,
+  cgroupHeadroomFromRows, clangCompileArguments, elfIdentity,
   linuxMemorySnapshot, memoryAdmission, parseCgroupV2Path, parseClangVersion,
-  parseMemAvailable, requireMemoryAdmission, sampleMemoryAdmission, sha256,
+  parseMemAvailable, requireMemoryAdmission, resolveCandidateProfile, sampleMemoryAdmission, sha256,
 } from './common.mjs';
 import { assertEmissionWorkerSuccess, emissionWorkerOptions, parseBuildArguments } from './build.mjs';
 
@@ -19,16 +22,54 @@ assert.equal(CANONICAL_COMMIT, 'd37909174ebd664338ae3194799a9e0899dedd51');
 assert.equal(NATIVE_PATCHED_SHA256, '9fe46e219123e3f59958de98c6f9b65fc618cca85ca0325740dffc30e8aef292');
 assert.equal(PATCH_SHA256, '28ec36660b3d78c2373b5ff0591385e7a6cc39e6fd33cb9a2a1732d0a01ad2fa');
 assert.equal(WORKER_STACK_SIZE_MB, 64);
+assert.equal(DEFAULT_CANDIDATE_PROFILE_ID, LEGACY_CANDIDATE_PROFILE_ID);
+assert.deepEqual(resolveCandidateProfile(LEGACY_CANDIDATE_PROFILE_ID), {
+  id: 'legacy-216567d9', sourceCommit: CANDIDATE_COMMIT,
+  sourceTree: CANDIDATE_TREE, trackedBendFiles: 284,
+});
+assert.deepEqual(resolveCandidateProfile(CURRENT_VISUAL_CANDIDATE_PROFILE_ID), {
+  id: 'current-visual-45d7041e',
+  sourceCommit: '45d7041ea1e11db48017db96b886b24b60d501d3',
+  sourceTree: '5fe960b1ccbedf97c2460c4b7c2a63a124a3ce24', trackedBendFiles: 303,
+});
+assert.ok(Object.isFrozen(CANDIDATE_PROFILES));
+for (const profileId of [LEGACY_CANDIDATE_PROFILE_ID, CURRENT_VISUAL_CANDIDATE_PROFILE_ID]) {
+  const profile = resolveCandidateProfile(profileId);
+  assert.match(profile.sourceCommit, /^[0-9a-f]{40}$/, 'profile must pin a full Git commit');
+  assert.match(profile.sourceTree, /^[0-9a-f]{40}$/, 'profile must pin a full Git tree');
+  assert.equal(assertCandidateProfileBinding(profile).id, profileId);
+  assert.equal(assertCandidateProfileBinding(profile, { commit: profile.sourceCommit,
+    tree: profile.sourceTree, trackedBendFiles: profile.trackedBendFiles }).id, profileId);
+  assert.throws(() => assertCandidateProfileBinding({ ...profile, sourceCommit: '0'.repeat(40) }), /differs from the closed registry/);
+  assert.throws(() => assertCandidateProfileBinding(profile, { commit: '0'.repeat(40),
+    tree: profile.sourceTree, trackedBendFiles: profile.trackedBendFiles }), /candidate commit differs/);
+  assert.throws(() => assertCandidateProfileBinding(profile, { commit: profile.sourceCommit,
+    tree: '0'.repeat(40), trackedBendFiles: profile.trackedBendFiles }), /candidate tree differs/);
+  assert.throws(() => assertCandidateProfileBinding(profile, { commit: profile.sourceCommit,
+    tree: profile.sourceTree, trackedBendFiles: profile.trackedBendFiles + 1 }), /source count differs/);
+}
+assert.throws(() => resolveCandidateProfile('caller-supplied-hash'), /closed registry/);
 
 assert.deepEqual(parseBuildArguments(['--candidate', path.resolve('fixture-candidate')]), {
-  child: false, candidate: path.resolve('fixture-candidate'),
+  child: false, candidate: path.resolve('fixture-candidate'), profileId: DEFAULT_CANDIDATE_PROFILE_ID,
 });
+assert.deepEqual(parseBuildArguments(['--candidate', path.resolve('fixture-candidate'), '--profile',
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID]), {
+  child: false, candidate: path.resolve('fixture-candidate'), profileId: CURRENT_VISUAL_CANDIDATE_PROFILE_ID,
+});
+assert.throws(() => parseBuildArguments(['--candidate', path.resolve('fixture-candidate'), '--profile', 'arbitrary']),
+  /closed registry/);
 assert.throws(() => parseBuildArguments([]), /usage:/);
 assert.throws(() => parseBuildArguments(['--candidate', 'relative-path']), /absolute path/);
 assert.throws(() => parseBuildArguments(['--candidate', '/abs', '--overwrite']), /usage:/);
 assert.deepEqual(parseBuildArguments(['--child', '/run/run-abc', '1', '2', '/candidate', 'a'.repeat(64)]), {
   child: true, runDirectory: path.resolve('/run/run-abc'), identity: { dev: '1', ino: '2' },
-  candidate: '/candidate', planSha256: 'a'.repeat(64),
+  candidate: '/candidate', planSha256: 'a'.repeat(64), profileId: DEFAULT_CANDIDATE_PROFILE_ID,
+});
+assert.deepEqual(parseBuildArguments(['--child', '/run/run-abc', '1', '2', '/candidate', 'a'.repeat(64),
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID]), {
+  child: true, runDirectory: path.resolve('/run/run-abc'), identity: { dev: '1', ino: '2' },
+  candidate: '/candidate', planSha256: 'a'.repeat(64), profileId: CURRENT_VISUAL_CANDIDATE_PROFILE_ID,
 });
 assert.throws(() => parseBuildArguments(['--child', '/run/run-abc', '1', '2', '/candidate', 'bad']), /64/);
 
@@ -82,11 +123,23 @@ const workerAdmission = memoryAdmission('immediately-before-c-emission', {
 }, '2026-01-01T00:00:00.000Z');
 const successfulThreadResult = {
   schema: 'rift-native-v2-2032-linux-cpu-worker/1', ok: true,
+  candidateProfile: resolveCandidateProfile(),
   worker: { threadId: 7, stackSizeMb: 64, exitObserved: true, exitCode: 0 },
   immediatelyBeforeCEmission: workerAdmission,
 };
-const successfulThreadSourceReceipt = { worker: { threadId: 7, stackSizeMb: 64 } };
+const successfulThreadSourceReceipt = {
+  candidateProfile: resolveCandidateProfile(), worker: { threadId: 7, stackSizeMb: 64 },
+};
 assert.equal(assertEmissionWorkerSuccess(successfulThreadResult, successfulThreadSourceReceipt), true);
+const currentVisualThreadResult = { ...successfulThreadResult,
+  candidateProfile: resolveCandidateProfile(CURRENT_VISUAL_CANDIDATE_PROFILE_ID) };
+const currentVisualSourceReceipt = { ...successfulThreadSourceReceipt,
+  candidateProfile: resolveCandidateProfile(CURRENT_VISUAL_CANDIDATE_PROFILE_ID) };
+assert.equal(assertEmissionWorkerSuccess(currentVisualThreadResult, currentVisualSourceReceipt,
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), true);
+assert.throws(() => assertEmissionWorkerSuccess(currentVisualThreadResult, currentVisualSourceReceipt), /deep-equal/);
+assert.throws(() => assertEmissionWorkerSuccess(successfulThreadResult, currentVisualSourceReceipt,
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /deep-equal/);
 assert.throws(() => assertEmissionWorkerSuccess({ ...successfulThreadResult,
   worker: { ...successfulThreadResult.worker, exitObserved: false } }, successfulThreadSourceReceipt), /exitObserved/);
 assert.throws(() => assertEmissionWorkerSuccess({ ...successfulThreadResult,

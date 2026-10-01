@@ -5,14 +5,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import {
-  CANDIDATE_COMMIT, CANDIDATE_TREE, CLANG_TIMEOUT_MS, EMIT_TIMEOUT_MS,
+  DEFAULT_CANDIDATE_PROFILE_ID, CLANG_TIMEOUT_MS, EMIT_TIMEOUT_MS,
   MEMORY_FLOOR_BYTES, MEMORY_PEAK_KIB, MEMORY_PEAK_REVISION,
   NATIVE_PATCHED_SHA256, ROOT, WORKER_STACK_SIZE_MB, assertAssetRows,
-  assertExactInputBindings, assertLinuxNode, assertRealDirectory, assertRegularFile,
+  assertCandidateProfileBinding, assertExactInputBindings, assertLinuxNode,
+  assertRealDirectory, assertRegularFile,
   assertRunDirectory, clangCompileArguments, collectRuntimeAssets, createRunDirectory,
   elfIdentity, isolatedEnvironment,
   makePackageDirectory, parseClangVersion, readBuildInputs,
-  readJson, requireMemoryAdmission, runOwnedProcess, sha256, sha256File,
+  readJson, requireMemoryAdmission, resolveCandidateProfile, runOwnedProcess, sha256, sha256File,
   sampleMemoryAdmission, snapshotCandidate, snapshotRoot, snapshotToolchains,
   writeExclusive, writeJsonExclusive,
 } from './common.mjs';
@@ -47,9 +48,12 @@ export function emissionWorkerOptions(data) {
   return { workerData: data, resourceLimits: { stackSizeMb: WORKER_STACK_SIZE_MB }, execArgv: [] };
 }
 
-export function assertEmissionWorkerSuccess(result, sourceReceipt) {
+export function assertEmissionWorkerSuccess(result, sourceReceipt, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
+  const expectedProfile = resolveCandidateProfile(profileId);
   assert.equal(result?.schema, 'rift-native-v2-2032-linux-cpu-worker/1');
   assert.equal(result.ok, true);
+  assert.deepEqual(result.candidateProfile, expectedProfile);
+  assert.deepEqual(sourceReceipt?.candidateProfile, expectedProfile);
   assert.equal(result.worker?.stackSizeMb, WORKER_STACK_SIZE_MB, 'emission Worker stackSizeMb must be 64 MiB');
   assert.ok(Number.isInteger(result.worker.threadId) && result.worker.threadId > 0);
   assert.equal(result.worker.exitObserved, true, 'emission Worker exitObserved must be true');
@@ -171,33 +175,42 @@ function superviseEmissionWorker(data) {
 export function parseBuildArguments(args) {
   assert.ok(Array.isArray(args));
   if (args[0] === '--child') {
-    assert.equal(args.length, 6, 'internal usage: --child <run-dir> <dev> <ino> <candidate> <plan-sha256>');
+    assert.ok(args.length === 6 || args.length === 7,
+      'internal usage: --child <run-dir> <dev> <ino> <candidate> <plan-sha256> [profile-id]');
     const runDirectory = path.resolve(args[1]);
     assert.match(args[2], /^\d+$/); assert.match(args[3], /^\d+$/);
     assert.ok(path.isAbsolute(args[4])); assert.match(args[5], /^[0-9a-f]{64}$/);
+    const profileId = args[6] ?? DEFAULT_CANDIDATE_PROFILE_ID;
+    resolveCandidateProfile(profileId);
     return { child: true, runDirectory, identity: { dev: args[2], ino: args[3] },
-      candidate: args[4], planSha256: args[5] };
+      candidate: args[4], planSha256: args[5], profileId };
   }
-  assert.ok(args.length === 2 && args[0] === '--candidate',
-    'usage: node build.mjs --candidate <absolute-event-patched-checkout>');
+  assert.ok((args.length === 2 || args.length === 4) && args[0] === '--candidate'
+    && (args.length === 2 || args[2] === '--profile'),
+  'usage: node build.mjs --candidate <absolute-event-patched-checkout> [--profile <closed-profile-id>]');
   assert.ok(path.isAbsolute(args[1]), '--candidate must be an absolute path');
-  return { child: false, candidate: args[1] };
+  const profileId = args[3] ?? DEFAULT_CANDIDATE_PROFILE_ID;
+  resolveCandidateProfile(profileId);
+  return { child: false, candidate: args[1], profileId };
 }
 
 function assertCleanCurrentCheckout() {
   assert.deepEqual(snapshotRoot().status, '');
 }
 
-function writeFailure(runDirectory, identity, phase, error, plan = null, secondMemoryAdmission = null) {
+function writeFailure(runDirectory, identity, phase, error, plan = null, secondMemoryAdmission = null,
+  profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
   try {
     assertRunDirectory(runDirectory, identity);
     const file = path.join(runDirectory, 'failure.json');
     if (fs.existsSync(file)) return;
+    const candidateProfile = plan?.candidateProfile ?? resolveCandidateProfile(profileId);
+    const profile = assertCandidateProfileBinding(candidateProfile);
     writeJsonExclusive(file, {
       schema: 'rift-native-v2-2032-linux-cpu-failure/1', ok: false,
       phase, error: String(error?.message ?? error).slice(0, 2400),
       workerMayBeLive: Boolean(error?.workerMayBeLive), timedOut: Boolean(error?.timedOut),
-      candidateCommit: CANDIDATE_COMMIT, candidateTree: CANDIDATE_TREE,
+      candidateProfile, candidateCommit: profile.sourceCommit, candidateTree: profile.sourceTree,
       planSha256: plan?.planSha256 ?? null,
       initialMemoryAdmission: plan?.initialMemoryAdmission ?? null,
       secondMemoryAdmission: secondMemoryAdmission ?? plan?.secondMemoryAdmission ?? null,
@@ -206,14 +219,15 @@ function writeFailure(runDirectory, identity, phase, error, plan = null, secondM
   } catch { /* preserve the original failure; never replace existing evidence */ }
 }
 
-function makePlan(candidate, initialAdmission) {
+function makePlan(candidate, initialAdmission, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
   const hashes = scriptHashes();
-  const inputs = readBuildInputs(candidate, hashes);
+  const inputs = readBuildInputs(candidate, hashes, profileId);
   return {
     schema: 'rift-native-v2-2032-linux-cpu-plan/1',
     evidenceClass: 'source-bound-Linux-build-plan-not-emission',
     createdAt: new Date().toISOString(),
     root: inputs.root,
+    candidateProfile: inputs.candidateProfile,
     candidate: inputs.candidate,
     toolchains: inputs.toolchains,
     packageInputs: inputs.assets,
@@ -293,8 +307,10 @@ exec "$package_dir/bin/rift-chess-native-v2" --gpu off "$@"
   return writeExclusive(file, Buffer.from(script, 'utf8'), 0o755);
 }
 
-async function runChild({ runDirectory, identity, candidate, planSha256 }) {
+async function runChild({ runDirectory, identity, candidate, planSha256,
+  profileId = DEFAULT_CANDIDATE_PROFILE_ID }) {
   assertLinuxNode({ child: true });
+  const selectedProfile = resolveCandidateProfile(profileId);
   assertRunDirectory(runDirectory, identity);
   const home = path.join(runDirectory, 'home'); const tmp = path.join(runDirectory, 'tmp');
   assertRealDirectory(home); assertRealDirectory(tmp);
@@ -304,10 +320,13 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
   const plan = readJson(planPath);
   assert.equal(plan.schema, 'rift-native-v2-2032-linux-cpu-plan/1');
   assert.deepEqual(snapshotRoot(), plan.root, 'root checkout changed after plan creation');
-  assert.deepEqual(snapshotCandidate(candidate), plan.candidate, 'candidate changed after plan creation');
+  assert.deepEqual(plan.candidateProfile, selectedProfile);
+  assertCandidateProfileBinding(plan.candidateProfile, plan.candidate);
+  assert.deepEqual(snapshotCandidate(candidate, profileId), plan.candidate, 'candidate changed after plan creation');
   assert.deepEqual(snapshotToolchains(), plan.toolchains, 'compiler stack changed after plan creation');
   assert.deepEqual(collectRuntimeAssets(), plan.packageInputs, 'package assets changed after plan creation');
-  assert.equal(plan.candidate.commit, CANDIDATE_COMMIT); assert.equal(plan.candidate.tree, CANDIDATE_TREE);
+  assert.equal(plan.candidate.commit, selectedProfile.sourceCommit);
+  assert.equal(plan.candidate.tree, selectedProfile.sourceTree);
   assert.equal(plan.candidate.sourceSha256['bend2/NativeV2.bend'], NATIVE_PATCHED_SHA256);
   assert.equal(plan.initialMemoryAdmission.phase, 'initial-preflight');
   requireMemoryAdmission(plan.initialMemoryAdmission);
@@ -317,6 +336,7 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
     const result = await superviseEmissionWorker({
       schema: 'rift-native-v2-2032-linux-emission-worker/1',
       runDirectory, identity, candidate, planSha256,
+      candidateProfile: plan.candidateProfile,
       localScriptHashes: plan.localScriptHashes,
       workerStackSizeMb: WORKER_STACK_SIZE_MB,
     });
@@ -328,7 +348,7 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
     const sourceReceipt = readJson(sourceReceiptPath);
     assert.equal(sourceReceipt.schema, 'rift-native-v2-2032-linux-source-check/1');
     assert.equal(sourceReceipt.ok, true);
-    assertEmissionWorkerSuccess(result, sourceReceipt);
+    assertEmissionWorkerSuccess(result, sourceReceipt, profileId);
     const memoryAdmissionPath = path.join(runDirectory, 'emission-memory-admission.json');
     assertRegularFile(memoryAdmissionPath);
     assert.deepEqual(readJson(memoryAdmissionPath), secondMemoryAdmission,
@@ -338,7 +358,8 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
     assert.equal(fs.statSync(cPath).size, result.cBytes);
     assert.equal(sha256File(cPath), result.cSha256);
     assert.equal(fs.readFileSync(cPath).includes(0x0d), false);
-    const inputSnapshot = { candidate: plan.candidate, toolchains: plan.toolchains,
+    const inputSnapshot = { candidateProfile: plan.candidateProfile,
+      candidate: plan.candidate, toolchains: plan.toolchains,
       assets: plan.packageInputs, root: plan.root, patchSha256: plan.patchSha256,
       eolHelperSha256: plan.eolHelperSha256, localScriptHashes: plan.localScriptHashes };
     assertExactInputBindings(inputSnapshot, candidate, scriptHashes());
@@ -350,6 +371,7 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
     try {
       writeJsonExclusive(path.join(runDirectory, 'worker-failure.json'), {
         schema: 'rift-native-v2-2032-linux-cpu-worker-failure/1', ok: false,
+        candidateProfile: plan.candidateProfile,
         phase: error?.timedOut ? 'emission-worker-timeout' : 'source-check-or-c-emission',
         error: String(error?.message ?? error).slice(0, 2400),
         timedOut: Boolean(error?.timedOut), workerMayBeLive: Boolean(error?.workerMayBeLive),
@@ -361,8 +383,9 @@ async function runChild({ runDirectory, identity, candidate, planSha256 }) {
   }
 }
 
-async function runParent(candidate) {
+async function runParent(candidate, profileId = DEFAULT_CANDIDATE_PROFILE_ID) {
   assertLinuxNode();
+  const selectedProfile = resolveCandidateProfile(profileId);
   assertCleanCurrentCheckout();
   const { directory: runDirectory, identity } = createRunDirectory();
   fs.mkdirSync(path.join(runDirectory, 'home'), { mode: 0o700 });
@@ -371,9 +394,9 @@ async function runParent(candidate) {
   let phase = 'initial-memory-admission';
   try {
     const firstSample = sampleMemoryAdmission('initial-preflight');
-    plan = { initialMemoryAdmission: firstSample };
+    plan = { candidateProfile: selectedProfile, initialMemoryAdmission: firstSample };
     requireMemoryAdmission(firstSample);
-    plan = makePlan(candidate, firstSample);
+    plan = makePlan(candidate, firstSample, profileId);
     const planPath = path.join(runDirectory, 'plan.json');
     writeJsonExclusive(planPath, plan);
     const planSha256 = sha256File(planPath);
@@ -390,7 +413,8 @@ async function runParent(candidate) {
         label: 'X11/ALSA headers and link probe', timeoutMs: 30_000 });
     assert.equal(sha256File(probeSource), sha256(Buffer.from(PROBE_C, 'utf8')));
     assert.equal(sha256File(clang.path), clang.sha256, 'Clang executable changed after dependency probe');
-    const args = [SCRIPT, '--child', runDirectory, identity.dev, identity.ino, candidate, planSha256];
+    const args = [SCRIPT, '--child', runDirectory, identity.dev, identity.ino, candidate,
+      planSha256, profileId];
     phase = 'source-check-and-c-emission';
     let result;
     try {
@@ -411,6 +435,7 @@ async function runParent(candidate) {
       try {
         writeJsonExclusive(path.join(runDirectory, 'process-failure.json'), {
           schema: 'rift-native-v2-2032-linux-cpu-process-failure/1', ok: false,
+          candidateProfile: plan.candidateProfile,
           planSha256, error: String(error?.message ?? error).slice(0, 2400),
           timedOut: Boolean(error?.timedOut), workerMayBeLive: Boolean(error?.workerMayBeLive),
           secondMemoryAdmission,
@@ -420,8 +445,9 @@ async function runParent(candidate) {
         });
       } catch { }
       writeFailure(runDirectory, identity, 'supervised-worker', error, {
-        planSha256, initialMemoryAdmission: plan.initialMemoryAdmission,
-      }, secondMemoryAdmission);
+        candidateProfile: plan.candidateProfile, planSha256,
+        initialMemoryAdmission: plan.initialMemoryAdmission,
+      }, secondMemoryAdmission, profileId);
       throw error;
     }
     assertRunDirectory(runDirectory, identity);
@@ -438,6 +464,8 @@ async function runParent(candidate) {
     const sourceReceipt = readJson(sourceReceiptPath);
     assert.equal(sourceReceipt.schema, 'rift-native-v2-2032-linux-source-check/1');
     assert.equal(sourceReceipt.ok, true);
+    assert.deepEqual(workerResult.candidateProfile, plan.candidateProfile);
+    assertEmissionWorkerSuccess(workerResult, sourceReceipt, profileId);
     const cPath = path.join(runDirectory, 'NativeV2.c');
     assertRegularFile(cPath);
     assert.equal(fs.statSync(cPath).size, workerResult.cBytes);
@@ -445,6 +473,7 @@ async function runParent(candidate) {
     assert.equal(workerResult.immediatelyBeforeCEmission.phase, 'immediately-before-c-emission');
     requireMemoryAdmission(workerResult.immediatelyBeforeCEmission);
     const inputSnapshot = {
+      candidateProfile: plan.candidateProfile,
       candidate: plan.candidate, toolchains: plan.toolchains, assets: plan.packageInputs,
       root: plan.root, patchSha256: plan.patchSha256, eolHelperSha256: plan.eolHelperSha256,
       localScriptHashes: plan.localScriptHashes,
@@ -509,7 +538,8 @@ async function runParent(candidate) {
     const packageReceipt = {
       schema: 'rift-native-v2-2032-linux-cpu-package/1', ok: true,
       evidenceClass: 'source-bound-Linux-C-emission-and-ELF-link',
-      completedAt: new Date().toISOString(), root: plan.root, candidate: plan.candidate,
+      completedAt: new Date().toISOString(), root: plan.root,
+      candidateProfile: plan.candidateProfile, candidate: plan.candidate,
       compiler: plan.toolchains,
       memoryAdmission: { policy: { floorBytes: MEMORY_FLOOR_BYTES, floorGiB: 88,
         observedPeakKiB: MEMORY_PEAK_KIB, observedPeakSourceRevision: MEMORY_PEAK_REVISION,
@@ -535,6 +565,7 @@ async function runParent(candidate) {
     const packageReceiptSha256 = sha256File(path.join(packageDirectory, 'receipt.json'));
     writeJsonExclusive(path.join(runDirectory, 'process-success.json'), {
       schema: 'rift-native-v2-2032-linux-cpu-process/1', ok: true,
+      candidateProfile: plan.candidateProfile,
       runDirectory, planSha256, worker: { pid: result.pid, status: result.status,
         signal: result.signal, durationMs: result.durationMs },
       packageReceiptSha256, clang: { path: clang.path, sha256: clang.sha256, version: clang.version,
@@ -547,7 +578,7 @@ async function runParent(candidate) {
       packageReceiptSha256,
       next: 'separate GUI, input, PCM, persistence/restart and Linux-owner review gates' })}\n`);
   } catch (error) {
-    writeFailure(runDirectory, identity, phase, error, plan);
+    writeFailure(runDirectory, identity, phase, error, plan, null, profileId);
     process.stderr.write(`NativeV2 Linux build failed; partial run retained at ${runDirectory}: ${String(error?.message ?? error)}\n`);
     process.exitCode = 1;
   }
@@ -559,7 +590,7 @@ async function main() {
     await runChild(parsed);
     return;
   }
-  await runParent(parsed.candidate);
+  await runParent(parsed.candidate, parsed.profileId);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(SCRIPT)) {

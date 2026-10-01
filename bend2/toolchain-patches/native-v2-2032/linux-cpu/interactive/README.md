@@ -8,9 +8,14 @@ ImageMagick `import` on `PATH`. There is no headless mode, synthetic-input
 fallback, installation, or alternative screen-capture route.
 
 The runner rechecks the supplied package-receipt SHA-256 and the build's
-`process-success.json`, exact 2.0.32 candidate commit/tree and 284-file source
-snapshot, emitted C, x86-64 ELF identity/hash, runtime manifest and every staged
-asset before launch and after both sessions. The selected package receipt hash
+`process-success.json`, the explicitly selected closed candidate profile and
+its exact commit/tree/source count, emitted C, x86-64 ELF identity/hash, runtime
+manifest and every staged asset before launch and after both sessions. The
+legacy `legacy-216567d9` profile remains the default for old invocations and
+historical receipts without a profile field. The newer
+`current-visual-45d7041e` profile must be selected explicitly; a package, source
+receipt, candidate, or count from another profile is rejected. The selected
+package receipt hash
 must be supplied separately; use the exact hash printed by `build.mjs` (or its
 retained `process-success.json`), not a newly generated hash from an unreviewed
 replacement receipt.
@@ -21,9 +26,10 @@ the Linux X11 desktop that owns the visible session:
 ```sh
 node bend2/toolchain-patches/native-v2-2032/linux-cpu/interactive/test.mjs
 BEND_NO_TELEMETRY=1 node bend2/toolchain-patches/native-v2-2032/linux-cpu/interactive/run.mjs \
-  --candidate /absolute/path/to/event-patched-candidate \
+  --candidate /absolute/path/to/current-visual-event-patched-candidate \
   --package /absolute/path/to/build-run/package/receipt.json \
-  --package-sha256 <exact-64-character-package-receipt-sha256>
+  --package-sha256 <exact-64-character-package-receipt-sha256> \
+  --profile current-visual-45d7041e
 ```
 
 For the routed PCM gate, configure the game's existing ALSA output route outside
@@ -40,9 +46,10 @@ requires the actual input to fall inside the bounded capture interval.
 ```sh
 RIFT_CHESS_PCM_DEVICE='hw:Loopback,1,0' BEND_NO_TELEMETRY=1 \
 node bend2/toolchain-patches/native-v2-2032/linux-cpu/interactive/run.mjs \
-  --candidate /absolute/path/to/event-patched-candidate \
+  --candidate /absolute/path/to/current-visual-event-patched-candidate \
   --package /absolute/path/to/build-run/package/receipt.json \
-  --package-sha256 <exact-64-character-package-receipt-sha256>
+  --package-sha256 <exact-64-character-package-receipt-sha256> \
+  --profile current-visual-45d7041e
 ```
 
 When configured, the gate requires existing `arecord`, captures two seconds of

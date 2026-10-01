@@ -5,8 +5,9 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isMainThread, parentPort, threadId, workerData } from 'node:worker_threads';
 import {
-  CANDIDATE_COMMIT, CANDIDATE_TREE, ROOT, WORKER_STACK_SIZE_MB,
-  assertExactInputBindings, assertLinuxNode, assertRegularFile, assertRunDirectory,
+  ROOT, WORKER_STACK_SIZE_MB,
+  assertCandidateProfileBinding, assertExactInputBindings, assertLinuxNode,
+  assertRegularFile, assertRunDirectory,
   collectRuntimeAssets, linuxMemorySnapshot,
   readJson, requireMemoryAdmission, sampleMemoryAdmission, sha256File,
   snapshotCandidate, snapshotRoot, snapshotToolchains, writeExclusive, writeJsonExclusive,
@@ -51,7 +52,8 @@ function sourceClosure(candidate, derived, seen, sources) {
 }
 
 function inputSnapshot(plan) {
-  return { candidate: plan.candidate, toolchains: plan.toolchains, assets: plan.packageInputs,
+  return { candidateProfile: plan.candidateProfile,
+    candidate: plan.candidate, toolchains: plan.toolchains, assets: plan.packageInputs,
     root: plan.root, patchSha256: plan.patchSha256, eolHelperSha256: plan.eolHelperSha256,
     localScriptHashes: plan.localScriptHashes };
 }
@@ -60,6 +62,7 @@ async function emit() {
   const data = workerData;
   assert.equal(data?.schema, 'rift-native-v2-2032-linux-emission-worker/1');
   assert.equal(data.workerStackSizeMb, WORKER_STACK_SIZE_MB);
+  const candidateProfile = assertCandidateProfileBinding(data.candidateProfile);
   assertLinuxNode({ child: true });
   assertRunDirectory(data.runDirectory, data.identity);
   assert.equal(path.resolve(data.candidate), data.candidate);
@@ -68,14 +71,15 @@ async function emit() {
   assert.equal(sha256File(planPath), data.planSha256, 'persisted build plan checksum changed');
   const plan = readJson(planPath);
   assert.equal(plan.schema, 'rift-native-v2-2032-linux-cpu-plan/1');
+  assert.deepEqual(plan.candidateProfile, candidateProfile);
+  assertCandidateProfileBinding(plan.candidateProfile, plan.candidate);
   assert.deepEqual(plan.localScriptHashes, data.localScriptHashes);
   assert.deepEqual(scriptHashes(), plan.localScriptHashes, 'emission worker files changed');
   assert.deepEqual(snapshotRoot(), plan.root, 'source root changed before Worker start');
-  assert.deepEqual(snapshotCandidate(data.candidate), plan.candidate, 'candidate changed before Worker start');
+  assert.deepEqual(snapshotCandidate(data.candidate, candidateProfile.id), plan.candidate,
+    'candidate changed before Worker start');
   assert.deepEqual(snapshotToolchains(), plan.toolchains, 'compiler stack changed before Worker start');
   assert.deepEqual(collectRuntimeAssets(), plan.packageInputs, 'package assets changed before Worker start');
-  assert.equal(plan.candidate.commit, CANDIDATE_COMMIT);
-  assert.equal(plan.candidate.tree, CANDIDATE_TREE);
   assert.equal(plan.initialMemoryAdmission.phase, 'initial-preflight');
   requireMemoryAdmission(plan.initialMemoryAdmission);
 
@@ -103,6 +107,7 @@ async function emit() {
     const sourceReceipt = {
       schema: 'rift-native-v2-2032-linux-source-check/1', ok: true,
       evidenceClass: 'isolated-event-candidate-load-and-book-valid',
+      candidateProfile,
       candidate: { commit: plan.candidate.commit, tree: plan.candidate.tree,
         entrySha256: plan.candidate.sourceSha256['bend2/NativeV2.bend'],
         trackedBendFiles: plan.candidate.trackedBendFiles },
@@ -141,6 +146,7 @@ async function emit() {
       includesX11: true, includesAlsa: true };
     return {
       schema: 'rift-native-v2-2032-linux-cpu-worker/1', ok: true,
+      candidateProfile,
       cSha256: emittedC.sha256, cBytes: emittedC.bytes,
       sourceReceiptSha256: sha256File(path.join(data.runDirectory, 'source-check.json')),
       sourceClosure: sourceReceipt.loadedFiles, networkFetches: fetches,
@@ -151,6 +157,7 @@ async function emit() {
     try {
       writeJsonExclusive(path.join(data.runDirectory, 'worker-thread-failure.json'), {
         schema: 'rift-native-v2-2032-linux-emission-thread-failure/1', ok: false,
+        candidateProfile: data.candidateProfile,
         phase, error: String(error?.message ?? error).slice(0, 2400),
         secondMemoryAdmission,
         worker: { threadId, stackSizeMb: WORKER_STACK_SIZE_MB },
@@ -158,6 +165,7 @@ async function emit() {
     } catch { }
     parentPort.postMessage({ type: 'failure', phase,
       error: String(error?.stack ?? error?.message ?? error).slice(0, 4000),
+      candidateProfile: data.candidateProfile,
       secondMemoryAdmission, worker: { threadId, stackSizeMb: WORKER_STACK_SIZE_MB } });
     return null;
   }

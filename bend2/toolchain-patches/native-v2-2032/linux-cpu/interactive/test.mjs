@@ -8,11 +8,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import {
-  CANDIDATE_COMMIT, CANDIDATE_TREE, CANONICAL_COMMIT, EXPECTED_PACKAGE_PATHS,
-  NATIVE_PATCHED_SHA256, SCOUT_COMMIT,
+  CANDIDATE_PROFILES, CANONICAL_COMMIT, CURRENT_VISUAL_CANDIDATE_PROFILE_ID,
+  DEFAULT_CANDIDATE_PROFILE_ID, EXPECTED_PACKAGE_PATHS, LEGACY_CANDIDATE_PROFILE_ID,
+  NATIVE_PATCHED_SHA256, SCOUT_COMMIT, resolveCandidateProfile,
 } from '../common.mjs';
 import {
   assertMaskedRasterEqual, assertOutputRootIgnored, assertPackageReceiptShape, assertPcmMoveEvidence,
+  assertProcessSuccessProfile,
   assertWindowProperties, assertZoomDirection, decodePng, expectedMoveActionId,
   assertNativeProcessBinding, parseArguments, parseStoreFile, parseWindowInfo, pcmRms16Stereo,
   assertPcmCaptureDuration, assertPcmCaptureOverlapsMove, assertRootBindingUnchanged,
@@ -29,12 +31,20 @@ const packageReceiptPath = path.resolve('package-receipt-fixture.json');
 assert.deepEqual(parseArguments(['--candidate', candidatePath, '--package', packageReceiptPath,
   '--package-sha256', 'a'.repeat(64)]), {
   candidate: candidatePath, packageReceipt: packageReceiptPath, packageReceiptSha256: 'a'.repeat(64),
+  profileId: DEFAULT_CANDIDATE_PROFILE_ID,
+});
+assert.deepEqual(parseArguments(['--candidate', candidatePath, '--package', packageReceiptPath,
+  '--package-sha256', 'a'.repeat(64), '--profile', CURRENT_VISUAL_CANDIDATE_PROFILE_ID]), {
+  candidate: candidatePath, packageReceipt: packageReceiptPath, packageReceiptSha256: 'a'.repeat(64),
+  profileId: CURRENT_VISUAL_CANDIDATE_PROFILE_ID,
 });
 assert.throws(() => parseArguments([]), /usage:/);
 assert.throws(() => parseArguments(['--candidate', 'relative', '--package', packageReceiptPath,
   '--package-sha256', 'a'.repeat(64)]), /absolute/);
 assert.throws(() => parseArguments(['--candidate', candidatePath, '--package', packageReceiptPath,
   '--package-sha256', 'A'.repeat(64)]), /lowercase SHA/);
+assert.throws(() => parseArguments(['--candidate', candidatePath, '--package', packageReceiptPath,
+  '--package-sha256', 'a'.repeat(64), '--profile', 'caller-supplied-hash']), /closed registry/);
 let ignoreProbe = null;
 assert.equal(assertOutputRootIgnored((executable, args, options) => {
   ignoreProbe = { executable, args, options }; return { status: 0 };
@@ -83,13 +93,15 @@ const assetFiles = Object.fromEntries(EXPECTED_PACKAGE_PATHS.map((name) => [name
 const receipt = {
   schema: 'rift-native-v2-2032-linux-cpu-package/1', ok: true,
   evidenceClass: 'source-bound-Linux-C-emission-and-ELF-link',
-  candidate: { commit: CANDIDATE_COMMIT, tree: CANDIDATE_TREE,
-    sourceSha256: { 'bend2/NativeV2.bend': NATIVE_PATCHED_SHA256 } },
+  candidate: { commit: CANDIDATE_PROFILES[LEGACY_CANDIDATE_PROFILE_ID].sourceCommit,
+    tree: CANDIDATE_PROFILES[LEGACY_CANDIDATE_PROFILE_ID].sourceTree,
+    trackedBendFiles: 284, sourceSha256: { 'bend2/NativeV2.bend': NATIVE_PATCHED_SHA256 } },
   compiler: { scout: { head: SCOUT_COMMIT },
     derived: { head: SCOUT_COMMIT, compiler: { eol: 'lf' } },
     canonical: { head: CANONICAL_COMMIT, status: '' } },
   source: { schema: 'rift-native-v2-2032-linux-source-check/1', ok: true,
-    candidate: { commit: CANDIDATE_COMMIT, tree: CANDIDATE_TREE,
+    candidate: { commit: CANDIDATE_PROFILES[LEGACY_CANDIDATE_PROFILE_ID].sourceCommit,
+      tree: CANDIDATE_PROFILES[LEGACY_CANDIDATE_PROFILE_ID].sourceTree, trackedBendFiles: 284,
       entrySha256: NATIVE_PATCHED_SHA256 }, networkFetches: 0 },
   clang: { dependencyProbe: { exitCode: 0, signal: null }, link: { exitCode: 0, signal: null } },
   emittedC: { file: '../NativeV2.c', bytes: 3, sha256: hash('c'), newlineMode: 'LF' },
@@ -101,6 +113,43 @@ const receipt = {
   root: { status: '', head: '1'.repeat(40), tree: '2'.repeat(40) },
 };
 assert.equal(assertPackageReceiptShape(receipt, 'b'.repeat(64)), true);
+const currentVisualProfile = resolveCandidateProfile(CURRENT_VISUAL_CANDIDATE_PROFILE_ID);
+const currentVisualReceipt = {
+  ...receipt,
+  candidateProfile: currentVisualProfile,
+  candidate: { ...receipt.candidate, commit: currentVisualProfile.sourceCommit,
+    tree: currentVisualProfile.sourceTree, trackedBendFiles: currentVisualProfile.trackedBendFiles },
+  source: { ...receipt.source, candidateProfile: currentVisualProfile,
+    candidate: { ...receipt.source.candidate, commit: currentVisualProfile.sourceCommit,
+      tree: currentVisualProfile.sourceTree, trackedBendFiles: currentVisualProfile.trackedBendFiles } },
+};
+assert.equal(assertPackageReceiptShape(currentVisualReceipt, 'b'.repeat(64),
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), true);
+assert.throws(() => assertPackageReceiptShape(currentVisualReceipt, 'b'.repeat(64)), /strictly equal/);
+const currentVisualReceiptWithoutProfile = { ...currentVisualReceipt };
+delete currentVisualReceiptWithoutProfile.candidateProfile;
+assert.throws(() => assertPackageReceiptShape(currentVisualReceiptWithoutProfile, 'b'.repeat(64),
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /without profile identity/);
+const currentVisualReceiptWithoutSourceProfile = { ...currentVisualReceipt,
+  source: { ...currentVisualReceipt.source } };
+delete currentVisualReceiptWithoutSourceProfile.source.candidateProfile;
+assert.throws(() => assertPackageReceiptShape(currentVisualReceiptWithoutSourceProfile, 'b'.repeat(64),
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /without profile identity/);
+assert.throws(() => assertPackageReceiptShape({ ...currentVisualReceipt,
+  candidateProfile: resolveCandidateProfile(LEGACY_CANDIDATE_PROFILE_ID) }, 'b'.repeat(64),
+CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /deep-equal/);
+assert.throws(() => assertPackageReceiptShape({ ...currentVisualReceipt,
+  candidate: { ...currentVisualReceipt.candidate, tree: '0'.repeat(40) } }, 'b'.repeat(64),
+CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /strictly equal/);
+assert.throws(() => assertPackageReceiptShape({ ...currentVisualReceipt,
+  source: { ...currentVisualReceipt.source, candidateProfile: resolveCandidateProfile(LEGACY_CANDIDATE_PROFILE_ID) } },
+  'b'.repeat(64), CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /deep-equal/);
+assert.equal(assertProcessSuccessProfile({ schema: 'rift-native-v2-2032-linux-cpu-process/1' }), true);
+assert.equal(assertProcessSuccessProfile({ candidateProfile: currentVisualProfile },
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), true);
+assert.throws(() => assertProcessSuccessProfile({}, CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /without profile identity/);
+assert.throws(() => assertProcessSuccessProfile({ candidateProfile: resolveCandidateProfile(LEGACY_CANDIDATE_PROFILE_ID) },
+  CURRENT_VISUAL_CANDIDATE_PROFILE_ID), /deep-equal/);
 assert.throws(() => assertPackageReceiptShape({ ...receipt, root: {
   status: '', commit: receipt.root.head, tree: receipt.root.tree,
 } }, 'b'.repeat(64)), (error) => error.code === 'ERR_ASSERTION');
@@ -285,7 +334,7 @@ assert.throws(() => assertPcmMoveEvidence(idlePcm, idlePcm), /no captured PCM/);
 
 process.stdout.write(`${JSON.stringify({ schema: 'rift-native-v2-2032-linux-interactive-controls/1',
   passed: true, platformIndependent: true,
-  controls: ['exact-package-receipt-shape', 'x11-title-size-delete-protocol',
+  controls: ['closed-candidate-profiles-and-receipt-binding', 'exact-package-receipt-shape', 'x11-title-size-delete-protocol',
     'source-derived-e2-e4-and-e7-e5-input-coordinates', 'button4-button5-zoom-direction',
     'png-dimension-and-raster-decoding', 'source-native-journal-save-preferences-replay',
     'exact-primary-backup-slot-files', 'relaunch-window-owner-isolation',
