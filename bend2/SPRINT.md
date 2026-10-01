@@ -2055,8 +2055,22 @@ stopped before Worker construction when the mountinfo parser rejected an
 unrelated snapd nsfs pseudo-root as a non-absolute cgroup path. The reviewed
 local parser correction retains canonical checks for every mountpoint and
 the cgroup2 root, including protected-path overmount rejection. It needs a
-clean-checkout gate and a new immutable Linux run; no aggregate proof or six
-mutation Workers passed. The [BendTT Linux supervisor/inventory result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928919833)
+new immutable Linux run; no aggregate proof or six mutation Workers passed.
+At clean source `baa5fba`, the corrected 29-control aggregate preflight and
+six-case mutation preflight both passed on Windows without launching Workers;
+the [distinct Linux aggregate request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929315635)
+is queued behind the existing browser and repaired native-source requests.
+The [BendTT Linux supervisor/inventory result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928919833)
 passed six registered lifecycle cases but found neither the exact prebuilt
 kernel nor Lean 4.34 binaries. Both production approvals remain null and no
 `--verdict` run occurred.
+The [height-only settled-piece trial](docs/evidence/v2-piece-grounding-height/README.md)
+shortens the detailed sprite quad from 1.04 to 1.00 board pitch while keeping
+its prior base/shadow offsets and the accepted camera views. Its focused Bend
+projection checks, local rendered default/Front comparison, and BoardEdges
+checks passed. Lower-base drafts were rejected because at minimum pitch their
+matrix foot can cross the next-square picking boundary; even the combined
+draft's green 24/689 local Chrome matrix did not test that opaque-base click.
+The retained height-only draft then passed its own exact-build-bound local
+24-scenario/689-check real-Chrome matrix with zero defects. Native, hosted,
+frame-budget/device and owner visual acceptance remain open.

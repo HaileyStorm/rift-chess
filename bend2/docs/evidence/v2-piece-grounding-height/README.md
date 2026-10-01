@@ -42,9 +42,17 @@ foot maps to the same central square at pitch35 from yaw0 and yaw180. All seven
 focused controls passed with `BEND_NO_TELEMETRY=1`. Its selected scene JS
 SHA-256 `27515c02c88f5da93e8de2074862bf5edd502465603253ac017b1a5a474ff172`
 was reproduced byte-for-byte after the discarded combined draft. The local
-height-only build and its broader rendered gate are not a clean publication,
-native CPU/GPU retest, 2.0.32 bundle, full-orbit atlas-picking proof, device
-performance result or owner visual acceptance.
+height-only draft `da8013ed39be761d1671` passed the uninterrupted local
+24-scenario/689-check real-Chrome matrix with zero defects. Its exact served
+`build.json` SHA-256 was
+`852779792e857cfec5034fd958bd5edf019a2560e333b6608a030d5339a028b7`;
+the ignored `height-only-full-20261001/summary.json` SHA-256 is
+`e412d4e314cb1e7969064e89c4fe730f6f1f9b16f69a10247030c358d7149c08`.
+This is not a clean publication, native CPU/GPU retest, 2.0.32 bundle,
+full-orbit atlas-picking proof, device performance result or owner visual
+acceptance. In particular, menu frames in one ordinary-host performance
+sample took hundreds of milliseconds; a green interaction matrix is not a
+frame-budget guarantee.
 
 The sound follow-up for a lower base is a presentation-bound immutable hit
 representation derived from the same decoded atlas alpha and shared sprite
