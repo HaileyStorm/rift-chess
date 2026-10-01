@@ -1753,8 +1753,16 @@ normalizing only those pairs produced precisely the Linux-reported SHA-256
 `e5bfb78237720399ff8222844e6bf0f4385f0d817d43bc4eaf03c057542421d4`.
 The harness now pins that exact LF digest and rejects any CR or other C bytes,
 while retaining the old Windows hash and failed Linux receipt. The updated
-pure gate passed against the actual Windows C. A fresh Linux C write, Clang
-compile and executable argv/restart scenarios remain unrun. The Windows C
+pure gate passed against the actual Windows C. The [next Linux one-shot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5924048963)
+emitted the exact LF C and linked a 1,831,568-byte x86-64 ELF under Clang18.
+Program-only and `help` exited 0 and passed; `-- --help` exited 0 but its
+`Unknown command.\n\n` stderr differed from the harness's one-LF oracle.
+The source literal and both C `IO.print_err` runtimes require exactly two
+LFs, so a separately reviewed harness revision now binds that exact output.
+It also compares a new native `-- help` case with direct `help`, because an
+unknown-command message alone cannot prove the exact operand after `--`.
+The original failed run remains retained; rotating-save write/restart and a
+full native receipt remain unrun pending a fresh one-shot. The Windows C
 artifact is not transferred or counted as native acceptance.
 The separate [2.0.32 NativeV2 event adapter](toolchain-patches/native-v2-2032/events/README.md)
 now passes a Windows exact-source/read-only patch and pure X11 wheel-direction
@@ -1880,6 +1888,11 @@ now consumes only that verifier plus a committed, independently reviewed
 four-cache receipt. Its approval pin is deliberately unarmed until real Linux
 manifest/output hashes and a common source revision are reported and reviewed;
 synthetic input tests pass, but no v2 Worker bundle or static package was made.
+The [separate v2 static packer candidate](toolchain-patches/2032/browser-preview-v2/README.md)
+retains the old packer, checks the v2 bundle/cache receipt contracts, and
+requires a second unarmed reviewed bundle pin. Its pure manifest tests and
+scope-isolated service-worker activation test pass, including nested scopes;
+no real static package, offline check or v2-schema browser playtest exists.
 No repaired real cache or rendered browser result has been produced.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or

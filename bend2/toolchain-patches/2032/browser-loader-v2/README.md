@@ -4,7 +4,9 @@ This is a separate candidate for bundling the existing browser Worker and
 sprite-helper entrypoints with the four explicitly selected Bend caches. It
 uses `cache-set-v2/verify.mjs` and the `rift-bend-selected-cache/2032-2`
 manifest contract; the canonical 2.0.27 loader, the historical 2032-1 bundle
-candidate, the static packer, and their receipts are unchanged.
+candidate and static packer, and their receipts are unchanged. A separately
+versioned browser-preview-v2 packer candidate now consumes this bundle format,
+but both candidates remain unarmed and unrun with real caches.
 
 Before a real bundler run, provide a versioned JSON receipt matching
 [`receipt.schema.json`](receipt.schema.json), commit it below this directory,

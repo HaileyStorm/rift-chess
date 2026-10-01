@@ -46,16 +46,18 @@ needs externally pinned receipts or equivalent independent evidence.
 
 ## Consumer seam and retained v1 history
 
-This candidate is not active. The existing v1 verifier, receipts, and consumer
-imports remain untouched. In particular, browser-loader/bundle-real.mjs and
-browser-preview/pack-static.mjs still call cache-set/verify.mjs, and the static
-loader remains on its existing seam.
+This candidate is not a real-cache-accepted production path. The existing v1
+verifier, receipts, and consumer imports remain untouched. In particular,
+browser-loader/bundle-real.mjs and browser-preview/pack-static.mjs still call
+cache-set/verify.mjs. Separately versioned browser-loader-v2 and
+browser-preview-v2 candidates now call this verifier but remain unarmed until
+independently reviewed cache and bundle receipts exist.
 
-A future consumer migration can swap those explicit verifier imports for
-cache-set-v2/verify.mjs while keeping the verified { modules, commonBinding,
-registrySha256 } result shape. Do that only after a real four-cache emission at
-one source commit, successful v2 verification of those exact manifests, and a
-separately reviewed consumer migration. Retain v1 until its consumers and
+A future active consumer migration can use the versioned candidates while
+keeping the verified { modules, commonBinding, registrySha256 } result shape.
+Do that only after a real four-cache emission at one source commit,
+successful v2 verification of those exact manifests, and a separately
+reviewed consumer migration. Retain v1 until its consumers and
 evidence references have been migrated and the v2 path has independent real-
 cache evidence; do not delete historical v1 receipts or provenance to make the
 candidate appear authoritative.
