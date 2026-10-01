@@ -29,7 +29,7 @@ node bend2/toolchain-patches/native-v2-2032/events/preflight.mjs
 
 This is a Windows-only raw-byte gate: the 2.0.32 source pins bind the checked
 Windows checkout's CRLF bytes. A separate Linux LF/CRLF-aware exact-source
-preflight remains pending; this script is not a portable cross-host gate.
+check now lives in `source-check.mjs`; this Windows preflight is not that gate.
 
 It binds the exact current `NativeV2.bend`, UI input type/wheel function and browser host,
 plus `base.bend` and `effs/window.c` from pristine Bend 2.0.32 commit
@@ -45,3 +45,24 @@ application candidate, source/type checking that candidate, and the supported
 Linux C emission/build and GUI-input, PCM, and restart gates. No full NativeV2
 check/emission, native build, GPU run, provider contact, or toolchain/pin
 change is part of this preflight.
+
+The separate Linux `source-check.mjs` accepts only an absolute, isolated Git
+candidate at commit `216567d9cdc927cf0b4e00632a80260f9901f4fa` with
+this exact patch applied to `NativeV2.bend` and no other changes. It binds
+the postimage SHA-256
+`9fe46e219123e3f59958de98c6f9b65fc618cca85ca0325740dffc30e8aef292`,
+every tracked Bend source against that Git tree, the clean 2.0.27 pin,
+pristine 2.0.32 scout, LF derived compiler/Base, exact Node 22.23.1 runtime,
+and the actual loaded import closure. With `BEND_NO_TELEMETRY=1`, run it
+only on Linux under a separate owner supervisor and source/memory admission:
+
+```sh
+BEND_NO_TELEMETRY=1 node --max-old-space-size=1024 bend2/toolchain-patches/native-v2-2032/events/source-check.mjs /absolute/isolated/event-patched-checkout
+```
+
+The one-file `materialization.test.mjs` checks the patch postimage in a
+fresh ignored directory and cleans only its own verified files on success.
+It passed on Windows; Linux has not run it. The no-emission Linux source
+check itself has **not** run. A source pass would not validate C emission,
+the new 2.0.32 Window/Audio effect ABIs, GUI input, PCM routing, restart,
+GPU, frozen proofs or a pin amendment.

@@ -1755,6 +1755,11 @@ patch, leaves the 2.0.27 GUI source unchanged, and explicitly limits the
 `-100 × dy` scale to Linux X11 pending macOS input-unit review. The actual
 NativeV2 closure has not been type-checked under 2.0.32, built or played;
 GUI, PCM and restart acceptance remain open.
+The exact one-file event patch postimage was independently materialized in an
+ignored Windows fixture. A separately versioned Linux no-emission source gate
+now binds the full patched NativeV2 Git candidate and LF derived compiler,
+but it has not run; neither materialization nor the pure wheel model proves
+2.0.32 NativeV2 typechecking.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
