@@ -72,3 +72,8 @@ publishes its no-overwrite manifest. The retained host-local run is
 A local Windows clang 21.1.8 syntax-only probe failed at the generated
 POSIX `sys/mman.h` include, absent in that Windows toolchain. This does not
 test Linux compilation and is not a native binary or argv receipt.
+The separate [Linux-local CPU CLI smoke candidate](../linux-smoke/README.md)
+binds the LF/CRLF derived stack, reconstructs patched application source in
+an ignored run, and requires locally generated C before bounded compile/argv
+tests. Its real Linux phases remain unrun; this Windows receipt is not
+promoted by the existence of that runner.

@@ -1740,6 +1740,14 @@ The same exact candidate subsequently produced a verified, host-local
 with the same 2,189,927-byte digest. Windows clang 21.1.8 syntax-only stopped
 at the generated POSIX `sys/mman.h` include, absent on that toolchain; no
 Linux compile or native runtime/argv acceptance is inferred.
+The [Linux-local 2.0.32 CLI smoke candidate](toolchain-patches/native-cli-2032/linux-smoke/README.md)
+reconstructs exact patched Bend sources from the Git base in fresh ignored
+storage, binds the derived compiler's host EOL and known C digest before
+local emission, then conditionally compiles and runs isolated argv/restart
+cases. Syntax, Windows pure contract and six-entry patch-materialization
+checks pass; Linux lifecycle, C
+export, compile and executable scenarios remain unrun. The Windows C
+artifact is not transferred or counted as native acceptance.
 The [2.0.32 selected browser-library adapter](toolchain-patches/2032/build-adapter/README.md)
 now passes an exact before/after source-bound local Bun fixture: a real
 `MenuAA.font_byte_cap` selected export evaluates to 262144, no-suffix JS
