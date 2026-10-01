@@ -58,9 +58,9 @@ pristine 2.0.32 scout, LF derived compiler/Base, exact Node 22.23.1 runtime,
 the actual loaded import closure, and the hashes of both gate scripts. The
 compiler import, `book_load`, and `book_valid` run in
 `source-check-worker.mjs` configured with requested `resourceLimits` of a 64 MiB
-thread stack and a 1024 MiB old-generation heap, a 120-second owned timeout,
+thread stack and an 8192 MiB old-generation heap, a 120-second owned timeout,
 and an observed exit/result pair. The parent’s exact
-`--max-old-space-size=1024` flag is not forwarded as Worker `execArgv` (Node
+`--max-old-space-size=8192` flag is not forwarded as Worker `execArgv` (Node
 rejects that V8 flag there); the worker receives an empty `execArgv`. The
 receipt labels these as configured requests only; it does not claim an
 independent measurement of effective heap under the parent flag. The worker
@@ -80,7 +80,7 @@ observer; that is not treated as worker quiescence. With
 and source/memory admission:
 
 ```sh
-BEND_NO_TELEMETRY=1 node --max-old-space-size=1024 bend2/toolchain-patches/native-v2-2032/events/source-check.mjs /absolute/isolated/event-patched-checkout
+BEND_NO_TELEMETRY=1 node --max-old-space-size=8192 bend2/toolchain-patches/native-v2-2032/events/source-check.mjs /absolute/isolated/event-patched-checkout
 ```
 
 Portable worker lifecycle controls can run on Windows or Linux without
@@ -98,8 +98,12 @@ exceeded` before C emission. A later bounded-worker attempt failed before
 loading source because Node rejected the parent's `--max-old-space-size=1024`
 when it was forwarded as Worker `execArgv` (`ERR_WORKER_INVALID_EXEC_ARGV`).
 Keep both failed receipts as historical evidence. The exec-argv correction
-and explicit Worker limits now have a portable child-process regression, but
-this exact revision still needs a new immutable Linux request and result. The
+and explicit Worker limits have a portable child-process regression. A distinct
+Linux one-shot reached the repaired Worker but stopped at its 1024 MiB requested
+old-generation limit with an observed `ERR_WORKER_OUT_OF_MEMORY` exit in 7.111 s,
+before producing a source/type receipt. This 8192 MiB revision retains the same
+Worker lifecycle and strict source/closure bindings; it requires a new immutable
+Linux request with a reviewed memory admission, not a replay of the prior run. The
 no-emission Linux source check has not yet passed. A source pass would not validate C emission,
 the new 2.0.32 Window/Audio effect ABIs, GUI input, PCM routing, restart,
 GPU, frozen proofs or a pin amendment.

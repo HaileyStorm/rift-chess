@@ -12,7 +12,7 @@ const api = source => `data:text/javascript,${encodeURIComponent(source)}`;
 const entryFile = path.resolve('NativeV2-source-check-fixture.bend');
 const passed = [];
 assert.equal(SOURCE_CHECK_WORKER_STACK_MB, 64);
-assert.equal(SOURCE_CHECK_WORKER_OLD_GENERATION_MB, 1024);
+assert.equal(SOURCE_CHECK_WORKER_OLD_GENERATION_MB, 8192);
 const check = async (name, run) => {
   await run();
   passed.push(name);
@@ -39,10 +39,13 @@ await check('source worker starts under a parent heap flag with explicit limits 
   const childProgram = `
     import assert from 'node:assert/strict';
     import { loadSourceInBoundedWorker } from ${JSON.stringify(workerModuleUrl)};
-    assert.ok(process.execArgv.includes('--max-old-space-size=1024'),
+    assert.ok(process.execArgv.includes('--max-old-space-size=8192'),
       'the child Node process did not receive its explicit old-generation flag');
     const compilerSource = \`
+      import { resourceLimits } from 'node:worker_threads';
       export function book_nil() {
+        if (resourceLimits.maxOldGenerationSizeMb !== 8192 || resourceLimits.stackSizeMb !== 64)
+          throw new Error('source worker did not receive its requested resource limits');
         const allowed = ['BEND_NO_TELEMETRY'];
         const environmentNames = Object.keys(process.env).map(name => name.toUpperCase());
         if (environmentNames.some(name => !allowed.includes(name)))
@@ -71,7 +74,7 @@ await check('source worker starts under a parent heap flag with explicit limits 
     console.log(JSON.stringify({ passed: true }));
   `;
   const output = execFileSync(process.execPath, [
-    '--max-old-space-size=1024', '--input-type=module', '-e', childProgram,
+    '--max-old-space-size=8192', '--input-type=module', '-e', childProgram,
   ], {
     encoding: 'utf8', timeout: 30_000, maxBuffer: 1024 * 1024,
     env: { ...process.env, NODE_OPTIONS: '--trace-warnings',

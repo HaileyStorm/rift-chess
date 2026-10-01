@@ -2054,9 +2054,14 @@ locally tested corrective Worker candidate passed independent review and 12
 portable lifecycle checks, but not exact Linux Node 22.23.1; the
 earlier [CPU-package one-shot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928928526)
 correctly stopped on that failed prerequisite without C emission or staging.
-A [distinct repaired source-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928126748)
-remains queued after the other serial host work; it cannot retroactively pass
-the old package request.
+The [distinct repaired source-only result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930038409)
+launched the Worker, then stopped on its requested 1024-MiB old-generation
+limit (`ERR_WORKER_OUT_OF_MEMORY`) after 7.111 seconds with an observed exit.
+No source/type result or closure was produced. A reviewed 8192-MiB revision
+retains the 64-MiB stack, 120-second Worker timeout and strict source bindings;
+its 12 portable controls now inspect the configured limits inside the synthetic
+Worker. It requires a new memory-admitted Linux one-shot, not a replay or
+retroactive pass of either prior source or CPU-package request.
 The [Linux full-CHECK aggregate attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928495373)
 passed exact-source preflight and 24 portable controls, but the real one-shot
 stopped before Worker construction when the mountinfo parser rejected an

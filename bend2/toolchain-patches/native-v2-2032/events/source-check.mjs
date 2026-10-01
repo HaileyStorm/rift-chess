@@ -44,7 +44,7 @@ const realFile = file => {
 
 assert.equal(process.platform, 'linux', 'the candidate source check is Linux-only');
 assert.equal(process.version, 'v22.23.1');
-assert.deepEqual(process.execArgv, ['--max-old-space-size=1024'], 'unexpected Node flags/preloads');
+assert.deepEqual(process.execArgv, ['--max-old-space-size=8192'], 'unexpected Node flags/preloads');
 assert.equal(process.env.NODE_OPTIONS ?? '', '');
 assert.equal(process.env.NODE_PATH ?? '', '');
 assert.equal(process.env.BEND_NO_TELEMETRY, '1');
@@ -58,7 +58,7 @@ const scriptSha256 = fileSha(script);
 const eolHelperSha256 = fileSha(eolHelper);
 const sourceWorkerSha256 = fileSha(sourceWorkerScript);
 const sourceHead = git(root, 'rev-parse', 'HEAD');
-assert.equal(process.argv.length, 3, 'usage: node --max-old-space-size=1024 source-check.mjs <absolute-candidate>');
+assert.equal(process.argv.length, 3, 'usage: node --max-old-space-size=8192 source-check.mjs <absolute-candidate>');
 assert.ok(path.isAbsolute(process.argv[2]), 'candidate path must be absolute');
 const candidate = fs.realpathSync(process.argv[2]);
 assert.equal(candidate, process.argv[2], 'candidate path was redirected');

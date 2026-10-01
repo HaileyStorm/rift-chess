@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
 export const SOURCE_CHECK_WORKER_STACK_MB = 64;
-export const SOURCE_CHECK_WORKER_OLD_GENERATION_MB = 1024;
+export const SOURCE_CHECK_WORKER_OLD_GENERATION_MB = 8192;
 export const SOURCE_CHECK_WORKER_TIMEOUT_MS = 120_000;
 
 function sourceWorkerEnvironment() {
