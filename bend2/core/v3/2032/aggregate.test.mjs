@@ -159,6 +159,26 @@ assert.equal(admittedMemorySnapshot(linuxMemoryOptions({
     + '42 36 0:39 / /sys/fs/cgroup/user.slice-sibling rw - tmpfs tmpfs rw\n'
     + '43 36 0:40 / /sys/fs/cgroup/unrelated rw - overlay overlay rw\n' })).availableBytes,
   5_000, 'sibling-prefix and unrelated mounts do not shadow the checked ancestry');
+const nsfsPseudoRoot = 'mnt:[4026533050]';
+const unrelatedNsfsMount = `42 36 0:39 ${nsfsPseudoRoot} /run/snapd/ns/docker.mnt rw - nsfs nsfs rw\n`;
+assert.equal(admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo'] + unrelatedNsfsMount })).availableBytes,
+5_000, 'unrelated nsfs pseudo-roots are allowed while their mountpoints remain checked');
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + `42 36 0:39 ${nsfsPseudoRoot} /run/snapd/../snapd/ns/docker.mnt rw - nsfs nsfs rw\n` })),
+  /mountinfo path must be absolute and canonical/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + `42 36 0:39 ${nsfsPseudoRoot} /sys/fs/cgroup rw - nsfs nsfs rw\n` })),
+  /another filesystem mount shadows the canonical cgroup-v2 root/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
+    + `42 36 0:39 ${nsfsPseudoRoot} /sys/fs/cgroup/user.slice/app.slice rw - nsfs nsfs rw\n` })),
+  /cgroup ancestry path is shadowed by nested mount/);
+assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
+  '/proc/self/mountinfo': '36 24 0:33 mnt:[4026533050] /sys/fs/cgroup rw - cgroup2 cgroup rw\n' })),
+  /mountinfo path must be absolute and canonical/);
 assert.throws(() => admittedMemorySnapshot(linuxMemoryOptions({
   '/proc/self/mountinfo': cgroupFiles['/proc/self/mountinfo']
     + '42 36 0:39 / /sys/fs/cgroup/user.slice/app.slice/test.scope/memory.max rw - tmpfs tmpfs rw\n' })),
@@ -248,7 +268,10 @@ console.log(JSON.stringify({ schema: 'rift-v2-aggregate-2032-preflight-test/1',
     'canonical-path-and-single-mount', 'nested-mount-shadow-rejection',
     'same-mountpoint-overmount-rejection', 'malformed-mountinfo-rejection',
     'cgroup2-superblock-magic', 'wrong-or-unavailable-statfs-rejection',
-    'sibling-and-unrelated-mount-allowance', 'root-memory-controller-proof',
+    'sibling-and-unrelated-mount-allowance', 'nsfs-pseudo-root-mount-allowance',
+    'nsfs-pseudo-root-noncanonical-mountpoint-rejection',
+    'nsfs-pseudo-root-overmount-rejection', 'nsfs-pseudo-root-nested-shadow-rejection',
+    'malformed-cgroup2-root-rejection', 'root-memory-controller-proof',
     'nonroot-memory-max-current', 'finite-parent-limit', 'host-free-upper-bound',
     'windows-host-free-path-preserved', 'lease-uncertain-exit',
     'exclusive-admission', 'successor-owned-name', 'foreign-constructor-collision',

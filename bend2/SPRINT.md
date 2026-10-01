@@ -2044,5 +2044,19 @@ also stopped before `book_load`: Node 22 rejected the inherited parent heap
 flag in Worker `execArgv`. Its source, C and GUI gates remain unpassed. A
 locally tested corrective Worker candidate passed independent review and 12
 portable lifecycle checks, but not exact Linux Node 22.23.1; the
-earlier queued CPU-package one-shot still requires the original source gate
-to pass and cannot be treated as authorized by a later correction.
+earlier [CPU-package one-shot](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928928526)
+correctly stopped on that failed prerequisite without C emission or staging.
+A [distinct repaired source-only request](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928126748)
+remains queued after the other serial host work; it cannot retroactively pass
+the old package request.
+The [Linux full-CHECK aggregate attempt](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928495373)
+passed exact-source preflight and 24 portable controls, but the real one-shot
+stopped before Worker construction when the mountinfo parser rejected an
+unrelated snapd nsfs pseudo-root as a non-absolute cgroup path. The reviewed
+local parser correction retains canonical checks for every mountpoint and
+the cgroup2 root, including protected-path overmount rejection. It needs a
+clean-checkout gate and a new immutable Linux run; no aggregate proof or six
+mutation Workers passed. The [BendTT Linux supervisor/inventory result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928919833)
+passed six registered lifecycle cases but found neither the exact prebuilt
+kernel nor Lean 4.34 binaries. Both production approvals remain null and no
+`--verdict` run occurred.

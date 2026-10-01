@@ -79,8 +79,10 @@ function parseMountInfo(text) {
     assert.ok(fields.length >= 6 && /^\d+$/.test(fields[0]) &&
       /^\d+$/.test(fields[1]) && /^\d+:\d+$/.test(fields[2]) &&
       superFields.length >= 3, 'malformed mountinfo fields');
-    return { id: fields[0], root: decodeMountInfoPath(fields[3]),
-      mountpoint: decodeMountInfoPath(fields[4]), filesystem: superFields[0] };
+    const filesystem = superFields[0];
+    return { id: fields[0],
+      root: filesystem === 'cgroup2' ? decodeMountInfoPath(fields[3]) : fields[3],
+      mountpoint: decodeMountInfoPath(fields[4]), filesystem };
   });
 }
 

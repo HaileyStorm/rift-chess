@@ -190,10 +190,14 @@ numeric `memory.current`. All mountinfo entries are parsed; a stacked
 non-cgroup2 mount at `/sys/fs/cgroup` or a nested mount
 that is equal to or an ancestor of any inspected cgroup directory or controller
 file is rejected, while a sibling-prefix or unrelated mount does not shadow
-the checked ancestry. The root's `memory.max` may be absent only when root
+the checked ancestry. Every mountpoint is decoded and validated as an absolute
+canonical path; only cgroup2 mount roots are decoded and validated that way,
+since other filesystems can report kernel-specific pseudo-roots such as nsfs
+`mnt:[inode]`. Those mounts still participate in overmount and nested-shadow
+checks. The root's `memory.max` may be absent only when root
 `cgroup.controllers` explicitly lists `memory`. Missing or malformed ancestry,
-duplicate mounts/paths, inaccessible files, and non-init cgroup namespaces
-all fail closed. The admitted upper bound is
+duplicate cgroup2 mounts, protected-path overmounts, inaccessible files, and
+non-init cgroup namespaces all fail closed. The admitted upper bound is
 the minimum of host free RAM and every finite ancestor's non-negative
 `memory.max - memory.current`; receipts record the namespace inode and
 verified filesystem magic with the
