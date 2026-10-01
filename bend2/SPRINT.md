@@ -1886,17 +1886,27 @@ extra/duplicate export rejection. A [Linux terminal result](https://github.com/H
 then emitted all four `2032-2` caches at clean source `41e48d9`, with stable
 import identities, bare exports and separately rehashed JS/manifest bytes.
 The host-reported values have a committed reviewed receipt and distinct raw
-receipt pin; the real four-cache verifier has not yet run on those files.
+receipt pin. A later [Linux run](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307)
+passed the real four-cache verifier on those exact host-local files.
 The [versioned Worker-bundle candidate](toolchain-patches/2032/browser-loader-v2/README.md)
 now consumes only that verifier plus a committed, independently reviewed
-four-cache receipt. Its cache pin now binds the Linux readback and synthetic
-input tests pass, but no real v2 Worker bundle or static package was made.
+four-cache receipt. Its cache pin binds the Linux readback and synthetic input
+tests pass. The same Linux run produced one real Bun 1.4.2 Worker/helper
+bundle, independently reviewed at
+[5930184246](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930184246).
 The [separate v2 static packer candidate](toolchain-patches/2032/browser-preview-v2/README.md)
 retains the old packer, checks the v2 bundle/cache receipt contracts, and
-requires a second unarmed reviewed bundle pin. Its pure manifest tests and
+now carries a second exact reviewed bundle pin on this isolated pre-height
+diagnostic branch. Its pure manifest tests and
 scope-isolated service-worker activation test pass, including nested scopes;
 no real static package, offline check or v2-schema browser playtest exists.
-Corrected real caches exist on Linux; no rendered browser result has been produced.
+Corrected real caches and a reviewed bundle exist on Linux; no static package
+or rendered 2.0.32 browser result has been produced. This branch descends from
+source `52e102b` solely for the first-frame diagnostic and includes the
+separately versioned `browser-v2-live-2032` gate. The main visual branch later
+shortened `BoardScene.sprite_height` from 1.04 to 1.00; this older cache set
+cannot verify that current visual source. Fresh selected caches, bundle,
+package and rendered interaction will be required there.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or
 GPU/browser acceptance is inferred.

@@ -16,9 +16,10 @@ Two independent source pins gate packaging:
 - [`approved-bundle.mjs`](approved-bundle.mjs) must bind the generated Worker
   manifest path, raw SHA-256, source revision/tree, and cache source.
 
-The bundle pin is deliberately `null` here. A caller-supplied `--manifest` and
-`--sha256` cannot arm it, and a self-computed receipt hash cannot override
-the reviewed cache pin. The packer derives the four manifest paths from the
+The exact bundle pin is armed after the [independent Linux manifest review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930184246)
+of the retained Bun output and its 18 source files, four cache manifests,
+approved receipt and both output byte hashes. A caller-supplied `--manifest`
+and `--sha256` cannot override either reviewed pin. The packer derives the four manifest paths from the
 approved receipt, re-runs the v2 verifier, and matches the raw manifests and
 outputs to the receipt and Worker manifest before packaging.
 
@@ -56,11 +57,12 @@ and its template are not changed here. The pre/post source snapshots do not
 exclude a transient same-path swap during Bun's host build; use an owned,
 quiescent source checkout and do not claim atomic source capture from them.
 
-The approved cache receipt is present, but no real Worker bundle or approved
-bundle pin exists. Asset/license packaging, host `Bun.build`, static output
-creation, browser
-rendering, and offline behavior remain unrun. The existing
-`browser-v2-live.mjs` accepts only static schema `2032-1`; a separate v2 live
-browser gate is required for first render. A future successful package
+The approved cache receipt and real Bun Worker bundle bind source `41e48d9`
+and `52e102b` respectively. This isolated branch carries the separate
+[`browser-v2-live-2032`](../../../tests/browser-v2-live-2032/README.md)
+first-frame gate but does **not** include the later BoardScene height-only
+change on the main visual branch. Asset/license packaging, host `Bun.build`
+inside the static packer, static output creation, browser rendering, and offline
+behavior remain unrun. A future successful package and first render
 would still not prove browser acceptance, native/GPU behavior, publication, or
 release readiness.
