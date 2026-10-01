@@ -134,7 +134,7 @@ current-stack acceptance. Retain their receipts as stage provenance.
 | --- | --- | --- |
 | Frozen proof authority | [Individual shard diagnostics and source-only aggregate preflight](../../core/v3/2032/README.md) | Complete `CHECK.bend` aggregate Worker, BendTT kernel and six actual mutation Workers. The canonical 2.0.27 gates remain in force. |
 | Compiler/Worker | Exact 001→002→005→004 phase-two replay; phase-three coarse runtime and phase-five per-call fixture | Full 004 scheduler/eligibility and migrated 107-case matrix. Historical pre-phase-two selected-root and phase-four coarse browser receipts are not peer final gates. |
-| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed | Full exact argv/write/restart receipt after the stopped stderr oracle case; NativeV2 GUI, PCM and GPU/device checks. |
+| Native | Six patched argv entries source-check; exact LF C export and linked Linux CLI ELF; program-only and `help` passed. A separate NativeV2 Linux CPU build harness passes deterministic source-only tests, not a build. | Full exact argv/write/restart receipt after the stopped stderr oracle case; NativeV2 C/ELF/package, GUI, PCM and GPU/device checks. |
 | Browser | Corrected same-source four-cache codegen and pinned host readback; phase-five isolated browser Worker. The old `2032-1` bundle/static package is historical. | Real `2032-2` cache verifier, Worker bundle, static package, first frame, hotseat/orbit/mobile, offline, production build and hosted/device evidence. |
 | Adoption | Current 2.0.27 pin and Laws unchanged | Reviewed pin amendment only after the full proof, mutation, runtime and visual gates. |
 
@@ -171,6 +171,11 @@ pending, not assumed successful. The separate
 2.0.32 `Look`/`Scroll` match arms in a versioned X11 candidate. Its Windows
 exact-source and pure wheel-direction preflight passed; this is not an actual
 NativeV2 source check, GUI/PCM run or macOS input policy.
+The [separate NativeV2 2.0.32 Linux CPU harness](../native-v2-2032/linux-cpu/README.md)
+binds the event-patched source, derived compiler, cgroup memory admission,
+Clang/X11/ALSA preflight and package assets. Its deterministic tests and
+independent source review passed on Windows; Linux process lifecycle, actual
+C emission, ELF/package, GUI, PCM and restart remain unrun.
 
 Still required before any pin amendment: finish and review 004 and compiler
 adapters, resolve the full frozen proof closure and BendTT authority without

@@ -1953,3 +1953,10 @@ The [2.0.32 acceptance matrix](toolchain-patches/2032/README.md#active-acceptanc
 separates active final-stack gates from historical stage receipts and source-only
 preflights; neither the older selected-root fixture nor individual shard
 diagnostics are a second full-stack acceptance gate.
+The [separate 2.0.32 NativeV2 Linux CPU build candidate](toolchain-patches/native-v2-2032/linux-cpu/README.md)
+now has a source-bound, supervised C-emission/ELF/package path with an early
+X11/ALSA dependency probe, a 64-MiB compiler Worker stack, two fail-closed
+88-GiB host/cgroup admissions and hash-bound asset staging. Its standalone
+deterministic tests and independent review passed on Windows. The Linux
+lifecycle test skipped there; no 2.0.32 NativeV2 C, ELF, GUI, PCM, restart or
+GPU result follows until a fresh Linux-host run and separate interaction gates.
