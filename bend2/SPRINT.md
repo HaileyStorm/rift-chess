@@ -2072,5 +2072,15 @@ checks passed. Lower-base drafts were rejected because at minimum pitch their
 matrix foot can cross the next-square picking boundary; even the combined
 draft's green 24/689 local Chrome matrix did not test that opaque-base click.
 The retained height-only draft then passed its own exact-build-bound local
-24-scenario/689-check real-Chrome matrix with zero defects. Native, hosted,
-frame-budget/device and owner visual acceptance remain open.
+24-scenario/689-check real-Chrome matrix with zero defects. At that draft
+checkpoint, native, hosted, frame-budget/device and owner visual acceptance
+were open.
+The clean non-draft source `fa58ec0` produced byte-identical playable files
+and passed a separately bound local Chrome move/orbit/refinement/mobile smoke.
+The separate [Pages browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+published build `da8013ed39be761d1671` at commit `a4fba5e`; the live
+verifier matched 24 Bend files and both unchanged original-site baselines,
+and the exact-build hosted extended 13-check Chrome run passed, including
+offline module-worker refinement. Native current-source retest, physical
+audio, GPU/device performance, full atlas-aware picking and owner visual
+acceptance remain open; the full 24/689 run was local, not hosted.

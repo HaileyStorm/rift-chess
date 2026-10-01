@@ -59,3 +59,35 @@ representation derived from the same decoded atlas alpha and shared sprite
 placement, installed with the matching settled refinement. Do not widen the
 old `Sprites.alpha` silhouette or move the base without testing opaque and
 transparent pixels, rifts, overlaps, every supported view, and stale frames.
+
+## Clean build and hosted browser preview
+
+The clean source `fa58ec079faae6e55af79b4f7bb471acc2576090` produced a
+non-draft `sourceDirty=false` v2-preview build. Its content version remained
+`da8013ed39be761d1671`, and every playable-file hash matched the full-matrix
+draft; only build metadata changed. The clean `build.json` SHA-256 is
+`800120ab020dd1d9495c751a3fea20ebf84b7400fcfb5fc0510424eab608ea13`.
+A separate bound local Chrome smoke passed selection, a move, held orbit,
+settled refinement, mobile and menus without page errors. Its ignored
+`height-only-clean-live-20261001/result.json` SHA-256 is
+`dc53ae73620ebac4578648ce493a58c7b80bd78f9f5043a630b99bb3fdf7983a`.
+The refined first frame in that sample took 2.85 s round-trip; this is not a
+responsive startup or low-memory device result.
+
+The separate [Bend browser preview](https://haileystorm.github.io/rift-chess-bend2/)
+received Pages commit `a4fba5e210b9dcd70ca8786fff8c2187770a47d3`, which
+reported `built`. The live verifier compared `build.json` and all 23 listed
+Bend files against the clean local build and Pages checkout, checked module
+MIME types, and matched both unchanged original-site baselines. Its ignored
+publication receipt SHA-256 is
+`396e09e4e89bd1c6d3241ae0fee071c2e8a67f32928a5dbf9d3288ade39562f9`.
+The exact-build-bound hosted extended Chrome run then passed 13 checks with
+zero page errors: detailed refinement, input/moves, both themes, record
+import/promotion, PCM generation, service-worker-controlled offline reload and
+move, Shift/Undo, persistence, and portrait controls. The ignored
+`height-only-hosted-20261001/receipt.json` SHA-256 is
+`54307d75fe768f9994a1c8437fe038d1a3cbe34c9896eabc35ef4e6878b9faf2`.
+This scoped hosted result is not a 24-scenario hosted matrix, native input or
+PCM proof, GPU/device frame budget, 2.0.32 browser bundle, full atlas-aware
+picking, or owner visual acceptance. The original TypeScript game remains
+separate and unchanged.
