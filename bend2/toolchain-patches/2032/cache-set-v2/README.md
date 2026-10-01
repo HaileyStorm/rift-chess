@@ -44,27 +44,33 @@ emitter, certify a positive cache set, or establish output authenticity. A
 manifest's output digest is self-described; trusted artifact authenticity still
 needs externally pinned receipts or equivalent independent evidence. A reviewed
 Linux four-cache readback is now pinned in browser-loader-v2/receipts; the
-verifier has not yet been run on those real host-local outputs.
+real verifier ran on those exact host-local outputs in the
+[Linux bundle result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307).
+Its 28 synthetic tamper controls also passed after a bounded shallow-history
+recovery. This source-only/CPU result does not prove a rendered browser app.
 
 ## Consumer seam and retained v1 history
 
-This candidate is not a real-cache-accepted production path. The existing v1
+This candidate has real-cache evidence for the older `41e48d9` source, but is
+not an accepted production browser path. The existing v1
 verifier, receipts, and consumer imports remain untouched. In particular,
 browser-loader/bundle-real.mjs and browser-preview/pack-static.mjs still call
 cache-set/verify.mjs. Separately versioned browser-loader-v2 and
 browser-preview-v2 candidates now call this verifier. The four-cache receipt
-pin is armed; the separate Worker-bundle pin remains unarmed and no real
-v2 verifier/bundle/static run has passed.
+pin is armed; one real v2 verifier and Worker/helper bundle passed on Linux.
+The separate static packer's Worker-bundle pin remains unarmed pending an
+independent review of the complete manifest; no static or browser run passed.
 
 A future active consumer migration can use the versioned candidates while
 keeping the verified { modules, commonBinding, registrySha256 } result shape.
-Do that only after a real four-cache emission at one source commit,
-successful v2 verification of those exact manifests, and a separately
-reviewed consumer migration. Retain v1 until its consumers and
-evidence references have been migrated and the v2 path has independent real-
-cache evidence; do not delete historical v1 receipts or provenance to make the
-candidate appear authoritative.
+Single-commit emission and exact real-cache verification now hold only for the
+older cache source; a separately reviewed consumer migration and fresh
+selected caches for the later
+height-only BoardScene source remain. Retain v1 until its consumers and
+evidence references have been migrated and the v2 path has rendered real-
+browser evidence; do not delete historical v1 receipts or provenance to make
+the candidate appear authoritative.
 
-The actual four-cache integration, worker/codegen, static packaging, and browser
-acceptance were not run for this candidate.
+The actual four-cache integration and Worker codegen passed on Linux at the
+older source. Static packaging and browser acceptance were not run.
 
