@@ -141,8 +141,9 @@ Canonical/Ordering used 1 GiB/360 seconds, the Range pair 1 GiB/240
 seconds, PROOF 512 MiB/240 seconds, and the other thirteen 512 MiB/120
 seconds; all passed without a resource stop on this sample. Canonical took
 290 seconds of typechecking, illustrating host-load variance rather than a
-portable performance claim. A Linux run and the actual aggregate
-`CHECK.bend`/BendTT/mutation verdict remain unverified.
+portable performance claim. A Linux shard run and BendTT/mutation verdict
+remain unverified; the separate full-CHECK source/type aggregate result below
+is not a shard or kernel verdict.
 
 The runner now uses the reviewed exact LF/CRLF compiler postimage binder,
 including its mixed/tampered-source negatives. The same stack can be
@@ -205,11 +206,24 @@ verified filesystem magic with the
 its two physical-free-memory samples are unchanged. These checks establish
 an instantaneous upper bound, not a reservation: cgroup membership or limits
 can change after sampling, and the check does not prove peak Worker cost or
-completion. Actual Linux aggregate and mutation Workers remain unrun.
+completion. The earlier Linux aggregate Worker passed as described below;
+the six mutation Workers remain unrun.
 Source-only Linux preflight does not attempt memory admission.
 These are admission and safety bounds, not measured peak cost or a guarantee
-that CHECK completes. No aggregate attempt has run under this candidate yet.
-A pass would prove only this derived compiler's source/type/promise screening
+that CHECK completes. The distinct repaired
+[Linux aggregate result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5930891266)
+observed a clean 125.058-second Worker exit after the frozen 57-file closure,
+1,577 definitions and zero holes/fetches. Its
+[independent raw-receipt review](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5936578099)
+rejected approval: the producer omitted the already-bound EOL helper hash
+from the final JSON and placed `namespace` inside the exact scope prefix
+expected by the BendTT approval contract. The original raw receipt remains
+immutable. This isolated producer correction adds that existing binding
+field and moves the namespace fact after the unchanged
+source/type/promise scope prefix; it does not omit the namespace guard,
+alter its check, or relax the approval contract. A distinct clean-source
+Linux aggregate invocation and independent review are required. A pass
+would prove only this derived compiler's source/type/promise screening
 of the complete frozen entry; it would not invoke the BendTT kernel, six
 semantic mutations, conformance, native/browser/GPU, or authorize a
 toolchain-pin amendment.
@@ -256,7 +270,9 @@ invoke the derived 2.0.32 `main.ts CHECK.bend --verdict` path. Both approval
 modules are currently `null`: there is no approved Linux aggregate result or
 kernel binary. Its synthetic authority, lineage, admission, receipt and
 process-result tests pass, but no Bun/Lean/BendTT command was run. The
-[owned Linux process-group supervisor](bendtt-supervisor.mjs) passed only
-portable policy controls on Windows; its five actual Linux lifecycle cases
-remain unrun. A verdict will require those controls and an exact, quiescent
-host run; a source-only aggregate pass does not imply a kernel proof.
+[owned Linux process-group supervisor](bendtt-supervisor.mjs) passed
+portable policy controls on Windows and five actual Linux lifecycle cases in
+the [scoped host result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5928919833).
+A verdict still requires an approved aggregate and prebuilt kernel plus an
+exact, quiescent host run; a source-only aggregate pass does not imply a
+kernel proof.

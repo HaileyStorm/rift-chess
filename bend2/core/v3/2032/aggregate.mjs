@@ -170,7 +170,7 @@ if (!isMainThread) {
       loadedFiles: closure.length, definitions: book.order.length, owned: verdict.own.length,
       holes: book.hols, fetches, timingsMs,
       namespaceGuard: 'successor 2.0.32 compiler-owned guard via empty-root js_lib; no definition emission',
-      scope: 'aggregate frozen CHECK source/type/namespace/promise screen only; no BendTT kernel, mutation, conformance, native, browser, GPU or pin acceptance' });
+      scope: 'aggregate frozen CHECK source/type/promise screen only; includes the 2.0.32 compiler-owned namespace guard; no BendTT kernel, mutation, conformance, native, browser, GPU or pin acceptance' });
   } catch (error) {
     const detail = error?.$ === 'Err' && Bend ? Bend.err_show(error)
       : error?.message ?? String(error);
@@ -243,6 +243,7 @@ if (!isMainThread) {
     passed: true, ...result, sourceCommit: before.sourceCommit,
     sourceTree: before.sourceTree, frozenSha256: before.frozenSha256,
     compilerEol: before.compilerEol, compilerBase: before.compilerBase,
+    binderSha256: before.binderSha256,
     patches: before.patches, scriptSha256: before.scriptSha256,
     safetySha256: before.safetySha256,
     expectedLoadedFiles: before.expectedLoadedPaths.length,
