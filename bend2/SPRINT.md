@@ -1896,6 +1896,13 @@ retains the old packer, checks the v2 bundle/cache receipt contracts, and
 requires a second unarmed reviewed bundle pin. Its pure manifest tests and
 scope-isolated service-worker activation test pass, including nested scopes;
 no real static package, offline check or v2-schema browser playtest exists.
+The [separate v2 rendered-interaction candidate](tests/browser-v2-live-2032/README.md)
+now requires a third reviewed static-build pin and a dedicated cached-browser
+origin. Its source-only tests cover build-schema/path and navigation/first-frame
+diagnostics; the live path requires persisted e2-e4 action 3980, a changed
+orbit view with matching sprite refinement, mobile-viewport mouse interaction,
+and hashed screenshots. It has not launched a v2 browser or passed offline,
+touch-device, performance or owner visual acceptance.
 Corrected real caches exist on Linux; no rendered browser result has been produced.
 The original first-frame
 FAIL and all cached package evidence remain preserved; no interaction or
