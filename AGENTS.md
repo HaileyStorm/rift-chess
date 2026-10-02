@@ -24,18 +24,8 @@ GPU tests and shared build outputs. Keep runtime parallelism immutable and balan
 
 Read `<CODEX_HOME>/HARNESS_OPERATIONS.md` when provider, sentinel, recovery, or host-boundary safeguards apply; this summary does not replace it.
 
-- Use `gpt-6.1-sol` at `high` as the default/controller for all project work
-  (never higher or lower). Reserve `gpt-6-astra` for detailed planning, very
-  complex or intricate code/proofs, or stubborn problems at `high` or `xhigh`
-  only. For monitor/classify-only children, prefer native Direct
-  `nous/deepseek/deepseek-v4.1-flash` at `max`, otherwise `gpt-6-luna` at
-  `max`; DeepSeek has the same necessary task-scoped data/history/files/tools
-  as GPT, without extra privacy/disclosure/root-approval or per-run gates.
-  Normal ownership, secrets handling, zero-spend and no ambiguous resends
-  apply to every model. The MCP bridge remains a read-only tool surface.
-- Set every GPT controller/child to a `291000` context limit and `208000`
-  auto-compact; only the explicit `native-profile/gpt-6-astra-1m` picker entry
-  is exempt. Keep prompts and child packets lean and checkpoint before pressure.
+- Inherit the global model routing, adaptive-effort, cache-aware switching, context defaults, and multi-agent workflow. Scalar role efforts are strong startup preferences; preserve explicit user/task choices and frozen experiment requirements.
+- Keep prompts and child packets lean and checkpoint before context pressure.
 - On unexpected auto-compact or a fresh-task rollover (even without a manual
   handoff), reread the request, current workspace/Git state, durable tracker or
   checkpoint, and recent test evidence. A successor reconstructs status itself;
