@@ -27,11 +27,12 @@ Read `<CODEX_HOME>/HARNESS_OPERATIONS.md` when provider, sentinel, recovery, or 
 - Use `gpt-6.1-sol` at `high` as the default/controller for all project work
   (never higher or lower). Reserve `gpt-6-astra` for detailed planning, very
   complex or intricate code/proofs, or stubborn problems at `high` or `xhigh`
-  only. For monitor/classify-only children, prefer qualified
+  only. For monitor/classify-only children, prefer native Direct
   `nous/deepseek/deepseek-v4.1-flash` at `max`, otherwise `gpt-6-luna` at
-  `max`; a qualified native DeepSeek child may receive the same necessary
-  in-scope files/tools as any child, but privacy, provider, capability,
-  no-spend, and no-resend gates still apply. The MCP bridge remains read-only.
+  `max`; DeepSeek has the same necessary task-scoped data/history/files/tools
+  as GPT, without extra privacy/disclosure/root-approval or per-run gates.
+  Normal ownership, secrets handling, zero-spend and no ambiguous resends
+  apply to every model. The MCP bridge remains a read-only tool surface.
 - Set every GPT controller/child to a `291000` context limit and `208000`
   auto-compact; only the explicit `native-profile/gpt-6-astra-1m` picker entry
   is exempt. Keep prompts and child packets lean and checkpoint before pressure.
