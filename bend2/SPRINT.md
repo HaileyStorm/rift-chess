@@ -11,6 +11,57 @@ The existing game is published as 1.2.1. The Bend adaptation was migrated from
 `bend2/`. The existing application and reference remain comparison inputs, not
 alternative runtime code for the Bend game.
 
+## Active plan: October 5 review and rollover
+
+The [review and acceptance plan](docs/REVIEW_2026-10-05.md) is the current
+execution order. The [rollover checkpoint](docs/ROLLOVER_2026-10-05.md) carries
+the exact checkout, retained worktrees, pending requests and proposed Goal.
+The checkpoints below remain historical evidence; an individual candidate PASS
+does not close current-source migration, performance or visual acceptance.
+
+Live review baseline: clean main checkout `4a0fd8c` on
+`codex/visual-overhaul`; accepted pristine compiler **2.0.27**. The latest
+accepted browser interaction receipt binds source `45d7041`, build
+`8235c81a27d4030e143b`, local 24 scenarios/689 checks and historical hosted
+13 interaction/offline checks. Its retained local performance diagnostic has
+move reply p95 **1,542.7 ms**, menu **817.0 ms**, selection **215.3 ms** and
+orbit **335.2 ms**. These are small, variable-load request/reply samples,
+not input-to-present budgets or proof of a speed regression.
+
+The user now requires **at least 2.0.32**. The October 5 release cutoff selects
+official **2.0.35** as the next explicit candidate for isolated evaluation;
+it is not the accepted pin. See the review for the source/ABI comparison and
+bounded later-release rule. The historical 2.0.32 candidate has real caches,
+a reviewed Worker/helper bundle, a pre-height static package and CPU CLI
+restart evidence. It still has no
+accepted rendered game first frame or current-visual browser/native parity.
+The historical frozen CHECK source/type PASS and independent receipt rejection
+both stand; BendTT/kernel, actual mutations and full Worker acceptance remain
+open. No frozen Law, approval gate or toolchain pin changes in this review.
+
+Critical path: reconcile exact retained requests and establish one supported
+successor; prune redundant active tests/gates without weakening frozen proof or
+independent behavior; inspect the retained 2.0.32 package once as historical
+diagnostic, then evaluate 2.0.35 source/ABI and prove a target-version game
+first frame; carry one current-visual source through caches/bundle/package and
+browser/offline checks; finish substantive proof/Worker/native adoption
+obligations before amendment.
+Linux reported an active route on October 5, but the old stopped aggregate/native
+attempts still need exact terminal/admission reconciliation. Make bounded Windows
+performance and visual progress on the accepted baseline using the plan's
+new measurable targets. Prioritize legal-refresh duplication, menu composition,
+detailed refinement and atlas-consistent picking. Additional generic compiler
+infrastructure needs a specific failing application/adoption gate. Preserve
+camera options, styles, animations, offline shareability and the headless API.
+
+Rollover remains pending. The separate cloud review task
+`01a109d5-dcaa-7176-ab79-ad8ebfe7502a` lacked local task/Goal controls and is
+not a Windows implementation successor. The resumed Windows owner has supported
+controls and read back its old Goal as paused; it will create one local
+gpt-6.1-sol/high successor, verify handoff, and leave the old unfinished Goal
+intact. The received 16-view TripoSR white-knight study does not warrant GLB
+transfer or integration on the migration critical path. See the checkpoint.
+
 ## Sequence and completion requirements
 
 1. Gather primary docs/examples, pin the toolchain, execute language/proof probes,
