@@ -370,3 +370,38 @@ Receipt `solid-piece-prototype-20261005/receipt.json`, SHA-256
 bcef0029f9028ee0bb4cea3f3cad5f594eb1a4a43b412f275d4d67990118ac16,
 binds all raw reports, source/compiler/output hashes and the actual sheet.
 Production remains unchanged; the writer released only its own private claim.
+
+## Current-bundle extended browser acceptance
+
+The exact draft candidate build19cc1d9f9778fd0436c9 passed13 extended browser
+checks in41.592s. The served manifest and all21 local bundle files matched
+before/after; no browser errors occurred and browser/context closed normally.
+Checks covered themes, import/capture/underpromotion, offline sprite-helper
+refinement and a move, portrait, Shift and immediate Shift Undo refinement.
+Two actual AudioBufferSourceNode starts accompanied finite24kHz PCM buffers of
+4080 and3192 samples, with peaks0.304 and0.211. This qualifies current browser
+audio transport, not physical audibility or native PCM.
+
+Receipt `2035-preview/current-extended-c61o8tqx/scenarios/receipt.json`, SHA-256
+e440289e636d71a7ccf6c3b43aedc34604861aceb7ea8a55da610c76c12805ff;
+terminal SHA-256 f340d5755b53b3324ce8cfc53cd31a23b3dd7b6dd7b279cf9804cf26b97dbb5e.
+The artifact remains draft/adoptedfalse, sourceRevision5ff2f0c/sourceDirtytrue.
+
+## Reviewed unarmed2035 kernel consumer
+
+Separate `core/v3/2035/bendtt-gate/` consumes the independently accepted raw
+Windows source/mutation receipts without treating them as kernel evidence.
+It binds exact relative inventories and clean source ancestry, a separately
+approved Linux Node runtime,64MiB Safe Worker with explicit transform flag,
+exclusive serialized output and empty out-of-scope list. An approved prebuilt
+kernel is invoked directly after observed Worker exit and a second12GiB
+full-ancestry cgroup admission; exact stdout/empty stderr/quiescence and retained
+uncertain leases reuse existing controls. The old2032 consumer is unchanged.
+
+All three source/kernel/Linux runtime approvals remain null. Eight syntax checks,
+actual raw-receipt/57-cone binding and useful pure/synthetic contract checks passed;
+independent source review found no blocker and matched all9 files. Handoff
+`2035-kernel-20261005/preparation-rn5hpA/handoff.json`, SHA-256
+a7c5f47eac06b24aa4c7e66a39870e3023c511a3ecc2d812098c6352e9e223c1.
+The proposed bounded Windows import-only probe remains unexecuted. No Safe
+elaboration, kernel verdict, Linux runtime qualification or adoption is claimed.
