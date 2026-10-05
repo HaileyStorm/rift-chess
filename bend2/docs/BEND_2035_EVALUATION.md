@@ -69,7 +69,10 @@ Adapt the existing selected emitter to this exact direct API and common preload,
 then emit the four current-source modules sequentially with one compiler/source
 binding. Reuse the cache-only Worker/helper and dedicated preview seam. Require
 actual first frame, persisted 3980, orbit/refinement, portrait and no Worker errors,
-then full current reference/offline acceptance. The observed Windows free memory
-was below the existing 2.5GiB emission floor; do not lower it or substitute old
-caches. Exact proof, Worker and native/device gates and reviewed chained amendment
+then full current reference/offline acceptance. The user authorizes removing the blanket free-RAM floor when actual work
+fits, while leaving Vivaldi open. The accepted current controller source check
+passed starting at about 509MiB free; the active emitter has no such floor.
+Use bounded, classified execution for the candidate too; preserve its actual
+results and reject stale caches. This accepted-pin check does not prove candidate
+2.0.35 memory behavior. Exact proof, Worker and native/device gates and reviewed chained amendment
 still precede any accepted pin change.

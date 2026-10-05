@@ -41,6 +41,7 @@ let menuBase: any, menuControls: any, menuBaseData: any, menuBasePlan: any;
 let menuStaticData: any, menuStaticPlan: any;
 let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
+let spritePickData: any = null, preparedAtlas = false, renderedAtlas = false;
 let spritePlateTheme: number | null = null;
 let spriteHelper: Worker | null = null, spriteHello = false, spriteGeneration = 0, spriteTaskId = 0;
 let spritePending: { id: number; generation: number; frame: any; theme: number;
@@ -181,6 +182,8 @@ function disposeSprite(): void {
   clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
+  spritePickData = null;
+  preparedAtlas = renderedAtlas = false;
   spriteTheme = null;
   spritePlateTheme = null;
   spriteMetrics = null;
@@ -223,6 +226,8 @@ function ensureSpriteHelper(): void {
         return;
       }
       spriteLayer = message.image;
+      if (message.pickData?.$ === 'Pieces') spritePickData = message.pickData;
+      if (!spritePickData) throw new Error('Bend atlas image has no source-bound alpha data');
       spriteFrame = pending.frame;
       spriteTheme = pending.theme;
       const received = performance.now();
@@ -258,6 +263,7 @@ function startSpriteJob(frame: any, theme: number, revision: number,
     selected.depth === 9 && ['Pix', 'Qua'].includes(selected.pixels?.$);
   const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
   spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
+    needPickData: !spritePickData,
     id: pending.id, generation: pending.generation, theme, frame,
     ...(sharedPlate ? { plates: sharedPlate } : {}) });
   if (sharedPlate) spritePlateTheme = theme;
@@ -326,11 +332,14 @@ function render(packet: any): any {
   const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
-  if (request.prepared || (spriteSettled && !prepared)) prepared = timed('prepared', () =>
+  if (request.prepared || (spriteSettled && !prepared)) {
+    preparedAtlas = Boolean(spriteSettled);
+    prepared = timed('prepared', () =>
     spriteSettled ? (boardSize === 512
       ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
       : scene.nearest2(9n, scene.fast_sprite_feedback_static512(frame, spriteLayer)))
       : scene[`fast_prepare${suffix}`](frame, ground));
+  }
   if (!prepared) throw new Error('Missing Bend prepared scene');
   const data = packet.chromeData, plan = packet.plan;
   const playing = menu.play(data);
@@ -360,6 +369,7 @@ function render(packet: any): any {
   const board = timed('pointer', () => request.motion
     ? scene.fast_camera256_for_512(frame, motionUnderlay)
     : scene[`fast_pointer${suffix}`](frame, prepared));
+  renderedAtlas = !request.motion && preparedAtlas;
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)
     : menu.render(request.depth, request.size, data, plan, fonts, board));
@@ -416,6 +426,7 @@ async function emit(packet: any, elapsed: number, id: number,
   const audioMs = performance.now() - audioStart;
   self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,
     renderTheme: packet.render.theme,
+    atlasPick: renderedAtlas,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
     treeMs, traversalMs, sceneTimes, spriteMetrics,
@@ -438,7 +449,12 @@ async function handleMessage(request: any): Promise<void> {
       bitmapSurface = new BitmapSurface(request.imageBitmap === true);
       packet = api.boot_reads(request.saved.text, request.prefs.text, request.saved.ok, request.prefs.ok, request.width, request.height);
     } else {
-      packet = api.dispatch_at_web(list(request.events), request.presentation, session);
+      if (request.presentation?.atlasPick === true) {
+        if (!spritePickData) throw new Error('Displayed atlas frame lost its alpha data');
+        packet = api.dispatch_at_web_atlas(list(request.events), request.presentation, spritePickData, session);
+      } else {
+        packet = api.dispatch_at_web(list(request.events), request.presentation, session);
+      }
     }
     packet = applyReadyBot(packet);
     observeBotJob(api.bot_job(packet.session));

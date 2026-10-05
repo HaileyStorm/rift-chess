@@ -44,3 +44,12 @@ additional routine gate. Keep actual browser/reference/offline, proof/verdict an
 mutation, native/device and frozen Worker obligations separately. Source spelling
 mirrors and obsolete phase fixtures are further pruning candidates, not removals
 completed by this slice. No root TypeScript test was removed.
+
+The superseded v1 preview executable suite (241 lines) is now removed too.
+Its unique shared-helper asset copy/provenance, runtime size and same-length hash
+substitution, no-overwrite writes and actual output-file symlink boundary moved
+into v2. The retained v1 production helpers still serve v2 and historical paths.
+The consolidated v2 suite passed once in 2.435 seconds; Windows denied file
+symlink creation, explicitly reported as skipped rather than accepted. This
+second preview consolidation removes 113 net lines including documentation.
+It proves synthetic packaging contracts, not current game/browser acceptance.

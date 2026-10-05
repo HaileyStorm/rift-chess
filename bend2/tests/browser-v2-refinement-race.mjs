@@ -50,9 +50,11 @@ try {
     deferred: Number(canvas.dataset.spriteDeferred),
     discarded: Number(canvas.dataset.spriteDiscarded || 0),
     roundTripMs: Number(canvas.dataset.spriteRoundTripMs),
+    atlasPick: canvas.dataset.atlasPick,
     summary: canvas.getAttribute('aria-label'),
   }));
   assert.ok(observed.deferred >= 1 && observed.roundTripMs > 0);
+  assert.equal(observed.atlasPick, 'true', 'accepted refinement carries its displayed atlas input mode');
   if (changeView) assert.ok(observed.discarded >= 1);
   assert.match(observed.summary, /White to move/);
   assert.deepEqual(errors, []);

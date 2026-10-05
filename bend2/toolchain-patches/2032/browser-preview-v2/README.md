@@ -26,20 +26,29 @@ reviewed cache pin. The packer derives the four manifest paths from the
 approved receipt, re-runs the v2 verifier, and matches the raw manifests and
 outputs to the receipt and Worker manifest before packaging.
 
-The pure synthetic contract checks are:
+The single active preview contract and shared packaging-helper suite is:
 
 ```powershell
 node bend2/toolchain-patches/2032/browser-preview-v2/test.mjs
 ```
 
-They exercise bundle shape and its integration with receipt pins, exact
-paths/hashes, output/source bytes, source-tree ancestry and isolated service-worker activation against
-synthetic scopes without reading real cache artifacts/assets, contacting a
-provider, or invoking a bundler.
+It exercises bundle shape and its integration with receipt pins, exact
+paths/hashes, output/source bytes, source-tree ancestry and isolated service-worker
+activation against synthetic scopes. Shared packaging-helper controls copy
+synthetic observatory/font/piece/license assets, verify output hashes and
+provenance, reject runtime size/hash tampering, preserve files on a repeated
+write, and reject an actual output symlink through the bundle's file reader.
+OS-denied symlink creation is reported separately as a skip. Fixtures use unique
+temporary directories with checked cleanup; the suite does not read real cache
+artifacts/assets, contact a provider, or invoke a bundler.
 The receipt contract has one independent suite at
 `browser-loader-v2/test.mjs`; its direct unit assertions are no longer repeated
 here. Run that suite when changing receipt validation. Historical receipts remain
-unchanged; neither synthetic suite establishes packaging or browser acceptance.
+unchanged; neither synthetic suite establishes real packaging or browser acceptance.
+The superseded v1 executable preview suite and its unused fixture support were
+removed after these controls passed. Retain `browser-preview/pack-static.mjs` and
+its helper exports while this packer imports them; test consolidation does not
+remove the v1 production path or its historical receipts/provenance.
 
 After the independent receipts and source pins have been reviewed, committed,
 and the checkout is clean, the real static packer entry point is:

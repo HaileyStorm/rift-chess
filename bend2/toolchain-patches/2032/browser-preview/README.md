@@ -33,11 +33,19 @@ smoke: the inherited service worker uses an origin-global `rift-bend-v1-*`
 cache family and can evict another Bend preview's offline cache on the same
 origin. Offline behavior is intentionally not accepted here.
 
-Run source-only synthetic, path, and tamper controls with:
+Run the single active preview contract and shared packaging-helper suite with:
 
 ```powershell
-node bend2/toolchain-patches/2032/browser-preview/test.mjs
+node bend2/toolchain-patches/2032/browser-preview-v2/test.mjs
 ```
+
+The superseded v1 executable suite and its unused bundle-fixture machinery were
+removed after migrating asset packaging/provenance, runtime size/hash tampering,
+no-overwrite writes and actual output-symlink rejection into v2. OS-denied file
+symlink creation is an explicit skip. Synthetic packaging does not accept a real
+static package or browser run. Retain this packer and its exported file/asset
+helpers: the v2 packer imports them. Historical v1 receipts and the runtime
+provenance below remain unchanged.
 
 After a real source-bound worker bundle and cache set are available on the
 machine doing the pack, provide both inputs explicitly. On Windows, the Bend

@@ -23,6 +23,8 @@ import ./Assets.bend as Assets
 import ../../lib/graphics/v2/Color.bend as Color
 import ./PieceSprites.bend as PieceSprites
 import ./PieceAssets.bend as PieceAssets
+import ./SpritePlacement.bend as SpritePlacement
+import ./AtlasPickData.bend as AtlasPickData
 
 type Corners is Data:
   Corners{p00: Quad.Point, p10: Quad.Point, p11: Quad.Point, p01: Quad.Point}
@@ -56,8 +58,7 @@ def point_y(p: Quad.Point) -> F32:
     case Quad.Point{x, y}: y
 
 def projected_square(+size: U32, +basis: Camera.Basis, +square: U32) -> Quad.Point:
-  point(basis, size, U32.to_f32(Model.file_of(square)),
-    U32.to_f32(U32.sub(7, Model.rank_of(square))))
+  SpritePlacement.center(size, basis, square)
 
 def square_x(+size: U32, +basis: Camera.Basis, +square: U32) -> U32:
   Ortho.pixel(point_x(projected_square(size, basis, square)))
@@ -1317,36 +1318,33 @@ def fast_overlay1024(frame: Scene.Frame, ground: Image) -> Image:
 # projected board pitch, but their quads stay screen-aligned so the authored
 # front view remains legible while the board orbits underneath them.
 def sprite_board_pitch(+size: U32, camera: Camera.Basis) -> F32:
-  match camera:
-    case Camera.Basis{+cosYaw, +sinYaw, sinPitch, cosPitch, +scale, cx, cy}:
-      F32.mul(F32.mul(scale,
-        F32.add(F32.abs(cosYaw), F32.abs(sinYaw))), physical_scale(size))
+  SpritePlacement.board_pitch(size, camera)
 
 def sprite_width(+size: U32, camera: Camera.Basis) -> F32:
-  F32.mul(sprite_board_pitch(size, camera), 1.16)
+  SpritePlacement.width(size, camera)
 
 def sprite_height(+size: U32, camera: Camera.Basis) -> F32:
-  F32.mul(sprite_board_pitch(size, camera), 1.00)
+  SpritePlacement.height(size, camera)
 
 def sprite_matrix(+width: F32, +height: F32, center: Quad.Point) -> Transform.Matrix:
-  match center:
-    case Quad.Point{+x, +y}:
-      Transform.Matrix{width, 0.0, 0.0, height,
-        F32.sub(x, F32.div(width, 2.0)),
-        F32.sub(F32.add(y, F32.mul(width, 0.22)), height)}
+  SpritePlacement.matrix(width, height, center)
 
 def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
-  match kind:
-    case 2: PieceSprites.Knight{}
-    case 3: PieceSprites.Bishop{}
-    case 4: PieceSprites.Rook{}
-    case 5: PieceSprites.Queen{}
-    case 6: PieceSprites.King{}
-    case _: PieceSprites.Pawn{}
+  SpritePlacement.piece_kind(kind)
 
 def sprite_piece_side(code: U32) -> PieceSprites.Side:
-  Bool.pick(PieceSprites.Side, Model.is_white(code),
-    PieceSprites.Ivory{}, PieceSprites.Navy{})
+  SpritePlacement.piece_side(code)
+
+def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
+  AtlasPickData.from_pieces(pieces)
+
+# Completed atlas frames and picking share the destination's exact F32 center;
+# lerp(source, destination, 1) can retain source-dependent rounding.
+def sprite_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
+  source: U32, +square: U32, amount: U32) -> Quad.Point:
+  match complete:
+    case True{}: SpritePlacement.center(size, camera, square)
+    case False{}: interpolated_point(size, camera, source, square, amount)
 
 # A low, translucent footprint sits behind the existing alpha-cut artwork.
 # Its dimensions follow the same screen-facing sprite width and base shift,
@@ -1372,8 +1370,9 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
     case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
         previous, holes, +action, theme}:
       +source = motion_source(Model.decode(action), square)
-      +center = interpolated_point(size, camera, source, square,
-        progress(frame))
+      +amount = progress(frame)
+      +center = sprite_center_at(U32.is_eq(amount, 16), size, camera, source,
+        square, amount)
       +width = sprite_width(size, camera)
       +matrix = sprite_matrix(width, sprite_height(size, camera), center)
       +contact = sprite_contact_shadow(depth,size,width,center,image)

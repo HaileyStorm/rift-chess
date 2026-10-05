@@ -146,7 +146,11 @@ function presentRefinement(message: any): void {
   } else if (message.image) {
     context.putImageData(new ImageData(new Uint8ClampedArray(message.image),
       message.width, message.height), 0, 0);
+  } else {
+    return;
   }
+  presentation = { ...message.presentation, atlasPick: message.atlasPick === true };
+  canvas.dataset.atlasPick = String(message.atlasPick === true);
   canvas.dataset.spriteRoundTripMs = String(message.spriteMetrics?.roundTripMs ?? '');
   canvas.dispatchEvent(new CustomEvent('rift-bend-sprite-refined',
     { bubbles: true, detail: message.spriteMetrics }));
@@ -215,7 +219,8 @@ worker.addEventListener('message', event => {
     canvas.dataset.hostPresentationMs = String(hostPresentation.value);
     publishProfile();
     scheduleTextureProbe();
-    presentation = message.presentation;
+    presentation = { ...message.presentation, atlasPick: message.atlasPick === true };
+    canvas.dataset.atlasPick = String(message.atlasPick === true);
     presentedControls = message.controls;
     presentedTheme = message.renderTheme;
     canvas.setAttribute('aria-label', message.summary);

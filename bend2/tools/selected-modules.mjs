@@ -11,7 +11,7 @@ export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const cacheDir = path.join(root, '.artifacts/bend2/v2-preview/selected-js');
 export const moduleSpecs = Object.freeze({
   controller: Object.freeze({ entry: 'bend2/ApplicationControl.bend',
-    exports: ['boot_reads', 'dispatch_at', 'dispatch_at_web', 'refine', 'bot_job',
+    exports: ['boot_reads', 'dispatch_at', 'dispatch_at_web', 'dispatch_at_web_atlas', 'refine', 'bot_job',
       'bot_apply_at', 'bot_fallback_at', 'storage_key', 'max_file_bytes', 'audio_samples'] }),
   scene: Object.freeze({ entry: 'bend2/graphics/v2game/BoardScene.bend',
     exports: ['asset_ids', 'load_plates', 'sprite_asset_ids', 'load_sprite_pages',
@@ -23,6 +23,7 @@ export const moduleSpecs = Object.freeze({
       'fast_pointer512', 'fast_pointer1024',
       'fast_camera256_for_512', 'fast_camera512', 'fast_camera1024',
       'fast_sprite_pieces512', 'fast_feedback_on_pieces512',
+      'sprite_pick_data',
       'fast_sprite_feedback_static512', 'sprite_same_placement',
       'sprite_same_ground',
       'sprite_camera_only_change', 'nearest2'] }),

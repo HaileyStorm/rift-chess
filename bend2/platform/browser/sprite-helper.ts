@@ -75,12 +75,13 @@ function values(value: any): any[] {
 type SpriteJob = {
   kind: 'job'; protocol: number; id: number; generation: number;
   source: string; theme: number; frame: any; plates?: any;
+  needPickData?: boolean;
 };
 
 type Timings = {
   fetchMs: number; decodeMs: number; underlayMs: number;
   groundMs: number; groundCacheHit: number; preparedGroundHit: number;
-  spritesMs: number; workerMs: number;
+  spritesMs: number; pickDataMs: number; workerMs: number;
   startedEpochMs: number; sendEpochMs: number;
 };
 
@@ -245,7 +246,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
     generationIds.add(request.id);
 
     const metrics: Timings = { fetchMs: 0, decodeMs: 0, underlayMs: 0,
-      groundMs: 0, groundCacheHit: 0, preparedGroundHit: 0, spritesMs: 0, workerMs: 0,
+      groundMs: 0, groundCacheHit: 0, preparedGroundHit: 0, spritesMs: 0, pickDataMs: 0, workerMs: 0,
       startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
       const eligible = preparedEnabled && board.sprite_same_ground(preparedFrame, request.frame);
@@ -296,15 +297,17 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       const spriteAt = now();
       const image = board.fast_sprite_pieces512(request.frame, pieces, settledGround);
       metrics.spritesMs = now() - spriteAt;
+
+      // Alpha-only data is requested until the receiver has accepted a copy.
+      // A superseded first result must not strand later displayed frames.
+      const pickAt = now();
+      const pickData = request.needPickData ? board.sprite_pick_data(pieces) : undefined;
+      metrics.pickDataMs = request.needPickData ? now() - pickAt : 0;
       metrics.workerMs = now() - started;
       metrics.sendEpochMs = performance.timeOrigin + now();
-
-      // The caller measures its synchronous postMessage cost and end-to-end
-      // round-trip. This post sends exactly one immutable Bend Image; sending
-      // the ground separately would double quadtree clone traffic.
       scope.postMessage({ kind: 'result', protocol: PROTOCOL,
         id: request.id, generation: request.generation, source,
-        theme: request.theme, image, metrics });
+        theme: request.theme, image, pickData, metrics });
     } catch (cause) {
       error(request, cause instanceof Error ? cause.message : String(cause));
     }

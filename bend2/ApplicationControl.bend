@@ -5,6 +5,8 @@ import Base
 import ./core/Model.bend as Model
 import ./graphics/Camera.bend as Camera
 import ./graphics/Picking.bend as Picking
+import ./graphics/v2game/AtlasPicking.bend as AtlasPicking
+import ./graphics/v2game/PieceSprites.bend as PieceSprites
 import ./graphics/Scene.bend as Scene
 import ./ui/Types.bend as T
 import ./ui/Layout.bend as Layout
@@ -464,6 +466,66 @@ def dispatch_at_web(+events: List<&2, T.Input>, shown: Presentation,
       +translated = events_at(events, shown)
       apply(Program.update_web(translated, state), ground, style,
         quality, shell, latest_probe(events, None{}))
+
+# Only displayed, settled browser atlas frames use this silhouette. Native and
+# procedural presentations retain events_at and the original picker.
+def atlas_square.on(inside: Bool, +position: Model.Position,
+  +view: Camera.View, +bounds: T.Rect, +scale: U32,
+  +x: U32, +y: U32, pieces: PieceSprites.Pieces) -> U32:
+  match inside:
+    case False{}: 64
+    case True{}:
+      AtlasPicking.pick(position,
+        U32.div(U32.sub(x, T.rect_x(bounds)), scale),
+        U32.div(U32.sub(y, T.rect_y(bounds)), scale), Camera.basis(view), pieces)
+
+def atlas_square(+shown: Presentation, +x: U32, +y: U32,
+  pieces: PieceSprites.Pieces) -> U32:
+  match shown:
+    case Presentation{position, view, revision, menu, +plan}:
+      +bounds = ChromeModel.plan_board(plan)
+      atlas_square.on(Bool.and(U32.is_zero(menu), Layout.in_rect(x,y,bounds)),
+        position,view,bounds,ChromeModel.plan_scale(plan),x,y,pieces)
+
+def atlas_click(control: U32, +shown: Presentation, +x: U32, +y: U32,
+  pieces: PieceSprites.Pieces) -> T.Input:
+  match control:
+    case 0:
+      match shown:
+        case Presentation{position,view,revision,menu,+plan}:
+          +bounds = ChromeModel.plan_board(plan)
+          Bool.pick(T.Input,
+            Bool.and(U32.is_zero(menu),Layout.in_rect(x,y,bounds)),
+            T.SquareInput{atlas_square(shown,x,y,pieces),revision},T.Activate{0})
+    case _: T.Activate{control}
+
+def atlas_event_at(event: T.Input, +shown: Presentation,
+  +pieces: PieceSprites.Pieces) -> T.Input:
+  match event:
+    case T.PointerDown{+x,+y,0,False{}}:
+      match shown:
+        case Presentation{position,view,revision,menu,+plan}:
+          atlas_click(ChromeModel.hit(plan,x,y),shown,x,y,pieces)
+    case T.PointerMove{+x,+y}:
+      T.PresentedMove{x,y,atlas_square(shown,x,y,pieces)}
+    case T.PointerUp{+x,+y,button}:
+      T.PresentedUp{x,y,button,atlas_square(shown,x,y,pieces)}
+    case _: event
+
+def atlas_events_at(events: List<&2,T.Input>, +shown: Presentation,
+  +pieces: PieceSprites.Pieces) -> List<&2,T.Input>:
+  match events:
+    case Nil{}: []
+    case event <> rest:
+      atlas_event_at(event,shown,pieces) <> atlas_events_at(rest,shown,pieces)
+
+def dispatch_at_web_atlas(+events: List<&2,T.Input>, shown: Presentation,
+  pieces: PieceSprites.Pieces, session: Session) -> Packet:
+  match session:
+    case Session{state,ground,style,quality,shell}:
+      +translated = atlas_events_at(events,shown,pieces)
+      apply(Program.update_web(translated,state),ground,style,
+        quality,shell,latest_probe(events,None{}))
 
 # A background-render worker can return an immutable, fully authored Bend
 # board image after the fast preview has been presented. This asks Bend to
