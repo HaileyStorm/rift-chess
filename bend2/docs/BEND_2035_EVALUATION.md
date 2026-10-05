@@ -534,6 +534,15 @@ f243a8b099e7879d585796b0e820e5428b2807207ebd0f50ccaef39c9f927a82;
 browser receipt3233f751187f5bd45e0d44e5e0efb9e5c53cd5409f2d21b8ad252dab39705675.
 Corrected C layout and any further offenders remain unmeasured; no speed claim.
 
+Both matching bot draw-decline paths now also read the original revision before
+the command. Independent source review, fresh controller checking/emission and
+68 exact prior/new packet comparisons passed, including both bot modes and
+native/browser-style ticks across desktop/portrait. Existing render-plan gate
+passed. Receipt SHA256
+ed08b316feafd9b7908a291841dacd601bccbcd9d275780efca1e9d7146afa9c.
+The earlier source-fix-1 preparation is retained and held without execution;
+fresh source-fix-2 must bind the complete fix before another C attempt.
+
 ## Early-helper disposition
 
 The private repaired scheduling variant passed actual held-asset early hello,

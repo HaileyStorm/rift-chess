@@ -199,7 +199,8 @@ def tick_offer(offer: Bool, +s: S.State, +ms: U32) -> S.Update:
   match offer:
     case True{}:
       +side = Bool.not(U32.is_eq(Types.meta_offer(S.meta(s)), 1))
-      C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}), Types.meta_revision(S.meta(s)), "The local bot declines draw offers.")
+      +before = Types.meta_revision(S.meta(s))
+      C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}), before, "The local bot declines draw offers.")
     case False{}: tick_anim(S.moving(s), s, ms)
 
 def tick(replay: Bool, +s: S.State, +ms: U32) -> S.Update:
@@ -226,8 +227,9 @@ def tick_offer_web(offer: Bool, +s: S.State, +ms: U32) -> S.Update:
   match offer:
     case True{}:
       +side = Bool.not(U32.is_eq(Types.meta_offer(S.meta(s)), 1))
+      +before = Types.meta_revision(S.meta(s))
       C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}),
-        Types.meta_revision(S.meta(s)), "The local bot declines draw offers.")
+        before, "The local bot declines draw offers.")
     case False{}: tick_anim_web(S.moving(s), s, ms)
 
 def tick_web(replay: Bool, +s: S.State, +ms: U32) -> S.Update:
