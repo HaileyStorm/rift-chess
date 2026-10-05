@@ -4,14 +4,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { Worker } from 'node:worker_threads';
+import { Worker, isMainThread, resourceLimits } from 'node:worker_threads';
 import { requiredProofs, verifyV2 } from '../../../tools/freeze-v2.mjs';
 import { lawManifests, loadAmendments } from '../../../tools/amendments.mjs';
 import { proofVerdict } from '../proof-authority.mjs';
-import { expectedCheckClosure, assertExactLoadedClosure, runLeasedWorker } from '../2032/aggregate-safety.mjs';
+import { expectedCheckClosure, assertExactLoadedClosure, assertProofNodeRuntime, runLeasedWorker } from '../2032/aggregate-safety.mjs';
 import { settleWorker, finalizeOwnedManifest } from '../../../toolchain-patches/2032/preview/lifecycle.mjs';
 import { loadWithStableImports } from '../../../toolchain-patches/2032/tag-identity/preload-root.mjs';
-import { assertLocalBunRuntime } from '../../../toolchain-patches/2032/browser-loader/runtime.mjs';
 import { selectedBinding2035, readSource, sha256, derived } from '../../../toolchain-patches/2035/selected-binding.mjs';
 import { root } from '../../../tools/selected-modules.mjs';
 
@@ -20,6 +19,7 @@ export const base = path.join(derived, 'bend2/base.bend');
 export const checkPath = path.join(root, 'bend2/core/v2/CHECK.bend');
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-proof-20261005');
 export const stages = ['binding', 'load', 'closure', 'typecheck', 'namespace-guard', 'promise-screen', 'post-binding', 'result'];
+export const workerStackMiB = 64;
 export const scope = 'frozen v2 source/type/promise screen with compiler namespace guard; no Safe/BendTT kernel, conformance, native/browser/GPU or pin acceptance';
 const rel = file => path.relative(root, file).split(path.sep).join('/');
 const hash = file => sha256(readSource(file));
@@ -29,12 +29,61 @@ const git = (directory, ...args) => execFileSync('git', ['-C', directory, ...arg
 const pinned = {
   'bend2/core/v3/proof-authority.mjs': '3737c455d542f2dc7ff1799bfc579969c42739814411a8494189eb1b56a74013',
   'bend2/toolchain-patches/2032/preview/lifecycle.mjs': '91d8b5c325a48602d0d6860624ab0abf9d5428d374a12d85988cb866a732fbc8',
+  'bend2/core/v2/proof-runtime.json': '45e3de051fdc3b3e2260d2a2af4036234c39354c284c7b6d94f30e75a7413cbf',
 };
+
+// The proof Node executable is outside the repository source fence. Validate
+// this one executing regular file through its descriptor without broadening it.
+function proofNodeRuntime() {
+  assertProofNodeRuntime();
+  assert.equal(process.version, 'v24.12.0');
+  assert.equal(process.platform, 'win32');
+  assert.equal(process.arch, 'x64');
+  assert.equal(typeof globalThis.Bun, 'undefined');
+  const executable = path.resolve(process.execPath);
+  assert.equal(fs.realpathSync(executable), executable, 'proof Node executable is redirected');
+  const before = fs.lstatSync(executable, { bigint: true });
+  assert.ok(before.isFile() && !before.isSymbolicLink());
+  const fd = fs.openSync(executable, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0));
+  const same = stat => {
+    assert.ok(stat.isFile() && !stat.isSymbolicLink());
+    for (const key of ['dev', 'ino', 'size', 'mtimeNs', 'ctimeNs']) assert.equal(stat[key], before[key]);
+  };
+  let executableSha256;
+  try {
+    same(fs.fstatSync(fd, { bigint: true }));
+    executableSha256 = sha256(fs.readFileSync(fd));
+    same(fs.fstatSync(fd, { bigint: true }));
+    same(fs.lstatSync(executable, { bigint: true }));
+    assert.equal(fs.realpathSync(executable), executable);
+  } finally { fs.closeSync(fd); }
+  assert.equal(executableSha256, '2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8');
+  const file = 'bend2/core/v2/proof-runtime.json';
+  const bytes = readSource(path.join(root, file));
+  assert.equal(sha256(bytes), pinned[file]);
+  const metadata = JSON.parse(bytes);
+  assert.equal(metadata.schema, 'rift-bend-v2-proof-runtime/1');
+  for (const [key, actual] of Object.entries({ version: process.version, executable, sha256: executableSha256,
+    platform: process.platform, arch: process.arch })) assert.equal(metadata.runtime[key], actual);
+  assert.equal(metadata.worker.stackSizeMb, workerStackMiB);
+  return { engine: 'Node', nodeVersion: process.version, executable, executableSha256,
+    platform: process.platform, arch: process.arch, execArgv: process.execArgv,
+    nodeOptions: process.env.NODE_OPTIONS ?? '', bunAbsent: true,
+    workerConfiguration: { stackSizeMb: workerStackMiB, execArgv: [] },
+    provenance: { file, sha256: sha256(bytes), metadata,
+      scope: 'unchanged frozen proof runtime provenance; historical metadata warning flag is not an execution flag' } };
+}
+
+export function workerResourceReadback() {
+  assert.equal(isMainThread, false);
+  assert.equal(resourceLimits.stackSizeMb, workerStackMiB, 'actual proof Worker stack differs');
+  return { ...resourceLimits };
+}
 
 // Preflight binds the reviewable working bytes. Execution additionally requires
 // those bytes to be committed in a clean checkout, before and after every Worker.
 export function binding2035({ requireClean = true } = {}) {
-  assert.ok(typeof Bun !== 'undefined', 'source bindings use the repository-local Bun through the Bend wrapper');
+  const runtime = proofNodeRuntime();
   const frozen = verifyV2();
   const selected = selectedBinding2035('scene', true);
   const status = git(root, 'status', '--porcelain=v1', '--untracked-files=all');
@@ -74,20 +123,12 @@ export function binding2035({ requireClean = true } = {}) {
     sourceStatus: status, clean: status === '', frozenSha256: frozen.sha256,
     frozenFiles: frozen.manifest.files, compiler: selected, sourceFiles,
     expectedLoadedPaths: expectedCheckClosure(root, checkPath, frozen.manifest.files, base),
-    runtime: { engine: 'Bun', version: Bun.version,
-      executable: rel(process.execPath), executableSha256: hash(process.execPath),
-      platform: process.platform, arch: process.arch, execArgv: process.execArgv,
-      nodeOptions: process.env.NODE_OPTIONS ?? '' } };
+    runtime };
 }
 
 export function assertExecutionRuntime(before) {
   assert.equal(process.platform, 'win32', 'this bounded source-only runner is Windows-specific; Linux gates remain unchanged');
-  assert.ok(typeof Bun !== 'undefined', 'execute through node bend2/tools/bend.mjs --run');
-  assert.equal(Bun.version, before.compiler.bunVersion);
-  assertLocalBunRuntime(root, path.join(root, '.artifacts/toolchains/runtime'), process.execPath);
-  assert.equal(before.runtime.executableSha256,
-    '15277c59ccd6c6c20f8dc9716c2b59c1776320d606b6a8658f70be8799519ca4', 'unreviewed local Bun executable');
-  assert.equal(before.runtime.nodeOptions, '', 'unexpected NODE_OPTIONS');
+  assert.deepEqual(proofNodeRuntime(), before.runtime);
 }
 
 export function sourceCone(entry, before) {
@@ -159,13 +200,21 @@ export async function withEvidenceRun(kind, before, run) {
 export async function boundedAttempt(script, data, before, directory, label, timeoutMs) {
   const progress = new Int32Array(new SharedArrayBuffer(4));
   const started = Date.now(), memoryBefore = memory();
-  let result;
+  let result, workerFailure, parentResourceLimits;
   try {
-    const worker = new Worker(script, { workerData: { ...data, expectedBinding: before, progress: progress.buffer } });
-    result = await settleWorker(worker, { timeoutMs, terminateGraceMs: 10_000 });
+    const worker = new Worker(script, { workerData: { ...data, expectedBinding: before, progress: progress.buffer },
+      resourceLimits: { stackSizeMb: workerStackMiB }, execArgv: [] });
+    parentResourceLimits = { ...worker.resourceLimits };
+    const capture = message => { if (message?.ok === false) workerFailure = message; };
+    worker.on('message', capture);
+    try { result = await settleWorker(worker, { timeoutMs, terminateGraceMs: 10_000 }); }
+    finally { worker.off('message', capture); }
+    assert.equal(parentResourceLimits.stackSizeMb, workerStackMiB);
+    assert.equal(result.actualResourceLimits.stackSizeMb, workerStackMiB);
     assert.deepEqual(binding2035(), before, 'parent binding changed after Worker');
     const record = { ...result, elapsedMs: Date.now() - started, timeoutMs, memoryBefore,
-      memoryAfter: memory(), evidence: 'Windows Bun 1.4.2 isolated source-only Worker; no fixed free-RAM admission floor' };
+      memoryAfter: memory(), parentResourceLimits,
+      evidence: 'Windows Node 24.12.0 isolated source-only Worker, observed 64 MiB stack; no fixed free-RAM admission floor' };
     fs.writeFileSync(path.join(directory, `${label}.json`), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' });
     return record;
   } catch (error) {
@@ -173,8 +222,10 @@ export async function boundedAttempt(script, data, before, directory, label, tim
       schema: 'rift-v2-proof-2035-attempt-failure/1', accepted: false, finalReceipt: false,
       bindingSha256: sha256(JSON.stringify(before)), label, stage: stages[Atomics.load(progress, 0)],
       elapsedMs: Date.now() - started, timeoutMs, memoryBefore, memoryAfter: memory(), result,
+      parentResourceLimits, workerFailure,
       timedOut: !!error?.timedOut, workerMayBeLive: !!error?.workerMayBeLive,
       reason: String(error?.message ?? error).slice(0, 1800),
+      failureStack: String(workerFailure?.failureStack ?? error?.stack ?? error).slice(0, 6000),
     };
     try { fs.writeFileSync(path.join(directory, `${label}.failure.json`), JSON.stringify(failure, null, 2) + '\n', { flag: 'wx' }); }
     catch (writeError) { error.failureWriteError = String(writeError); }

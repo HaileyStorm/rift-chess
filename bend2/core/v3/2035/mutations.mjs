@@ -6,7 +6,7 @@ import { isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { requiredMutations } from '../../../tools/freeze-v2.mjs';
 import { typeMismatchEvidence } from '../2032/mutation-verdict.mjs';
 import { binding2035, root, derived, readSource, sourceCone, loadedClosure, loadProof,
-  positiveVerdict, stages, scope, sha256, withEvidenceRun, boundedAttempt, finishReceipt, memory } from './binding.mjs';
+  positiveVerdict, stages, scope, sha256, withEvidenceRun, boundedAttempt, finishReceipt, memory, workerResourceReadback } from './binding.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
 export const cases = [
@@ -50,6 +50,7 @@ if (!isMainThread) {
   try {
     assert.ok(spec && ['positive', 'negative'].includes(variant));
     mark('binding');
+    const actualResourceLimits = workerResourceReadback();
     const before = binding2035();
     assert.deepEqual(before, workerData.expectedBinding);
     const current = mutationCone(spec, before);
@@ -75,10 +76,11 @@ if (!isMainThread) {
     assert.deepEqual(binding2035(), before);
     mark('result');
     parentPort.postMessage({ ok: true, caseName, variant, ...verdict, closure, preloaded,
-      positiveKey: cone.positiveKey, fetches, memory: memory(), scope });
+      positiveKey: cone.positiveKey, fetches, memory: memory(), actualResourceLimits, scope });
   } catch (error) {
     parentPort.postMessage({ ok: false, caseName, variant, stage: stages[Atomics.load(new Int32Array(progress), 0)],
-      error: String(error?.$ === 'Err' && Bend ? Bend.err_show(error) : error?.message ?? error).slice(0, 1800) });
+      error: String(error?.$ === 'Err' && Bend ? Bend.err_show(error) : error?.message ?? error).slice(0, 1800),
+      failureStack: error?.$ === 'Err' ? undefined : String(error?.stack ?? error).slice(0, 6000) });
   } finally { parentPort.close(); }
 } else if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const preflight = process.argv.length === 3 && process.argv[2] === '--preflight-only';

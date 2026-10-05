@@ -277,3 +277,65 @@ Linux requests5936734129 and5936397367 each have a retained terminal admission
 STOP; no request was replayed. Corrected proof/kernel/Lean, six actual mutation
 Workers, native/device and original GPU prerequisites remain open. Accepted
 2.0.27 pin and frozen Laws are unchanged.
+
+## Actual aggregate stack stop and runtime repair
+
+One full CHECK attempt on clean `0a3213a` loaded and independently validated
+the complete 57-file cone, then failed in typechecking with
+`Maximum call stack size exceeded` after 4.96 seconds. The Worker exited;
+exact clean before/after bindings matched. Namespace and promise stages were
+not reached. No positive or negative mutation Worker ran, and no automatic
+retry occurred. Parent available RAM was 1.85→1.80 GB; observed parent RSS was
+140.6→176.5 MB, without a sampled Worker peak. This was a stack resource failure,
+not a type mismatch or RAM admission stop.
+
+Retained classified terminal:
+`2035-proof-20261005/aggregate-authorized-0a3213.classified-terminal.json`,
+SHA-256 cd6964101dd98281d911b07ae12a797601a82533663d1834ebce37b40301e866.
+The accepted dedicated proof wrapper already uses pinned Node 24.12 with a
+64 MiB Worker stack because Canonical/RangeBridge exceeded Bun's stack. The
+candidate Bun runner had default stack options. Its local help and Worker
+implementation inspection established no usable Bun stack-size control.
+
+A distinct compiler-free probe imported the exact derived 2.0.35 Bend/Comp
+sources under the existing Node binary, without loading or checking a proof.
+Actual parent/Worker runtime identity, empty flags/NODE_OPTIONS, 64 MiB resource
+limit readback, unchanged source/compiler bindings and observed exit passed;
+network calls were zero. Receipt:
+`2035-proof-20261005/node-compatibility-OSc8GR/receipt.json`, SHA-256
+f4219de755f4e8618ceba65389438daa10a73ff96c62727a41ab61bbae894dbf.
+The backend-owned four-file repair adopts that dedicated proof-wrapper path.
+It does not change the generic Bun generation wrapper, accepted runtime
+metadata, compiler sources, frozen Laws, Linux admissions or kernel contract.
+Full CHECK and mutations require a distinct reviewed, committed source attempt.
+
+The fixed four-file repair passed syntax, both source-only preflights and
+compiler-free parent/Worker binding parity. Independent review verified the
+four source hashes and all listed receipt hashes and found no blocker. Handoff
+`2035-proof-20261005/node-repair-review-aIysqt/review-handoff.json`, SHA-256
+7cfe55c4a42186b83350ecb338b85dcef57037177636e289af756ce9fc4bba94.
+A prior compiler-free parity attempt caught changing root documentation and
+stopped; its raw failure remains. The distinct stable-source run passed.
+These results do not establish that the repaired full CHECK will pass.
+
+## Closed pawn/knight prototype, retained without integration
+
+The private closed-mesh prototype emitted after one retained parser failure and
+a distinct negative-F32 syntax repair. All 32 representative actual images had
+connected support and at most 19 visible faces. A static integer-angle scan
+bounded pawn at 15 and knight at 19 visible faces; this is finite evidence.
+The actual contact sheet shows changing volume with yaw/pitch, but the knight
+loses its horse identity edge-on and in low diagonal views.
+
+The 144-frame dense 32-piece ABBA comparison retained the original 256-pixel,
+20-face and relative-cost limits. Default/low/top raster p95 ratios were
+3.49/3.34/1.66 against the current contour baseline; the first two failed the
+2.5 limit. Hard allocation/RSS bounds passed. A separate four-frame audit
+observed four major-GC events; it does not establish GC event counts for the
+144 measured frames. These are private emitted-JS measurements, not browser,
+native, physical-display or owner visual acceptance.
+
+Receipt `solid-piece-prototype-20261005/receipt.json`, SHA-256
+bcef0029f9028ee0bb4cea3f3cad5f594eb1a4a43b412f275d4d67990118ac16,
+binds all raw reports, source/compiler/output hashes and the actual sheet.
+Production remains unchanged; the writer released only its own private claim.

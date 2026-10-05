@@ -34,24 +34,35 @@ MatchControlProof cases therefore share their respective positive checks.
 Preflight imports no Bend compiler and starts no Worker. It records current
 working bytes and Git status for review. Actual execution requires a clean
 checkout and compares the full binding before and after each Worker and receipt
-commit. Use the existing local wrapper with telemetry disabled:
+commit. These are dedicated Node proof-source wrappers, following the accepted
+`core/v2/node-check.mjs` runtime contract described in `LOCAL_BEND_GUIDE.md`.
+The frozen `proof-runtime.json` is bound as unchanged provenance. Execution
+requires the actual Node 24.12.0 Windows x64 executable SHA-256
+`2ffe3acc0458fdde999f50d11809bbe7c9b7ef204dcf17094e325d26ace101d8`,
+empty Node flags and `NODE_OPTIONS`, and a 64 MiB Worker stack read back by both
+parent and Worker. Its historical `--no-warnings` metadata stays historical;
+these Workers explicitly use `execArgv: []`. The external executable gets a
+narrow canonical regular-file descriptor check; the repository source fence is
+unchanged. The generic Bun browser/native pipeline and accepted pin checks
+remain unchanged. Run directly with telemetry disabled:
 
 ```powershell
 $env:BEND_NO_TELEMETRY = '1'
-node bend2/tools/bend.mjs --run bend2/core/v3/2035/aggregate.mjs --preflight-only
-node bend2/tools/bend.mjs --run bend2/core/v3/2035/mutations.mjs --preflight-only
+node bend2/core/v3/2035/aggregate.mjs --preflight-only
+node bend2/core/v3/2035/mutations.mjs --preflight-only
 ```
 
 After independent source review and root authorization, omit `--preflight-only`
-to execute and set `$env:BEND_TIMEOUT_MS = '2700000'` so the wrapper outlives the
-serial per-Worker deadlines and their observed-exit grace periods. Mutation
+to execute. Any external launcher must outlive the serial per-Worker deadlines
+and their observed-exit grace periods; 2700000 ms covers the full suite. Mutation
 `--only <frozen-case>` is diagnostic and never sets the full
 six-case `passed` flag. Aggregate CHECK has a 900-second deadline. Each mutation
 uses its unchanged proof-specific deadline (PROOF 240 seconds, CanonicalProof
-360 seconds, others 120 seconds). These Windows Bun 1.4.2 Workers run serially,
+360 seconds, others 120 seconds). These Windows Node 24.12.0 Workers run serially,
 record observed RSS/free RAM, and follow the user's bounded low-RAM authorization
-without a fixed free-memory admission floor. No V8 heap-limit claim is made for
-Bun. Resource stops remain failures, with owned attempt records retained.
+without a fixed free-memory admission floor. Only the 64 MiB stack is configured;
+no new heap limit is introduced. Resource stops remain failures, with owned
+attempt records and bounded non-Bend failure stacks retained.
 
 All output is exclusive and ignored under
 `.artifacts/bend2/2035-proof-20261005/`. Shared lifecycle helpers wait for actual
@@ -62,6 +73,12 @@ The four source files are owned by task
 `proof2035-source-rebase` reservation. Root owns independent review, execution
 authorization, integration and Git publication.
 
-Current handoff gate: implementation, syntax and source-binding review only.
-Full CHECK and semantic mutation compiler execution remain unrun pending root's
-independent review. No source-screen result is a kernel proof or pin acceptance.
+The initial Bun aggregate attempt at clean `0a3213a` stopped at typechecking
+with a stack overflow after loading the complete cone. Its immutable failure and
+clean before/after bindings remain in the ignored evidence tree. No mutations
+ran. A separate compiler-free Node compatibility probe imported the exact
+derived TypeScript modules, verified 64 MiB stack readback and source bindings,
+and observed exit with zero fetches. The dedicated Node wrapper repair is now
+at the syntax/source-binding review gate; no repaired CHECK or mutation compiler
+execution is authorized until root's independent review and clean checkpoint.
+No source-screen result is a kernel proof or pin acceptance.
