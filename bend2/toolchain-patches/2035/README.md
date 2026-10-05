@@ -80,9 +80,41 @@ unchanged CLI's proof-import identity check is also outside this adaptation.
 Review does not authorize running the copied CLI or adopting the candidate pin.
 The fixture's 2.0.32 assertions must not be copied as a new 2.0.35 test: the
 candidate changed internal naming. Native Windows case/hard-link/cycle and
-package-denial coverage, full application loading, proofs, browser first frame,
-native/GPU execution and
-pin adoption remain separate evidence. Recheck this candidate at any source or
+package-denial coverage, proofs, native/GPU execution and pin adoption remain
+separate evidence. Current-source application emission and first hotseat browser
+frame have the bounded evidence below. Recheck this candidate at any source or
 scope change; retire the derived copy when its diagnostic closes, or replace it
 through a separately reviewed broader rebase. Rollback is to stop selecting the
 derived path; neither preserved compiler needs restoration.
+
+## Current-source browser preview
+
+`emit-selected.mjs` loads/checks a whole selected book and emits exact public roots
+through the unmodified candidate compiler API. Sequential controller, scene, menu
+and chrome runs passed. Their immutable manifests bind source/import closure,
+pristine/derived compiler files, stable preload, local Bun and output bytes.
+Existing strict root/dependency screening is reused; no blanket free-RAM floor
+is imposed. Each Worker has a300s bound and a fresh retained run directory.
+
+`browser-tag-boundary.mjs` adapts exact hash-bound browser source literals/sites.
+It retains qualified domain identity and distinguishes the two AssetResponse
+constructors. Base image/list tags stay bare. It does not rewrite object graphs
+or edit accepted ports. `build-preview.mjs` verifies four explicitly selected
+manifest/output hashes, current source bindings and exact pristine Git provenance,
+then installs both Bun plugins for helper, Worker and host. It packages existing
+verified assets into a fresh ignored `2035-preview/browser-*` directory. It does
+not compile during bundling, copy accepted bot Workers or use accepted prepared
+frame JSON. The resulting build is explicitly a draft hotseat candidate.
+
+Run through the repository wrapper, with Vivaldi left open:
+
+```powershell
+node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/emit-selected.mjs --module scene
+node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/build-preview.mjs
+```
+
+The builder selects the recorded four runs rather than the newest directory; a
+new selection requires explicit byte review. See the evaluation record for the
+13-check real Chrome first-frame/move/import/PCM/offline/portrait result and exact
+source/build identities. This is browser evidence, not compiler adoption, proof,
+general Worker/native/device or subjective graphics acceptance.

@@ -53,3 +53,19 @@ The consolidated v2 suite passed once in 2.435 seconds; Windows denied file
 symlink creation, explicitly reported as skipped rather than accepted. This
 second preview consolidation removes 113 net lines including documentation.
 It proves synthetic packaging contracts, not current game/browser acceptance.
+
+The existing real-browser refinement race now has one additional control-state
+case. An actual older Bend resignation frame is delivered after Black selection
+at the same revision/menu/camera, then Confirm is clicked through the canvas.
+The pre-fix diagnostic reproduced no committed command; the fix discards the
+older frame and commits exactly one resignation. This catches an independent
+state-ordering defect that the existing queued-pointer and changed-camera cases
+missed. All three modes passed once. No new supervisor suite was introduced.
+
+Atlas diagnostic witness output is opt-in and written exclusively to an explicit
+path. It derives expected support from independent rendered white-on-black
+pieces and binds source/assets/view/position for actual browser pixel clicks.
+The real-browser consumer passed24 top/side/feet/transparent checks across desktop,
+enhanced and portrait presentations. Overlap/hole controls remain local render
+evidence. The failed discovery/bookkeeping attempts are retained; they are not
+extra active acceptance suites.

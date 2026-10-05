@@ -1,5 +1,6 @@
 // Narrow selected emission; no full application/scene book or shared cache write.
 // Run via: node bend2/tools/bend.mjs --run bend2/tests/piece-sprites/atlas-picking.ts
+// Optional browser witness JSON: RIFT_ATLAS_PICK_WITNESSES=<explicit output path>.
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -11,8 +12,15 @@ import { root } from '../../tools/selected-modules.mjs';
 
 const book = Bend.book_nil(), seen = new Map<string, string | null>();
 const file = (relative: string) => path.join(root, relative).replaceAll('\\', '/');
+const witnessOutput = process.env.RIFT_ATLAS_PICK_WITNESSES;
 await Bend.book_load(book, file('bend2/graphics/v2game/AtlasPicking.bend'), '', seen);
 await Bend.book_load(book, file('bend2/graphics/v2game/AtlasPickData.bend'), './AtlasPickData', seen);
+if (witnessOutput) await Bend.book_load(book, file('bend2/graphics/Picking.bend'), '../Picking', seen);
+const sha = (bytes: Uint8Array | string) => crypto.createHash('sha256').update(bytes).digest('hex');
+const sourceHashes = witnessOutput ? [...new Set([...seen.keys(), file('bend2/tests/piece-sprites/atlas-picking.ts'),
+  file('bend2/TOOLCHAIN.json'), file('bend2/tools/loader-v2.ts'), file('bend2/tools/bend.mjs'),
+  file('.artifacts/toolchains/bend/bend2/bend.ts'), file('.artifacts/toolchains/bend/bend2/comp.ts')])]
+  .map(source => ({ path: path.relative(root, source).replaceAll('\\', '/'), sha256: sha(fs.readFileSync(source)) })) : [];
 resolveBaseForeignImports(book);
 Bend.book_valid(book);
 assert.equal(book.hols + book.open, 0);
@@ -29,6 +37,10 @@ const roots = ['pick', 'piece_hit', 'geometry_hit',
   ...['depth_order', 'square_at'].map(symbol => name('bend2/graphics/Camera.bend', symbol)),
   name('bend2/lib/graphics/v2/RgbaSample.bend', 'uv'),
   ...['prepare', 'draw'].map(symbol => name('bend2/lib/graphics/v2/RgbaAffine.bend', symbol))];
+const witnessRoots = witnessOutput ? [...['basis', 'default_view', 'center_x', 'center_y'].map(symbol =>
+  name('bend2/graphics/Camera.bend', symbol)), ...['start', 'present'].map(symbol =>
+  name('bend2/core/Model.bend', symbol)), name('bend2/graphics/Picking.bend', 'pick')] : [];
+roots.push(...witnessRoots);
 const emitted = Comp.js_lib(book, roots, roots);
 const api = (await import(`data:text/javascript;base64,${Buffer.from(emitted).toString('base64')}`)).default;
 const [pick, pieceHit, geometryHit, matrix, alphaOnly, decode, prepare, draw, depthOrder, floor, uv,
@@ -92,10 +104,10 @@ for (const field of fields) support[field] = { ...actual[field], colors: pix(0xf
 const screen = { $: 'Box', left: 0, top: 0, right: 512, bottom: 512 };
 const basis = { $: 'Basis', cosYaw: 1, sinYaw: 0, sinPitch: .30, cosPitch: .954,
   scale: 42.3, cx: 256, cy: 274 };
-function rendered(square: number, code: number): Uint32Array {
+function rendered(square: number, code: number, camera = basis): Uint32Array {
   const side = { $: code < 8 ? 'Ivory' : 'Navy' };
-  const kind = { $: ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][(code - 1) % 8] };
-  return pixels(draw(9n, 512, support, side, kind, matrix(512, basis, square), 255, screen, pix(0)));
+  const kind = { $: ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][(code - 1) % 8] ?? 'Pawn' };
+  return pixels(draw(9n, 512, support, side, kind, matrix(512, camera, square), 255, screen, pix(0)));
 }
 let renderedChecks = 0, transparentControls = 0, feetControls = 0;
 for (let id = 0; id < 12; id++) {
@@ -156,6 +168,128 @@ for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
 }
 assert.equal(faintRaster[0], 0, 'alpha one at quarter coverage rounds to no painted pixel');
 assert.notEqual(faintRaster[17], 0, 'alpha one at full coverage paints a faint pixel');
+if (witnessOutput) {
+  const [cameraBasis, defaultView, centerX, centerY, start, present, legacyPick] = witnessRoots.map(symbol => api[symbol]);
+  const frontView = { ...defaultView(), yaw: 0, pitch: 65 };
+  const frontBasis = cameraBasis(frontView), initial = start(false);
+  const cells = unlist(initial.board);
+  const layers = unlist(depthOrder(frontBasis)).filter(square => cells[square] !== 0 && present(initial.holes, square))
+    .map(square => ({ square, raster: rendered(square, cells[square], frontBasis) }));
+  const profiles: any[] = [{ id: 'initial-front-layout-c', position: initial, view: frontView, basis: frontBasis,
+    setup: 'Initial layout C, default zoom, then FRONT. Existing Model.start(false) and Camera.basis values.' }];
+  const witnesses: any[] = [];
+  const availability: any[] = [];
+  const used = new Set<string>();
+  function record(profile: any, x: number, y: number, painted: any[], reason: string, extra: any = {}): void {
+    const floorSquare = floor(x, y, profile.basis);
+    const paintedSquares = painted.filter(layer => layer.raster[y * 512 + x] !== 0).map(layer => layer.square);
+    const expectedSquare = paintedSquares.at(-1) ?? floorSquare;
+    assert.equal(pick(profile.position, x, y, profile.basis, alpha), expectedSquare);
+    const legacySquare = legacyPick(profile.position, x, y, profile.basis);
+    witnesses.push({ profile: profile.id, x, y, expectedSquare, floorSquare, paintedSquares,
+      reason, legacySquare, legacyDisagrees: legacySquare !== expectedSquare,
+      paintedSupport: painted.filter(layer => paintedSquares.includes(layer.square))
+        .map(layer => ({ square: layer.square, whiteOnBlackPixel: layer.raster[y * 512 + x] })), ...extra });
+    used.add(`${profile.id}:${x},${y}`);
+  }
+  function solid(layer: any, x: number, y: number): boolean {
+    for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) {
+      if (xx < 0 || xx >= 512 || yy < 0 || yy >= 512 || (layer.raster[yy * 512 + xx] & 255) < 48) return false;
+    }
+    return true;
+  }
+  for (const region of ['top', 'side', 'feet']) {
+    let found = 0;
+    let paintedCandidates = 0;
+    const envelopes: any[] = [];
+    for (const layer of layers.filter(layer => cells[layer.square] < 8)) {
+      const m = matrix(512, frontBasis, layer.square);
+      const cx = centerX(layer.square, frontBasis), cy = centerY(layer.square, frontBasis);
+      const legacy = { left: cx - 12, top: cy - 32, right: cx + 12, bottom: cy + 4 };
+      let candidate: number[] | undefined;
+      let bestScore = -1, left = 512, top = 512, right = 0, bottom = 0;
+      for (let y = Math.max(0, Math.floor(m.ty)); y < Math.min(512, Math.ceil(m.ty + m.d)); y++) {
+        for (let x = Math.max(0, Math.floor(m.tx)); x < Math.min(512, Math.ceil(m.tx + m.a)); x++) {
+          const intensity = layer.raster[y * 512 + x] & 255;
+          if (intensity === 0) continue;
+          left = Math.min(left, x); top = Math.min(top, y);
+          right = Math.max(right, x + 1); bottom = Math.max(bottom, y + 1);
+          const outside = region === 'top' ? y < legacy.top : region === 'side'
+            ? x < legacy.left || x >= legacy.right : y >= legacy.bottom;
+          const frontmost = layers.filter(other => other.raster[y * 512 + x] !== 0).at(-1)?.square;
+          if (!outside || frontmost !== layer.square) continue;
+          paintedCandidates++;
+          const score = (floor(x, y, frontBasis) !== layer.square ? 10000 : 0) + intensity * 16 + Number(solid(layer, x, y));
+          if (score > bestScore && !used.has(`${profiles[0].id}:${x},${y}`)) {
+            candidate = [x, y]; bestScore = score;
+          }
+        }
+      }
+      envelopes.push({ square: layer.square, renderedSupport: { left, top, right, bottom }, legacyFootprint: legacy });
+      if (candidate && found < 2) {
+        record(profiles[0], candidate[0], candidate[1], layers, `painted-white-${region}-outside-legacy-footprint`,
+          { square: layer.square, code: cells[layer.square], legacyFootprint: legacy,
+            whiteSupportIntensity: layer.raster[candidate[1] * 512 + candidate[0]] & 255,
+            solidNeighborhoodRadius: solid(layer, candidate[0], candidate[1]) ? 1 : 0 });
+        found++;
+      }
+    }
+    availability.push({ profile: profiles[0].id, region, witnesses: found, paintedCandidates,
+      status: found ? 'available' : 'unavailable',
+      reason: found ? 'Measured positive painted support beyond the exact legacy rectangle'
+        : 'No frontmost white painted pixel beyond this legacy rectangle boundary at this exact camera/position', envelopes });
+  }
+  let transparentCount = 0;
+  for (const layer of layers.filter(layer => cells[layer.square] < 8)) {
+    if (transparentCount >= 2) break;
+    const m = matrix(512, frontBasis, layer.square);
+    let candidate: number[] | undefined;
+    for (let y = Math.max(1, Math.ceil(m.ty + 1)); y < Math.min(511, Math.floor(m.ty + m.d - 1)) && !candidate; y++) {
+      for (let x = Math.max(1, Math.ceil(m.tx + 1)); x < Math.min(511, Math.floor(m.tx + m.a - 1)) && !candidate; x++) {
+        if (floor(x, y, frontBasis) === layer.square || used.has(`${profiles[0].id}:${x},${y}`)) continue;
+        let clear = true;
+        for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) {
+          if (layers.some(other => other.raster[yy * 512 + xx] !== 0)) clear = false;
+        }
+        if (clear) candidate = [x, y];
+      }
+    }
+    if (candidate) {
+      record(profiles[0], candidate[0], candidate[1], layers, 'transparent-in-white-quad-falls-through-to-other-floor',
+        { transparentSquare: layer.square, clearNeighborhoodRadius: 1 });
+      transparentCount++;
+    }
+  }
+  availability.push({ profile: profiles[0].id, region: 'transparent-to-different-floor', witnesses: transparentCount,
+    status: transparentCount ? 'available' : 'unavailable',
+    reason: transparentCount ? 'Clear rendered neighborhoods inside white quads with another floor square'
+      : 'No qualifying clear rendered neighborhood inside a white quad with another floor square' });
+  const overlapLayers = order.map(square => ({ square, raster: rasters[squares.indexOf(square)] }));
+  for (const [id, pos] of [['overlap-lowpitch', position(entries)], ['hole-lowpitch', position(entries, hole)]] as const) {
+    const profile = { id, position: pos, basis,
+      setup: 'Synthetic diagnostic position; browser import/installation is not established by this packet.' };
+    profiles.push(profile);
+    let candidate: number[] | undefined;
+    for (let y = 1; y < 511 && !candidate; y++) for (let x = 1; x < 511 && !candidate; x++) {
+      if (overlapLayers.every(layer => solid(layer, x, y)) && !witnesses.some(w => w.x === x && w.y === y)) candidate = [x, y];
+    }
+    availability.push({ profile: id, region: id, witnesses: candidate ? 1 : 0, status: candidate ? 'available' : 'unavailable',
+      reason: candidate ? 'Both independently rendered source sprites have solid support here'
+        : 'No unused solid overlap neighborhood found in this synthetic profile' });
+    if (candidate) record(profile, candidate[0], candidate[1], overlapLayers.filter(layer => present(pos.holes, layer.square)),
+        id === 'overlap-lowpitch' ? 'last-painted-occupied-piece-wins-overlap' : 'hole-removes-otherwise-frontmost-overlapping-piece',
+        { overlappingSquaresBeforeHoles: order, excludedByHole: order.filter(square => !present(pos.holes, square)) });
+  }
+  for (const entry of sourceHashes) assert.equal(sha(fs.readFileSync(file(entry.path))), entry.sha256, `changed source ${entry.path}`);
+  const packet = { schema: 'rift-atlas-pick-browser-witnesses/1', coordinateSpace: 'canonical settled 512x512 board pixels',
+    positionNatEncoding: 'Pos.quiet/full are decimal strings; board retains its Con/Nil shape',
+    evidence: 'Expected values use independently rendered real-source support, painter depth order and Camera floor. AtlasPicking verifies each expected value; browser acceptance is pending.',
+    sourceHashes, assets: { manifestSha256: sha(fs.readFileSync(path.join(source, 'manifest.json'))),
+      pages: manifest.tiers.interactive.pages }, profiles, availability, witnesses };
+  const output = path.resolve(witnessOutput);
+  assert.ok(!fs.existsSync(output), 'Witness output already exists; choose a fresh artifact path');
+  fs.writeFileSync(output, JSON.stringify(packet, (_, value) => typeof value === 'bigint' ? value.toString() : value, 2) + '\n', { flag: 'wx' });
+}
 console.log(JSON.stringify({ ok: true, samplerChecks, renderedChecks,
   transparentControls, feetControls, overlapAndHoleControls: 2, faintBoundaryPixels: 256,
   scope: 'Selected pinned Bend JS; real source alpha, exact painted-pixel support, transparent/feet/overlap/hole/floor controls. No browser/native claim.' }));

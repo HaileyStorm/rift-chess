@@ -132,6 +132,11 @@ function samePresentedView(candidate: any): boolean {
   return !!current && current.revision === next?.revision && current.menu === next.menu &&
     current.view?.yaw === next.view?.yaw && current.view?.pitch === next.view?.pitch &&
     current.view?.zoom === next.view?.zoom && presentedTheme === candidate.renderTheme &&
+    // Menu choices and selection can change the hit plan without changing the
+    // match revision or camera. Keep the refined pixels and active controls from
+    // the same Bend presentation before replacing the canvas hit plan.
+    JSON.stringify(presentedControls) === JSON.stringify(candidate.controls) &&
+    canvas.getAttribute('aria-label') === candidate.summary &&
     candidate.width === canvas.width && candidate.height === canvas.height;
 }
 function presentRefinement(message: any): void {

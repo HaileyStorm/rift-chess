@@ -63,16 +63,76 @@ Raw probe sources/results are retained under ignored
 and `result-derived-loader.json`. These are explicit one-off diagnostic inputs;
 no latest-run selector or cache approval was created.
 
-## Next substantive gate
+## Current-source emission and browser execution
 
-Adapt the existing selected emitter to this exact direct API and common preload,
-then emit the four current-source modules sequentially with one compiler/source
-binding. Reuse the cache-only Worker/helper and dedicated preview seam. Require
-actual first frame, persisted 3980, orbit/refinement, portrait and no Worker errors,
-then full current reference/offline acceptance. The user authorizes removing the blanket free-RAM floor when actual work
+The candidate selected emitter uses exact `Comp.js_lib(book, true)` with projected
+public-root order, full declarations/constructors and inherited strict selection
+screening. It checks the whole loaded book, binds pristine/derived source closure,
+local Bun bytes and output readback, and retains each run in a fresh directory.
+Root verified both compiler Git trees clean at their exact commits after emission.
+All four emitted sequentially with zero network calls:
+
+| Module/run under `.artifacts/bend2/2035-preview/` | Output bytes | Output SHA-256 | Check / emit ms |
+| --- | ---: | --- | ---: |
+| scene-kwR2KB | 353259 | 3f41c7f16354b1d4678df80e3ce377b2e537b16e5b6ac9a6d431cf4982c269d8 | 10683 / 5078 |
+| controller-jhr9Ml | 689632 | 96cb5f639fbc301be370b736e62508380550f313a88da562f1341a7f1cc6b719 | 11759 / 23648 |
+| menu-yN96SS | 212551 | 90bb363a280fffb5e2e592ca68cefd5c520092351cdba0e9792efc8200acad04 | 11925 / 25803 |
+| chrome-knTtdv | 439648 | e2fba28538b00f6c75a7768c2241d91736494bbd2f429c53611d0dbfd032b4f1 | 27844 / 120532 |
+
+These are unpaired execution timings, not a speedup claim. Chrome emission ended
+at RSS6101471232 bytes and free physical RAM541134848 bytes; peaks unmeasured.
+Manifest paths/hashes and exact source bindings are selected by
+`build-preview.mjs`, never a latest-run lookup or accepted-cache replacement.
+
+Independent source review found the explicit browser constructor mapping correct.
+The Bun plugin adapts exact current source literals/sites for host, Worker and
+helper. Base Pix/Qua/Con/Nil/Some stay bare; observatory and piece AssetResponse
+constructors remain separate. Historical accepted prepared-frame JSON is disabled,
+and no accepted bot Worker library is copied into the candidate.
+
+First real Chrome build `369182c034f0e4ddc020`, manifest SHA-256
+`04647ae18934e1618caaf4e4f8cb1f987525e083c0864a43e28c6619901b263a`,
+sourceRevision `db2ed49a6c6d49bb6f3172554a8f4c9e6dae5760`, sourceDirtytrue:
+13 extended checks passed with no browser errors. They establish actual initial
+helper refinement, real canvas selection/moves3980 and e7e5/persistence, Undo,
+both asset themes, file import/capture/knight promotion, finite bounded PCM,
+service-worker-controlled offline reload/helper/move, Shift and portrait input.
+Receipt and sixteen captures are retained at
+`.artifacts/bend2/2035-preview/scenarios/first-current-ve84s8/`. The first frame
+was visually inspected; subjective owner graphics acceptance remains separate.
+This is hotseat browser evidence. General bot Workers, orbit gate, full reference,
+proof/BendTT/mutations, native/GPU and compiler adoption remain unfinished.
+
+An accepted-host stale-control refinement bug was independently reproduced and
+fixed after this run. Candidate bridge was rebound to the new exact host bytes;
+fresh build `5daf2d8f756226c79f47` has manifest SHA-256
+`69da7f343151adb9f62f3fa2e36a983683b8a01015c643aafabb671de9e5ead1`.
+Its build passed; it does not inherit the earlier runtime result automatically.
+Independent review added telemetry.ts to the explicit build source list. Fresh
+`browser-5DuQh5` has the same content version, manifest SHA-256
+`f25626f439258d866edabeef6885f2bed7e6abab335b6bee6524422babb02664`.
+An exact-served reference slice completed206 checks: seven scenarios passed
+(selection, castling/en passant, promotion, Shift, draw terminals, camera, perf);
+menus timed out during volume controls. This preserves actual corrected-host
+runtime evidence while leaving menu/full-reference acceptance open. Its retained
+summary is `2035-preview/matrix/current-hotseat-slice-20261005/summary.json`.
+The adapter only changed explicit UI namespace observations and reference/fixture/
+output paths in the existing matrix; its source/result hashes are retained in
+`2035-preview/matrix-qualified-tags-20261005.binding.json`.
+
+The user authorizes removing the blanket free-RAM floor when actual work
 fits, while leaving Vivaldi open. The accepted current controller source check
 passed starting at about 509MiB free; the active emitter has no such floor.
 Use bounded, classified execution for the candidate too; preserve its actual
-results and reject stale caches. This accepted-pin check does not prove candidate
-2.0.35 memory behavior. Exact proof, Worker and native/device gates and reviewed chained amendment
+results and reject stale caches. The four candidate executions now establish their
+actual memory behavior at the recorded stages; no peak or general memory bound
+is claimed. Exact proof, Worker and native/device gates and reviewed chained amendment
 still precede any accepted pin change.
+
+## Next substantive gate
+
+Validate the corrected candidate host and explicit orbit/refinement interaction,
+then carry current-source reference acceptance and substantive Worker semantics
+forward. Linux requests5936734129 and5936397367 each have a retained terminal
+admission STOP; no request was replayed. Exact candidate proof/kernel/Lean and
+native/device prerequisites remain open. Accepted 2.0.27 pin is unchanged.
