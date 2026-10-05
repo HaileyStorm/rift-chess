@@ -240,7 +240,10 @@ def confirm_resign(+s: S.State) -> S.Update:
 def offer_answer.by(accept: Bool, +side: Bool, +s: S.State) -> S.Update:
   match accept:
     case True{}: C.command(s, Match.AcceptCommand{S.revision(s), side})
-    case False{}: C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}), Types.meta_revision(S.meta(s)), String.append(side_name(side), " declines the draw offer."))
+    case False{}:
+      +before = Types.meta_revision(S.meta(s))
+      +notice = String.append(side_name(side), " declines the draw offer.")
+      C.with_notice(C.command(s, Match.DeclineCommand{S.revision(s), side}), before, notice)
 
 def offer_answer(accept: Bool, +s: S.State) -> S.Update:
   offer_answer.by(accept, Bool.not(U32.is_eq(Types.meta_offer(S.meta(s)), 1)), s)

@@ -13,7 +13,7 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 
 const selected = {
   scene: ['scene-GRwwGS', '74bac06e897415dc6ec44649434847d295307c487fb47fadb10a8993f84eee21'],
-  controller: ['controller-jhr9Ml', 'b878f33af950904b2869889225eaaeee5507958fd152c6c223365d06189551cc'],
+  controller: ['controller-FXO8NY', '8589bc41ab271015d55b481bbf67bb81bc3b6c5baefff4627c4f1ed52ca777c4'],
   menu: ['menu-yN96SS', 'b390548eb759944aea5cbee08256f85a3cba26986eb86e93a97749b8f47c67ec'],
   chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
 };

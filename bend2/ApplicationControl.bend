@@ -541,9 +541,8 @@ def refine.decision(+state: S.State, ground: GroundKey, style: U32,
 def refine(session: Session) -> Packet:
   match session:
     case Session{+state,ground,style,+quality,shell}:
-      +snapshot = Program.snapshot(state)
       refine.decision(state,ground,style,quality,shell,
-        Quality.current(quality,T.snapshot_mobile(snapshot)))
+        Quality.current(quality,S.mobile(state)))
 
 def bot_job(session: Session) -> BotJob:
   match session:

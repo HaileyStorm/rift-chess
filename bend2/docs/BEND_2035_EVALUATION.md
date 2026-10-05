@@ -515,7 +515,26 @@ Vivaldi stayed open and no Windows RAM floor was used. This actual source pass
 does not establish C/native/ELF/X11/PCM/restart or toolchain adoption. Linux/kernel
 admission and original GPU gates remain unchanged.
 
-## Rejected early-helper scheduling experiment
+## Identified native continuation and source correction
+
+The subsequent native diagnostic identified FID_T[586]=254 in
+ui/Actions:offer_answer.by: side1+State125+return128 exceeds247 by7. Same-clock
+C-entry→failure294.2094979s includes journal/catch overhead. Full85-file guards,
+actual64MiB stack/fetch0, unchanged bindings and observed exits passed;
+independent actual review PASS. No C/native readiness follows. Retained handoff
+SHA25694499fa5b4333acf78e3206e66493b9f33261f02dd1d552e4a47d2362a33041d.
+
+The source now reads original revision/notice before the decline command;
+refinement reads the mobile flag directly without a discarded snapshot.
+Fresh controller source checking/emission,48 exact full-packet comparisons and
+the existing render-plan check passed. The updated draft browser also passed
+actual Chrome refinement race with exact unchanged bundle bytes, errors[] and
+awaited browser/server closures. Finite JS receipt SHA256
+f243a8b099e7879d585796b0e820e5428b2807207ebd0f50ccaef39c9f927a82;
+browser receipt3233f751187f5bd45e0d44e5e0efb9e5c53cd5409f2d21b8ad252dab39705675.
+Corrected C layout and any further offenders remain unmeasured; no speed claim.
+
+## Early-helper disposition
 
 The private repaired scheduling variant passed actual held-asset early hello,
 helper-load-failure frame-before-fault and the existing refinement-race checks.
