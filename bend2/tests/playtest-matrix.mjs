@@ -979,18 +979,18 @@ await scenario('menus', DESKTOP, async t => {
   await t.control(2); await t.control(33); await t.control(36); await t.control(29); await t.count(0);
   t.check((await t.summary()).includes('Rift Chess. White to move.'), 'New match starts');
   await t.shot('auto-policy', { rects: [{ name: 'policy-line', x: 560, y: 180, w: 440, h: 30, scale: 3 }] });
-  // Desktop overflow: find a reachable piece with more than 12 destinations.
+  // Desktop overflow: choose the shortest existing legal replay with more than
+  // 12 destinations. The long draw-outcome records own long replay coverage.
   let found = null;
   for (const fixture of [fixtures.progress100, fixtures.stalemate, fixtures.bareKings]) {
     const game = new Game(fixture.layout === 'C' ? 'C' : 'B', 'prompt');
-    for (let n = 1; n < fixture.actions.length && !found; n++) {
+    for (let n = 1; n < fixture.actions.length && (!found || n < found.n); n++) {
       game.step(fixture.actions[n - 1], n - 1);
       if (game.outcome()) break;
       const groups = new Map();
       for (const a of game.legalActions()) if (a.type === 'move') { const s = sq(a.from); groups.set(s, (groups.get(s) || new Set()).add(Math.floor(a.id / 5))); }
       for (const [s, set] of groups) if (set.size > 12) { found = { fixture, n, square: s }; break; }
     }
-    if (found) break;
   }
   if (t.check(found, 'Reference search finds a piece with more than 12 destinations')) {
     await t.upload(record(found.fixture.layout, 0, found.fixture.actions.slice(0, found.n)));

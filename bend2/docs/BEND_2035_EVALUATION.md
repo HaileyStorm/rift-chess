@@ -131,8 +131,20 @@ still precede any accepted pin change.
 
 ## Next substantive gate
 
-Validate the corrected candidate host and explicit orbit/refinement interaction,
-then carry current-source reference acceptance and substantive Worker semantics
-forward. Linux requests5936734129 and5936397367 each have a retained terminal
+The corrected candidate host passed all three actual Chrome refinement race
+modes: queued input deferred once; changed view deferred/discarded once; stale
+controls discarded twice and Confirm committed one Black resignation. Each
+receipt binds the existing script bytes and exact served manifest before/after
+under `2035-preview/refinement-race-current-*-20261005.result.json`. The existing
+camera reference scenario had already passed11 checks. Candidate menus now passed
+18 checks using the shorter equivalent existing overflow fixture, with30 commands
+and13 destinations; receipt `matrix/menu-shortest-current-20261005/summary.json`.
+The current-source harness adaptation has an exclusive source/result binding;
+its initial wrong local manifest path was classified ENOENT before browser launch.
+
+Carry the remaining current-source reference slice and substantive Worker/bot
+semantics forward. The separate owned Worker port emitted the full current
+BotAdapter but remains under review; no browser bot result is inferred from that
+emission. Linux requests5936734129 and5936397367 each have a retained terminal
 admission STOP; no request was replayed. Exact candidate proof/kernel/Lean and
 native/device prerequisites remain open. Accepted 2.0.27 pin is unchanged.

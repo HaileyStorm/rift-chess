@@ -69,3 +69,13 @@ The real-browser consumer passed24 top/side/feet/transparent checks across deskt
 enhanced and portrait presentations. Overlap/hole controls remain local render
 evidence. The failed discovery/bookkeeping attempts are retained; they are not
 extra active acceptance suites.
+
+The menu-overflow scenario now searches the existing legal records for the
+shortest prefix with more than twelve destinations. Its unique collapse/select/
+reference assertions are unchanged; long draw records retain their own replay
+coverage. The chosen stalemate prefix has30 commands and13 destinations, replacing
+the45-command setup. Actual Chrome menus passed18 checks on both the accepted
+fixed-host build and the candidate fixed-host build. Their114.4s and34.1s totals
+are unpaired observations, not a measured compiler speedup. The independent
+45-command accepted-build import trace also completed in29.921s. Earlier import
+and candidate volume-control timeouts remain retained failures.
