@@ -514,3 +514,18 @@ The next step is existing layout/arity diagnostics, not an unchanged third run.
 Vivaldi stayed open and no Windows RAM floor was used. This actual source pass
 does not establish C/native/ELF/X11/PCM/restart or toolchain adoption. Linux/kernel
 admission and original GPU gates remain unchanged.
+
+## Rejected early-helper scheduling experiment
+
+The private repaired scheduling variant passed actual held-asset early hello,
+helper-load-failure frame-before-fault and the existing refinement-race checks.
+One uninstrumented prior/new startup pair measured playable1042.9→1690.9ms and
+detailed2586.9→4885.4ms. It establishes no stable regression, but gives no reason
+to retain the change. Exact prior worker/boundary source was restored; all
+candidate bundles, observer/injection failures and completed evidence remain.
+Actual suffix receipt SHA256
+0d9255c3409d2d023fa26c97ccf6dbb2f6fa35793654d148f79d288973304084;
+restoration decision SHA256
+b37b8681278533430d4745fa8406dc27a20ee259700ffd564b4181e8e18dd254.
+No further timing retry or promotion follows. The tapered-knight owner also
+released its own private claim after the published handoff; visual HOLD stands.
