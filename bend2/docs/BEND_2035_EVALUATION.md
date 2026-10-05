@@ -255,7 +255,7 @@ headless profile does not establish constrained-device or owner acceptance.
 All ten actual canvases were1024x640 with yaw345/pitch67/zoom115. OS power mode
 and background CPU load were not controlled/measured.
 
-## Source-only proof rebase, before execution
+## Historical source-only proof preparation
 
 New `core/v3/2035/{binding,aggregate,mutations}.mjs` and README passed syntax,
 exact source/compiler binding, six unique frozen anchor checks and compiler-free
@@ -268,14 +268,15 @@ evidence and97+97 compiler inputs, and bind four exact positive cones for the
 six unchanged semantic negatives. Actual execution requires clean source and
 unchanged before/after bindings, with observed bounded Worker exit and retained
 uncertain leases. The Windows source-only run has no fixed free-RAM floor;
-Linux12GiB/cgroup admissions are untouched. No actual CHECK/mutation result is
-claimed yet. New producer scope is `source/type/promise`; the compiler namespace
+Linux12GiB/cgroup admissions are untouched. At this preparation stage no actual
+CHECK/mutation result was claimed. New producer scope is `source/type/promise`; the compiler namespace
 guard is explicit. These distinct source-only schemas do not enter the old
 2032 Linux/kernel approval contract or repair its rejected historical receipt.
 
 Linux requests5936734129 and5936397367 each have a retained terminal admission
-STOP; no request was replayed. Corrected proof/kernel/Lean, six actual mutation
-Workers, native/device and original GPU prerequisites remain open. Accepted
+STOP; no request was replayed. Kernel/Lean, native/device and original GPU
+prerequisites remain open. The subsequent Windows source/mutation results are
+recorded below. Accepted
 2.0.27 pin and frozen Laws are unchanged.
 
 ## Actual aggregate stack stop and runtime repair
@@ -316,7 +317,37 @@ four source hashes and all listed receipt hashes and found no blocker. Handoff
 7cfe55c4a42186b83350ecb338b85dcef57037177636e289af756ce9fc4bba94.
 A prior compiler-free parity attempt caught changing root documentation and
 stopped; its raw failure remains. The distinct stable-source run passed.
-These results do not establish that the repaired full CHECK will pass.
+Those preparation results alone did not establish a full CHECK verdict.
+
+## Actual Node CHECK and six mutation results
+
+The distinct reviewed Node execution passed on clean source
+`86594efcf29c50b171eab5ef93b6ad31b01678c1`, tree
+`b3c9b27dbe2ff5a5ce35c1f3d709c43070e65ad1`. Full CHECK covered57 modules,
+1573 definitions and955 owned declarations, with zero holes. Compiler-owned
+namespace and promise guards passed. Six unchanged semantic mutations produced
+six actual type-mismatch rejections, with four actual positive checks and two
+exact positive reuses. Independent review recomputed each anchor, postimage,
+complete cone and positive key and matched the raw records.
+
+Aggregate receipt `2035-proof-20261005/aggregate-E2EnCN/receipt.json`, SHA-256
+b62243c115e5eab8a97f62d6e3f8abdb79542cbae89cfc1285e3c8fed1ecca91;
+mutation receipt `2035-proof-20261005/mutations-C7DCKL/receipt.json`, SHA-256
+661d60f5a8b817bef6e28c5ee558d6aabdf9dfab582a5b83e23c88481a60381f.
+Exact before/after binding
+254b897805ea12a4affde1ffba24bf4e379852fa86a89eee4b38daf4f2b2fa82
+matched228 source/evidence inputs,97+97 compiler files and the pinned Node24.12
+binary. Both64MiB stack readbacks matched, all11 Worker exits were observed and
+fetches were zero. Aggregate outer time238.800s; mutations322.922s; combined
+567.362s. Final handoff `2035-proof-20261005/node-final-source-handoff.json`,
+SHA-256 d723f586723e0d1c00ab6b42fd3ee8a646d15562603a81f5db17df248df1085e,
+inventories109 retained files; independent review matched every size/hash.
+
+Vivaldi stayed open. Aggregate parent free RAM endpoints were1.539→0.711GB and
+completion RSS1.023GB; a separate midrun RSS sample1.436GB is not a peak.
+Actual execution needed no fixed free-RAM floor. This proves Windows
+source/type/promise acceptance only. The old2032 BendTT consumer still rejects
+the2035 schema; kernel, native/device, original GPU and pin adoption remain open.
 
 ## Closed pawn/knight prototype, retained without integration
 
