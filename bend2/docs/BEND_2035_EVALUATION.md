@@ -398,10 +398,55 @@ kernel is invoked directly after observed Worker exit and a second12GiB
 full-ancestry cgroup admission; exact stdout/empty stderr/quiescence and retained
 uncertain leases reuse existing controls. The old2032 consumer is unchanged.
 
-All three source/kernel/Linux runtime approvals remain null. Eight syntax checks,
+During preparation all three source/kernel/Linux runtime approvals were null. Eight syntax checks,
 actual raw-receipt/57-cone binding and useful pure/synthetic contract checks passed;
 independent source review found no blocker and matched all9 files. Handoff
 `2035-kernel-20261005/preparation-rn5hpA/handoff.json`, SHA-256
 a7c5f47eac06b24aa4c7e66a39870e3023c511a3ecc2d812098c6352e9e223c1.
-The proposed bounded Windows import-only probe remains unexecuted. No Safe
-elaboration, kernel verdict, Linux runtime qualification or adoption is claimed.
+The single Windows import-only probe passed on clean6711894/tree d88a31c0,
+with identical binding93041604... before/after. Actual Bend/Comp/Safe imports and
+API typeof checks used pinned Node24.12.0; parent flags were empty, Worker flags
+were exactly --experimental-transform-types, both stack readbacks64MiB, fetch0.
+Worker exit was observed after9.816s; parent exit0 after20.626s, without timeout
+or truncation. The experimental warning remains in the raw receipt. Vivaldi
+stayed open; sampled parent free memory885.9→885.1MB had no fixed admission floor.
+Receipt `2035-kernel-20261005/import-probe-RspCLx/receipt.json`, SHA256
+4b4f299dbad102715ecb936a641fe4da6930dc591d5c9b1cb70d035ba0f532b6;
+terminal SHA256271c2bb87836795c56f4612f987f3a9d55c72932ad89d269425ff7c40028d938.
+Independent review passed; transcription record
+`2035-preview/independent-2035-safe-import-review-20261005.md`, SHA256
+184c8af412362a841ef1706fb4228f918a343ca36bec16cddf3d43030d5f2656.
+The owning backend released its own consumer claim through the supported tool;
+root acquired a fresh three-file claim and records only the already reviewed
+Windows source approval, reusing its exact existing descriptor. Kernel and Linux
+runtime approvals remain null; default execution still stops before any capture,
+admission, Worker or process. No Safe elaboration, kernel verdict, Linux runtime
+qualification or adoption is claimed.
+The existing contract check passed once with observed exit0/empty stderr,
+including default rejection before capture despite the source-only approval.
+Independent review accepted the three-file amendment. Contract record SHA256
+98280e20a9d420fe9aaf0ca59c3494a597470ac2b4cac1cfdb6dd15913634eb5;
+no compiler import, Worker, Safe elaboration or kernel execution occurred.
+
+## Private batch rasterizer results
+
+Reviewed executor2 passed32 predecessor,266 batch and6 public-plan comparisons,
+all65,536 decoded pixels each, zero mismatches and immutable plans. Output and
+before/after bindings matched; actual exit0, no fetches. Pixel receipt SHA256
+7f694164a5d8d650bbafe17f93d484631ff0713d718ae9da4e9ad37ad7031730.
+Independent review matched the complete planned schedule and raw observations.
+
+The primary144-frame comparison completed but failed unchanged2.5 raster p95
+limits: default2.65258, low2.56143, top1.31327. Whole-render/GC and node ratios
+passed. Independent recomputation confirmed the two failures and observed exit1;
+receipt SHA256da17287f929cf7d966b3cb268a1a27adbf61a7940793356dd61be8af7a696404.
+The distinct predeclared144-frame comparison against the original solid renderer
+showed raster p95 ratios0.75044/0.82306/0.77764. Paint-only144 on unchanged
+generated plans gave ratios0.83217/0.81589/0.88662. Receipts SHA256
+2bcf35f6e205be91a35b8380844c27cfb808d28bc845c9c96398850ba163a620 and
+2a42409daf13a69738fcbf717ec37d2b2364c3c9be1e9270a0ea8526a4cb6f74.
+All modes retained actual raw GC observer events after delivery; aggregate counts
+include requested and natural collections, without per-request attribution.
+Hard guards passed; no primary retry, relaxed limit or production integration.
+These are private emitted-JS results. The edge-on knight identity problem and
+browser/native/physical-display/owner visual acceptance remain separate.

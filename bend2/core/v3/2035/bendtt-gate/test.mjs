@@ -10,7 +10,8 @@ import { windowsProbeRuntime, runtimeProbePacket } from './probe.mjs';
 import { emitExclusive, outputIdentity } from './output.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
-for (const approval of [approvedSource, approvedKernel, approvedLinuxRuntime]) assert.equal(approval, null);
+assert.deepEqual(approvedSource, sourceFixture);
+for (const approval of [approvedKernel, approvedLinuxRuntime]) assert.equal(approval, null);
 let calls = 0;
 await assert.rejects(executeCandidate({ dependencies: { capture: () => { calls++; } } }), /approvals are null/);
 assert.equal(calls, 0);

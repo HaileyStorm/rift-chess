@@ -1,7 +1,7 @@
 # Bend 2.0.35 Safe / BendTT consumer preparation
 
-This separately versioned consumer is unarmed. Source, prebuilt-kernel and Linux
-runtime approvals in `approvals.mjs` remain null. The entrypoint stops before
+This consumer remains unarmed. Source approval reuses the reviewed descriptor;
+prebuilt-kernel and Linux runtime approvals remain null. The entrypoint stops before
 creating an attempt, admitting memory, importing compiler TypeScript or launching
 a process. No CLI or environment approval override exists. Root owns review,
 arming, Git and later execution. The canonical 2.0.27 pin, immutable Laws and old
@@ -34,7 +34,11 @@ approval requires Node v22.23.1/x64, its exact executable SHA and a hash-bound
 accepted review of a distinct actual Safe import probe with exact flags, observed
 64MiB stack/exit and fetch0. It has `schema`, `runtime` and `review` fields;
 Windows import
-probe binds Node v24.12.0 and executable SHA `2ffe3acc...101d8`. The existing
+probe binds Node v24.12.0 and executable SHA `2ffe3acc...101d8`. Its single actual
+import-only run passed on clean6711894, receipt SHA256
+`4b4f299dbad102715ecb936a641fe4da6930dc591d5c9b1cb70d035ba0f532b6`;
+independent review verified exact bindings, flags,64MiB readbacks, fetch0 and
+observed Worker/parent exits. It did not call Safe elaboration or output APIs. The existing
 proof-runtime metadata is retained provenance, not a flag override.
 
 The Worker uses the existing stable importer and independent full frozen cone,
