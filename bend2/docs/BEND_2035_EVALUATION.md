@@ -473,5 +473,44 @@ but its one launch failed before compiler execution because Node rejected two
 Windows drive-path ESM imports. Terminal SHA256
 d2631ebcc072aff5ef95c1dad7bebb6e916c2d8773c4e214a89c9d7333b7d8d5.
 All inputs remained unchanged and owned descendants were quiescent. Distinct
-file-URL repair and guarded visual preparation remain unexecuted. No graphics
-acceptance follows from its static14-face visibility scan or23 total faces.
+file-URL repair subsequently passed one actual compile on clean7e59354, with
+observed exit0, unchanged bindings and fetch0. Generated prototype.js SHA256
+be5f26c38dc666e3a6deb5b85a05e47a794d46cd1f95aeb17f29d8ccd8e39975.
+The one guarded visual2 run passed72 renders/24 visibility calls and twelve
+exact pawn controls. Receipt SHA256
+f558b3d30aa14aafd162c53663c997d82364919a3521bfd2cb7c33175ecef872.
+Actual knights had11–13 visible faces; renderer hard guards passed. Whole-chain
+RSS samples include preflight overhead and are separate from renderer guards.
+Root and independent review of lossless crops both HOLD horse identity at
+supported opposite/diagonal views and navy contrast. The taper improves volume,
+but no cost benchmark, promotion or production integration followed. Final
+156-file retained handoff SHA256
+af8774dee65bbfbe8d969ab39e430127183ad0a005a7e79bca8536e2150210ac.
+
+## Actual current NativeV2 source pass and C arity rejection
+
+The private full84-project-file plus Base copy applies only the existing reviewed
+Look/Scroll event compatibility patch; tracked NativeV2 and upstream stay intact.
+The first300s C attempt timed out after reaching compile_book; observed exits,
+unchanged inputs and lease absence were retained without an OOM diagnostic.
+
+The separately reviewed600s attempt passed all85-file source/type/IO/namespace
+guards,3076 definitions/holes0 and45 exact Base foreign definitions. Its durable
+pre-C checkpoint is SHA256
+e84e64d3525dbb9ffae87a51e03b1fb619a7f376554bcfb368b9e90cd16da3ab.
+Actual checking took10.536361s through the following main-stage entry, including
+journal and post-check assertions; C emission began at60.8117826s on the Worker
+clock. The compiler then rejected `an arity over 247` at comp.ts2825. This
+combines segment parameter width>247 and encoded CID arity>255 without naming
+the offender. Continuation width is a source-supported hypothesis, not a finding.
+
+Worker exit0 followed its error payload; parent exit1 after406.864s, with no
+timeout or reported OOM. Returned fetch0/actual64MiB stack and exact
+before/checkpoint/after bindings matched. No C file or acceptance receipt exists.
+Pure C duration was not recorded separately. Independent review verified all29
+new files and209 retained first-attempt records; terminal handoff SHA256
+8dbf65a98f9cb9660f67a997c6ca37dcb1e5ad92edc6b827cf326a1280acac57.
+The next step is existing layout/arity diagnostics, not an unchanged third run.
+Vivaldi stayed open and no Windows RAM floor was used. This actual source pass
+does not establish C/native/ELF/X11/PCM/restart or toolchain adoption. Linux/kernel
+admission and original GPU gates remain unchanged.
