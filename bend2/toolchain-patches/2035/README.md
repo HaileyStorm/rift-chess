@@ -103,8 +103,12 @@ or edit accepted ports. `build-preview.mjs` verifies four explicitly selected
 manifest/output hashes, current source bindings and exact pristine Git provenance,
 then installs both Bun plugins for helper, Worker and host. It packages existing
 verified assets into a fresh ignored `2035-preview/browser-*` directory. It does
-not compile during bundling, copy accepted bot Workers or use accepted prepared
-frame JSON. The resulting build is explicitly a draft hotseat candidate.
+not compile during bundling or use accepted prepared frame JSON. The current
+builder also verifies and packages the isolated2035
+[general Worker port](workers/README.md), including its exact diagnostic/source
+binding, installed runtime and five public artifact bytes. The source-binding
+receipt remains outside the public package. The result is explicitly a draft
+candidate with hotseat and bot play; accepted2.0.27 is unchanged.
 
 Run through the repository wrapper, with Vivaldi left open:
 
@@ -115,6 +119,7 @@ node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/build-preview.mjs
 
 The builder selects the recorded four runs rather than the newest directory; a
 new selection requires explicit byte review. See the evaluation record for the
-13-check real Chrome first-frame/move/import/PCM/offline/portrait result and exact
-source/build identities. This is browser evidence, not compiler adoption, proof,
-general Worker/native/device or subjective graphics acceptance.
+current24-scenario/689-check Chrome reference result and exact source/build
+identities, actual required-helper bot/controller result and cold-offline bot
+loading. These are browser/Windows Worker results, not compiler adoption, proof,
+native/device or owner graphics acceptance.

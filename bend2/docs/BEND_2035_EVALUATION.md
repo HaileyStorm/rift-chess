@@ -142,9 +142,81 @@ and13 destinations; receipt `matrix/menu-shortest-current-20261005/summary.json`
 The current-source harness adaptation has an exclusive source/result binding;
 its initial wrong local manifest path was classified ENOENT before browser launch.
 
-Carry the remaining current-source reference slice and substantive Worker/bot
-semantics forward. The separate owned Worker port emitted the full current
-BotAdapter but remains under review; no browser bot result is inferred from that
-emission. Linux requests5936734129 and5936397367 each have a retained terminal
-admission STOP; no request was replayed. Exact candidate proof/kernel/Lean and
-native/device prerequisites remain open. Accepted 2.0.27 pin is unchanged.
+The remaining14 hotseat scenarios subsequently passed165checks. Together with
+the seven passing slice scenarios and fresh menu scenario, this establishes22
+hotseat scenarios/388checks on that exact manifest. Receipt:
+`2035-preview/hotseat-composed-current-20261005.receipt.json`.
+
+## Current bot and connected orbit build
+
+The faithful general Worker port preserves source `@/@N/~` scheduling,
+recursive qualified ADTs and48-bit internal numbers/public BigInts. It restores
+policy-aware local schema fallback, resolves deferred local-closure names and
+preserves lifted arity. Independent exact-source review found no remaining
+blocker. Current actual Windows Bun clone/packed receipt
+`workers-2035-candidate/diagnostic-6AtJvy/receipt.json` SHA-256
+ca60f151157e27026c3fb6421aa15a4386a5db0a221f190e351f91756c67809e
+includes order/resume, bounded helper execution, invalid inputs, real cancellation,
+malformed reply rejection, subsequent correctness and disposal. It is not a
+Linux native result. The full96-function BotAdapter has source binding
+c77b72d41763c6d8ece7215e03059a409b6716e6ad53e3ff21439686efbe8552,
+balanced recursive AI scheduling and program106a48b57f632299da6ba1453641bef2238497e1304fb0904cd232e1bbb3ecd0.
+
+BoardScene/PieceArt add projected bases/necks and unlifted board contacts to
+orbit move/capture pieces. Source checks passed; actual pure candidate emission
+passed172 finite pixel checks across holes/hops, corner/perimeter pitch35zoom75,
+all six kinds/both sides/low obliques, original opaque contour core/upper extent,
+capture and stationary contact. Receipt
+`motion-footing-pixelcheck-20261005/receipt.json` SHA-256
+1398945b874a3e1622a91e9573ae26000d3c68faca113ab3a82a7d474668ba2d
+retains the first overstrict antialias-edge failures. Mixed coverage changes
+over the new underlay; corrected checks preserve opaque shape/height. Board
+clipping relies on valid clamped square interpolation plus bounded footprint;
+it is not a claim for arbitrary outside-board input. Browser capture inspection
+shows connected stems/bases and planted contacts; the coarse orbit glyphs remain
+visibly simpler than settled atlas art. Owner visual acceptance remains open.
+
+Fresh scene-GRwwGS emits360436bytes SHA-256
+1ecb3e0a2cf2f30a0d2441030e616f93963d8b6a81bf73453ea6ff19214aeb85.
+Fresh isolated browser-W3Of1Q version19cc1d9f9778fd0436c9 has manifestSHA-256
+49ab0485b0d8cca038ed3e6a7fa2347aecc773a0ab7af465a671f535707d30ce,
+sourceRevision5ff2f0c/sourceDirtytrue. Independent builder review verified all
+selected sources/manifests, installed Bun and exactly five byte-identical bot
+artifacts; source-binding.json is excluded from public output.
+
+The exact served build passed all24 scenarios/689checks, no defects, including
+both-side bot play and TypeScript-reference replay at each checkpoint. Full
+receipt is `2035-preview/matrix/current-bot-footing-full-20261005/summary.json`.
+The actual Node module-Worker/controller integration passed in3.415s, with
+requiredWitnesses and remoteJobs positive, exact serial choice, staging/tick,
+intervening-action/stale/illegal guards, capability fallback, draw decline and
+disposal. Existing test was adapted only to exact candidate paths and qualified
+UI constructors; binding and output are retained under
+`2035-preview/bot-integration-current-20261005.*`.
+
+Actual Chrome online then cold offline reload bot turns passed in11.370s:
+3980 then20065 both times, four bot module URLs loaded as200 JavaScript,
+service-worker responses present and no errors. Exact manifest binding and
+unchanged game/offline/module assertions are retained under
+`2035-preview/offline-bot-current-20261005.*`. The original hosted release gate
+is unchanged; this isolated candidate is draft/nonadopted.
+
+Three alternating sequential accepted/candidate perf pairs on Windows, Vivaldi
+open, each passed18 reference checks. Median request/reply p95: selection
+360.4→152.8ms; move1461.8→399.8ms; menu703.4→120.9ms. Orbit varied253.1→328ms.
+Receipt `paired-compiler-perf-20261005/paired-result.json` retains all six
+timing distributions and exact served bindings. These are small headless browser
+samples, not physical-display/native benchmarks or an orbit improvement claim.
+The separate same-candidate before/footing pairs each passed18checks. Orbit reply
+p95 pairs were296.7→149ms,53.3→44.7ms and38.9→218.3ms; medians53.3→149ms.
+The changed sample counts and reversed last pair preserve substantial timing
+uncertainty, so no stable orbit cost or speedup is claimed. Receipt:
+`paired-compiler-perf-20261005/footing-paired-result.json`. Its first browser
+run passed; the reporter then tried to interpret capture/reference accounting
+as latency metrics. The report repair retained that run and executed only the
+remaining five planned runs. Raw failure, preimage and repair record remain.
+
+Linux requests5936734129 and5936397367 each have a retained terminal admission
+STOP; no request was replayed. Corrected proof/kernel/Lean, six actual mutation
+Workers, native/device and original GPU prerequisites remain open. Accepted
+2.0.27 pin and frozen Laws are unchanged.

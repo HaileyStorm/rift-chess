@@ -9,15 +9,64 @@ import { root, previewRoot, candidateCommit, readSource, sha256, selectedBinding
 import { createBrowserTagBoundary2035, browserTagBoundaryBinding2035 } from './browser-tag-boundary.mjs';
 import { packageAssets, writeNewFile } from '../2032/browser-preview/pack-static.mjs';
 import { assertLocalBunRuntime } from '../2032/browser-loader/runtime.mjs';
+import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 
 const selected = {
-  scene: ['scene-kwR2KB', '2ca50d6b2a57643e6c209bb3e5ce19372d65e405d3660f6f2394b88137e9172e'],
+  scene: ['scene-GRwwGS', '74bac06e897415dc6ec44649434847d295307c487fb47fadb10a8993f84eee21'],
   controller: ['controller-jhr9Ml', 'b878f33af950904b2869889225eaaeee5507958fd152c6c223365d06189551cc'],
   menu: ['menu-yN96SS', 'b390548eb759944aea5cbee08256f85a3cba26986eb86e93a97749b8f47c67ec'],
   chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
+const botDirectory = '.artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-icn1mU';
+const botBindingHash = 'c77b72d41763c6d8ece7215e03059a409b6716e6ad53e3ff21439686efbe8552';
+
+function botLibrary2035(runtime) {
+  const bindingBytes = readSource(path.join(root, botDirectory, 'source-binding.json'));
+  assert.equal(sha256(bindingBytes), botBindingHash, 'selected bot binding changed');
+  const binding = JSON.parse(bindingBytes);
+  assert.equal(binding.ok, true);
+  assert.equal(binding.upstreamCommit, candidateCommit);
+  assert.equal(binding.sourceRoot, 'bend2/platform/worker/BotAdapter.bend');
+  assert.deepEqual(binding.exports, ['choose']);
+  assert.equal(binding.networkCalls, 0);
+  assert.deepEqual(binding.compiler, workerCompilerBinding2035().hashes);
+  for (const item of binding.sources) assert.equal(sha256(readSource(path.join(root, item.path))), item.sha256);
+  for (const group of [binding.implementation, binding.loaderDependencies])
+    for (const [file, digest] of Object.entries(group)) assert.equal(sha256(readSource(path.join(root, file))), digest);
+  const diagnostic = readSource(path.join(root, binding.diagnostic.path));
+  assert.equal(sha256(diagnostic), binding.diagnostic.sha256);
+  const checked = JSON.parse(diagnostic);
+  assert.equal(checked.ok, true);
+  assert.deepEqual(checked.compiler, binding.compiler);
+  assert.equal(binding.diagnostic.engine.executableSha256, runtime.sha256);
+  for (const [file, digest] of Object.entries(binding.diagnostic.fixtures))
+    assert.equal(sha256(readSource(path.join(root, 'bend2/toolchain-patches/2035/workers', file))), digest);
+  const manifestBytes = readSource(path.join(root, botDirectory, 'manifest.json'));
+  assert.equal(sha256(manifestBytes), binding.manifestSha256);
+  const manifest = JSON.parse(manifestBytes);
+  assert.equal(manifest.protocol, 1);
+  assert.equal(manifest.backend, 'bend-web-workers-2035');
+  assert.equal(manifest.natRepresentation, 'number48-host-bigint');
+  assert.equal(manifest.mode, 'required-only');
+  assert.equal(manifest.policy, 'strict');
+  assert.equal(manifest.program, binding.program);
+  assert.deepEqual(Object.keys(manifest.exports), ['choose']);
+  assert.equal(manifest.functions[manifest.exports.choose]?.name, 'choose');
+  const prefix = `bend-${manifest.program.slice(0, 16)}`;
+  assert.deepEqual(manifest.artifacts, { entry: 'index.mjs', program: `${prefix}.program.mjs`,
+    worker: `${prefix}.worker.mjs`, runtime: `${prefix}.runtime.mjs`, manifest: 'manifest.json' });
+  assert.deepEqual(Object.keys(binding.artifacts).sort(), Object.values(manifest.artifacts).sort());
+  const contents = Object.fromEntries(Object.entries(binding.artifacts).map(([file, digest]) => {
+    const bytes = readSource(path.join(root, botDirectory, file));
+    assert.equal(sha256(bytes), digest, `selected bot artifact changed: ${file}`);
+    return [file, bytes];
+  }));
+  assert.ok(contents[manifest.artifacts.program].toString('utf8')
+    .includes(`export const manifest = freezeProgramData(${JSON.stringify(manifest)});`));
+  return { binding, manifest, contents };
+}
 
 function caches(runtime) {
   return Object.fromEntries(Object.entries(selected).map(([name, [directory, expected]]) => {
@@ -45,6 +94,7 @@ export async function buildPreview2035() {
   assert.equal(git('-C', '.artifacts/toolchains/bend-2.0.35-scout', 'rev-parse', 'HEAD'), candidateCommit);
   assert.equal(git('-C', '.artifacts/toolchains/bend-2.0.35-scout', 'status', '--porcelain', '--untracked-files=no'), '');
   const before = caches(runtime);
+  const bot = botLibrary2035(runtime);
   const boundary = createBrowserTagBoundary2035();
   const extraSources = ['bend2/toolchain-patches/2035/build-preview.mjs',
     'bend2/toolchain-patches/2032/browser-preview/pack-static.mjs',
@@ -79,6 +129,7 @@ export async function buildPreview2035() {
   const host = await bundle('bend2/platform/browser/host.ts', { __BEND_WORKER__: JSON.stringify('./' + worker) });
   const files = Object.fromEntries([helper, worker, host].map(name => [name, sha256(readSource(path.join(out, name)))]));
   const write = (name, bytes) => { writeNewFile(root, out, name, Buffer.from(bytes)); files[name] = sha256(readSource(path.join(out, name))); };
+  for (const [file, bytes] of Object.entries(bot.contents)) write('worker-libs/bot/' + file, bytes);
   const css = readSource(path.join(root, 'bend2/platform/browser/platform.css'));
   const cssName = 'style-' + sha256(css).slice(0, 12) + '.css';
   write(cssName, css);
@@ -97,6 +148,7 @@ export async function buildPreview2035() {
   assert.deepEqual(sourceHashes(), sources, 'build inputs changed');
   const after = caches(runtime);
   for (const name of Object.keys(before)) assert.deepEqual(after[name], before[name]);
+  assert.deepEqual(botLibrary2035(runtime), bot, 'bot inputs changed during build');
   assert.equal(git('rev-parse', 'HEAD'), sourceRevision);
   const manifest = { schema: 'rift-bend-browser/2035-preview-1', builtAt: new Date().toISOString(),
     version, sourceRevision, sourceDirty, draft: true, candidate: candidateCommit, adopted: false,
@@ -105,8 +157,11 @@ export async function buildPreview2035() {
       manifest: item.manifestPath, manifestSha256: item.manifestSha256, outputSha256: item.manifest.output.sha256,
       bindingSha256: item.manifest.bindingSha256 }])),
     browserBoundary: boundary.binding, sources, assets, files,
-    workerLibraries: {}, preparedGround: null,
-    scope: 'candidate hotseat/controller/menu/scene/chrome preview; bot Worker, proof/native/GPU/adoption unverified' };
+    workerLibraries: { bot: { entry: './worker-libs/bot/index.mjs', program: bot.manifest.program,
+      backend: bot.manifest.backend, mode: bot.manifest.mode, policy: bot.manifest.policy,
+      sourceBinding: botDirectory + '/source-binding.json', sourceBindingSha256: botBindingHash,
+      artifacts: bot.binding.artifacts } }, preparedGround: null,
+    scope: 'candidate current-source game and source-bound bot Worker preview; runtime/proof/native/GPU/adoption gates require their own evidence' };
   writeNewFile(root, out, 'build.json', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'));
   for (const [name, hash] of Object.entries(files)) assert.equal(sha256(readSource(path.join(out, name))), hash);
   console.log(JSON.stringify({ ok: true, out: relative(out), version, buildSha256: sha256(readSource(path.join(out, 'build.json'))), scope: manifest.scope }));

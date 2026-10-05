@@ -539,6 +539,42 @@ def camera_min_ink(+depth: Nat, +size: U32, +x: U32, +floor: U32,
       camera_min_ink.side(Model.is_white(code), depth, size, x, floor,
         Model.piece_type(code), body, glint, shadow, image)
 
+def camera_neck_height(kind: U32) -> U32:
+  match kind:
+    case 1: 19
+    case 2: 14
+    case 3: 10
+    case 4: 8
+    case 5: 22
+    case 6: 20
+    case _: 19
+
+# The neck overlaps each unchanged contour; the projected base carries its
+# side material without replacing the navy contour's existing brass edge.
+def camera_footing.material(+depth: Nat, +size: U32, center: Quad.Point,
+  a: Quad.Point, b: Quad.Point, c: Quad.Point, d: Quad.Point,
+  +code: U32, style: Material, image: Image) -> Image:
+  match center style:
+    case Quad.Point{+xx, +yy} Material{+body, +shade, +glint, +shadow}:
+      +x = F32.to_u32(F32.max(F32.round(xx), 0.0))
+      +floor = F32.to_u32(F32.max(F32.round(yy), 0.0))
+      +white = Model.is_white(code)
+      +base = facet(depth, size, a, b, c, d,
+        Bool.pick(U32, white, shade, glint), image)
+      +neck_top = before_y(size, floor, camera_neck_height(Model.piece_type(code)))
+      facet(depth, size,
+        vertex(before(size, x, 3), neck_top),
+        vertex(after(size, x, 3), neck_top),
+        vertex(after(size, x, 8), before_y(size, floor, 1)),
+        vertex(before(size, x, 8), before_y(size, floor, 1)),
+        Bool.pick(U32, white, body, shadow), base)
+
+def camera_footing(depth: Nat, size: U32, center: Quad.Point,
+  a: Quad.Point, b: Quad.Point, c: Quad.Point, d: Quad.Point,
+  +code: U32, image: Image) -> Image:
+  camera_footing.material(depth, size, center, a, b, c, d, code,
+    material(code), image)
+
 def camera_draw_min.ready(show: Bool, +depth: Nat, +size: U32, +x: U32,
   +floor: U32, +code: U32, image: Image) -> Image:
   match show:

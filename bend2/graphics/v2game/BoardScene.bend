@@ -770,56 +770,6 @@ def fast_piece_layers(order: List<&2, U32>, +c: Context, image: Image) -> Image:
     case +square <> rest:
       fast_piece_layers(rest, c, fast_piece_layer(square, c, image))
 
-def camera_piece_at(show: Bool, +square: U32, code: U32, +c: Context,
-  image: Image) -> Image:
-  match show c:
-    case False{} _: image
-    case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
-        previous, holes, action, theme}:
-      +source = motion_source(Model.decode(action), square)
-      +moving_point = interpolated_point(size, camera, source, square, progress(frame))
-      +x = Ortho.pixel(point_x(moving_point))
-      +y = Ortho.pixel(point_y(moving_point))
-      +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
-      +drawn = PieceArt.camera_draw_min(depth, size, x, y, code, image)
-      PieceArt.focus_rim(selected_here, depth, size, x, y, 16169039, drawn)
-
-def camera_dying_at(show: Bool, +square: U32, +c: Context,
-  image: Image) -> Image:
-  match show c:
-    case False{} _: image
-    case True{} Context{depth, +size, frame, +camera, board, +oldBoard,
-        previous, holes, action, theme}:
-      +age = progress(frame)
-      +x = square_x(size, camera, square)
-      +y = square_y(size, camera, square)
-      +drift = scale_coord(size, U32.div(age, 2))
-      +lift = scale_coord(size, age)
-      +dead_x = Bool.pick(U32, U32.is_even(age), U32.add(x, drift), U32.sub(x, drift))
-      +dead_y = U32.sub(y, lift)
-      PieceArt.camera_draw_min(depth, size, dead_x, dead_y,
-        Model.board_get(oldBoard, square), image)
-
-def camera_piece_layer(+square: U32, +c: Context, image: Image) -> Image:
-  match c:
-    case Context{depth, size, frame, camera, +board, oldBoard,
-        previous, holes, action, theme}:
-      +present = Model.present(holes, square)
-      +victim = camera_dying_at(Bool.and(present, dying_visible(square, c)),
-        square, c, image)
-      camera_piece_at(Bool.and(present, Model.occupied(Model.board_get(board, square))),
-        square, Model.board_get(board, square), c, victim)
-
-def camera_piece_layers(order: List<&2, U32>, +c: Context,
-  image: Image) -> Image:
-  match order:
-    case Nil{}: image
-    case +square <> rest:
-      camera_piece_layers(rest, c, camera_piece_layer(square, c, image))
-
-# Fast camera preview: draw fresh top faces over a caller-cached underlay.
-# Build it with underlay512_theme/underlay1024_theme for frame.theme; the base
-# must contain no old board, tile or piece pixels.
 def presence_word(+remaining: Nat, +index: U32, +holes: U32) -> U32:
   match remaining:
     case 0n: 0
@@ -848,6 +798,128 @@ def fast_affine(+size: U32, +basis: Camera.Basis) -> SpatialFast.Affine:
   fast_affine.from_edges(point(basis, size, negative_half, negative_half),
     point(basis, size, positive_half, negative_half),
     point(basis, size, negative_half, positive_half))
+
+# Orbit contacts stay within the convex board perimeter: square-center
+# interpolation plus a .31-square radius leaves at least .19 square at an edge.
+# MotionWall paints absent mask cells, so complement only the board presence.
+def camera_contact_mask(mask: Board.Mask) -> Board.Mask:
+  match mask:
+    case Board.Mask{low, high}:
+      Board.Mask{U32.sub(4294967295, low), U32.sub(4294967295, high)}
+
+def camera_foot_vertex(affine: SpatialFast.Affine, center: Quad.Point,
+  +file: F32, +row: F32) -> Quad.Point:
+  match affine center:
+    case SpatialFast.Affine{ox, oy, +fx, +fy, +rx, +ry} Quad.Point{+x, +y}:
+      Quad.Point{F32.add(x, F32.add(F32.mul(file, fx), F32.mul(row, rx))),
+        F32.add(y, F32.add(F32.mul(file, fy), F32.mul(row, ry)))}
+
+def camera_foot_corners(+size: U32, +camera: Camera.Basis,
+  +center: Quad.Point, +radius: F32) -> Corners:
+  +affine = fast_affine(size, camera)
+  +negative = F32.neg(radius)
+  Corners{camera_foot_vertex(affine, center, negative, negative),
+    camera_foot_vertex(affine, center, radius, negative),
+    camera_foot_vertex(affine, center, radius, radius),
+    camera_foot_vertex(affine, center, negative, radius)}
+
+def camera_ground_point(+size: U32, +camera: Camera.Basis,
+  +source: U32, +square: U32, +amount: U32) -> Quad.Point:
+  +from = projected_square(size, camera, source)
+  +to = projected_square(size, camera, square)
+  +t = F32.div(U32.to_f32(amount), 16.0)
+  Quad.Point{F32.lerp(point_x(from), point_x(to), t),
+    F32.lerp(point_y(from), point_y(to), t)}
+
+def camera_contact.corners(corners: Corners, depth: Nat, size: U32,
+  inverse: SpatialFast.Inverse, mask: Board.Mask, image: Image) -> Image:
+  match corners:
+    case Corners{a, b, c, d}:
+      MotionWall.draw(depth, size, Quad.make(a, b, c, d),
+        inverse, mask, 727076, image)
+
+def camera_contact(depth: Nat, +size: U32, camera: Camera.Basis,
+  inverse: SpatialFast.Inverse, mask: Board.Mask, center: Quad.Point,
+  image: Image) -> Image:
+  camera_contact.corners(camera_foot_corners(size, camera, center, 0.31),
+    depth, size, inverse, mask, image)
+
+def camera_footing.corners(corners: Corners, depth: Nat, size: U32,
+  center: Quad.Point, code: U32, image: Image) -> Image:
+  match corners:
+    case Corners{a, b, c, d}:
+      PieceArt.camera_footing(depth, size, center, a, b, c, d, code, image)
+
+def camera_footing(+depth: Nat, +size: U32, camera: Camera.Basis,
+  +center: Quad.Point, code: U32, image: Image) -> Image:
+  camera_footing.corners(camera_foot_corners(size, camera, center, 0.24),
+    depth, size, center, code, image)
+
+def camera_piece_at(show: Bool, +square: U32, +code: U32, +c: Context,
+  inverse: SpatialFast.Inverse, mask: Board.Mask, image: Image) -> Image:
+  match show c:
+    case False{} _: image
+    case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
+        previous, holes, action, theme}:
+      +source = motion_source(Model.decode(action), square)
+      +moving_point = interpolated_point(size, camera, source, square, progress(frame))
+      +x = Ortho.pixel(point_x(moving_point))
+      +y = Ortho.pixel(point_y(moving_point))
+      +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
+      +contact = camera_contact(depth, size, camera, inverse, mask,
+        camera_ground_point(size, camera, source, square, progress(frame)), image)
+      +footing = camera_footing(depth, size, camera, moving_point, code, contact)
+      +drawn = PieceArt.camera_draw_min(depth, size, x, y, code, footing)
+      PieceArt.focus_rim(selected_here, depth, size, x, y, 16169039, drawn)
+
+# A captured token drifts and lifts while its contact stays at the capture square.
+def camera_dying_at(show: Bool, +square: U32, +c: Context,
+  inverse: SpatialFast.Inverse, mask: Board.Mask, image: Image) -> Image:
+  match show c:
+    case False{} _: image
+    case True{} Context{depth, +size, frame, +camera, board, +oldBoard,
+        previous, holes, action, theme}:
+      +age = progress(frame)
+      +x = square_x(size, camera, square)
+      +y = square_y(size, camera, square)
+      +drift = scale_coord(size, U32.div(age, 2))
+      +lift = scale_coord(size, age)
+      +dead_x = Bool.pick(U32, U32.is_even(age), U32.add(x, drift), U32.sub(x, drift))
+      +dead_y = U32.sub(y, lift)
+      +code = Model.board_get(oldBoard, square)
+      +contact = camera_contact(depth, size, camera, inverse, mask,
+        projected_square(size, camera, square), image)
+      +footing = camera_footing(depth, size, camera,
+        Quad.Point{U32.to_f32(dead_x), U32.to_f32(dead_y)}, code, contact)
+      PieceArt.camera_draw_min(depth, size, dead_x, dead_y, code, footing)
+
+def camera_piece_layer(+square: U32, +c: Context,
+  +inverse: SpatialFast.Inverse, +mask: Board.Mask, image: Image) -> Image:
+  match c:
+    case Context{depth, size, frame, camera, +board, oldBoard,
+        previous, holes, action, theme}:
+      +present = Model.present(holes, square)
+      +victim = camera_dying_at(Bool.and(present, dying_visible(square, c)),
+        square, c, inverse, mask, image)
+      camera_piece_at(Bool.and(present, Model.occupied(Model.board_get(board, square))),
+        square, Model.board_get(board, square), c, inverse, mask, victim)
+
+def camera_piece_layers.clipped(order: List<&2, U32>, +c: Context,
+  +inverse: SpatialFast.Inverse, +mask: Board.Mask, image: Image) -> Image:
+  match order:
+    case Nil{}: image
+    case +square <> rest:
+      camera_piece_layers.clipped(rest, c, inverse, mask,
+        camera_piece_layer(square, c, inverse, mask, image))
+
+def camera_piece_layers(order: List<&2, U32>, +c: Context,
+  image: Image) -> Image:
+  match c:
+    case Context{depth, +size, frame, +camera, board, oldBoard,
+        previous, holes, action, theme}:
+      camera_piece_layers.clipped(order, c,
+        SpatialFast.invert(fast_affine(size, camera)),
+        camera_contact_mask(presence_mask(holes)), image)
 
 def macro_center(+size: U32, +basis: Camera.Basis, +macro: U32) -> Quad.Point:
   +file = F32.add(U32.to_f32(U32.mul(U32.mod(macro, 4), 2)), 0.5)
@@ -1564,7 +1636,7 @@ def nearest2(+remaining: Nat, image: Image) -> Image:
       +bottom_right = nearest2(rest, br)
       Qua{top_left, top_right, bottom_left, bottom_right}
 
-# Candidate A: exact 512 raster with one primitive per piece.
+# Exact 512 orbit raster with connected glyphs and board-clipped contacts.
 def fast_camera_direct512(frame: Scene.Frame, underlay512: Image) -> Image:
   fast_camera(9n, 512, frame, underlay512)
 
