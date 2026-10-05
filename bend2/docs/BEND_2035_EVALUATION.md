@@ -216,6 +216,63 @@ run passed; the reporter then tried to interpret capture/reference accounting
 as latency metrics. The report repair retained that run and executed only the
 remaining five planned runs. Raw failure, preimage and repair record remain.
 
+The declared baseline was extended with two further alternating pairs, keeping
+the first six executions immutable. All ten runs passed18checks each. Across
+five accepted/candidate runs, median per-run reply p95 values were:
+
+| Class | Accepted2.0.27 ms | Candidate2.0.35 ms |
+| --- | ---: | ---: |
+| Hover | 39.4 | 241.6 |
+| Selection | 304.4 | 197.4 |
+| Move | 1446.1 | 399.8 |
+| Orbit | 315 | 307.6 |
+| Menu | 703.4 | 97.3 |
+
+Receipt `paired-compiler-perf-20261005/paired-five-result.json` binds all ten
+per-run distributions; variable load and hover stalls remain visible. This
+supports the targeted move/menu/selection improvement observation without
+claiming every class improved, input-to-present budgets, or native performance.
+
+Ten actual fresh Chrome process/context starts alternated accepted and the
+current bot+footing candidate, five each. Profile: headless1280x1050/default
+theme67degrees, fresh browser cache/storage/service worker; localhost server and
+OS file cache warm; Vivaldi open. First playable is the actual canvas ready/idle
+mutation; detailed arrival is the host's post-draw refinement event. Two-RAF
+timestamps are also retained as rendering proxies, not physical-display proof.
+
+| Startup observation | Accepted median (range) ms | Candidate median (range) ms |
+| --- | ---: | ---: |
+| First playable | 3600.4 (2860.7–5368.8) | 1459.8 (1164.1–1517.3) |
+| Detailed draw | 6748.1 (5884.6–9233.9) | 3266.7 (2678–3777.6) |
+
+The between-frame CDP main Bend Worker JS heap median was40.24MiB accepted and
+29.02MiB candidate; this is neither process RSS nor peak. Main-page long tasks
+were one179ms accepted and one53ms candidate across the ten starts. Raw timings,
+page/Worker heaps, long tasks, exact manifests and final default screenshots:
+`2035-preview/cold-starts-20261005/receipt.json`. All ten passed, no errors.
+The candidate remains above the2s detailed-arrival planning target; this small
+headless profile does not establish constrained-device or owner acceptance.
+All ten actual canvases were1024x640 with yaw345/pitch67/zoom115. OS power mode
+and background CPU load were not controlled/measured.
+
+## Source-only proof rebase, before execution
+
+New `core/v3/2035/{binding,aggregate,mutations}.mjs` and README passed syntax,
+exact source/compiler binding, six unique frozen anchor checks and compiler-free
+Bun Worker parent/child binding parity. Independent static review found no
+blocker and matched all four final hashes in
+`2035-proof-20261005/source-review-handoff.json` SHA-256
+836ac66c9c124dfa57020c06095aa3f0364010a2c6482cbc1695a6c8300f5870.
+They derive the complete57-file CHECK cone independently, retain228 source/
+evidence and97+97 compiler inputs, and bind four exact positive cones for the
+six unchanged semantic negatives. Actual execution requires clean source and
+unchanged before/after bindings, with observed bounded Worker exit and retained
+uncertain leases. The Windows source-only run has no fixed free-RAM floor;
+Linux12GiB/cgroup admissions are untouched. No actual CHECK/mutation result is
+claimed yet. New producer scope is `source/type/promise`; the compiler namespace
+guard is explicit. These distinct source-only schemas do not enter the old
+2032 Linux/kernel approval contract or repair its rejected historical receipt.
+
 Linux requests5936734129 and5936397367 each have a retained terminal admission
 STOP; no request was replayed. Corrected proof/kernel/Lean, six actual mutation
 Workers, native/device and original GPU prerequisites remain open. Accepted
