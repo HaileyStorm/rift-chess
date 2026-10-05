@@ -32,10 +32,14 @@ The pure synthetic contract checks are:
 node bend2/toolchain-patches/2032/browser-preview-v2/test.mjs
 ```
 
-They exercise receipt and bundle shape, pins, exact paths/hashes, output/source
-bytes, source-tree ancestry, and isolated service-worker activation against
+They exercise bundle shape and its integration with receipt pins, exact
+paths/hashes, output/source bytes, source-tree ancestry and isolated service-worker activation against
 synthetic scopes without reading real cache artifacts/assets, contacting a
 provider, or invoking a bundler.
+The receipt contract has one independent suite at
+`browser-loader-v2/test.mjs`; its direct unit assertions are no longer repeated
+here. Run that suite when changing receipt validation. Historical receipts remain
+unchanged; neither synthetic suite establishes packaging or browser acceptance.
 
 After the independent receipts and source pins have been reviewed, committed,
 and the checkout is clean, the real static packer entry point is:

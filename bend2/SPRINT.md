@@ -54,12 +54,14 @@ detailed refinement and atlas-consistent picking. Additional generic compiler
 infrastructure needs a specific failing application/adoption gate. Preserve
 camera options, styles, animations, offline shareability and the headless API.
 
-Rollover remains pending. The separate cloud review task
+The Windows implementation successor is now
+`01a10ac2-7175-7e52-a9bb-ab628cd36e32`, with a fresh full-sprint Goal created
+and read back active and a fresh exact checkpoint claim. The native settings
+snapshot reports Sol 6.1/high; outgoing generation capture remains unverified.
+The separate cloud review task
 `01a109d5-dcaa-7176-ab79-ad8ebfe7502a` lacked local task/Goal controls and is
-not a Windows implementation successor. The resumed Windows owner has supported
-controls and read back its old Goal as paused; it will create one local
-gpt-6.1-sol/high successor, verify handoff, and leave the old unfinished Goal
-intact. The received 16-view TripoSR white-knight study does not warrant GLB
+not a Windows implementation successor. The old unfinished paused Goal/counters
+remain intact. The received 16-view TripoSR white-knight study does not warrant GLB
 transfer or integration on the migration critical path. See the checkpoint.
 
 ## Sequence and completion requirements

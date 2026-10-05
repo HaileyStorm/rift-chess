@@ -117,6 +117,10 @@ assert.throws(() => matches(wrongManifest), /raw manifest bytes differ/);
 const wrongOutput = structuredClone(bound);
 wrongOutput.manifests.scene.outputSha256 = '0'.repeat(64);
 assert.throws(() => matches(wrongOutput), /output bytes differ/);
+const wrongOutputBytes = { ...verified, modules: { ...verified.modules,
+  scene: { ...verified.modules.scene, bytes: Buffer.from('tampered output') } } };
+assert.throws(() => matches(bound, wrongOutputBytes),
+  /output byte count differs|output bytes differ/);
 assert.throws(() => matches(bound, verified, { ...manifestPaths,
   chrome: path.join(repoRoot, '.artifacts/bend2/2032-preview/other/chrome.manifest.json') }),
   /explicit manifest path differs/);

@@ -218,6 +218,33 @@ function editBinding(fixture, name, mutate) {
   fixture.write(name, manifest);
 }
 
+let rejectedLinkControls = 0;
+const skippedLinkControls = [];
+function expectLinkFailure(label, prepare) {
+  const fixture = createFixture();
+  try {
+    let options;
+    try {
+      options = prepare(fixture);
+    } catch (error) {
+      if (!['EPERM', 'EACCES', 'ENOTSUP', 'UNKNOWN', 'EINVAL'].includes(error?.code)) throw error;
+      skippedLinkControls.push(label);
+      console.log('skip - OS denied temporary link fixture: ' + label);
+      return;
+    }
+    assert.throws(() => verifyCacheSet2032V2({
+      previewRoot: fixture.root,
+      manifestPaths: fixture.paths,
+      sourceRoot: repoRoot,
+      ...options,
+    }), /reparse point|symbolic link|noncanonical ancestor/, label);
+    rejectedLinkControls++;
+    console.log('rejected filesystem link - ' + label);
+  } finally {
+    fixture.cleanup();
+  }
+}
+
 expectFailure('legacy schema', fixture => {
   const manifest = fixture.read('menu');
   manifest.schema = 'rift-bend-selected-cache/2032-1';
@@ -364,6 +391,19 @@ expectFailure('manifest traversal path', fixture => ({
   menu: path.join('..', 'outside', 'menu.manifest.json'),
 }), /manifest path escapes the explicit preview root/);
 
+expectFailure('output traversal name', fixture => {
+  const manifest = fixture.read('chrome');
+  manifest.output.file = '../chrome.js';
+  fixture.write('chrome', manifest);
+}, /chrome output name differs/);
+
+expectFailure('unordered exports', fixture => {
+  editBinding(fixture, 'menu', (binding, manifest) => {
+    binding.module.exports.reverse();
+    manifest.module.exports.reverse();
+  });
+}, /module differs/);
+
 expectFailure('missing module path', fixture => {
   const paths = { ...fixture.paths };
   delete paths.chrome;
@@ -375,11 +415,47 @@ expectFailure('duplicate explicit module path', fixture => ({
   chrome: fixture.paths.menu,
 }), /duplicate explicit manifest path/);
 
+expectLinkFailure('manifest path', fixture => {
+  const alias = path.join(fixture.root, 'menu-alias');
+  fs.symlinkSync(path.dirname(fixture.manifestPath('menu')), alias, 'junction');
+  return { manifestPaths: { ...fixture.paths, menu: path.join('menu-alias', 'menu.manifest.json') } };
+});
+
+expectLinkFailure('output path', fixture => {
+  const link = path.join(path.dirname(fixture.manifestPath('menu')), 'menu.js');
+  const target = path.join(path.dirname(fixture.manifestPath('chrome')), 'chrome.js');
+  fs.unlinkSync(link);
+  fs.symlinkSync(target, link, 'file');
+});
+
+expectLinkFailure('previewRoot', fixture => {
+  const alias = path.join(fixture.root, 'preview-root-alias');
+  fs.symlinkSync(path.dirname(fixture.manifestPath('menu')), alias, 'junction');
+  return { previewRoot: alias };
+});
+
+expectLinkFailure('previewRoot ancestor', fixture => {
+  const target = path.join(fixture.root, 'menu');
+  fs.mkdirSync(path.join(target, 'nested-preview'));
+  const alias = path.join(fixture.root, 'preview-ancestor');
+  fs.symlinkSync(target, alias, 'junction');
+  return { previewRoot: path.join(alias, 'nested-preview') };
+});
+
+expectLinkFailure('sourceRoot ancestor', fixture => {
+  const target = path.join(fixture.root, 'source-target');
+  fs.mkdirSync(path.join(target, 'nested'), { recursive: true });
+  const alias = path.join(fixture.root, 'source-root-ancestor');
+  fs.symlinkSync(target, alias, 'junction');
+  return { sourceRoot: path.join(alias, 'nested'), previewRoot: 'preview' };
+});
+
 console.log(JSON.stringify({
   schema: 'rift-bend-2032-cache-set-v2-tamper-test/1',
   passed: true,
   acceptedFixture: false,
-  rejectedControls: 28,
+  rejectedControls: 30 + rejectedLinkControls,
+  skippedLinkControls,
   scope: 'synthetic tamper fixtures only; no four-cache integration or artifact authenticity claim',
 }));
 

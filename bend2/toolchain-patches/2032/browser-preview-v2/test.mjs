@@ -7,9 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { approvedBundle } from './approved-bundle.mjs';
 import { assertApprovedBundle, bundleSchema, bundleScope, bundleSourceFiles,
   parseArguments, validateBundleManifest, verifyRevisionBinding } from './pack-static.mjs';
-import { approvedReceipt } from '../browser-loader-v2/approved-receipt.mjs';
-import { assertApprovedReceipt, assertReceiptMatchesCacheSet, cacheModuleNames,
-  parseBundleArguments, validateReceiptShape } from '../browser-loader-v2/receipt.mjs';
+import { cacheModuleNames } from '../browser-loader-v2/receipt.mjs';
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -32,80 +30,8 @@ const receipt = {
   }])),
 };
 
-assert.doesNotThrow(() => validateReceiptShape(receipt));
-const malformedReceipt = structuredClone(receipt);
-malformedReceipt.cacheSchema = 'rift-bend-selected-cache/2032-1';
-assert.throws(() => validateReceiptShape(malformedReceipt), /not for the 2032-2 cache verifier/);
-const invalidReceiptBytes = structuredClone(receipt);
-invalidReceiptBytes.manifests.scene.outputBytes = 0;
-assert.throws(() => validateReceiptShape(invalidReceiptBytes), /outputBytes is invalid/);
-if (approvedReceipt === null) {
-  assert.throws(() => assertApprovedReceipt(approvedReceipt, receiptPath, receiptSha256, receipt),
-    /no independently reviewed 2032-2 receipt pin is armed/);
-} else {
-  const matching = structuredClone(receipt);
-  matching.cacheSource = approvedReceipt.cacheSource;
-  for (const member of Object.values(matching.manifests)) {
-    member.sourceCommit = approvedReceipt.cacheSource.commit;
-    member.sourceTree = approvedReceipt.cacheSource.tree;
-  }
-  assert.doesNotThrow(() => assertApprovedReceipt(approvedReceipt,
-    approvedReceipt.path, approvedReceipt.sha256, matching));
-}
-const receiptApproval = { path: receiptPath, sha256: receiptSha256, cacheSource };
-assert.doesNotThrow(() => assertApprovedReceipt(receiptApproval, receiptPath, receiptSha256, receipt));
-assert.throws(() => assertApprovedReceipt(receiptApproval, 'different.json', receiptSha256, receipt),
-  /receipt path differs/);
-assert.throws(() => assertApprovedReceipt(receiptApproval, receiptPath, 'a'.repeat(64), receipt),
-  /receipt SHA-256 differs/);
-assert.throws(() => assertApprovedReceipt({ ...receiptApproval,
-  cacheSource: { ...cacheSource, tree: '3'.repeat(40) } }, receiptPath, receiptSha256, receipt),
-  /receipt cache source differs/);
-
-const validReceiptArgs = ['--receipt', receiptPath, '--receipt-sha256', receiptSha256,
-  ...cacheModuleNames.flatMap(name => [`--${name}`, receipt.manifests[name].manifestPath])];
-assert.deepEqual(parseBundleArguments(validReceiptArgs).manifestArgs,
-  Object.fromEntries(cacheModuleNames.map(name => [name, receipt.manifests[name].manifestPath])));
-assert.throws(() => parseBundleArguments([]), /pass --receipt/);
-
-const verified = { commonBinding: { sourceCommit: cacheSource.commit, sourceTree: cacheSource.tree }, modules: {} };
-const manifestPaths = {};
-for (const name of cacheModuleNames) {
-  const member = receipt.manifests[name];
-  const manifestBytes = Buffer.from(`synthetic ${name} manifest`);
-  const outputBytes = Buffer.from(`synthetic ${name} output`);
-  member.manifestSha256 = sha256(manifestBytes);
-  member.outputBytes = outputBytes.length;
-  member.outputSha256 = sha256(outputBytes);
-  manifestPaths[name] = path.resolve(root, member.manifestPath);
-  verified.modules[name] = { manifestBytes, bytes: outputBytes,
-    manifest: { output: { bytes: outputBytes.length, sha256: member.outputSha256 },
-      binding: { sourceCommit: cacheSource.commit, sourceTree: cacheSource.tree } } };
-}
-validateReceiptShape(receipt);
-assert.doesNotThrow(() => assertReceiptMatchesCacheSet(receipt, verified, manifestPaths, root));
-const wrongManifest = structuredClone(receipt);
-wrongManifest.manifests.menu.manifestSha256 = '0'.repeat(64);
-assert.throws(() => assertReceiptMatchesCacheSet(wrongManifest, verified, manifestPaths, root),
-  /raw manifest bytes differ/);
-const wrongOutputReceipt = structuredClone(receipt);
-wrongOutputReceipt.manifests.scene.outputSha256 = '0'.repeat(64);
-assert.throws(() => assertReceiptMatchesCacheSet(wrongOutputReceipt, verified, manifestPaths, root),
-  /output bytes differ/);
-const wrongOutputBytes = { ...verified, modules: { ...verified.modules,
-  scene: { ...verified.modules.scene, bytes: Buffer.from('tampered output') } } };
-assert.throws(() => assertReceiptMatchesCacheSet(receipt, wrongOutputBytes, manifestPaths, root),
-  /output byte count differs|output bytes differ/);
-const wrongPath = { ...manifestPaths,
-  chrome: path.join(root, '.artifacts/bend2/2032-preview/other/chrome.manifest.json') };
-assert.throws(() => assertReceiptMatchesCacheSet(receipt, verified, wrongPath, root),
-  /explicit manifest path differs/);
-const wrongSource = structuredClone(receipt);
-wrongSource.cacheSource.commit = '5'.repeat(40);
-for (const name of cacheModuleNames) wrongSource.manifests[name].sourceCommit = wrongSource.cacheSource.commit;
-assert.throws(() => assertReceiptMatchesCacheSet(wrongSource, verified, manifestPaths, root),
-  /verified cache source commit differs/);
-
+// Receipt validation belongs to browser-loader-v2/test.mjs. This suite
+// keeps the fixture only to exercise the packer/receipt integration boundary.
 const helperBytes = Buffer.from('synthetic sprite helper');
 const helperSha = sha256(helperBytes);
 const helperFile = `sprite-helper-${helperSha.slice(0, 12)}.js`;
@@ -273,7 +199,7 @@ assert.deepEqual(secondSw.deleted, [secondPrefix + 'old-build']);
 assert.deepEqual(nestedSw.deleted, [nestedPrefix + 'old-build']);
 
 console.log(JSON.stringify({ schema: 'rift-bend-browser-preview-v2-pure-test/1', passed: true,
-  accepted: ['synthetic receipt-to-cache bindings', 'synthetic 2.0.32-2 bundle contract',
+  accepted: ['synthetic 2.0.32-2 bundle contract',
     'synthetic source, output and revision bindings', 'scope-isolated service-worker cache activation'],
   rejected: ['unarmed and mismatched pins', 'receipt path/hash/cache/source mismatch',
     'manifest path/hash/schema mismatch', 'cache-manifest mismatch', 'output path/hash/bytes mismatch',

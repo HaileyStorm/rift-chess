@@ -29,12 +29,19 @@ positive fixture does not establish authenticity of the reported Linux run.
 This verifies cache-set consistency only. It does not build or render the app
 and does not claim browser acceptance.
 
-Run the provider-free synthetic positive and negative controls with:
+Run the consolidated provider-free boundary and tamper suite with:
 
 ```powershell
-node bend2/toolchain-patches/2032/cache-set/test.mjs
+node bend2/toolchain-patches/2032/cache-set-v2/test.mjs
 ```
 
-The positive test is internal consistency only. Tests write only synthetic
-outputs and manifests under a unique ignored temporary directory; they do not
-snapshot or copy emitted cache artifacts, or mutate repository source files.
+The superseded v1 executable suite and its test-only fixture support were
+removed after migrating its distinct filesystem-link, output-traversal and
+export-order controls to v2. That suite uses unique ignored synthetic fixtures
+and reports OS-denied link controls as skips; it does not certify a positive
+cache set or artifact authenticity.
+
+Retain this production verifier while browser-loader/bundle-real.mjs and
+browser-preview/pack-static.mjs consume it. Its removal requires migrated
+consumers and real-browser evidence for the v2 path. Historical v1 receipts and
+provenance remain immutable; test consolidation does not promote v2 acceptance.

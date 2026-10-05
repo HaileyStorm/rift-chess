@@ -32,28 +32,35 @@ The final export object must contain exactly one complete selected-root
 property per line in the configured order; same-line extra/duplicate
 properties or appended expressions are rejected.
 
-The test command is:
+The single active cache-set test command is:
 
 ~~~powershell
 node bend2/toolchain-patches/2032/cache-set-v2/test.mjs
 ~~~
 
 Tests create synthetic schema-shaped bytes solely as tamper substrates and
-assert rejection after changing one property at a time. They do not run the
+assert rejection after changing one property at a time. The suite retains v1's
+distinct output-traversal, export-order and actual filesystem-link controls
+for manifest/output paths, previewRoot, and previewRoot/sourceRoot ancestors.
+All fixtures and links stay within unique ignored synthetic directories with
+checked cleanup. OS-denied link creation is reported separately as a skip.
+They do not run the
 emitter, certify a positive cache set, or establish output authenticity. A
 manifest's output digest is self-described; trusted artifact authenticity still
 needs externally pinned receipts or equivalent independent evidence. A reviewed
 Linux four-cache readback is now pinned in browser-loader-v2/receipts; the
 real verifier ran on those exact host-local outputs in the
 [Linux bundle result](https://github.com/HaileyStorm/Coordination/issues/1#issuecomment-5929482307).
-Its 28 synthetic tamper controls also passed after a bounded shallow-history
+Its historical 28 synthetic tamper controls also passed after a bounded shallow-history
 recovery. This source-only/CPU result does not prove a rendered browser app.
 
 ## Consumer seam and retained v1 history
 
 This candidate has real-cache evidence for the older `41e48d9` source, but is
 not an accepted production browser path. The existing v1
-verifier, receipts, and consumer imports remain untouched. In particular,
+verifier, receipts, and consumer imports remain untouched. The superseded v1
+executable suite and its unused fixture support were removed after the
+consolidated v2 suite passed; this is test consolidation only. In particular,
 browser-loader/bundle-real.mjs and browser-preview/pack-static.mjs still call
 cache-set/verify.mjs. Separately versioned browser-loader-v2 and
 browser-preview-v2 candidates now call this verifier. The four-cache receipt
