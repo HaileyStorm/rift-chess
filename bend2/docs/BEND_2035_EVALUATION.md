@@ -450,3 +450,28 @@ include requested and natural collections, without per-request attribution.
 Hard guards passed; no primary retry, relaxed limit or production integration.
 These are private emitted-JS results. The edge-on knight identity problem and
 browser/native/physical-display/owner visual acceptance remain separate.
+
+The distinct leaf specialization5 compiled once, preserving the original
+binary32 operation order and both positive-zero additions. Its audit5 held
+execution on a missing terminal LF in expected F32.max text; metadata-only5a
+fixed that expectation without changing source or output. Actual pixel5a passed
+570 exact65,536-pixel comparisons and32 raw arithmetic boundary cases; receipt
+SHA2566ea7f834d1a389df64c596fcd3f5765d021b66ce0bd6ac20a3ae5366cc8641e9.
+Independent review verified raw cases and fixtures. Plan and post-GC assertions
+passed; that pixel runner did not persist individual digests/post-GC samples.
+Signed-zero/NaN observations apply to the pinned runtime, not native portability.
+
+Actual primary5a completed144 samples/36 warmups but failed unchanged2.5 raster
+p95 limits at default3.14766868 and low2.58466338; top1.24416342 passed.
+Whole-render/GC, node and hard resource limits passed. Independent raw-sample
+recomputation confirmed the failure; receipt SHA256
+ee933b58993e062ee3fe9df54f0b7a333aa301557157213fce536af5f82a3c8e.
+No retry, limit relaxation or integration. This does not measure5-versus4 speed.
+
+The smaller private tapered knight passed static geometry/source/launcher review,
+but its one launch failed before compiler execution because Node rejected two
+Windows drive-path ESM imports. Terminal SHA256
+d2631ebcc072aff5ef95c1dad7bebb6e916c2d8773c4e214a89c9d7333b7d8d5.
+All inputs remained unchanged and owned descendants were quiescent. Distinct
+file-URL repair and guarded visual preparation remain unexecuted. No graphics
+acceptance follows from its static14-face visibility scan or23 total faces.
