@@ -104,21 +104,33 @@ Windows descriptor and historical packet. Platform selection adds
 and executable hash before creating an attempt. There is no CLI or environment
 descriptor override. The Linux packet keeps the same import-only Worker, flags,
 10s exit grace and full before/after source fences, with a240s Worker and900s
-quiet outer bound. Only the Linux root status used by source capture has a90s
-operational timeout; upstream statuses, other Git commands and Windows retain30s. The separate retained
-Ubuntu diagnostic completed the exact root status in74.637s; it establishes no
-source capture or Safe compatibility result. A version/path/hash inventory
+quiet outer bound. Only full Linux source-status commands for the exact known
+root, scout and canonical checkout have a90s operational timeout; other Git
+commands and Windows retain30s. Retained diagnostics completed root status in
+74.637s, scout in47.263s and canonical in62.439s. Those timings establish no
+source capture or Safe compatibility result. Canonical Linux status alone adds
+transient `-c core.autocrlf=true`, matching the Windows-created checkout's existing
+policy; no persistent Git configuration or worktree bytes change. The retained
+line-ending audit covers all1773 tracked paths:21 raw-exact and1752 CRLF-only,
+with the latter matching every reported Linux modified path. Full porcelain,
+untracked paths, HEAD/tree and exact source/compiler hashes remain checked.
+Content changes beyond that checkout policy remain rejected; no arbitrary file
+normalization is added. Git errors name the directory, complete argv and timeout.
+A version/path/hash inventory
 establishes no Safe import compatibility or runtime approval. Full kernel
 admission still requires two12GiB/full-ancestry samples.
 
-The private Linux wrapper prepares180s prelaunch, a660s owned parent group and
-900s elapsed checks; its Windows bridge has a960s bound. These elapsed checks do
+The private Linux wrapper proposes300s prelaunch, retaining its660s owned parent
+group,900s elapsed checks and960s Windows bridge bound. These elapsed checks do
 not interrupt synchronous source rebinding. Six full source captures remain:
 wrapper before/after, probe parent before/after and Worker before/after. The240s
 Worker includes its own two captures; each capture retains both upstream status
 checks. These enclosing operational deadlines bound validity, not a guarantee
-that every component maximum or actual attempt will fit. The status delay's
-cause remains unknown; other costs are unmeasured. An outer client expiry can
+that every component maximum or actual attempt will fit. The canonical dirty
+status is explained by the retained CRLF audit; the status delay's cause and
+other costs remain unmeasured. Three observed status durations total184.339s
+per capture, before other work;300s prelaunch is proposed headroom, not a
+completion guarantee. An outer client expiry can
 leave a live guest; retain its leases and uncertain state without replay or
 unverified signaling.
 

@@ -1335,3 +1335,62 @@ This is source preparation only: no Linux import compatibility or kernel proof.
 Windows import limits, both12GiB kernel admissions, null approvals, immutable Laws,
 accepted2.0.27 and isolated2.0.35 pins remain unchanged. Fresh clean publication
 rebinding is required before separately authorized runtime work.
+
+
+## V11 knight review and native Linux checkout diagnosis (October 6)
+
+One V11 compile and twelve distinct emitted-JS renders passed on clean7285623
+(four profiles plus eight remaining angle/colors). The same133054-byte JS output
+267f876080116be008e1c93e7c426916b36c0c52e4a7503311861e55ef59f5f1
+was reused; no old render, pawn or qualification replay. V11 changes only navy
+nonband lighting, preserving V10 mesh2c407b12, ivory and brass-band logic.
+Actual profile ivory images are byte-identical to V10. Root verified28/32 raw
+records,98/103 bindings,43 loaded files and owned exits0/checked closures/Job
+self-only quiescence. Remaining renders peaked at14.873ms raster and153640960 B
+RSS, with minfree1895956480 B; these are local fixture costs, not a native or
+dense-game benchmark. Full-U32 digests and pixel-copy comparisons remain retained.
+
+Root and independent review viewed both colors at0/65,45/35,165/67,270/67,90/67,
+270/90: local prototype appearance PASS. Navy crown/forehead/muzzle planes read
+more clearly, paired frontal ears remain visible and footing stays connected.
+Overhead head plan remains narrow; actual board-context recognition, coherent
+set material, alpha/picking, motion/refinement and dense cost remain unaccepted.
+Private integration preparation must preserve worldscale/footing and use matching
+knight render/pick frames; the original fixed texture box clips the mesh at
+yaw0/pitch35. No product/atlas integration or owner WOW approval occurred.
+Root six-angle disposition49c5da55; profile/remaining root965ff096/63af70f3,
+lossless sheets807e467d/7128d62c. Exact evidence lives under2035-preview.
+
+ONE LinuxV3 import-only attempt failed before probe/Worker launch at source
+binding's upstream status loop30s timeout. Outer/WSL exits1 were observed and
+checked closed, Job self-only and source before/afterclean728; no completed
+Linux57/10 or runtime binding, Safe import or kernel result. Exact old failure,
+raw records and leases remain. Rootfailuref297439e; fullterminalb97b2857.
+
+The distinct two-upstream diagnostic completed both owned statuses without
+signals, timeout or retry: scout clean47.263s; canonical62.439s with1752 modified
+paths. Root verified29 raw records, nativeNodee943/Git2a8c observed before/after,
+both groups quiescent and outer/WSL exits0/checked process and Job closures.
+Diagnostic completion is separate from allCleanSuccess=false. Root443a9e41,
+terminalae94a803, settlement0b486d08; no compiler/Worker/kernel import occurred.
+
+An independent read-only checkout audit accounted for all1773 canonical blobs:
+21 raw-exact and1752 CRLF-to-LF-exact-only. The latter equals all1752 Linux
+modified paths. Windows status is clean with effectivecore.autocrlf=true from
+the Git system configuration. Receipt1f7536da; no source/config bytes changed.
+The reviewed consumer correction adds transientcore.autocrlf=true only to full
+canonical Linux status and90s only to full known root/scout/canonical status.
+Other Git/Windows30s, full porcelain/untracked, HEAD/tree/raw-source guards and
+six source captures remain. Git errors now identify directory, argv and timeout.
+V4 source-only draft79837343/66eae24d passed independent ABI review; this is not
+an executed corrected Linux source capture or Safe compatibility result.
+
+Three separately observed statuses total184.339s. Later cache behavior is not
+proven: two such Worker captures exceed240s and six exceed900s. The private
+wrapper's proposed300s prelaunch is validity headroom, not a hard synchronous
+interrupt or completion guarantee. A distinct corrected full57/10+runtime
+source-only prerequisite is next, before any further import authority. Kernel
+admissions, runtime/kernel approvals, pristine Laws and accepted pin unchanged.
+The full sprint and Goal remain active; native GUI/PCM, kernel/proof authority,
+original GPU, stable performance/device/owner, amendment/adoption and retained
+recovery/host gaps remain open.

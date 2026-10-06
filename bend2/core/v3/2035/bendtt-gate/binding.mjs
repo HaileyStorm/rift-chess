@@ -13,11 +13,25 @@ export const checkPath = path.join(root, 'bend2/core/v2/CHECK.bend');
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-kernel-20261005');
 export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md', 'lineage-review-20261006.json'];
 const scout = path.join(root, '.artifacts/toolchains/bend-2.0.35-scout');
-const git = (directory, ...args) => execFileSync('git', ['-C', directory, ...args], {
-  encoding: 'utf8', windowsHide: true,
-  timeout: process.platform === 'linux' && directory === root && args[0] === 'status' ? 90_000 : 30_000, maxBuffer: 64 * 1024 ** 2,
-  stdio: ['ignore', 'pipe', 'pipe'],
-}).replaceAll('\r\n', '\n').trimEnd();
+const canonical = path.join(root, '.artifacts/toolchains/bend');
+const git = (directory, ...args) => {
+  const sourceStatus = args.length === 3 && args[0] === 'status'
+    && args[1] === '--porcelain=v1' && args[2] === '--untracked-files=all';
+  const linuxStatus = process.platform === 'linux' && sourceStatus
+    && [root, scout, canonical].includes(directory);
+  const command = [...(linuxStatus && directory === canonical ? ['-c', 'core.autocrlf=true'] : []),
+    '-C', directory, ...args];
+  const timeoutMs = linuxStatus ? 90_000 : 30_000;
+  try {
+    return execFileSync('git', command, {
+      encoding: 'utf8', windowsHide: true, timeout: timeoutMs, maxBuffer: 64 * 1024 ** 2,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).replaceAll('\r\n', '\n').trimEnd();
+  } catch (error) {
+    throw new Error(`Git failed: directory=${directory}; argv=${JSON.stringify(command)}; timeoutMs=${timeoutMs}: ${error.message}`,
+      { cause: error });
+  }
+};
 const hash = file => sha256(readSource(file));
 const absolute = relative => path.join(root, ...relativeInput(relative).split('/'));
 const reusedHelpers = {
