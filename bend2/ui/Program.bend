@@ -23,6 +23,34 @@ type UpdateCursor is Data:
   UpdateCursor{state: S.State, effects: List<&2, Types.Effect>, redraw: U32,
     after: U32, spent: Bool, tail: List<&2, UpdateCursor>}
 
+# Browser scheduling observes the same event fold that performs transitions.
+# Keep the ordinary/native Update shape independent of this metadata.
+type WebUpdate is Data:
+  WebUpdate{update: S.Update, cameraReleased: Bool}
+
+def cursor_state(cursor: UpdateCursor) -> S.State:
+  match cursor:
+    case UpdateCursor{state, _, _, _, _, _}: state
+
+def same_view(a: Camera.View, b: Camera.View) -> Bool:
+  match a:
+    case Camera.View{ay, ap, az}:
+      match b:
+        case Camera.View{by, bp, bz}:
+          Bool.and(U32.is_eq(ay, by), Bool.and(U32.is_eq(ap, bp), U32.is_eq(az, bz)))
+
+def web_release_after(event: Types.Input, +before: S.State,
+  +after: S.State, previous: Bool) -> Bool:
+  match event:
+    case Types.Wheel{_, _, _}: False{}
+    case _: Bool.and(Bool.not(S.orbiting(after)),
+      Bool.or(S.orbiting(before),
+        Bool.and(previous, same_view(S.view(before), S.view(after)))))
+
+def web_update_value(web: WebUpdate) -> S.Update:
+  match web:
+    case WebUpdate{update, _}: update
+
 # Legal Shifts as deduplicated from*16+to pairs (promotion variants share one).
 def shift_pairs(ids: List<&2, U32>, +acc: List<&2, U32>) -> List<&2, U32>:
   match ids:
@@ -381,12 +409,21 @@ def web_update_go.step(+e: Types.Input, cursor: UpdateCursor) -> UpdateCursor:
       web_update_go.apply(Bool.and(spent, replay_tick), e, s, effects, redraw,
         Bool.or(spent, replay_tick))
 
-def web_update_go(events: List<&2, Types.Input>, cursor: UpdateCursor) -> S.Update:
+def web_update_release_go(events: List<&2, Types.Input>,
+  +cursor: UpdateCursor, released: Bool) -> WebUpdate:
   match events:
-    case Nil{}: update_go.finish(cursor)
+    case Nil{}: WebUpdate{update_go.finish(cursor), released}
     case +e <> tail:
-      next: UpdateCursor = web_update_go.step(e, cursor)
-      web_update_go(tail, next)
+      +before = cursor_state(cursor)
+      +next = web_update_go.step(e, cursor)
+      web_update_release_go(tail, next,
+        web_release_after(e, before, cursor_state(next), released))
+
+def web_update_go(events: List<&2, Types.Input>, cursor: UpdateCursor) -> S.Update:
+  web_update_value(web_update_release_go(events, cursor, False{}))
+
+def update_web_release(events: List<&2, Types.Input>, +s: S.State) -> WebUpdate:
+  web_update_release_go(events, UpdateCursor{s, [], 0, S.after(s), False{}, []}, False{})
 
 def update_web(events: List<&2, Types.Input>, +s: S.State) -> S.Update:
   web_update_go(events, UpdateCursor{s, [], 0, S.after(s), False{}, []})

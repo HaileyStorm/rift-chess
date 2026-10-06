@@ -15,6 +15,7 @@ const api = Controller as Record<string, (...args: any[]) => any>;
 const scene = BoardScene as Record<string, (...args: any[]) => any>;
 const menu = MenuAA as Record<string, (...args: any[]) => any>;
 let session: unknown;
+let cameraOrbiting = false;
 type BotWork = { kind: 'pending' } | { kind: 'ready'; id: number }
   | { kind: 'unavailable'; message: string } | { kind: 'failed'; message: string };
 const botWork = new Map<number, BotWork>();
@@ -64,6 +65,7 @@ let spritePending: { id: number; generation: number; frame: any; theme: number;
 // helper render for an intermediate view before the next input arrives.
 const CAMERA_QUIET_MS = 450;
 let spriteQueued: { frame: any; theme: number; revision: number } | null = null;
+let spriteReleased: { frame: any; theme: number; revision: number } | null = null;
 let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
@@ -193,6 +195,7 @@ function clearSpriteQueue(): void {
 function disposeSprite(): void {
   spriteGeneration++;
   spritePending = null;
+  spriteReleased = null;
   clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
@@ -234,7 +237,7 @@ function ensureSpriteHelper(): void {
     messageQueue = messageQueue.then(async () => {
       const current = latestPacket;
       if (!current || (current.render.boardSize !== 512 && current.render.boardSize !== 1024) ||
-          current.render.motion ||
+          cameraOrbiting || current.render.motion ||
           current.snapshot.moving || current.render.theme !== pending.theme ||
           current.presentation.revision !== pending.revision ||
           !scene.sprite_same_placement(pending.frame, current.snapshot.frame)) {
@@ -298,15 +301,25 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   if (sharedPlate) spritePlateTheme = theme;
 }
 
-function scheduleSprite(packet: any): void {
+function scheduleSprite(packet: any, cameraReleased = false): void {
+  const frame = packet.snapshot.frame, theme = packet.render.theme;
+  if (cameraReleased) {
+    spriteReleased = { frame, theme, revision: packet.presentation.revision };
+  } else if (spriteReleased && (spriteReleased.theme !== theme ||
+      spriteReleased.revision !== packet.presentation.revision ||
+      !scene.sprite_same_placement(spriteReleased.frame, frame))) {
+    spriteReleased = null;
+  }
+  const released = spriteReleased !== null;
   if ((packet.render.boardSize !== 512 && packet.render.boardSize !== 1024) ||
-      packet.render.motion || packet.snapshot.moving) {
+      cameraOrbiting || packet.render.motion || packet.snapshot.moving) {
+    spriteReleased = null;
     clearSpriteQueue();
     return;
   }
-  const frame = packet.snapshot.frame, theme = packet.render.theme;
   if (spriteLayer && spriteTheme === theme && spriteFrame &&
       scene.sprite_same_placement(spriteFrame, frame)) {
+    spriteReleased = null;
     clearSpriteQueue();
     return;
   }
@@ -314,18 +327,21 @@ function scheduleSprite(packet: any): void {
   if (!spriteHello) return;
   if (spritePending && spritePending.theme === theme &&
       spritePending.revision === packet.presentation.revision &&
-      scene.sprite_same_placement(spritePending.frame, frame)) return;
-  if (spriteQueued && spriteQueued.theme === theme &&
+      scene.sprite_same_placement(spritePending.frame, frame)) {
+    spriteReleased = null;
+    return;
+  }
+  if (!released && spriteQueued && spriteQueued.theme === theme &&
       spriteQueued.revision === packet.presentation.revision &&
       scene.sprite_same_placement(spriteQueued.frame, frame)) return;
   clearSpriteQueue();
-  if (spriteLayer && spriteFrame && spriteTheme === theme && packet.render.ground &&
+  if (!released && spriteLayer && spriteFrame && spriteTheme === theme && packet.render.ground &&
       scene.sprite_camera_only_change(spriteFrame, frame)) {
     spriteQueued = { frame, theme, revision: packet.presentation.revision };
     spriteTimer = setTimeout(() => {
       const queued = spriteQueued, current = latestPacket;
       clearSpriteQueue();
-      if (!queued || !current || current.render.motion || current.snapshot.moving ||
+      if (!queued || !current || cameraOrbiting || current.render.motion || current.snapshot.moving ||
           current.render.theme !== queued.theme ||
           current.presentation.revision !== queued.revision ||
           !scene.sprite_same_placement(queued.frame, current.snapshot.frame)) return;
@@ -333,6 +349,7 @@ function scheduleSprite(packet: any): void {
     }, CAMERA_QUIET_MS);
     return;
   }
+  spriteReleased = null;
   startSpriteJob(frame, theme, packet.presentation.revision);
 }
 
@@ -508,6 +525,7 @@ async function handleMessage(request: any): Promise<void> {
     }
     if (botFatal) throw new Error(`Bend bot worker failed: ${botFatal}`);
     let packet: any;
+    let cameraReleased = false;
     if (request.kind === 'boot') {
       disposeBot();
       disposeSprite();
@@ -521,17 +539,23 @@ async function handleMessage(request: any): Promise<void> {
         if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
             !scene.sprite_has_view(mask.frame, request.presentation.view))
           throw new Error('Displayed atlas frame lost its matching pose alpha data');
-        packet = api.dispatch_at_web_atlas(list(request.events), request.presentation, mask.pieces, session);
+        const dispatched = api.dispatch_at_web_atlas_meta(list(request.events), request.presentation, mask.pieces, session);
+        packet = dispatched.packet;
+        cameraReleased = dispatched.cameraReleased === true;
       } else {
-        packet = api.dispatch_at_web(list(request.events), request.presentation, session);
+        const dispatched = api.dispatch_at_web_meta(list(request.events), request.presentation, session);
+        packet = dispatched.packet;
+        cameraReleased = dispatched.cameraReleased === true;
       }
     }
     packet = applyReadyBot(packet);
+    const orbiting = api.orbiting(packet.session) === true;
+    cameraOrbiting = orbiting;
     observeBotJob(api.bot_job(packet.session));
     await emit(packet, performance.now() - start, request.id);
     latestPacket = packet;
     lastHostId = request.id;
-    scheduleSprite(packet);
+    scheduleSprite(packet, cameraReleased);
     scheduleBot(api.bot_job(packet.session));
   } catch (error) {
     self.postMessage({ kind: 'fault', id: request.id, message: String(error) });

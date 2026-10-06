@@ -13,9 +13,9 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
-  scene: ['knight-sculpted-integration-20261006/scene-PTRCF6', '026ac3bd151deab0927e70faebde2aca6bfb271aa4598fa6b8446213dd6f2027'],
-  controller: ['knight-sculpted-integration-20261006/controller-MZL7KM', '55baf7bc93b2f359e607f87b35c1f252d28c6d585bc35f25bc4ca723299ccb42'],
-  menu: ['menu-g2ud5O', 'fd378ce781a27e5ca0b912465d2316590d847149461daea203d21e3c03e053a4'],
+  scene: ['camera-refinement-20261006/scene-AUp7gh', '07178f392f7b559e95489fa108140d306013b714bdba3511de11fa697789bebf'],
+  controller: ['camera-refinement-20261006/controller-eZtJGy', '00d6655ae5586ce36eb650762b9c6c138204dba932b49d6432c36c350833d07d'],
+  menu: ['camera-refinement-20261006/menu-S4IxDK', '0197e43645ae79b36a1ae2bb5db8519ca14ce7d1ff0e892666c6435e2506ae68'],
   chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
@@ -69,13 +69,13 @@ function botLibrary2035(runtime) {
   return { binding, manifest, contents };
 }
 
-// The retained Chrome emission predates three added scene exports. Its own
+// The retained Chrome emission predates added scene/controller exports. Its own
 // entry, exports, compiler and source closure are unchanged. Preserve that
 // original receipt and permit only this reviewed registry transition.
 export function assertSelectedCacheBinding2035(name, cached, current, manifestSha256) {
   const registry = 'bend2/tools/selected-modules.mjs';
   const oldHash = 'b3abdbcb1a6bdfe749535b90b17d54ef3205f950c87ff34efcdf31a23f37ee63';
-  const newHash = 'c3254f1133b49841bda3d77a5ba2874b5b9c6a76bcf75e735706c4357ee8d7ff';
+  const newHash = '39f4e5700c2cbad3ae1a9e44ef72e3acee97eb914466e34b3f65616b05c2de64';
   if (name !== 'chrome' || manifestSha256 !== selected.chrome[1]
       || cached.sourceFiles.find(item => item.path === registry)?.sha256 !== oldHash) {
     assert.deepEqual(cached, current);
@@ -87,12 +87,15 @@ export function assertSelectedCacheBinding2035(name, cached, current, manifestSh
   const bytes = readSource(path.join(root, registry));
   assert.equal(sha256(bytes), newHash);
   const addition = "'sprite_pick_data', 'sprite_pose_pieces', 'sprite_same_view', 'sprite_has_view',";
+  const controllerAddition = "'dispatch_at_web_meta', 'dispatch_at_web_atlas_meta', 'refine', 'orbiting', 'bot_job'";
   const source = bytes.toString('utf8');
   assert.equal(source.split(addition).length - 1, 1);
-  assert.equal(sha256(Buffer.from(source.replace(addition, "'sprite_pick_data',"))), oldHash);
+  assert.equal(source.split(controllerAddition).length - 1, 1);
+  assert.equal(sha256(Buffer.from(source.replace(addition, "'sprite_pick_data',")
+    .replace(controllerAddition, "'refine', 'bot_job'"))), oldHash);
   const compatible = { ...cached, sourceFiles: cached.sourceFiles.map(item =>
     item.path === registry ? { ...item, sha256: newHash } : item) };
-  assert.deepEqual(compatible, current, 'Chrome inputs changed beyond reviewed scene exports');
+  assert.deepEqual(compatible, current, 'Chrome inputs changed beyond reviewed registry exports');
   return { schema: 'rift-selected-cache-compatibility/1', path: registry,
     emittedSourceSha256: oldHash, currentSourceSha256: newHash,
     currentBindingSha256: sha256(JSON.stringify(current)),

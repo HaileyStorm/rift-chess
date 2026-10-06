@@ -86,6 +86,13 @@ type Packet is Data:
     dirty: Bool, after: U32, summary: String,
     presentation: Presentation}
 
+type WebPacket is Data:
+  WebPacket{packet: Packet, cameraReleased: Bool}
+
+def web_packet_packet(web: WebPacket) -> Packet:
+  match web:
+    case WebPacket{packet, _}: packet
+
 def storage_key(slot: U32) -> String:
   match slot:
     case 0: "rift-bend-lab/save-v1"
@@ -94,6 +101,12 @@ def storage_key(slot: U32) -> String:
 
 def max_file_bytes() -> U32:
   Codec.max_file_bytes()
+
+# Scheduling metadata comes from the actual Bend pointer state, including
+# clean packets whose RenderPlan.motion intentionally remains false.
+def orbiting(session: Session) -> Bool:
+  match session:
+    case Session{state, _, _, _, _}: S.orbiting(state)
 
 def view_equal(a: Camera.View, b: Camera.View) -> Bool:
   match a b:
@@ -352,6 +365,12 @@ def apply(u: S.Update, ground: GroundKey, style: U32,
         shell,
         quality_for(probe, old_quality, T.snapshot_mobile(snapshot)))
 
+def apply_web(update: Program.WebUpdate, ground: GroundKey, style: U32,
+  quality: Quality.State, shell: ShellKey, probe: Maybe<&2, Quality.Probe>) -> WebPacket:
+  match update:
+    case Program.WebUpdate{u, released}:
+      WebPacket{apply(u, ground, style, quality, shell, probe), released}
+
 def has_boot_errors(+errors: List<&2, T.Input>) -> Bool:
   match errors:
     case Nil{}: False{}
@@ -459,13 +478,17 @@ def dispatch_at(+events: List<&2, T.Input>, shown: Presentation,
 
 # This browser-only controller variant defers just bot choice to the separately
 # compiled WebWorker library. NativeV2 continues calling dispatch_at above.
-def dispatch_at_web(+events: List<&2, T.Input>, shown: Presentation,
-  session: Session) -> Packet:
+def dispatch_at_web_meta(+events: List<&2, T.Input>, shown: Presentation,
+  session: Session) -> WebPacket:
   match session:
     case Session{state, ground, style, quality, shell}:
       +translated = events_at(events, shown)
-      apply(Program.update_web(translated, state), ground, style,
+      apply_web(Program.update_web_release(translated, state), ground, style,
         quality, shell, latest_probe(events, None{}))
+
+def dispatch_at_web(+events: List<&2, T.Input>, shown: Presentation,
+  session: Session) -> Packet:
+  web_packet_packet(dispatch_at_web_meta(events, shown, session))
 
 # Only displayed, settled browser atlas frames use this silhouette. Native and
 # procedural presentations retain events_at and the original picker.
@@ -519,13 +542,17 @@ def atlas_events_at(events: List<&2,T.Input>, +shown: Presentation,
     case event <> rest:
       atlas_event_at(event,shown,pieces) <> atlas_events_at(rest,shown,pieces)
 
-def dispatch_at_web_atlas(+events: List<&2,T.Input>, shown: Presentation,
-  pieces: PieceSprites.Pieces, session: Session) -> Packet:
+def dispatch_at_web_atlas_meta(+events: List<&2,T.Input>, shown: Presentation,
+  pieces: PieceSprites.Pieces, session: Session) -> WebPacket:
   match session:
     case Session{state,ground,style,quality,shell}:
       +translated = atlas_events_at(events,shown,pieces)
-      apply(Program.update_web(translated,state),ground,style,
+      apply_web(Program.update_web_release(translated,state),ground,style,
         quality,shell,latest_probe(events,None{}))
+
+def dispatch_at_web_atlas(+events: List<&2,T.Input>, shown: Presentation,
+  pieces: PieceSprites.Pieces, session: Session) -> Packet:
+  web_packet_packet(dispatch_at_web_atlas_meta(events, shown, pieces, session))
 
 # A background-render worker can return an immutable, fully authored Bend
 # board image after the fast preview has been presented. This asks Bend to

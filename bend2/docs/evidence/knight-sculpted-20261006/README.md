@@ -44,7 +44,7 @@ smooth202-face5.490ms. The more complex rounded/smooth candidate produced little
 gain at board scale and remains a retained private diagnostic.
 
 The focused browser's single cold low-view refinement round trip was2097ms;
-same-Worker camera refinement was1355ms (450ms quiet window included), with
+same-Worker camera refinement was1355ms after the separate450ms quiet window, with
 2047ms from gesture start to final readback. These variable-load samples are
 diagnostic, not stable latency percentiles or a native/physical-device benchmark.
 Responsiveness acceptance remains open. Broad24-scenario/689-reference behavior
