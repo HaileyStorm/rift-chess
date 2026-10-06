@@ -102,10 +102,25 @@ Windows descriptor and historical packet. Platform selection adds
 `linuxProbeRuntime` and `linuxRuntimeProbePacket`, binding exactly
 `/home/hailey/.nvm/versions/node/v24.6.0/bin/node`; the parent verifies that path
 and executable hash before creating an attempt. There is no CLI or environment
-descriptor override. The Linux packet uses the same import-only Worker, flags,
-60s deadline/10s exit grace/120s outer bound and before/after source fences. A
-version/path/hash inventory establishes no Safe import compatibility or runtime
-approval. Full kernel admission still requires two12GiB/full-ancestry samples.
+descriptor override. The Linux packet keeps the same import-only Worker, flags,
+10s exit grace and full before/after source fences, with a240s Worker and900s
+quiet outer bound. Only the Linux root status used by source capture has a90s
+operational timeout; upstream statuses, other Git commands and Windows retain30s. The separate retained
+Ubuntu diagnostic completed the exact root status in74.637s; it establishes no
+source capture or Safe compatibility result. A version/path/hash inventory
+establishes no Safe import compatibility or runtime approval. Full kernel
+admission still requires two12GiB/full-ancestry samples.
+
+The private Linux wrapper prepares180s prelaunch, a660s owned parent group and
+900s elapsed checks; its Windows bridge has a960s bound. These elapsed checks do
+not interrupt synchronous source rebinding. Six full source captures remain:
+wrapper before/after, probe parent before/after and Worker before/after. The240s
+Worker includes its own two captures; each capture retains both upstream status
+checks. These enclosing operational deadlines bound validity, not a guarantee
+that every component maximum or actual attempt will fit. The status delay's
+cause remains unknown; other costs are unmeasured. An outer client expiry can
+leave a live guest; retain its leases and uncertain state without replay or
+unverified signaling.
 
 No source check or import probe establishes Safe elaboration, kernel correctness,
 Linux admission, conformance, native/device/browser/GPU behavior or pin adoption.

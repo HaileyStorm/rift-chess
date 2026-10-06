@@ -14,7 +14,8 @@ export const outputRoot = path.join(root, '.artifacts/bend2/2035-kernel-20261005
 export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md', 'lineage-review-20261006.json'];
 const scout = path.join(root, '.artifacts/toolchains/bend-2.0.35-scout');
 const git = (directory, ...args) => execFileSync('git', ['-C', directory, ...args], {
-  encoding: 'utf8', windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 ** 2,
+  encoding: 'utf8', windowsHide: true,
+  timeout: process.platform === 'linux' && directory === root && args[0] === 'status' ? 90_000 : 30_000, maxBuffer: 64 * 1024 ** 2,
   stdio: ['ignore', 'pipe', 'pipe'],
 }).replaceAll('\r\n', '\n').trimEnd();
 const hash = file => sha256(readSource(file));

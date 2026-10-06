@@ -26,7 +26,7 @@ export const linuxProbeRuntime = Object.freeze({ engine: 'Node', version: 'v24.6
   parentExecArgv: [], workerExecArgv: [...safeWorkerFlags], nodeOptions: '', stackSizeMb: 64 });
 export const linuxRuntimeProbePacket = Object.freeze({ ...runtimeProbePacket,
   command: ['/home/hailey/.nvm/versions/node/v24.6.0/bin/node', 'bend2/core/v3/2035/bendtt-gate/probe.mjs', '--import-only'],
-  runtime: linuxProbeRuntime,
+  runtime: linuxProbeRuntime, workerTimeoutMs: 240_000, quietOuterTimeoutMs: 900_000,
   output: `${runtimeProbePacket.output}; separate observed parent exit0 and checked settlement before accepted review`,
   resourcePolicy: '64MiB actual stack readbacks; memory observations only; kernel full-ancestry/two12GiB admission unchanged',
 });

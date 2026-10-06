@@ -1286,3 +1286,52 @@ Full Goal remains active. Safe elaboration/kernel verdict, native GUI/PCM/restar
 original GPU250ms acceptance, stable/device/owner acceptance, recovery/onboarding
 and reviewed chained adoption remain open. Kernel/Linux approvals remain null;
 12GiB kernel admissions and immutable Laws/pins remain unchanged. Vivaldi open.
+
+
+## October 6: actual V10 ears and Linux source timing
+
+V10 changes only the two ear tips to (-.100, +/- .065, 1.170). Its actual
+static audit, checked compilation and eight distinct profile/frontal/top renders
+passed. Root verified the original process evidence, current input hashes and
+lossless comparison crops; independent visual review agreed. The profile ear cue
+has a modest useful gain, and 90/67 now shows two tips and a central notch without
+the previous lateral bar. Overall appearance remains HOLD: navy head/neck planes
+merge, and the overhead head plan gives little anatomical distinction. These are
+bounded visual judgments, not full-knight, native, cost or adoption acceptance.
+Root profile/cardinal reviews: 0d7074a3b190aedf0ab53f4d3bd2dd07913167e2e8bd1c3489f327249bb311e6
+and 8441440b5afdda9ccad08c7a37ccd2b9e4000954792881c498ee0d0459c015fd.
+
+Source arithmetic identifies an exact navy shading plateau: several differently
+angled visible faces clamp to the same opaque RGB. A private V11 navy-body-only
+signed world-light ramp has been generated once, with geometry, normals, materials,
+brass bands and unrelated bytes unchanged. Prototype SHA256
+4efc57eda5c9bef09eff5dee7230f4b01c8f901f0813bab3f785a09d33b98feb.
+Its generator exited 0 with checked closure and unchanged inputs; no compiler,
+geometry-audit replay or renderer executed. Predicted colors are not actual pixels.
+
+The first actual Ubuntu source capture stopped at the existing 30-second Git
+status timeout before any Worker or Safe import. A separate diagnostic initially
+stopped because an added wrapper assertion rejected an already-exited git --version
+child. Both failures remain immutable. After correcting that extra assertion,
+one distinct owned-group Git status diagnostic completed in 74.637 seconds, exit 0,
+with empty stdout/stderr, captured identity, known group quiescence, no signals,
+checked Windows/WSL/Job closures and unchanged clean b0dec56e source. Exact native
+Git2.43.0 and Node24.6 executable identities stayed equal. Scoped Ubuntu Git config
+showed only core.ignorecase=true; the filesystem/index cause remains unproved.
+Root diagnostic SHA256
+6529b08b509270dd8b11d08f36d7a63521fa7184c0a1baecd17d1698e54ba24c.
+
+The reviewed source correction raises only Linux repository-root status to 90s;
+all other Git calls and Windows retain 30s. Linux import-only Worker240s/10s grace
+and enclosing900s validity bounds accommodate source-check cost. All six full
+source captures remain; these bounds do not guarantee worst-case completion or
+hard interruption of synchronous binding. The private V2 wrappers remove only
+the extra non-null live-identity requirements for terminal success, preserving
+the helper's identity rules for signaling, observed exit/drained output/known
+quiescence, exact runtime/flags/stack64/fetch0, exclusive outputs and uncertain
+lease retention. Independent source review passed; V2 handoff SHA256
+76b12d0e3e41597c9874fa946c49eb1ad5f6f7b742b154fd38161886372000d6.
+This is source preparation only: no Linux import compatibility or kernel proof.
+Windows import limits, both12GiB kernel admissions, null approvals, immutable Laws,
+accepted2.0.27 and isolated2.0.35 pins remain unchanged. Fresh clean publication
+rebinding is required before separately authorized runtime work.
