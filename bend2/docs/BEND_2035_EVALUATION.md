@@ -590,9 +590,43 @@ race and online/cold-offline bot3980/20065. Four exact bot modules returned200
 through the service worker; errors[], all served bundle hashes unchanged, both
 browsers and the owned ephemeral server closed. Browser receipt SHA256
 6a3ea287f17e2685ca4ec9954f7e60ff5c2798288367ecb5e5461c14291f8b1d.
-This is current behavior, not latency or native acceptance. Resulting C widths
-remain pending. No next native execution, compiler-limit change, pin adoption,
-ELF/GUI/PCM/kernel/GPU claim follows.
+This is current browser behavior, not latency or native acceptance. The subsequent
+source-fix-3 result below resolves C-text emission; native build/device, kernel,
+GPU and adoption obligations remain separate.
+
+## Complete current-source C-text emission
+
+Exactly one reviewed source-fix-3 attempt on clean
+fd607bda4651852b226af72a27ee233ca39e88f7/treea361e9fa passed the complete85-file
+NativeV2 source/type/IO/foreign/namespace/order guards and C-text emission.
+It checked3076 definitions with zero holes, retained45 Base foreign definitions
+and31 C sidecars, used the actual64MiB Worker stack with empty flags/NODE_OPTIONS,
+and measured fetch0. Before, pre-C and after bindings match. Vivaldi stayed open;
+no Windows RAM floor was imposed. Parent and Worker exits0 were observed, with
+no timeout, retry, failure record or remaining lease.
+
+The retained NativeV2.c is14,804,992 bytes, SHA256
+b208660ef3a5d7c129cd8b73cb51e09b4e9d77cf857cdce54d7639de7abd62ef.
+Receipt SHA2566ca7eacb2c8e4b4b48a6f6cff0c406f0f5299a59bc1e46e303dfcf8754c5fef8;
+terminal handoff SHA256
+314bad291760706a1d0d71c339f23974d0940a5563309b5d542ab040b88df803.
+Independent actual review PASS verifies all232 fresh and821 predecessor records,
+current/private project inputs, both97-file original compiler inventories and
+the97-file private compiler inventory. Failed and unexecuted predecessors remain.
+
+C-entry-to-post-binding took320.8499252s on the Worker journal clock, including
+journal overhead. Worker-result383.1719136s, parent-receipt403.715s and
+launcher427.7967624s have different origins; none is pure compiler CPU time or
+a peak-memory measurement. The six diagnostic metadata markers are absent from
+successful emitted C. Five exact anchor reversals recover the original compiler;
+static review confirms unchanged successful lowering, layouts, ordering, balance
+and compiler limits. No second unpatched full-C compile or output-byte equality
+was measured.
+
+This establishes current-source C text. There is still no C compilation, ELF,
+GUI, PCM, Linux/kernel/GPU acceptance or toolchain adoption from this attempt.
+Reconcile exact Linux admission and the remaining native/kernel prerequisites
+before new execution; do not replay stopped requests or lower their contracts.
 
 ## Early-helper disposition
 
