@@ -707,3 +707,65 @@ Root and independent subjective six-view reviews HOLD:45/35 is strongest,
 Static closed/wound geometry does not settle appearance. Root verified155 records;
 dispositione19328cb48da2fe57060c6304ef673185b359777398c5920d1a20722da3ae246.
 No benchmark, integration or promotion; current atlas and all predecessors remain.
+
+## Native ownership preparation and startup transport disposition
+
+The private WSL ownership observer passed bounded independent static review;
+root verified 17 retained records. Receipt
+`2035-preview/native-ownership-static-review-20261005.json` SHA256
+`e142adc384fe6c7694fd603f120fe0893ceafb0f214c236a5f38f410245cb128`
+binds the exact owned-window C variant and observer. Removing its unique333-byte
+_NET_WM_PID insertion recovers the original successful C emission byte-for-byte.
+The variant has a distinct C/ELF identity; it is not a pristine native result.
+Window operations require one visible PID-bound client in the owned session,
+actual process/ELF identity and retained XID validation. Unknown process state
+retains leases. No installation, Clang, GUI, PCM or restart ran. The existing
+human ALSA decision remains pending; original preparation packets are retained.
+The read-only XRes file probe found no tested header/link-library path; this
+is not a display capability query or exhaustive filesystem absence.
+
+A single actual cleanbrowser-DcyiMn Chrome profile measured first-playable1629.6ms,
+detail4064ms and refinement chrome6ms. Receipt
+`2035-preview/refinement-profile-20261005/receipt.json` SHA256
+`497e74a34247a9d2257c047fb0b29c06909beee99c84629c905eb9ddf63ffb1b`
+retains existing main/helper timers. Dispatch and acceptance spans include
+cloning, scheduling and receiver serialization, not pure cloning costs.
+Chrome rebuilding is too small to justify the held controller optimization.
+The candidate package has no prepared-ground asset; the retained historical
+asset is not current2035 graphics evidence.
+
+A private generic Image DAG forest experiment preserved U32 colors, child order,
+object aliases and buffer detachment through actual Node Workers, including a
+historical Bend-authored depth9 image plus twelve mask roots. Two successive
+four-start alternating Chrome comparisons preserved exact default presented RGBA
+pixels. The first implementation regressed detail2740/2794ms to3616/3516ms;
+encoding cost867/987ms. One allocation-reduction attempt lowered encoding to304/419ms,
+but overall detail improved2761→2290ms in one pair and regressed3358→3603ms in the
+other. Neither reached the2s detail target. These warm-file-cache headless samples
+with uncontrolled background load do not establish stable speed or current-scene
+full-U32 parity, peak memory, physical presentation or native acceptance.
+
+Root rejected activation, restored the existing transport and exact main-worker
+bytes, and removed the two unused experimental source/test files through their
+owner after byte-verified ignored retention. All bundles, failed collector output,
+source variants and proofs remain. The initial collector's BigInt recording error
+is separate from the later successful comparisons; it was not retagged as a pass.
+Final comparison receipt
+`2035-preview/image-transfer-integration-20261005/optimization1-compare-receipt.json`
+SHA256`9cbea40209d908dba2cca2f778bd3a4d72b33bd43217b05c6a698878070877d0`;
+owned removal receipt
+`image-transfer-20261005/rejected-source-removal.json` SHA256
+`d886d637567d2218ffeea00e18afe5cc08cdcc379a46cd71a0387c50b0f1aab7`.
+
+The retained product fix rejects a late older helper generation before it can
+replace the newer retained plate. A real Worker regression sends old plate77
+after newer plate9 and verifies the next current job still uses9. All three
+existing helper tests passed. Fresh restored-transport packagebrowser-0od5Mi
+(version2e9743410354347015fd, buildc4bc304065576952…) passed one actual Chrome
+view/refinement race: deferred1, discarded1, atlasPicktrue, errors0, package
+bytes unchanged. Receipt
+`2035-preview/image-transfer-integration-20261005/restored-browser-race-receipt.json`
+SHA256`6bf73089767b666daf65c535b16dee2cb45e3c9c73ea616a8255b20cb5978df1`.
+This package records its actual sourceDirtytrue provenance; prior broad browser
+receipts retain their original manifests. Bend caches and frozen laws are unchanged.
+

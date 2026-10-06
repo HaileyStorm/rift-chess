@@ -29,7 +29,7 @@ const ports = {
   'worker-v2.ts': { sha256: '5fc260f3d54ba890471feba134b808b07e13ace62fd5b2e0ae638a461a6335ca',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     bareCounts: { Con: 2, Nil: 1, Pix: 2, Qua: 2, Some: 1 } },
-  'sprite-helper.ts': { sha256: '71f27609b163445fddf7ed3d942191e94cea8ba69cea55dce18572565208b862',
+  'sprite-helper.ts': { sha256: 'c37861150286128452fd6cbb7416b4f0ccc6494435abbdf0d9973dda5cbe7e2d',
     counts: { Ready: 2, Frame: 1, ObservatoryPlates: 1 },
     bareCounts: { Con: 2, Nil: 2, Pix: 3, Qua: 3, Some: 1 } },
   'asset-port.ts': { sha256: '2a2927c81f5b652685ee2cacb0608b4a7b3eb528fffc8322eebeaad6a215d3e0',

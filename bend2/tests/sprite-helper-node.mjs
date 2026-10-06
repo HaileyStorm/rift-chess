@@ -232,6 +232,15 @@ test('a superseded first job retains its Bend plate without refetching it', asyn
     'neither the canceled nor the replacement job refetches the supplied plate');
   assert.equal(Number.isFinite(newest.metrics.decodeMs), true,
     'the canceled job may already have populated the immutable sprite-page cache');
+  const olderPlate = { ...supplied, astral: { $: 'Ready', depth: 9, pixels: { $: 'Pix', color: 77 } } };
+  worker.postMessage({ kind: 'job', protocol: 1, id: 12, generation: 1,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'late-old' }, plates: olderPlate });
+  await waitFor(worker, message => message.kind === 'stale' && message.id === 12);
+  worker.postMessage({ kind: 'job', protocol: 1, id: 13, generation: 2,
+    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'retained' } });
+  const retained = await waitFor(worker, message => message.kind === 'result' && message.id === 13);
+  assert.equal(retained.testState.lastGround.platePixel, 9,
+    'an older generation cannot replace the retained plate used by a newer job');
 });
 
 test('prepared ground requires Bend ground key and exact decoded plate, with stale fallback', async t => {

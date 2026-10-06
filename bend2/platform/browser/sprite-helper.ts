@@ -315,6 +315,10 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
 
   scope.addEventListener('message', event => {
     const request = event.data;
+    // A late job must not replace the plate retained by a newer generation.
+    if (request?.protocol === PROTOCOL && request.source === source &&
+        Number.isSafeInteger(request.generation) && request.generation >= 0 &&
+        request.generation < generation) { stale(request); return; }
     // Receive the validated immutable Bend plate before an earlier async
     // sprite-page fetch can be superseded. Retain at most one theme.
     if (validEnvelope(request) && request.source === source && request.plates)
