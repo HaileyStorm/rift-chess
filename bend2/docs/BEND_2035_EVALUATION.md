@@ -865,3 +865,55 @@ Fresh WSL inventory reports Ubuntu Stopped; no restart/install/game. Earlier
 runtime/ALSA/memory samples remain historical. The existing minimal ALSA
 installation decision is pending. Passive Coordination read03:15:53Z returned
 no new replies; no requests replayed or Linux qualification inferred.
+
+## October6: safe cleanup, retained knight studies and scene lifecycle HOLD
+
+The user requested safe space reclamation while keeping Vivaldi open. Manual
+cleanup touched only exact user-local npm _cacache download files:1305 files,
+923285427 logical bytes, no errors. All planned paths were independently absent;
+own cache sentinel was released through its tool. Installed packages, project,
+personal and browser bytes were retained. Result SHA256
+`11df837e57fd8a40e1d6ba25407c1bbbebb0a71bc7f48fc6e175483b624002dc`.
+
+Dense paint split executed once with12 full-U32-identical images: retained dense
+median23.2822ms versus prepared-paint17.83215ms, all declared guards passed.
+This small default-view diagnostic does not close primary144/browser/native cost.
+Knight budget-v3 performed one compile and14 guarded renders; root inspected
+lossless ivory/navy six-view sheets and held activation for thin opposing views,
+weak top identity and navy contrast. Budget-v4 is static only:31Faces/54triangles,
+closed planar convex shells,20160 finite double-precision cameras max20/over0.
+Independent review passed outside-knight byte preservation; wider flat sides and
+ear overlap still need actual pixels. Handoff
+`ecb366750e5289bd152bf29712760f52c4999492d2a2bea1a4aa93a396dc5a02`.
+No v4 compile/render or atlas promotion; its bare-PID supervisor remains held.
+
+Scene batching emitted once on clean33258f6e:45 loaded sources/1436 definitions,
+holes0, Worker0 and100371-byte output
+`00438584e47aeecd7696a84ec4e4bbd15b18f182ebc835027b6a7723e0346143`.
+The complete attempt remains FAIL/HOLD: parent1 after querying Worker resources
+after exit; its sampled PID ancestry falsely attributed older processes.
+Root independently reconciled native identities and accepted only the completed
+prefix for private diagnostics, not the whole lifecycle. Acceptance
+`517e96181f73a795764b67632e528f606928574ec475e0463c04ea8874bdb70c`;
+actual emitted61-body audit
+`a2ce2c0546812c1e4f72b58cc4a548e3966ee3c19c7378bc3eedb3b32626d28c`.
+Quarter sampling, six frounds/both+0, compositing, balanced tree, per-piece culling
+and token order were retained. There is no hard20-face renderer clamp; cohort
+counts still require checking. No compiler replay occurred.
+
+The distinct repaired diagnostic was authorized once after static review and
+root504-file readback. Its supervisor exited1 after4.213s at an unknown candidate
+OpenProcess query, before observing Node exit or quiescence. The failed candidate
+PID was not recorded. Outer supervisor exit1 was observed after5.238s; this is
+not Node exit proof. A208522-byte result exists and was hash-bound without JSON
+decoding. One independent native observation later found recorded Node18664 and
+conhost16020 absent; absence proves neither observed exit nor descendant settlement.
+Both original/new bridge leases are retained. No repeat, signaling, lease release,
+parity, performance or native acceptance is inferred. Raw Hold handoff
+`2d39b13564dca5f58317464dfe5e9bfa73689be0f22298a8979aa4d30da47f69`;
+terminal`8e218254e11e95680413cbe1f995c7b71d1517ed6c3c204e74cd3275e2c94c8d`;
+raw undecoded result`52821dd45546d075e8f45475b08a36916d5487173cd5491b0ca4c29522358ca2`.
+Bound source/runtime/claims remained exact and checkout clean33258f6e. Future
+observers must preserve parent-exit observation despite a census error and retain
+the failed candidate identity. Current held sample and predecessor bytes remain
+immutable. Full sprint/native/kernel/GPU/adoption requirements remain open.
