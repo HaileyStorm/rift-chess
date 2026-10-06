@@ -1195,3 +1195,45 @@ source-capture readback, with no CHECK, Safe or kernel rerun.
 Full Goal remains active; native GUI/PCM/restart, correct kernel authority,
 original GPU, stable performance/device/owner acceptance, recovery/onboarding and
 reviewed chained amendment/adoption remain open.
+
+## October 6: inward crown candidate, actual low-RAM execution
+
+Private V8 changes only M to(-.02,0,.895) and the two tips to(-.06,+/-.065,1.10).
+Other v7 vertices/profile/widths/topology/materials, v6 footing and all outside
+bytes remain exact. One generation and finite geometry audit passed:31faces,
+54triangles, two connected Euler-2 positive-volume shells; no intersection,
+nonplanarity or projection failures. All20,160 integer cameras stayed within the
+unchanged20face cap(max20/over0). Static handoff576c69a7/root47983ac8; this is
+parsed-source double precision, separate from actual Bend/F32 raster evidence.
+
+One checked compile passed43loaded files and84current bindings; JS5c81da2f,
+result86784f09, supervisorcbceb452, roota572f991. Whole-book check2812ms,
+compiler5788ms; peakJobCommit777,723,904B/minFreeRAM883,470,336B. No RAM floor,
+fetches0, clean18f70971/treea780bd43 before/after, observed exits0, checked
+closes, owned Job self-only settlement and descendant quiescence passed.
+
+Four targeted knights at90/67 and270/90, both colors, passed; eight remaining
+knights at0/65,45/35,165/67,270/67 then passed from the same exact JS. Twelve
+unique renders/twelve paired actual counts, no repeated completed views/pawns/
+compile/native qualification. Counts16/15/18/14/16/13; each cohort stayed within
+raster500ms/RSS512MiB/post-GC64MiB/GC250ms/cap20. Targeted max34.45ms and
+suffix13.90ms; minimum free RAM697,815,040B. Actual handoffs6bd2da25/5a772439,
+rootd6dae21e/1f5e5b48. These finite local samples do not establish benchmarks.
+
+Lossless three-column atlas/v7/v8 sheets passed12+24actual PPM bindings and
+12+24crop-copy guards; nearest6 only, no repaint/rerender. Root and orbit viewed
+both colors in both cohorts. Narrow subjective PASS: wide T-cap/lateral bar
+removed, short separated ivory peaks at90/67, footing remains connected.
+Overall HOLD:0/65 and45/35 short ears merge more into the crown, weakening the
+previously stronger horse cues;270/67 becomes columnar; navy anatomical planes
+remain weak. Keep inward spacing/recess/footing and recover a distinct short
+profile ear without restoring the bar. Dispositions3b7c661b/d455de2f; no atlas
+promotion or cost acceptance.
+
+Read-only WSL revalidation observed Ubuntu Stopped, exit0/checkedclose;
+no guest inventory/start/install. Handoff3d708eef. Minimal ALSA decision remains
+pending. Earlier clean18f proof-source captureabb7a093 passed full57closure/
+11reviewed noncritical blobs/fetch0; kernel/Linux approvals remain null and both
+12GiB admissions unchanged. Full native GUI/PCM/restart, kernel, original GPU,
+stable performance/device/owner, recovery/onboarding and reviewed adoption remain
+open. Goal active and unbudgeted; Vivaldi untouched.
