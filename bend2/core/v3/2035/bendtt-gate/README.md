@@ -103,7 +103,7 @@ Windows descriptor and historical packet. Platform selection adds
 `/home/hailey/.nvm/versions/node/v24.6.0/bin/node`; the parent verifies that path
 and executable hash before creating an attempt. There is no CLI or environment
 descriptor override. The Linux packet keeps the same import-only Worker, flags,
-10s exit grace and full before/after source fences, with a240s Worker and900s
+10s exit grace and full before/after source fences, with a650s Worker and2000s
 quiet outer bound. Only full Linux source-status commands for the exact known
 root, scout and canonical checkout have a90s operational timeout; other Git
 commands and Windows retain30s. Retained diagnostics completed root status in
@@ -120,17 +120,25 @@ A version/path/hash inventory
 establishes no Safe import compatibility or runtime approval. Full kernel
 admission still requires two12GiB/full-ancestry samples.
 
-The private Linux wrapper proposes300s prelaunch, retaining its660s owned parent
-group,900s elapsed checks and960s Windows bridge bound. These elapsed checks do
+The private Linux wrapper proposes450s prelaunch, an1800s owned parent group
+and1980s elapsed checks. Its Windows bridge observes through2020s, rebinds by
+2030s, settles by2039s and has a2040s outer bound; the client observes through
+2045s. These elapsed checks do
 not interrupt synchronous source rebinding. Six full source captures remain:
-wrapper before/after, probe parent before/after and Worker before/after. The240s
+wrapper before/after, probe parent before/after and Worker before/after. The650s
 Worker includes its own two captures; each capture retains both upstream status
 checks. These enclosing operational deadlines bound validity, not a guarantee
 that every component maximum or actual attempt will fit. The canonical dirty
 status is explained by the retained CRLF audit; the status delay's cause and
-other costs remain unmeasured. Three observed status durations total184.339s
-per capture, before other work;300s prelaunch is proposed headroom, not a
-completion guarantee. An outer client expiry can
+other costs remain unmeasured. A corrected Linux source-only capture child
+completed in224.151s with exact57-file closure,10 consumers,194 compiler inputs
+and runtime/Git identities before/after; it imported no compiler TypeScript or
+Safe and created no Worker. The old240s Worker could not fit two captures at
+that observed cost. Two captures each contain three90s status allowances:
+540s of status allowances leave110s of the proposed650s Worker for remaining
+source checks and imports. Six captures contain18 such status calls;650s is an
+operational Worker deadline, not a guaranteed worst-case completion time.
+The kernel admissions, flags, stack and Windows60s/120s packet remain unchanged. An outer client expiry can
 leave a live guest; retain its leases and uncertain state without replay or
 unverified signaling.
 

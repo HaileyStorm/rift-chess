@@ -1394,3 +1394,54 @@ admissions, runtime/kernel approvals, pristine Laws and accepted pin unchanged.
 The full sprint and Goal remain active; native GUI/PCM, kernel/proof authority,
 original GPU, stable performance/device/owner, amendment/adoption and retained
 recovery/host gaps remain open.
+
+
+## Corrected Linux source prerequisite and import budgets (October 6)
+
+One distinct corrected native Linux source-only prerequisite passed on clean
+bddc2c32841f9a16a0015bc46a14b9739b171661/tree768a1fd7: full57-file closure,
+10 consumers,194 compiler inputs and native Node/Git identities before/after.
+The child completed in224.151s; owned child/group/WSL/outer exits0 and checked
+process/Job closures with self-only settlement were verified from17 retained
+raw records. Root receiptbef1f4c0; full terminal08b00144/compact77d580ca.
+This captured sources and runtime prerequisites only: no compiler TypeScript,
+Safe import, Worker, CHECK, kernel or runtime approval. Old failed LinuxV3
+attempts, their raw bytes and leases remain unchanged.
+
+The independently reviewed V5 amendment changes only Linux operational import
+budgets: Worker240s to650s and packet outer900s to2000s. Windows60s/120s,
+10s exit grace, exact flags/64MiB stack, full six source captures and18 full
+root/scout/canonical statuses, hashes/HEAD/tree/fetch denial and kernel's two
+12GiB full-ancestry admissions remain. Two captures at the observed cost need
+448.302s; six need1344.906s. Six Worker status allowances total540s, leaving
+110s of650s for other work. These are elapsed validity bounds, not a measured
+worst-case fit or a hard interrupt for synchronous captureSource.
+
+The ignored proposal uses450s prelaunch/1800s owned group/1980s wrapper checks;
+Windows bridge2020s observation/2030s binding/2039s settlement/2040s outer,
+with2045s client observation. All component maxima need not fit. Root reviewed
+the exact reversible numeric changes and prerequisite evidence; source-only
+V5 handofffe2d2805/review05fbbb15. A fresh post-publication packet and separate
+actual import-only authorization are required; no prior receipt is retagged.
+Runtime/kernel approval fields remain null and no pristine compiler/Law/pin
+changes occurred. Full kernel, native GUI/PCM, original GPU, device/owner,
+chained amendment/adoption and recovery obligations remain open.
+
+The first retained historical-baseline browser performance unit passed18
+reference checks, with81 frozen inputs/10 collector records and owned exits,
+checked closures/self-only Job verified by root1994a07c. Its hover input-to-draw
+median15.6ms/p9533.7ms and twoRAF median37.3ms/p9553ms are one variable-load
+sample; no paired improvement or current-product acceptance is established.
+Orbit30 actions yielded18 transmitted samples; unavailable timings remain null.
+Observed peak Job commit998133760B is not physical RSS. Vivaldi remained open.
+The candidate counterpart also passed18 checks with12 raw/current81/frozen10
+records and checked owned settlement; root38f5ad03. Its hover draw median13ms/
+p95370.3ms shows this one pair's variable workload/load, not a speed claim.
+The remaining old-build cohort is not authorized: the upcoming graphics
+integration changes rendering cost, so future measurements need its exact build.
+
+Rift host-message routing is now enrolled as rift-chess for the two named owners.
+The dedicated read-only CLI coordinator does not steer desktop writers or grant
+project/device writes. Empty scoped inbox status is separate from authorization
+to send the drafted retained-GPU-source request. ALSA installation and that
+message remain unanswered direct human requests. The full Goal stays active.
