@@ -917,3 +917,61 @@ Bound source/runtime/claims remained exact and checkout clean33258f6e. Future
 observers must preserve parent-exit observation despite a census error and retain
 the failed candidate identity. Current held sample and predecessor bytes remain
 immutable. Full sprint/native/kernel/GPU/adoption requirements remain open.
+
+
+## Windows job qualification and actual knight v4: October 6
+
+User RAM/space asks are complete: Windows2.5GiB floor removed and full57-file
+CHECK/six actual mutations/current C emission passed;923285427logical bytes of
+npm download cache reclaimed. Vivaldi remains open. Frozen kernel/Linux12GiB
+obligations are separate.
+
+Private process preparationv1 held before execution for circular authorization.
+One nativev2 qualifier held on assumed2/3 population counts versus actual3/5.
+Distinctv3 instead verified held same-grandchild identity and job membership after
+parent exit, actual exits0, checked process handles, protocol/postbinding self-only
+observations and checked job closure. One actualv3 passed; terminal
+`b0638f369d03fd955b93ba5a13a242239e7dc47cc8c2023215fa104b4417da5d`,
+root readback `d4d2442a5ad3031c81dfd57f8d42628240568638b25b058437189adf9bde5467`.
+Job assignment precedes target CreateProcess, without kill-on-close, breakaway,
+PID census or signaling. Counts are descriptive; service/WMI coverage is unproved.
+Old failures remain retained; this does not settle the held scene diagnostic.
+
+One later launch failed before Bun on a packet read from the output directory;
+actual parent/outer exit and job settlement were observed. Raw failure handoff
+`0044fecaea358ba467fd3a9ee62f1e7c7ad54903754faeb33809282060028da1` retained.
+A fresh paths-v1 source/output mapping repair received independent five-runner
+review and exact input readback. On clean7bb49ee5/tree7571ec0d, one actual Bun
+whole-book validation and selected JS emission passed:43sources/fetch0/131302B JS
+`663bbd2acad55c8a8ef29130cfecf91ee40918518d6d2a3251eb9cf041e87687`.
+Compiler5.407s/outer16.520s; minimum sampled freeRAM1539620864B/max jobcommit
+782995456B (not RSS). Compile handoff
+`3991e754add011e0950a6d8d828d02a8b88e5957960d6fd2234e4e7bbbbaec44`;
+root403source/20raw-file readback
+`dbad709c34b19140f55987b299fc26fafc5fd8673b50babad788deddab207bb8`.
+
+One separately authorized14raster/14paired-count diagnostic passed with2exact
+full-U32 pawn controls, six knight counts17/16/18/12/14/12 and fetch0.
+Unchanged caps held: max call18.93ms/RSS147873792B/post-GC heap6303768B/GC10.44ms.
+Actual parent/outerexit0, owned settlement/checked handles and406before/after
+bindings passed. Visual handoff
+`8c30024493d25a25457b8be93e0c99f5107c052145d869c9837b5c151b861608`,
+root readback `643185c1ddeea415b4e0bd9d74f2fb7198d625e4526b7f79d50400e305c52645`.
+Selected views do not prove every generated-F32 camera or primary cost workload.
+
+One lossless five-column assembly passed:94inputs/60exact crop+nearest6x checks,
+570x1074 images/outerexit0/4.807s/no new render or retouch. Handoff
+`70c61be586779d549c980ac990252feb96af158ab6417b86d074589a07a27716`.
+Root actually viewed ivory345592c1c8f01e6535a758b105dca0ad23fcecda1f8dbf52387a7f1ab97bb361
+and navy2d503a0a6620f3f8459bd4f325c60b7916a112a3c5f82ad72017c961fa41d1de.
+Root and independent orbit reviewer subjectiveHOLD:45/35 is fuller than v3,
+but cardinal/top views remain rectangular posts,165/67 a rear bulb and navy
+anatomy low contrast. Current atlas unchanged; no cost trial/promotion.
+Root disposition `4b4f54f02090730b190128bed6930949bb77d069ac6a24b198dd1df2fe3a4757`.
+Next artwork work needs anatomical separation/topology and contrast, rather than
+width-only variants. Actual results, failed attempts and owning claims retained.
+
+Full sprint remains active: native ALSA decision/kernel/proof/original GPU,
+stable performance/device/owner graphics, ignored-byte recovery and reviewed
+amendment/adoption remain open. No WSL restart/install/ELF/GUI/PCM or cross-host
+permission is inferred; scene rawHOLD remains unread/both leases retained.
