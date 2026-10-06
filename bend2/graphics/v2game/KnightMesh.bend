@@ -198,7 +198,18 @@ def texture_result(+depth: Nat, +size: U32, channels: Channels) -> Sample.Textur
   match channels:
     case Channels{colors, +mask}: Sample.Texture{depth, size, straight(colors, mask), mask}
 
+# Keep the horse profile readable alongside the upright atlas pieces. This is
+# a continuous artwork pose; board placement still uses the actual camera.
+# Preparing faces and alpha together keeps visibility, depth and picking aligned.
+def presentation_camera(camera: Camera.Basis) -> Camera.Basis:
+  match camera:
+    case Camera.Basis{cosYaw, sinYaw, sinPitch, cosPitch, scale, cx, cy}:
+      +angle = F32.mul(sinYaw, 0.5235987755982988)
+      Camera.Basis{F32.cos(angle), F32.sin(angle),
+        F32.min(sinPitch, 0.6427876096865394),
+        F32.max(cosPitch, 0.766044443118978), scale, cx, cy}
+
 def texture(+depth: Nat, +size: U32, camera: Camera.Basis, code: U32) -> Sample.Texture:
-  +faces = prepared(knight_mesh(), camera, size, solid_material(2, code))
+  +faces = prepared(knight_mesh(), presentation_camera(camera), size, solid_material(2, code))
   texture_result(depth, size,
     paint(List.sort(~Painted, ~painted_le, faces), depth, size, Channels{Pix{0}, Pix{0}}))

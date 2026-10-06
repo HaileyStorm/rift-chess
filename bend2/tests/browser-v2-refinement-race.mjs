@@ -154,6 +154,12 @@ try {
       const c = Math.cos(yaw * Math.PI / 180), n = Math.sin(yaw * Math.PI / 180);
       const sp = Math.sin(pitch * Math.PI / 180), cp = Math.cos(pitch * Math.PI / 180);
       const scale = 45 * zoom / (100 * (Math.abs(c) + Math.abs(n)));
+      const boardSpan = Math.abs(c) + Math.abs(n);
+      const artAngle = n * Math.PI / 6;
+      const ac = Math.cos(artAngle), an = Math.sin(artAngle);
+      const asp = Math.min(sp, Math.sin(40 * Math.PI / 180));
+      const acp = Math.max(cp, Math.cos(40 * Math.PI / 180));
+      const artSpan = Math.abs(ac) + Math.abs(an);
       const cy = square => 274 + scale * sp * (n * (square % 8 - 3.5) + c * (7 - Math.floor(square / 8) - 3.5));
       const eligible = board.flatMap((code, square) => code === 2 &&
         !(a.position.holes & (1 << (Math.floor(square / 16) * 4 + Math.floor(square % 8 / 2)))) ? [square] : []);
@@ -161,13 +167,14 @@ try {
       if (!eligible.length) throw new Error('No actual present white knight');
       const square = eligible[0];
       // Strict interior of KnightMesh's visible F-I muzzle-roof quad, not a rectangle center.
-      const local = { file: 0.215, row: 0, height: 0.91 };
-      if (cp * n * 0.65079137345596849 + sp * 0.75925660236529646 <= 0)
+      const local = { file: 0.31, row: 0, height: 0.8285714285714286 };
+      if (acp * an * 0.65079137345596849 + asp * 0.75925660236529646 <= 0)
         throw new Error('Reference face is culled');
       const file = square % 8, row = 7 - Math.floor(square / 8);
       const x = Math.floor(256 + scale * (c * (file - 3.5) - n * (row - 3.5)) +
-        scale * (c * local.file - n * local.row));
-      const y = Math.floor(cy(square) + scale * (sp * (n * local.file + c * local.row) - cp * local.height));
+        scale * boardSpan * (ac * local.file - an * local.row) / artSpan);
+      const y = Math.floor(cy(square) + scale * boardSpan *
+        (asp * (an * local.file + ac * local.row) - acp * local.height) / artSpan);
       const dx = (x - 256) / scale, dy = (y - 274) / (scale * sp);
       const fallbackFile = Math.floor(3.5 + c * dx + n * dy + 0.5);
       const fallbackRow = Math.floor(3.5 - n * dx + c * dy + 0.5);
@@ -180,7 +187,7 @@ try {
         throw new Error('Reference outside actual board plan');
       s.a = a; s.armB = true; s.holdOrbitStart = true;
       return { square, code: board[square], local, fallback,
-        sourceY: (sp * (n * local.file + c * local.row) - cp * local.height) / (Math.abs(c) + Math.abs(n)),
+        sourceX: (x - 256 - scale * (c * (file - 3.5) - n * (row - 3.5))) / (scale * boardSpan),
         x: px, y: py,
         name: String.fromCharCode(97 + file) + (Math.floor(square / 8) + 1),
         mask: a.atlasMaskId, offer: a.atlasMaskOffer, view: a.view };
@@ -190,7 +197,7 @@ try {
     await page.mouse.down({ button: 'right' });
     await page.waitForFunction(() => window.__atlasRace.heldOrbitStart,
       null, { timeout: 20000 });
-    const high = await client(300, 430);
+    const high = await client(763, 430);
     await page.mouse.move(high.x, high.y);
     await page.mouse.up({ button: 'right' });
     await page.evaluate(() => {
@@ -211,7 +218,7 @@ try {
         s.shown.atlasMaskOffer === s.a.atlasMaskOffer &&
         JSON.stringify(s.shown.view) === JSON.stringify(s.a.view);
       const b = window.__atlasMetadata(s.heldB);
-      if (!unchanged || !s.heldB.image || b.view.pitch !== 90 ||
+      if (!unchanged || !s.heldB.image || b.view.pitch !== 90 || b.view.yaw !== 90 ||
           JSON.stringify(s.bRefinement.shown.view) !== JSON.stringify(b.view))
         throw new Error('A was not shown while a real different-pose B was held');
       s.releasing = true;
@@ -221,13 +228,13 @@ try {
         bMask: s.bRefinement.shown.atlasMaskId };
     });
     assert.notEqual(held.aMask, held.bMask, 'actual B helper installed a distinct pose mask');
-    // At top pitch, all vertices lie within this source-bounded projected row span.
-    // A's head texel is above it, so using B's alpha cannot rescue the click.
-    const yaw = held.b.yaw * Math.PI / 180;
-    const span = Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw));
-    const topBound = (0.32 * Math.abs(Math.sin(yaw)) + 0.16 * Math.abs(Math.cos(yaw))) / span;
-    assert.ok(reference.sourceY < -topBound - 2 * 1.4250666666666667 / 64,
-      'A reference lies outside wrong B top-pose alpha, including two-texel padding');
+    // Only muzzle vertices extend beyond file0.16; those have |row|<=0.07.
+    // A's nose lies beyond B's entire art-pose alpha, including source padding.
+    const artYaw = Math.sin(held.b.yaw * Math.PI / 180) * Math.PI / 6;
+    const bc = Math.cos(artYaw), bn = Math.abs(Math.sin(artYaw));
+    const rightBound = Math.max(0.16, (0.32 * bc + 0.07 * bn) / (bc + bn));
+    assert.ok(reference.sourceX > rightBound + 2 * 0.6826666666666666 / 64,
+      'A reference lies outside wrong B art-pose alpha, including two-texel padding');
     await page.waitForFunction(name =>
       document.querySelector('canvas')?.getAttribute('aria-busy') === 'false' &&
       document.querySelector('canvas')?.getAttribute('aria-label')?.includes(`White Knight ${name}`),

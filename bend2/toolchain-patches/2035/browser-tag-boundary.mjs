@@ -55,8 +55,8 @@ const definitions = {
     types: { Image: ['Pix', 'Qua'] } },
 };
 const emitted = {
-  scene: ['scene-eAZbOh', '568e0c82715dfcf5c8480e674c35038d8b346c104d2838ca24ba45037bf798b0'],
-  controller: ['controller-gdFJta', '708c83d9f666f400d2b0d2c3caf370516125e40895a12696c904ecdc4304e77e'],
+  scene: ['scene-IptWcU', 'af1f28fa504626c8bb49d9e13fe1f963aa2eccfdb2e93d70933eacbfca303284'],
+  controller: ['controller-vIjLP2', '708c83d9f666f400d2b0d2c3caf370516125e40895a12696c904ecdc4304e77e'],
   menu: ['menu-g2ud5O', '90bb363a280fffb5e2e592ca68cefd5c520092351cdba0e9792efc8200acad04'],
   chrome: ['chrome-knTtdv', 'e2fba28538b00f6c75a7768c2241d91736494bbd2f429c53611d0dbfd032b4f1'],
 };
@@ -188,7 +188,7 @@ async function diagnostic() {
   const assetCode = transpiler.transformSync(assetSource.contents);
   const port = await import(`data:text/javascript;base64,${Buffer.from(assetCode).toString('base64')}`);
   const scene = (await import(pathToFileURL(path.join(root,
-    '.artifacts/bend2/2035-preview/scene-eAZbOh/scene.js')).href)).default;
+    '.artifacts/bend2/2035-preview/scene-IptWcU/scene.js')).href)).default;
   const values = list => {
     const result = [];
     while (list.$ === 'Con') { result.push(list.head); list = list.tail; }
