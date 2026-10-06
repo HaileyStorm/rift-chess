@@ -4,6 +4,17 @@ Scope: duplicate selected-cache and browser receipt tests. Frozen laws, producti
 verifiers, compatibility consumers and historical receipts remain authoritative
 for their named obligations. This cleanup does not adopt any compiler candidate.
 
+The remaining Worker audit justified one current-ABI addition rather than a
+whole107-case port: actual packed Nat48 reply overflow. The existing diagnostic
+now mutates one real helper reply's scalar11 to2^48 while preserving its header
+and envelope. The single actual run rejected input_shape, closed the session,
+left no jobs/invocations and used no local fallback. Its existing valid clone/
+packed composition and plain JS/C identity passed alongside it. Retained handoff
+a641f438e713119290f39fa5353e5d8c891d5599400ab7a94b1bc73c7172a8ba binds the
+run; no new fixture, generic framework or compiler/runtime change was added.
+Remaining phase/pool/packaging controls have live callers or distinct boundaries;
+no further deletion was justified by the bounded source audit.
+
 The v1 cache executable suite (342 lines) was removed. Its unique output traversal,
 export order and five actual filesystem-link boundaries moved into the existing
 v2 suite. Production `cache-set/verify.mjs` remains because v1 browser consumers

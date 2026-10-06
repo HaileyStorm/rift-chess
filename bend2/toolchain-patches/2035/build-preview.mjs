@@ -13,14 +13,14 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 
 const selected = {
   scene: ['scene-GRwwGS', '74bac06e897415dc6ec44649434847d295307c487fb47fadb10a8993f84eee21'],
-  controller: ['controller-jMXTvX', 'a556436c25c476fe3829841860f589aca7740f55cd39d8a3f2bcd48e46c71033'],
+  controller: ['controller-1tE3d9', 'b307db3a4806d08f30061d9206a5e2dbadb7e26f1ee4a13ff3182186810b4136'],
   menu: ['menu-yN96SS', 'b390548eb759944aea5cbee08256f85a3cba26986eb86e93a97749b8f47c67ec'],
   chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-const botDirectory = '.artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-icn1mU';
-const botBindingHash = 'c77b72d41763c6d8ece7215e03059a409b6716e6ad53e3ff21439686efbe8552';
+const botDirectory = '.artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-t0Qkcm';
+const botBindingHash = '2fb3a8633d629b5703d694dd0bf8a071ce865d1df9957aca1de45fda43613dc2';
 
 function botLibrary2035(runtime) {
   const bindingBytes = readSource(path.join(root, botDirectory, 'source-binding.json'));

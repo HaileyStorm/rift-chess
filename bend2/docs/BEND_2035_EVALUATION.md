@@ -543,6 +543,57 @@ ed08b316feafd9b7908a291841dacd601bccbcd9d275780efca1e9d7146afa9c.
 The earlier source-fix-1 preparation is retained and held without execution;
 fresh source-fix-2 must bind the complete fix before another C attempt.
 
+## Complete remaining native width diagnostic
+
+Source-fix-2 ran once on clean058157b6/tree3021365b, using the reviewed
+metadata-only formatter with unchanged247/255 limits. Full85-file source,
+IO/foreign/namespace guards passed,3076 definitions/holes0/45 foreign entries;
+actual Worker64MiB/fetch0 and before/pre-C/after bindings match. The corrected
+draw-decline continuations no longer appear in the complete overwidth list.
+Exactly two FID segments remain,700/701 in ui/Commands:command_result.finish,
+width253/254; zero CID offenders and zero truncation. The first holds
+capture1+id1+next125+audible1 alongside a125-word result. The second retains
+that result during a1-word continuation. Parent1/Worker0 were observed at
+412.4407764s; C-entry→failure343.9586781s includes journal/catch overhead.
+No timeout, reported OOM, live lease, C output or acceptance receipt remains.
+Final handoff SHA256
+5b2e6835ef08bb37b757ef7c632c2d6b2858f82b0ef36c0f31e9ecd0614dd501
+binds231 new and586 retained predecessor records; independent actual review PASS.
+The terminal collector's Python/Node Windows device-number discrepancy is
+retained explicitly; matching bytes/hashes/inodes and actual Node fences stand.
+
+The minimal source correction binds the exact existing storage/audio effect-list
+expression before quiet_reminder(next), then passes that effects handle to
+S.result. Effects still derive from the pre-reminder State in the same order;
+redraw2 and reminder behavior remain. Independent source review PASS; fresh
+59-file controller checking/emission passed with fetch0. Current private output
+9d158b626a9d7f59079c6be4e85f995c3b2a8c1e208584cc5e1e71df65a9b00f,
+manifestb307db3a4806d08f30061d9206a5e2dbadb7e26f1ee4a13ff3182186810b4136.
+164 complete prior/current packets and the existing render-plan gate passed;
+13 accepted command/effect cases include ordinary moves, capture12745,
+resignation, mute and legal staged Shift20825. Receipt SHA256
+370040c4d511dc140abcadc94a969c500aae16cc96eadd2cb3756bb3e3ade31f.
+The prior failed d7-d5 fixture and raw inspection are retained: both controllers
+agreed, and the move was not legal in this Rift layout. The distinct corrected
+comparator uses the existing valid queen opening and a current legal capture.
+
+One actual packed Nat48 helper reply11→2^48 now rejects input_shape, with one
+interception, closed session, zero active/in-flight work and no local fallback.
+Existing clone/packed semantics and plain JS/C byte identity passed in the same
+single diagnostic. Handoffa641f438e713119290f39fa5353e5d8c891d5599400ab7a94b1bc73c7172a8ba;
+376 bound files unchanged. Fetch denial was active without an instrumented count.
+The one necessary bot refresh passed with fetch0 and497 unchanged bindings;
+source binding2fb3a8633d629b5703d694dd0bf8a071ce865d1df9957aca1de45fda43613dc2.
+
+Draft bundle4c2d95bba8409ea67364/build18fe4ebc… passed actual Chrome refinement
+race and online/cold-offline bot3980/20065. Four exact bot modules returned200
+through the service worker; errors[], all served bundle hashes unchanged, both
+browsers and the owned ephemeral server closed. Browser receipt SHA256
+6a3ea287f17e2685ca4ec9954f7e60ff5c2798288367ecb5e5461c14291f8b1d.
+This is current behavior, not latency or native acceptance. Resulting C widths
+remain pending. No next native execution, compiler-limit change, pin adoption,
+ELF/GUI/PCM/kernel/GPU claim follows.
+
 ## Early-helper disposition
 
 The private repaired scheduling variant passed actual held-asset early hello,

@@ -67,7 +67,8 @@ def command_result.record(+s: S.State, +c: Match.Command, g: Match.Match) -> S.S
 def command_result.finish(capture: Bool, +id: U32, +recorded: S.State) -> S.Update:
   +next = S.set_elapsed(S.set_last(recorded, id), Bool.pick(U32, U32.is_lt(id, 21760), 1, 240))
   +audible = Bool.or(U32.is_lt(id, 21760), Bool.not(U32.is_eq(S.outcome_code(next), 0)))
-  S.result(quiet_reminder(next), List.append(&2, Types.Effect, stored(next), Bool.pick(List<&2, Types.Effect>, audible, sound_effect(capture, next, id), [])), 2)
+  +effects = List.append(&2, Types.Effect, stored(next), Bool.pick(List<&2, Types.Effect>, audible, sound_effect(capture, next, id), []))
+  S.result(quiet_reminder(next), effects, 2)
 
 def command_result(r: Match.StepResult, +s: S.State, +c: Match.Command) -> S.Update:
   match r:

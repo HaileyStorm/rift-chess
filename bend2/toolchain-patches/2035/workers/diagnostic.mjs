@@ -101,6 +101,47 @@ try {
     await assert.rejects(malformed.call('primitive',[4n,7n]),error=>error.code==='input_shape');
     assert.equal(malformed.stats().closed,true,'malformed helper result silently retried');
   } finally {malformed.close();}
+  const packedReplyPackets=[];
+  const packedOverflow=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:(url,options)=>{
+    const worker=new Worker(url,options), listeners=new Map();
+    return {
+      addEventListener(type,listener) {
+        const wrapped=type==='message'?event=>{
+          const message=event.data;
+          if(message.kind!=='result')return listener(event);
+          assert.ok(message.packet instanceof ArrayBuffer,'packed result did not carry its actual ArrayBuffer');
+          assert.equal(message.packet.byteLength,16,'expected one scalar Nat reply');
+          const original=new DataView(message.packet);
+          assert.equal(original.getUint32(0,true),0x32574442);
+          assert.equal(original.getUint32(4,true),1);
+          assert.equal(original.getBigUint64(8,true),11n);
+          const packet=message.packet.slice(0), changed=new DataView(packet);
+          changed.setBigUint64(8,1n<<48n,true);
+          assert.deepEqual(new Uint8Array(packet,0,8),new Uint8Array(message.packet,0,8));
+          packedReplyPackets.push({originalSHA256:sha(new Uint8Array(message.packet)),mutatedSHA256:sha(new Uint8Array(packet)),
+            bytes:packet.byteLength,originalNat:'11',mutatedNat:String(changed.getBigUint64(8,true)),
+            envelopeKeys:Object.keys(message),epoch:message.epoch,job:message.job});
+          listener({data:{...message,packet}});
+        }:listener;
+        listeners.set(listener,wrapped);worker.addEventListener(type,wrapped);
+      },
+      removeEventListener(type,listener) {worker.removeEventListener(type,listeners.get(listener));},
+      postMessage(...args) {worker.postMessage(...args);},
+      terminate() {worker.terminate();},
+    };
+  }});
+  let packedReplyOverflow;
+  try {
+    await assert.rejects(packedOverflow.call('primitive',[4n,7n]),error=>error.code==='input_shape');
+    const stats=packedOverflow.stats(),diagnostics=packedOverflow.diagnostics();
+    assert.equal(packedReplyPackets.length,1,'expected exactly one actual packed reply interception');
+    assert.equal(stats.closed,true,'packed Nat overflow silently retried');
+    assert.equal(stats.inFlight,0);assert.equal(stats.activeInvocations,0);
+    assert.equal(stats.remoteJobs,1);assert.equal(stats.completed,0);
+    assert.equal(stats.localCalls,0);assert.equal(stats.localForks,0);
+    assert.ok(!diagnostics.some(d=>d.reason.startsWith('require_unfulfilled:')),'packed Nat overflow fell back locally');
+    packedReplyOverflow={code:'input_shape',packets:packedReplyPackets,stats,diagnostics,trace:packedOverflow.trace()};
+  } finally {packedOverflow.close();}
   const upstreamBend=await import(pathToFileURL(path.join(root,'.artifacts/bend2/toolchain-patches/derived-2035-source-loader/bend2/bend.ts')).href);
   const upstreamComp=await import(pathToFileURL(path.join(root,'.artifacts/bend2/toolchain-patches/derived-2035-source-loader/bend2/comp.ts')).href);
   const plain=path.join(root,'bend2/toolchain-patches/2035/workers/fixture-plain.bend');
@@ -110,6 +151,7 @@ try {
   assert.equal(comp.js_lib(pbook),upstreamComp.js_lib(ubook));
   assert.equal(comp.compile_book(pbook),upstreamComp.compile_book(ubook));
   const receipt={ok:true,target,engine:{bun:process.versions.bun,platform:process.platform,executableSha256:sha(fs.readFileSync(process.execPath))},compiler:compilerBinding.hashes,fixtures:Object.fromEntries(['diagnostic.mjs','fixture.bend','fixture-tree.bend','fixture-plain.bend'].map(name=>[name,sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers',name)))])),program:build.manifest.program,functions:build.manifest.functions.length,sites:build.manifest.sites,results,ordinaryJsAndC:'byte-identical',hashes:Object.fromEntries(Object.entries(build.files).map(([name,source])=>[name,sha(source)]))};
+  receipt.packedReplyOverflow=packedReplyOverflow;
   fs.writeFileSync(path.join(target,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
   console.log(JSON.stringify({ok:true,target,program:receipt.program,compiler:Object.fromEntries(['bend.ts','comp.ts','web_runtime.js'].map(name=>[name,compilerBinding.hashes[name]])),functions:receipt.functions,ordinaryJsAndC:receipt.ordinaryJsAndC,results:results.map(({transport,stats})=>({transport,stats}))}));
 } catch(e) { console.error(e?.$==='Err'?bend.err_show(e):e); process.exitCode=1; }
