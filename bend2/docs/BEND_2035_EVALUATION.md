@@ -769,3 +769,53 @@ SHA256`6bf73089767b666daf65c535b16dee2cb45e3c9c73ea616a8255b20cb5978df1`.
 This package records its actual sourceDirtytrue provenance; prior broad browser
 receipts retain their original manifests. Bend caches and frozen laws are unchanged.
 
+
+
+## Current-source prepared ground: candidate preview enabled
+
+The current2035 scene/controller caches now independently generated the default
+Astral ground using the actual controller boot frame, namespaced constructors
+and exported host Nat counters0n/1n. The first numeric-counter assertion failure
+is retained. The corrected cached-JS probe exited0 with fetch0 and identical
+before/after source/cache/runtime bindings. All262144 full-U32 pixels matched
+between Bend's computed tree and independently sampled persisted JSON. Ground
+has252929 expanded nodes/depth9 and7,347,974 bytes, SHA256
+`7acd8b71c26095d7aa359ceed71073b0924d4ec6290603231c3972af3d485eb9`.
+Matching historical bytes do not substitute for this current-source computation.
+Worker handoff `prepared-ground-2035-20261005/final/handoff.json` SHA256
+`ee502541fd90fe4879251ce887be947e2acd8410e817a2637946d07901a823b2`;
+root independently verified all23 inventory records.
+
+Private current-packagebrowser-WrdTQt/versiona917bf6ef7250e6a72b9 used the
+existing helper's exact decoded-Ready SHA and Bend ground-key predicate. Two
+alternating fresh Chrome pairs preserved exact default presented RGBA pixels.
+Baseline playable943.5/1258.2ms became912.4/1066.1ms; detail2004.4/2585.8ms
+became1866.5/1961.1ms. Ground152.8/137.9ms became81.5/76.7ms, actual prepared
+hit1 in both candidate runs. Comparison receipt
+`2035-preview/prepared-ground-integration-20261005/ground-compare-receipt.json`
+SHA256`7688e905c8556826e86c89dd68d30d040e322348347ad2d59e2c7c56c1650e76`;
+terminal`e40fd30669f6a6da49d4a4dc849e375dd1219d311532de846c91e059385454f1`.
+These four headless local-loopback starts had warm filesystem cache and
+uncontrolled background load/Vivaldi open. They support enabling this candidate
+preview optimization, not stable all-device2s arrival or WAN/physical-display
+acceptance. The offline package adds about7.3MB plus bounded metadata.
+
+Actual current Chrome404 and tampered-SHA resources both fell back to Bend with
+exact baseline pixels and preparedHit0. Changed yaw330/67 and Stone theme had
+exact baseline/candidate pixels and preparedHit0. Controlled offline reload used
+verified cached ground bytes with preparedHit1 and exact default pixels.
+Acceptance receipt `2035-preview/prepared-ground-integration-20261005/acceptance3-receipt.json`
+SHA256`d6e85c28df142b8452b900c4c6d4ff9e934b6a3d16517df308091863a114878b`;
+terminal`1c26c0a77ec88e634b47f494051cfe40449c3372fb93f27f35ede115a0273bee`.
+The prior probe's nonexistent presentation theme field and subsequent open-camera
+panel timeout remain failed receipts. The successful404/tamper prefix was reused
+without repeating it. The initial Windows import-path launcher failure started
+no Bun and remains separate from the corrected successful build.
+
+Candidate preview builds now enable this path by default; API
+`buildPreview2035({preparedGround:false})` or environment
+`BEND_2035_PREPARED_GROUND=0` retains the existing computed-ground path. The
+builder inventories the emitter/source artwork, hashes derived assets/metadata,
+and includes both in service-worker precaching; selected cache bindings remain
+verified before/after. No helper transport, Bend source/cache, frozen law,
+accepted toolchain pin, native/GPU contract or published TypeScript app changed.

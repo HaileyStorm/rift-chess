@@ -10,6 +10,7 @@ import { createBrowserTagBoundary2035, browserTagBoundaryBinding2035 } from './b
 import { packageAssets, writeNewFile } from '../2032/browser-preview/pack-static.mjs';
 import { assertLocalBunRuntime } from '../2032/browser-loader/runtime.mjs';
 import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
+import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
   scene: ['scene-GRwwGS', '74bac06e897415dc6ec44649434847d295307c487fb47fadb10a8993f84eee21'],
@@ -86,7 +87,8 @@ function caches(runtime) {
   }));
 }
 
-export async function buildPreview2035() {
+export async function buildPreview2035({ preparedGround = true } = {}) {
+  assert.equal(typeof preparedGround, 'boolean');
   assert.equal(typeof Bun?.build, 'function', 'use the repository-local Bend wrapper');
   const executable = assertLocalBunRuntime(root, path.join(root, '.artifacts/toolchains/runtime'), process.execPath);
   const runtime = { version: Bun.version, executable: relative(executable), sha256: sha256(readSource(executable)) };
@@ -100,12 +102,15 @@ export async function buildPreview2035() {
     'bend2/toolchain-patches/2032/browser-preview/pack-static.mjs',
     'bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html',
     'bend2/platform/browser/sw.js', 'bend2/platform/browser/bitmap-surface.ts',
-    'bend2/platform/browser/telemetry.ts'];
+    'bend2/platform/browser/telemetry.ts', ...(preparedGround ? [
+      'bend2/toolchain-patches/2035/prepared-ground.mjs', 'bend2/assets/MANIFEST.json',
+      'bend2/assets/source/observatory-astral.png', 'bend2/assets/runtime/observatory-astral.rga'] : [])];
   const sourceHashes = () => extraSources.map(file => ({ path: file, sha256: sha256(readSource(path.join(root, file))) }));
   const sources = sourceHashes();
   const sourceRevision = git('rev-parse', 'HEAD');
   const sourceDirty = Boolean(git('status', '--porcelain', '--untracked-files=normal', '--', 'bend2'));
   const out = fs.mkdtempSync(path.join(previewRoot, 'browser-'));
+  const prepared = preparedGround ? await emitDefaultGround2035(out, before) : null;
   const plugin = { name: 'rift-bend-2035-exact-selected', setup(build) {
     build.onLoad({ filter: /\.bend$/ }, args => {
       const selectedEntry = Object.values(before).find(item => path.resolve(root, item.manifest.binding.module.entry) === path.resolve(args.path));
@@ -123,11 +128,21 @@ export async function buildPreview2035() {
     return path.basename(files[0].path);
   };
   const spriteSource = before.scene.manifest.output.sha256;
-  const helper = await bundle('bend2/platform/browser/sprite-helper.ts', { __BEND_SPRITE_SOURCE__: JSON.stringify(spriteSource) });
+  const helper = await bundle('bend2/platform/browser/sprite-helper.ts', { __BEND_SPRITE_SOURCE__: JSON.stringify(spriteSource),
+    ...(prepared ? {
+      __BEND_PREPARED_GROUND_PATH__: JSON.stringify(prepared.assetPath),
+      __BEND_PREPARED_GROUND_SHA__: JSON.stringify(prepared.assetSha256),
+      __BEND_PREPARED_PLATE_SHA__: JSON.stringify(prepared.plateSha256),
+      __BEND_PREPARED_FRAME_JSON__: JSON.stringify(prepared.frameJson),
+    } : {}) });
   const worker = await bundle('bend2/platform/browser/worker-v2.ts', {
     __BEND_SPRITE_SOURCE__: JSON.stringify(spriteSource), __BEND_SPRITE_HELPER__: JSON.stringify('./' + helper) });
   const host = await bundle('bend2/platform/browser/host.ts', { __BEND_WORKER__: JSON.stringify('./' + worker) });
   const files = Object.fromEntries([helper, worker, host].map(name => [name, sha256(readSource(path.join(out, name)))]));
+  if (prepared) {
+    files[prepared.assetFile] = prepared.assetSha256;
+    files[prepared.metadataFile] = prepared.metadataSha256;
+  }
   const write = (name, bytes) => { writeNewFile(root, out, name, Buffer.from(bytes)); files[name] = sha256(readSource(path.join(out, name))); };
   for (const [file, bytes] of Object.entries(bot.contents)) write('worker-libs/bot/' + file, bytes);
   const css = readSource(path.join(root, 'bend2/platform/browser/platform.css'));
@@ -160,7 +175,7 @@ export async function buildPreview2035() {
     workerLibraries: { bot: { entry: './worker-libs/bot/index.mjs', program: bot.manifest.program,
       backend: bot.manifest.backend, mode: bot.manifest.mode, policy: bot.manifest.policy,
       sourceBinding: botDirectory + '/source-binding.json', sourceBindingSha256: botBindingHash,
-      artifacts: bot.binding.artifacts } }, preparedGround: null,
+      artifacts: bot.binding.artifacts } }, preparedGround: prepared,
     scope: 'candidate current-source game and source-bound bot Worker preview; runtime/proof/native/GPU/adoption gates require their own evidence' };
   writeNewFile(root, out, 'build.json', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'));
   for (const [name, hash] of Object.entries(files)) assert.equal(sha256(readSource(path.join(out, name))), hash);
@@ -168,4 +183,4 @@ export async function buildPreview2035() {
   return out;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await buildPreview2035();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await buildPreview2035({ preparedGround: process.env.BEND_2035_PREPARED_GROUND !== '0' });
