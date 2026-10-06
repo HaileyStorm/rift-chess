@@ -642,3 +642,68 @@ restoration decision SHA256
 b37b8681278533430d4745fa8406dc27a20ee259700ffd564b4181e8e18dd254.
 No further timing retry or promotion follows. The tapered-knight owner also
 released its own private claim after the published handoff; visual HOLD stands.
+
+## Clean package and local WSL preparation
+
+Fresh browser-DcyiMn built from cleana7289f22/tree8451366d, draft/adoptedfalse,
+version4c2d95bba8409ea67364/build3ab6c097b1f517ec4d9c4fc4d771d5046f43e07844423ba3d0fd4f2c65ce08cf.
+All21 payload files match priorbrowser-ZqUMwh byte-for-byte; onlybuild.json
+changed. Terminal4ddfab54214e453cc714fdf7835c91edab8b0306486baa5d1c35ddef16bc95ee;
+comparison83e5e20c9c276dad176675b80715a301aa980f4f8d6efb1e147adac52e9671bb.
+No new browser execution: previous actual receipts keep their original manifests.
+
+One bounded local WSL read-only probe found Ubuntu/x86_64, Clang18.1.3 and X11
+headers/link library, with ALSA development header/library absent. MemAvailable
+7,419,156KiB is a sample, not admission/peak evidence. No Linux Node/Lean/leanc,
+and no qualifying kernel/cgroup admission. Receipt
+ dfad125ceeffd218911b6b026062ce666f7a432d4ef2a71c20d01b2ad10192eb.
+Minimal apt simulation selected only libasound2-dev, libasound2-data and
+libasound2t64 at1.2.11-1ubuntu0.3, with recommends disabled and no upgrades/removals.
+The broader49-package audio-plugin simulation is not selected. Human installation
+decision remains pending; no installation or privilege action occurred.
+
+Private prebuilt-C-to-ELF preparation has no RAM floor and performs no Bend
+re-emission. Its unknown-owner settlement defect was repaired: a started compiler
+without verified ownership cannot be signaled or reported quiescent; both leases
+remain. Observed exit and a completed owned-group scan are required for release.
+Independent repair review PASS/root105-record readback:
+69369a1e3a5a91dd879a889677164672e007c08dbbf9fba9176e8fd13f6eb425;
+preparation72d7d7077bc0c77f5cc6c85db2c325afc1cd219ebb3a0831e566712e83cbbdfb.
+Six runtime assets+LICENSES and the unchanged existing GUI observer were staged,
+with49 exact record readbacks; handoff
+98c29bead19dc4986765a8f654ff924a3f8ef10aab005a88d0ead201b8713013.
+These remain preparation only. Before one actual link, rebind the then-clean
+sourceObserved revision, obtain the package decision and bind post-package Linux
+runtime bytes. Named inputs are not exhaustive header/CRT closure. GUI requires
+owned-window identification, fresh capture paths, timeout binding and actual
+coordinate/alpha picking; same-data restart and routed PCM need separate checks.
+WSL was started by the read-only probe; no distro shutdown, compiler/game launch,
+GPU/kernel execution or adopted pin follows. Old stopped-request contracts stand.
+
+## Crown-knight actual visual disposition
+
+One private43-face crown draft passed full-book JS checking/emission on clean
+a7289f22,43 actual loaded files, fetch0 and observed exits; output01ab5fdfd2550f8320d7eb245458dbdc56d64c628e121b64e200295491e29405.
+Exactly one guarded render passed96 calls/72 PPMs/24 tokens/12 unchanged pawn
+controls, fetch0 and equal before/after source/output/runtime/root bindings.
+Max call15.2327ms, renderer RSS148,430,848B, forced GC13.7181ms and post-GC heap
+7,132,272B satisfy unchanged500ms/512MiB/250ms/64MiB guards; these are finite
+observations, not a paired performance result. The43-vs23 face cost remains open.
+
+The outer supervisor exited1 constructing its receipt (KeyError
+observedParentExit; launcher field observedExit). Original failure is retained.
+The actual renderer receipt and launcher exit0 persisted. Exact failure-site
+short-circuit evidence substantiates same-Popen launcher exit0 and three empty
+known-chain quiescence samples; lost outer elapsed/resource samples stay unknown.
+No compiler or renderer retry. Actual handoff
+0eb5ea4a44176114892d21c5849bebf58392261a479c5c1a1e43d9dd47e4eeb5
+binds155 retained records. Lossless nearest-neighbor sheets keep native pixels:
+ivory785b224e86a3a2e3d459c1abe12dfc4ebd7d3947268edf06eb4c1d4dbf9eddc7;
+navyb68c2953a1414982223ddf2474a46860478dd5c6a62084500b4e50d99214a171.
+
+Root and independent subjective six-view reviews HOLD:45/35 is strongest,
+0/65 is blocky,165/67 remains an unresolved mass,270/67 regresses to a rectangle,
+90/67 resembles a horned post and270/90 a short bar. Navy contrast stays weak.
+Static closed/wound geometry does not settle appearance. Root verified155 records;
+dispositione19328cb48da2fe57060c6304ef673185b359777398c5920d1a20722da3ae246.
+No benchmark, integration or promotion; current atlas and all predecessors remain.
