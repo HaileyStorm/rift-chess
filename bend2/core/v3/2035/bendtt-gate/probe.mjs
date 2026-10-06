@@ -21,24 +21,39 @@ export const runtimeProbePacket = Object.freeze({
   resourcePolicy: '64MiB actual stack readbacks; free RAM observed with no Windows admission floor; Vivaldi stays open',
   authority: 'prepared only; root must independently review source and authorize this distinct probe before invocation',
 });
+export const linuxProbeRuntime = Object.freeze({ engine: 'Node', version: 'v24.6.0', platform: 'linux', arch: 'x64',
+  executableSha256: 'e943ee9282bef08233665cb71cc57a9f5794bbe70a4822b38e60e394c15979e2',
+  parentExecArgv: [], workerExecArgv: [...safeWorkerFlags], nodeOptions: '', stackSizeMb: 64 });
+export const linuxRuntimeProbePacket = Object.freeze({ ...runtimeProbePacket,
+  command: ['/home/hailey/.nvm/versions/node/v24.6.0/bin/node', 'bend2/core/v3/2035/bendtt-gate/probe.mjs', '--import-only'],
+  runtime: linuxProbeRuntime,
+  output: `${runtimeProbePacket.output}; separate observed parent exit0 and checked settlement before accepted review`,
+  resourcePolicy: '64MiB actual stack readbacks; memory observations only; kernel full-ancestry/two12GiB admission unchanged',
+});
+
+export function importProbePacketForPlatform(platform = process.platform) {
+  assert.ok(platform === 'win32' || platform === 'linux', 'unsupported Safe import probe platform');
+  return platform === 'win32' ? runtimeProbePacket : linuxRuntimeProbePacket;
+}
 
 export async function executeImportProbe() {
   process.env.BEND_NO_TELEMETRY = '1';
-  assert.equal(process.platform, 'win32', 'this prepared probe binds the Windows source host only');
-  const before = captureSource(sourceFixture), runtime = captureRuntime(windowsProbeRuntime);
+  const packet = importProbePacketForPlatform();
+  assert.equal(path.resolve(process.execPath), path.resolve(packet.command[0]), 'Safe import probe executable path differs');
+  const before = captureSource(sourceFixture), runtime = captureRuntime(packet.runtime);
   const run = createRun('import-probe');
   const lease = acquireOwnedLock(run.lock, JSON.stringify({ schema: 'rift-safe-import-probe-2035-lease/1',
     ownerTask: process.env.CODEX_THREAD_ID ?? null, sourceBindingSha256: sha256(JSON.stringify(before)), workerMayBeLive: true }));
   try {
     writeJson(path.join(run.directory, 'before.json'), { source: before, runtime });
     const result = await safeWorker({ mode: 'import-probe', source: sourceFixture,
-      runtime: windowsProbeRuntime, expectedSource: before }, runtimeProbePacket.workerTimeoutMs);
+      runtime: packet.runtime, expectedSource: before }, packet.workerTimeoutMs);
     assert.equal(result.mode, 'import-probe');
     assert.deepEqual(captureSource(sourceFixture), before);
-    assert.deepEqual(captureRuntime(windowsProbeRuntime), runtime);
+    assert.deepEqual(captureRuntime(packet.runtime), runtime);
     const receipt = { schema: 'rift-safe-import-probe-2035/1', passed: true, result,
       before, after: before, runtime, sourceBindingSha256: sha256(JSON.stringify(before)),
-      scope: runtimeProbePacket.permittedCalls };
+      scope: packet.permittedCalls };
     writeJson(run.receipt, receipt);
     releaseOwnedLock(lease);
     return { receiptPath: path.relative(root, run.receipt).split(path.sep).join('/'),
@@ -54,7 +69,7 @@ export async function executeImportProbe() {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
-  if (args.length === 0) console.log(JSON.stringify(runtimeProbePacket, null, 2));
+  if (args.length === 0) console.log(JSON.stringify(importProbePacketForPlatform(), null, 2));
   else {
     assert.deepEqual(args, ['--import-only'], 'usage: node probe.mjs [--import-only]');
     executeImportProbe().then(result => console.log(JSON.stringify(result)))

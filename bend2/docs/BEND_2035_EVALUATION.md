@@ -1237,3 +1237,52 @@ pending. Earlier clean18f proof-source captureabb7a093 passed full57closure/
 12GiB admissions unchanged. Full native GUI/PCM/restart, kernel, original GPU,
 stable performance/device/owner, recovery/onboarding and reviewed adoption remain
 open. Goal active and unbudgeted; Vivaldi untouched.
+
+## October 6: profile-ear discrimination and actual Ubuntu prerequisites
+
+Private V9 raises only the two V8 tips from z1.10 to1.13; x/y, recessed roof,
+other vertices, materials, connectivity and footing remain exact. One generation
+and finite audit passed31faces/54triangles,20,160cameras/max20/over0, with no
+intersection/nonplanarity/projection failures. Handoff41201ec3/root94920105.
+One checked compile passed84current bindings/43loaded files, JSed6bd985,
+result5d16eee4/supervisor7cba7942; rootb1db7d70. Check3581ms/compiler6827ms,
+peakJobCommit697184256B/minFreeRAM1326092288B. All exits0, checked closes,
+Jobself-only/quiescence, exact clean d4007804/tree75c5941d and fetch0 passed.
+
+Four actual knight renders at0/65 and45/35, both colors, passed four paired
+visible counts15, unchanged runtime caps and98current bindings. No pawns,
+completed-view replay, recompile or new native qualification. Handoffbaeebeeb,
+result3025da93/supervisor131694f5/root559810cf. Peaks15.20ms/RSS153382912B/
+post-GC6024560B/GC7.74ms; minFreeRAM1369833472B. These finite local samples
+are separate from stable performance or native acceptance.
+
+Lossless atlas/v7/v8/v9 profile sheets verified16actual PPM bindings and16copy
+guards; nearest6 only, no repaint/rerender. Receipt718fb27b; root disposition
+57a6fa17. Root and orbit viewed both colors: intended profile-ear cue HOLD.
+V9 looks nearly unchanged fromV8; V7 has the stronger projecting ear. Neck,
+muzzle and45/35 footing contact remain intact. Navy planes still merge.
+No further V9 angles or promotion; stronger back-tip source projection is next.
+
+Read-only browser continuity passed488unique hashed paths, reconstructed four
+selected bindings, compiler/bot/boundary/assets and all23payload hashes. Root
+also compared all23payloads byte-for-byte to actual-tested browser-WrdTQt.
+Retained build97167518/versiona917bf6ef7250e6a72b9 still binds clean2f151393;
+only five proof/documentation paths changed since it. Root78a4fe4e. No rebuild,
+test replay or relabeling of the historical actual browser runtime cohort.
+
+One authorized Ubuntu inventory started the stopped existing distro and left it
+running. Observed WSL client exits0 and checked closes, no installation/retry.
+Clang18.1.3 is installed; the three named ALSA packages/header/library are absent.
+Default PATH had no Node/Lean. A distinct exact-path readback found installed
+native ELF Node24.6.0 at/home/hailey/.nvm/versions/node/v24.6.0/bin/node,
+SHAe943ee9282bef08233665cb71cc57a9f5794bbe70a4822b38e60e394c15979e2.
+Exact Lean4.34 and2035kernel cache paths are missing. Inventories2dacc850/
+a78196cc, rootf70260bf/1a1c456c. Sampled7,413,988KiB MemAvailable is not an
+admission: init-cgroup namespace/ancestry visibility was incomplete. The installed
+Node permits a no-install import-only preparation candidate; it is not runtime
+approval. Minimal ALSA installation question remains pending.
+
+Full Goal remains active. Safe elaboration/kernel verdict, native GUI/PCM/restart,
+original GPU250ms acceptance, stable/device/owner acceptance, recovery/onboarding
+and reviewed chained adoption remain open. Kernel/Linux approvals remain null;
+12GiB kernel admissions and immutable Laws/pins remain unchanged. Vivaldi open.

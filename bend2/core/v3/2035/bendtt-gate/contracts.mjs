@@ -147,7 +147,10 @@ export function assertSafeRuntime(runtime, expected, worker = false) {
   exactKeys(expected, ['engine', 'version', 'platform', 'arch', 'executableSha256', 'parentExecArgv', 'workerExecArgv', 'nodeOptions', 'stackSizeMb'], 'Safe runtime approval');
   assert.equal(expected.engine, 'Node'); assert.equal(expected.arch, 'x64');
   assert.ok((expected.platform === 'win32' && expected.version === 'v24.12.0')
-    || (expected.platform === 'linux' && expected.version === 'v22.23.1'), 'unreviewed Safe Node version');
+    || (expected.platform === 'linux' && expected.version === 'v22.23.1')
+    || (expected.platform === 'linux' && expected.version === 'v24.6.0'
+      && expected.executableSha256 === 'e943ee9282bef08233665cb71cc57a9f5794bbe70a4822b38e60e394c15979e2'),
+    'unreviewed Safe Node version/executable');
   assert.match(expected.executableSha256, /^[0-9a-f]{64}$/);
   assert.deepEqual(expected.parentExecArgv, []); assert.deepEqual(expected.workerExecArgv, safeWorkerFlags);
   assert.equal(expected.nodeOptions, ''); assert.equal(expected.stackSizeMb, 64);
@@ -170,7 +173,8 @@ export function validateLinuxRuntimeApproval(approval, reviewBytes) {
     `Linux Node executable SHA256: ${approval.runtime.executableSha256}`,
     `Safe Worker execArgv: ${JSON.stringify(safeWorkerFlags)}`, 'Parent execArgv: []', 'NODE_OPTIONS: empty',
     'Actual Safe Worker stackSizeMb: 64', `Safe source SHA256: ${safeSource.sha256}`,
-    'Safe import probe fetches: 0', 'Safe import probe observed Worker exit: true']) assert.ok(lines.includes(line), `Linux runtime review lacks ${line}`);
+    'Safe import probe fetches: 0', 'Safe import probe observed Worker exit: true',
+    'Safe import probe observed parent exit: true', 'Safe import probe parent exit code: 0']) assert.ok(lines.includes(line), `Linux runtime review lacks ${line}`);
   return approval.runtime;
 }
 

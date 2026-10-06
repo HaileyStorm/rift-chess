@@ -35,9 +35,13 @@ the dedicated Node parent has empty execArgv/NODE_OPTIONS. Its 64 MiB Worker has
 exactly `--experimental-transform-types`: Safe contains a TypeScript parameter
 property that native stripping alone cannot import. The flag is bound separately
 from the earlier source-screen runtime. No heap cap is introduced. Linux runtime
-approval requires Node v22.23.1/x64, its exact executable SHA and a hash-bound
+approval retains Node v22.23.1/x64 support and adds only the installed Linux
+Node v24.6.0/x64 executable SHA
+`e943ee9282bef08233665cb71cc57a9f5794bbe70a4822b38e60e394c15979e2`.
+Either requires its exact executable SHA and a hash-bound
 accepted review of a distinct actual Safe import probe with exact flags, observed
-64MiB stack/exit and fetch0. It has `schema`, `runtime` and `review` fields;
+64MiB stack/Worker exit and fetch0, plus separately observed parent exit0 and
+checked settlement before receipt decoding. It has `schema`, `runtime` and `review` fields;
 Windows import
 probe binds Node v24.12.0 and executable SHA `2ffe3acc...101d8`. Its single actual
 import-only run passed on clean6711894, receipt SHA256
@@ -92,6 +96,16 @@ shapes, flags/executable, both64MiB readbacks, fetch0, exact before/after bindin
 and observed exit. It never calls book_nil/load/valid/js_lib/safe_emit. Use the
 shared quiet launcher with a120s outer deadline; preserve a failed/uncertain
 attempt without resending it. Linux runtime/kernel approvals remain null.
+
+The original `windowsProbeRuntime` and `runtimeProbePacket` exports retain the
+Windows descriptor and historical packet. Platform selection adds
+`linuxProbeRuntime` and `linuxRuntimeProbePacket`, binding exactly
+`/home/hailey/.nvm/versions/node/v24.6.0/bin/node`; the parent verifies that path
+and executable hash before creating an attempt. There is no CLI or environment
+descriptor override. The Linux packet uses the same import-only Worker, flags,
+60s deadline/10s exit grace/120s outer bound and before/after source fences. A
+version/path/hash inventory establishes no Safe import compatibility or runtime
+approval. Full kernel admission still requires two12GiB/full-ancestry samples.
 
 No source check or import probe establishes Safe elaboration, kernel correctness,
 Linux admission, conformance, native/device/browser/GPU behavior or pin adoption.
