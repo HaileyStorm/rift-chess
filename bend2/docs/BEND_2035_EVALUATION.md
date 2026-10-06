@@ -975,3 +975,31 @@ Full sprint remains active: native ALSA decision/kernel/proof/original GPU,
 stable performance/device/owner graphics, ignored-byte recovery and reviewed
 amendment/adoption remain open. No WSL restart/install/ELF/GUI/PCM or cross-host
 permission is inferred; scene rawHOLD remains unread/both leases retained.
+
+
+## Historical hover attribution: October 6
+
+One observer-only run reused the retained browser-5DuQh5 package, version
+5daf2d8f756226c79f47, on clean21b90950; the historical package source was not
+rebuilt or retagged. Preparation preserved two prior collector revisions and a
+pre-execution timing HOLD. Revised supervision used absolute entry deadlines
+75/80/89 seconds within90 seconds, with unchanged native job adapter/protocol.
+Independent narrow review passed; one boot/context/twelve pointer moves ran.
+
+Actual Chrome154.0.8037.98 completed all12hovers with no page/console errors or
+external requests. Slowest reply37ms included24.2ms dispatch and10.6ms transfer;
+unpartitioned time2.2ms. Initial sprite refinement finished before every hover,
+so neither helper-send-to-acceptance nor acceptance-to-receipt overlapped the
+slowest row. The earlier queue stall was not reproduced. This small historical
+sample does not prove its cause, a fix, current-source performance or physical
+presentation. No repeated cohort is planned on unchanged inputs.
+
+Actual same-Popen parent/outer exits0, postbinding job self-only, checked process
+and job closes, no observer errors and exact before/after bindings passed.
+Supervisor7.924s/outer8.546s. Result
+`5a4800afee9ab3fca5df27b1e2aa78906313c89392f83ca3e835e5aac0be74c7`;
+terminal `5b1b33599576cad2e59f63fadccc0172e8159cae4d01028aca45565d64c2594f`;
+root readback `3adf26da469656106dd91bd3ef86fb158a39a2cebe8c316f7b0c78f741b041e9`.
+Exact package17files and13observer/runtime inputs remained bound. No signal or
+retry occurred. Full sprint remains active; knight structural/material work,
+held scene, native/kernel/original GPU and amendment/adoption remain open.
