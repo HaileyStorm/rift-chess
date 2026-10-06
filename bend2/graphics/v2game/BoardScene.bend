@@ -595,7 +595,8 @@ def interpolated_point(+size: U32, +basis: Camera.Basis, +source: U32,
   +from = projected_square(size, basis, source)
   +to = projected_square(size, basis, dest)
   +t = F32.div(U32.to_f32(amount), 16.0)
-  +lift = scale_coord(size, U32.div(U32.mul(amount, U32.sub(16, amount)), 4))
+  +lift = Bool.pick(U32, U32.is_ne(source, dest),
+    scale_coord(size, U32.div(U32.mul(amount, U32.sub(16, amount)), 4)), 0)
   Quad.Point{F32.lerp(point_x(from), point_x(to), t),
     F32.sub(F32.lerp(point_y(from), point_y(to), t), U32.to_f32(lift))}
 
@@ -1652,8 +1653,9 @@ def nearest2(+remaining: Nat, image: Image) -> Image:
 def fast_camera_direct512(frame: Scene.Frame, underlay512: Image) -> Image:
   fast_camera(9n, 512, frame, underlay512)
 
-# Low-latency camera preview: render at 128 and expand by two exact nearest
-# steps. The retained detailed worker restores the full 512 image on settle.
+# Retained 128px camera renderer. The browser's active motion path below
+# combines 128px ground with 256px pieces and scales the compact tree to its
+# board slot.
 def fast_camera128(frame: Scene.Frame, underlay128: Image) -> Image:
   fast_camera(7n, 128, frame, underlay128)
 

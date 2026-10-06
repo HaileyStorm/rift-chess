@@ -40,6 +40,8 @@ only its supervisor, closed that Job and checked unchanged source bytes.
 | Wheel and second press | 17.458s, `negative-supervisor-r3/terminal.json`: `59ddcb9ec51e23b69220711c9bb2b99ec6b06b772012dc8af78107eaa226082d`. Wheel retains 450ms; a clean second press held for 900ms admits no refinement until its release. |
 | Actual queued batches | 19.293s, `batch-supervisor-r1/terminal.json`: `267716b15ced49569bea28694e359093d1d2e048e93e754216b97c8eb63acdf9`; `batch-r1/result.json`: `048ad4676a33c5f1485ce87a68c992c029506d1dfc23421b99eca6833aee0f24`. Controlled delivery delay of one real hover reply keeps the host busy. Real pointer input then produces one actual Worker request containing down/move/up. Right and Alt releases report quiet0; release followed by wheel in the same batch reports quiet450. This proves composed browser behavior under controlled transport, not latency. The paired timing run itself contained no whole-gesture batches. |
 | Displayed-mask race | 8.366s, `atlas-race-supervisor-r2/terminal.json`: `13b8d27ecfb8a20713c837843ea2d84f3bcc2f76af932cf3ca1f4cadaf593d43`. A queued click on displayed pose A selects White Knight b1 despite a different pose B refinement, with one deferred and one discarded request. |
+| Full browser/reference integration | 926.099s, `reference-supervisor-r1/terminal.json`: `9d2c7e6208752c14af269df0f095034281cea0371b25b28eaf20456e417dc926`. All 24 scenarios / 689 independent TypeScript reference checks passed, no defects. Exact summary at `../matrix/current-camera-full-20261006/summary.json`, SHA256 `627a8c1af7c9d60215622587aa8ab0064ce0bd184b89190d28010c02824905a5`. Includes moves/special moves/Shift, both bot sides, terminal rules, Undo, camera, menus, persistence/recovery, portrait and import gesture guards. |
+| Extended/offline integration | 55.944s, `scenario-supervisor-r1/terminal.json`: `618283cf3efab0689766fcb090ccc52249a05d95b8b90855766091754669d362`. All 13 extended checks passed, no browser errors, on the same exact package, including offline reload/play. |
 
 Independent source review found no blocking defect. Source review covers helper
 startup urgency; these browser witnesses do not isolate a release during startup.
@@ -82,7 +84,8 @@ retained, with descendant quiescence and owner closure unverified. No process wa
 signaled or attempt replayed. Failed compiler and cached-view witness attempts
 remain intact; current results are separate episodes with corrected inputs.
 
-Full current-source browser/reference/offline integration, stable performance,
+This camera package's browser/reference/offline integration passed. Subsequent
+rendering changes need their own source-bound evidence. Stable performance,
 motion artwork, broader devices and owner visual acceptance remain open, as do
 proof/BendTT/kernel, native GUI/PCM/restart, original GPU250ms and reviewed
 toolchain adoption. The full sprint Goal remains active.
