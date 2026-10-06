@@ -1003,3 +1003,87 @@ root readback `3adf26da469656106dd91bd3ef86fb158a39a2cebe8c316f7b0c78f741b041e9`
 Exact package17files and13observer/runtime inputs remained bound. No signal or
 retry occurred. Full sprint remains active; knight structural/material work,
 held scene, native/kernel/original GPU and amendment/adoption remain open.
+
+
+## Headless native CPU parity and knight anatomy: October 6
+
+On clean source4311c6f5/treebf914c79, one current2.0.35 headless
+NativePixelsCpu emission passed whole-book validation (done0,858definitions,
+no holes) and produced C503848B/fa795656 and JS103608B/ee7ea36d. This
+31-Bend-file fixture renders1024pixels without Window or Audio effects.
+An initial Windows observer stopped before Node on an instantaneous job-count
+assumption; its failure remains retained. A distinct bounded self-only polling
+repair ran once and passed with actual exits0, checked handles and unchanged
+source/runtime inputs. Root emission readback71857eb6 is separate from native
+execution. No Windows free-RAM floor or upstream compiler patch was introduced.
+
+Actual read-only WSL inventory started Ubuntu and observed clang18. A narrow
+Linux supervisor ownership/retained-exit defect was repaired before native
+execution. One actual clang build then emitted an x86-64 ELF180256B/5c6ef650,
+followed by one-thread and four-thread runs with GPU off. Each owned process
+exited0 and its session settled; Windows bridge/outer exits0 and checked handles
+passed. Build sampled RSS peaked201490432B; native runs were too brief for a
+peak sample. RLIMIT_AS20GiB allows the compiler runtime's virtual reservations;
+512MiB sampled session RSS was an observer guard, not a kernel physical cap.
+No package installation, GUI, PCM, full-game or kernel/GPU acceptance follows.
+
+One separately authorized finite comparison checked all2048 native U32 pixels
+(1024 per thread count) against the JS serial reference, plus1024 JS CPU-schedule
+comparisons. All matched; fetch0, actual Node exit0/checked close and exact
+before/after input/runtime/source bindings passed. Comparison
+`21d2145979909362d5f8c624ae0c2e385243a909a47cb6af496a67f9aa23c08f`;
+native settlement
+`cc0d5c2a2dbad9110d342dbe33de0203b927858090819d4c3c8785649ce22208`;
+root comparison readback
+`41aef21f44516ebccc574d5dab52f502a565d8ee2cf467142fd3c73e3de19069`.
+All prior failures and owned leases remain retained; no native rerun occurred.
+
+Private knight v5 retained its initial exact-coordinate serialization failure.
+A formatter-only successor passed closed-shell geometry and20160 finite double
+cameras/max20visible faces. The material helper was corrected before compiler
+execution to use Bool.pick. One actual43-source compile emitted132042B/112a52f4;
+one14paired raster/count run passed (max18visible faces and two exact pawn
+controls). Five-column lossless sheets used80inputs/70exact pixel-copy guards.
+Root and independent orbit reviewer actually viewed both: navy contrast and
+profile improved, but cardinal/top identity and the rear165 silhouette remained
+weak. Subjective HOLD; current atlas unchanged, no cost trial or promotion.
+Root visual readback6f697830 and dispositiona742d205 retain the actual evidence.
+
+Source projection review found that the .48-square base dominates high-pitch
+images: at pitch67/physical scale22.5 its depth contributes about9.94screen pixels,
+while its .14height contributes about1.23. No renderer mismatch was found. V6
+changes only six constant vertical square-base faces from halfwidth/depth.24
+to.16; body25faces, ears, all31normal literals, materials and outside-knight bytes
+remain exact. One narrow geometry validation passed (31faces/54triangles, both
+closed shells/Euler2/positive volume). No repeated camera sweep was needed for
+unchanged normals. Rearfoot clearance.01model units remains a raster-review risk.
+
+One actual v6 compile emitted131990B/8ca8eee7 after43-source validation; one
+14paired render/count run passed with counts17/16/18/10/18/16 and two exact pawn
+controls. Max raster19.02ms/RSS150863872B/post-GC heap6212280B/GC6.54ms/fetch0.
+Actual parent/outer exits0, postbinding job self-only, checked handles and source
+before/after equality passed. These are selected-view local emitted-JS diagnostics,
+not the primary cost workload or browser/native presentation acceptance.
+Root visual readback
+`9195161ccace05cb82d8fdc6d2fdc2bfc6cd78020079e4a72179ac2e8145ebd8`.
+
+V6 lossless five-column assembly passed with80exact inputs,70PPMs and60
+crop/nearest6x pixel-copy guards. Both570x1062 sheets were actually viewed by
+root and the independent orbit reviewer. Narrower footing is a material visual
+improvement, with no obvious detached foot or gap in supplied crops. Frontal
+narrowness, overhead height loss and rear165 foreshortening are plausible3D
+projection. Overall subjective HOLD remains: front/top cheek-muzzle-ear
+separation is weak, and navy face/neck planes merge. Retain this footing for
+further head cross-section work at256px; no further base shrinking/taller-ear
+variant or atlas/cost promotion is authorized here. Assembly handoff
+`b98319262ee5c023b847bf1d899374db4f6192c10f1a03d25974344e9e67da52`.
+
+The next meaningful native game test is the existing NativeCLI move/save/restart
+scenario. Source review caught a real2.0.35 boundary change: IO.args includes
+the invoked program, while production NativeCLI dispatches it unchanged. The
+existing Args2032 helper removes exactly one nonempty program item. A private
+2035entry preparation reuses that helper and current rules/save/dispatch without
+patching productionCLI or the pristine compiler; actual emission and native
+scenario remain unrun. Minimal ALSA decision, NativeV2 GUI/PCM/same-save restart,
+correct kernel authority, originalGPU, stabledevice/owner graphics, ignored-byte
+recovery and reviewed amendment/adoption remain open. Full Goal stays active.
