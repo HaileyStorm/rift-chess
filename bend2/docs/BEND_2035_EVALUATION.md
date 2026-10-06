@@ -1087,3 +1087,63 @@ patching productionCLI or the pristine compiler; actual emission and native
 scenario remain unrun. Minimal ALSA decision, NativeV2 GUI/PCM/same-save restart,
 correct kernel authority, originalGPU, stabledevice/owner graphics, ignored-byte
 recovery and reviewed amendment/adoption remain open. Full Goal stays active.
+
+
+### October 6: actual CLI save/restart and v7 head geometry
+
+These cohorts bind clean `9867ad198712f262d0c97bd484a3727d2806d4db` /
+tree `c9ce93233a33c8907f40abfc0601ec0059620d69`. Accepted 2.0.27, pristine
+compiler/Laws and production CLI remain unchanged. The private 17-line 2.0.35
+entry reuses Args2032 to strip exactly one invoked-program argument, then calls
+current CLI rules/save/dispatch. One checked emission passed: 18 loaded files,
+1,208 definitions, zero holes, IO main, one whole-book check, fetches 0 and a
+64 MiB Worker stack. C is 2,239,656 B/d8d6d80d; reference JS 260,122 B/44ab008c.
+Launcher, Node and Worker exited 0; handles closed, Job settled to self-only and
+source/runtime bindings matched. A post-emission collector assertion incorrectly
+expected a pure-main macro for IO main; that failure is retained. The emitted
+main actually uses io_loop. No compiler replay occurred. Root emission readback
+`0bb4ded3ff0867138d1bc5b5a685e8a7469ac198d844c51b0f24c648b4ac558c`.
+
+One Ubuntu clang18 build produced ELF64/x86-64, 1,882,584 B/aea7225c, needing
+libc/libm. Six fresh processes ran new B prompt, move3980, show, repeat3980,
+undo confirm and show, sharing only a fresh isolated save directory. Build and
+all native processes exited 0 with owned sessions quiescent; Windows bridge and
+outer exited 0 with checked process/Job closes and self-only settlement. Native
+elapsed 83.43s, outer 101.49s. Sampled RSS peaked 396,898,304 B for the build and
+3,014,656 B for native processes; these are samples, not hard physical caps. No
+free-RAM floor, installation or GPU use. Root verified 75 raw records and exact
+source/runtime bindings; show/rejection preserved both save slots byte-for-byte.
+Root native readback
+`519abbeedf4ddef7a10752d808a1d435fd09129981dddf4472215bb573b62ca7`.
+
+One current-JS/portable-journal comparison passed in 7.69s, actual Node exit 0,
+checked handle close, empty raw logs, fetches 0 and exact bindings. All six
+outputs matched; sequences were 1,2,2,2,3,3 and revisions 0,1,1,1,2,2. Move
+expected0/action3980 survived a fresh reload; repeating it on Black's turn was
+rejected without save changes. Undo expected1 remained in the second reload's
+journal and restored the complete initial rendered board. A launcher path-string
+assertion failed before Popen; that failure is retained, and the prepared argv
+was used verbatim for the single actual comparison. Root verified nine records.
+Root comparison readback
+`2444a9a8c47f61d87d7211dc27fcb310494639f63391ebf3589ec844c77cb634`.
+This finite CLI scenario does not establish NativeV2 GUI/PCM/restart, kernel,
+GPU or production adoption. All claims, leases and failed samples remain retained.
+
+V7 changes the private head to a short broad muzzle and recessed wider ear
+crown, preserving v6's six base faces, material, lower contact, topology and
+outside-knight bytes. One source generation and one finite static audit exited
+0 with checked handles and eight exact input bindings. Geometry remains 25 body
+plus six base faces/54 triangles, two closed Euler-2 shells with positive volume;
+no self intersections, nonplanar quads, projection failures or unexpected body/base
+intersections. All 20,160 integer cameras stayed within the unchanged cap20,
+maximum19; six selected counts 17/16/19/12/14/13. Prototype fda5af7d and actual
+handoff 2585f4f2 are retained. Root verified 16 output records; static readback
+807b923b2c4f0f6e41b09e5f8cd5d6db6a97c86335a7659644838de6ddefacd6. This is double-precision static geometry, not actual F32/raster or visual
+acceptance. Compile/render remain unrun, head/navy identity unproven and current
+atlas unchanged. Next prepare the existing bounded compile/render cohort without
+requalifying the unchanged supervision protocol.
+
+Full Goal remains active. Pending minimal ALSA decision, NativeV2 GUI/PCM and
+same-save restart, correct kernel authority, original GPU acceptance, stable
+device/owner graphics, ignored-byte recovery, host onboarding and reviewed chained
+amendment/adoption remain open.
