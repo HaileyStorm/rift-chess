@@ -34,7 +34,7 @@ def piece_hit(show: Bool, +square: U32, +code: U32, basis: Camera.Basis,
   match show:
     case False{}: False{}
     case True{}:
-      geometry_hit(RgbaAffine.prepare(Placement.square_matrix(512, basis, square)),
+      geometry_hit(RgbaAffine.prepare(Placement.piece_square_matrix(512, basis, square, Model.piece_type(code))),
         PieceSprites.texture(pieces, Placement.piece_side(code),
           Placement.piece_kind(Model.piece_type(code))), x, y)
 

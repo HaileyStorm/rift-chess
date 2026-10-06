@@ -121,6 +121,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   let plates: any = null, plateTheme: number | null = null, underlay: any = null;
   let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
+  let posedPieces: any = null, poseFrame: any = null;
   let settledGround: any = null, groundFrame: any = null;
   let preparedLoad: Promise<any | null> | null = null;
   // Bend plates are immutable. A newly supplied/decoded plate has a new
@@ -221,7 +222,11 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       settledGround = null;
       groundFrame = null;
     }
-    if (missingPieces) pieces = nextPieces;
+    if (missingPieces) {
+      pieces = nextPieces;
+      posedPieces = null;
+      poseFrame = null;
+    }
   }
 
   async function run(request: SpriteJob): Promise<void> {
@@ -295,14 +300,18 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
         metrics.groundMs = now() - groundAt;
       }
       const spriteAt = now();
-      const image = board.fast_sprite_pieces512(request.frame, pieces, settledGround);
+      if (!posedPieces || !poseFrame || !board.sprite_same_view(poseFrame, request.frame)) {
+        posedPieces = board.sprite_pose_pieces(request.frame, pieces);
+        poseFrame = request.frame;
+      }
+      const image = board.fast_sprite_pieces512(request.frame, posedPieces, settledGround);
       metrics.spritesMs = now() - spriteAt;
 
-      // Alpha-only data is requested until the receiver has accepted a copy.
-      // A superseded first result must not strand later displayed frames.
+      // Every image carries its own pose masks; discarded replies cannot retain
+      // alpha from a camera that differs from the displayed knight.
       const pickAt = now();
-      const pickData = request.needPickData ? board.sprite_pick_data(pieces) : undefined;
-      metrics.pickDataMs = request.needPickData ? now() - pickAt : 0;
+      const pickData = board.sprite_pick_data(posedPieces);
+      metrics.pickDataMs = now() - pickAt;
       metrics.workerMs = now() - started;
       metrics.sendEpochMs = performance.timeOrigin + now();
       scope.postMessage({ kind: 'result', protocol: PROTOCOL,

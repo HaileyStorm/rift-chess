@@ -123,3 +123,24 @@ current24-scenario/689-check Chrome reference result and exact source/build
 identities, actual required-helper bot/controller result and cold-offline bot
 loading. These are browser/Windows Worker results, not compiler adoption, proof,
 native/device or owner graphics acceptance.
+
+The 2026-10-06 KnightR2 integration adds view-bound knight textures and bounded
+mask identities/offers so queued inputs and held touches retain the pixels they
+actually reference. Current scene/controller/menu emissions passed with the RAM
+floor removed. A fresh Chrome emission hit an actual out-of-memory error; its
+unchanged retained emission is reused through one reviewed registry transition.
+The consumer permits only the three added scene exports at exact old/new registry
+hashes, requires all other module/compiler/runtime inputs to match, and records
+the current compatibility digest separately from the original emission receipt.
+Unknown changes still reject; no historical receipt is rewritten.
+
+The existing host fixture and helper checks passed. A draft integrated package
+rendered four actual Chrome views with no page errors or external requests.
+One actual Chrome race also passed: while A remained displayed and a genuine
+settled B reply was held, the queued A-mask click selected White Knight b1 where
+board-only picking would target another square. A remained retained through the
+reply; the genuine B refinement deferred and then discarded. Observer setup
+failures remain retained separately. Retention pressure still needs its own check.
+Knight appearance remains on hold: the foreshortened mesh is weak beside the
+existing upright atlas pieces. Performance, native/device results and adoption
+remain separate requirements.

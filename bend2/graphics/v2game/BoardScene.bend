@@ -25,6 +25,7 @@ import ./PieceSprites.bend as PieceSprites
 import ./PieceAssets.bend as PieceAssets
 import ./SpritePlacement.bend as SpritePlacement
 import ./AtlasPickData.bend as AtlasPickData
+import ./KnightMesh.bend as KnightMesh
 
 type Corners is Data:
   Corners{p00: Quad.Point, p10: Quad.Point, p11: Quad.Point, p01: Quad.Point}
@@ -1407,6 +1408,12 @@ def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
 def sprite_piece_side(code: U32) -> PieceSprites.Side:
   SpritePlacement.piece_side(code)
 
+def sprite_pose_pieces(frame: Scene.Frame, pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
+  +basis = Camera.basis(Scene.frame_view(frame))
+  ivory navy = KnightMesh.texture(6n, 64, basis, 2)
+    KnightMesh.texture(6n, 64, basis, 10)
+  PieceSprites.with_knights(pieces, ivory, navy)
+
 def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
   AtlasPickData.from_pieces(pieces)
 
@@ -1446,7 +1453,7 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +center = sprite_center_at(U32.is_eq(amount, 16), size, camera, source,
         square, amount)
       +width = sprite_width(size, camera)
-      +matrix = sprite_matrix(width, sprite_height(size, camera), center)
+      +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
       +contact = sprite_contact_shadow(depth,size,width,center,image)
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
@@ -1471,9 +1478,8 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
       +dead_y = U32.sub(y, lift)
       +center: Quad.Point = Quad.Point{U32.to_f32(dead_x),
         U32.to_f32(dead_y)}
-      +matrix = sprite_matrix(sprite_width(size, camera),
-        sprite_height(size, camera), center)
       +code = Model.board_get(oldBoard, square)
+      +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix,
         sprite_opacity(age), Rect.screen(size), image)
@@ -1580,6 +1586,12 @@ def sprite_view_equal(a: Camera.View,b: Camera.View) -> Bool:
 # The settled ground reads the view, hole topology and theme, but not piece
 # occupancy or pointer feedback. Keep this cache decision in Bend rather than
 # teaching the browser transport which fields define a chess court.
+def sprite_same_view(a: Scene.Frame, b: Scene.Frame) -> Bool:
+  sprite_view_equal(Scene.frame_view(a), Scene.frame_view(b))
+
+def sprite_has_view(frame: Scene.Frame, view: Camera.View) -> Bool:
+  sprite_view_equal(Scene.frame_view(frame), view)
+
 def sprite_same_ground(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
   Bool.and(U32.is_eq(Scene.frame_theme(a),Scene.frame_theme(b)),
     Bool.and(sprite_view_equal(Scene.frame_view(a),Scene.frame_view(b)),

@@ -95,6 +95,11 @@ def prepare(+page0: Page, +page1: Page, +page2: Page) -> Pieces:
     slot(page1, 0), slot(page1, 1), slot(page1, 2), slot(page1, 3),
     slot(page2, 0), slot(page2, 1), slot(page2, 2), slot(page2, 3)}
 
+def with_knights(pieces: Pieces, ivory: Sample.Texture, navy: Sample.Texture) -> Pieces:
+  match pieces:
+    case Pieces{ip, ik, ib, ir, iq, ix, np, nk, nb, nr, nq, nx}:
+      Pieces{ip, ivory, ib, ir, iq, ix, np, navy, nb, nr, nq, nx}
+
 def ivory_texture(pieces: Pieces, kind: PieceKind) -> Sample.Texture:
   match pieces:
     case Pieces{ivory_pawn, ivory_knight, ivory_bishop, ivory_rook,

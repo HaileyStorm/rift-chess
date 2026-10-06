@@ -19,17 +19,17 @@ const map = Object.freeze({
   OpenUrl: 'ui/Types.OpenUrl', Exit: 'ui/Types.Exit',
 });
 const ports = {
-  'host.ts': { sha256: 'da2aca34b09621d2786a51175c5fd96deb109d1f4b634a6d73201900563e9bac',
+  'host.ts': { sha256: '813e50136a467a35542a8c39061f4d45f13138f4777eda9874c967df655334b5',
     counts: { QualityProbe: 1, Tick: 1, Activate: 1, PickFile: 1, PointerDown: 1,
       PointerMove: 1, PointerUp: 2, Wheel: 1, KeyInput: 1, Resize: 1 } },
   'ports.ts': { sha256: '60c995ceb06ac7fce3d1df7911ea63ae0e76ce811f72fd9925b09d8cbdbb2a22',
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
-  'worker-v2.ts': { sha256: '5fc260f3d54ba890471feba134b808b07e13ace62fd5b2e0ae638a461a6335ca',
+  'worker-v2.ts': { sha256: 'cddd18ad11627bfaeb235180db0d84cee9f1bda8d941bd44bf61948dacd56441',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     bareCounts: { Con: 2, Nil: 1, Pix: 2, Qua: 2, Some: 1 } },
-  'sprite-helper.ts': { sha256: 'c37861150286128452fd6cbb7416b4f0ccc6494435abbdf0d9973dda5cbe7e2d',
+  'sprite-helper.ts': { sha256: 'a6cbeff548397a754e916b54b703c2479ca4909ae841791f558618f33a32176e',
     counts: { Ready: 2, Frame: 1, ObservatoryPlates: 1 },
     bareCounts: { Con: 2, Nil: 2, Pix: 3, Qua: 3, Some: 1 } },
   'asset-port.ts': { sha256: '2a2927c81f5b652685ee2cacb0608b4a7b3eb528fffc8322eebeaad6a215d3e0',
@@ -44,7 +44,7 @@ const definitions = {
     Effect: ['PickFile', 'Store', 'Download', 'Sound', 'OpenUrl', 'Exit'] } },
   'bend2/graphics/Scene.bend': { sha256: '7d0ce609c97ffae8b0662de2ec58d85120a9605c151c7becd5c91a60fa5cbc65',
     types: { Frame: ['Frame'] } },
-  'bend2/graphics/v2game/PieceSprites.bend': { sha256: '458f35cce228a034e866cb87eed2054bbfe87294835dcf93ad7f758fb9a05c53',
+  'bend2/graphics/v2game/PieceSprites.bend': { sha256: 'de3f1178280de74dead3143342f765d4eff1c1b7796a501543a90b120dac3c59',
     types: { Pieces: ['Pieces'] } },
   'bend2/graphics/v2game/Assets.bend': { sha256: '1bba5dcbef7a9f0628ffe470d02aab28dd5fd43a54d4b3688e656189c86e239a',
     types: { AssetResponse: ['AssetResponse'], Plate: ['Ready'], ObservatoryPlates: ['ObservatoryPlates'] } },
@@ -55,9 +55,9 @@ const definitions = {
     types: { Image: ['Pix', 'Qua'] } },
 };
 const emitted = {
-  scene: ['scene-kwR2KB', '3f41c7f16354b1d4678df80e3ce377b2e537b16e5b6ac9a6d431cf4982c269d8'],
-  controller: ['controller-jhr9Ml', '96cb5f639fbc301be370b736e62508380550f313a88da562f1341a7f1cc6b719'],
-  menu: ['menu-yN96SS', '90bb363a280fffb5e2e592ca68cefd5c520092351cdba0e9792efc8200acad04'],
+  scene: ['scene-eAZbOh', '568e0c82715dfcf5c8480e674c35038d8b346c104d2838ca24ba45037bf798b0'],
+  controller: ['controller-gdFJta', '708c83d9f666f400d2b0d2c3caf370516125e40895a12696c904ecdc4304e77e'],
+  menu: ['menu-g2ud5O', '90bb363a280fffb5e2e592ca68cefd5c520092351cdba0e9792efc8200acad04'],
   chrome: ['chrome-knTtdv', 'e2fba28538b00f6c75a7768c2241d91736494bbd2f429c53611d0dbfd032b4f1'],
 };
 const occurrences = (source, text) => source.split(text).length - 1;
@@ -188,7 +188,7 @@ async function diagnostic() {
   const assetCode = transpiler.transformSync(assetSource.contents);
   const port = await import(`data:text/javascript;base64,${Buffer.from(assetCode).toString('base64')}`);
   const scene = (await import(pathToFileURL(path.join(root,
-    '.artifacts/bend2/2035-preview/scene-kwR2KB/scene.js')).href)).default;
+    '.artifacts/bend2/2035-preview/scene-eAZbOh/scene.js')).href)).default;
   const values = list => {
     const result = [];
     while (list.$ === 'Con') { result.push(list.head); list = list.tail; }

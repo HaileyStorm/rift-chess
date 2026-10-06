@@ -49,7 +49,9 @@ const { parentPort, workerData } = require('node:worker_threads');
     sprite_asset_ids() { return list([0, 1, 2].map(id => ({ id, path: 'assets/pieces-fast-' + id + '.rga', max_bytes: 32 }))); },
     load_plates(responses) { const item = values(responses)[0]; state.calls.push('decode-plate-' + item.id); return { theme: item.id }; },
     load_sprite_pages(responses) { state.calls.push('decode-sprites'); return { $: 'Some', value: { prepared: true } }; },
-    sprite_pick_data(pieces) { state.calls.push('pick-data'); return { $: 'Pieces', mask: pieces.prepared }; },
+    sprite_same_view(a, b) { return JSON.stringify(a.view ?? null) === JSON.stringify(b.view ?? null); },
+    sprite_pose_pieces(frame, pieces) { return { ...pieces, pose: frame.view?.yaw ?? 0 }; },
+    sprite_pick_data(pieces) { state.calls.push('pick-data'); return { $: 'Pieces', mask: pieces.prepared, pose: pieces.pose }; },
     underlay512_asset(theme, plates) { state.calls.push('underlay-' + theme); return {
       theme, platePixel: plates?.astral?.pixels?.color ?? plates?.stone?.pixels?.color ?? -1 }; },
     settled_ground512(frame, underlay) { state.calls.push('ground-' + frame.marker); return {
@@ -139,7 +141,7 @@ test('static sprite helper validates source/theme and retains Bend assets across
     frame: { $: 'Frame', theme: 0, marker: 'first', groundKey: 'court' } });
   const first = await waitFor(worker, message => message.kind === 'result' && message.id === 3);
   assert.deepEqual(first.image, { $: 'Pix', color: 1 }, 'the immutable Bend Image crosses a real worker structured-clone boundary');
-  assert.deepEqual(first.pickData, { $: 'Pieces', mask: true });
+  assert.deepEqual(first.pickData, { $: 'Pieces', mask: true, pose: 0 });
   assert.deepEqual(first.testState.calls.slice(-4), ['underlay-0', 'ground-first', 'sprites-first', 'pick-data'],
     'Bend underlay, ground, then sprite composition run in order');
   assert.equal(first.testState.fetchGroups.length, 2, 'first theme and sprite assets load in parallel groups');
@@ -150,7 +152,7 @@ test('static sprite helper validates source/theme and retains Bend assets across
   worker.postMessage({ kind: 'job', protocol: 1, id: 4, generation: 1,
     source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'cached', groundKey: 'court' } });
   const cached = await waitFor(worker, message => message.kind === 'result' && message.id === 4);
-  assert.equal(cached.pickData, undefined, 'accepted alpha data is not cloned on every frame');
+  assert.deepEqual(cached.pickData, first.pickData, 'each same-view image carries matching pose alpha data');
   assert.equal(cached.testState.fetchGroups.length, 2, 'same-theme plate, prepared sprites and underlay are retained');
   assert.equal(cached.metrics.fetchMs, 0);
   assert.equal(cached.metrics.decodeMs, 0);
@@ -161,10 +163,10 @@ test('static sprite helper validates source/theme and retains Bend assets across
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 5, generation: 1,
     source: token, theme: 0, needPickData: true,
-    frame: { $: 'Frame', theme: 0, marker: 'new-holes', groundKey: 'rift' } });
+    frame: { $: 'Frame', theme: 0, marker: 'new-holes', groundKey: 'rift', view: { yaw: 45 } } });
   const changedGround = await waitFor(worker, message => message.kind === 'result' && message.id === 5);
-  assert.deepEqual(changedGround.pickData, first.pickData,
-    'receiver can request alpha data again when an earlier reply was not accepted');
+  assert.deepEqual(changedGround.pickData, { $: 'Pieces', mask: true, pose: 45 },
+    'changed-view images carry their new pose mask while retaining the loaded sprite assets');
   assert.equal(changedGround.metrics.groundCacheHit, 0);
   assert.ok(changedGround.testState.calls.includes('ground-new-holes'),
     'a changed view or hole topology rebuilds ground');

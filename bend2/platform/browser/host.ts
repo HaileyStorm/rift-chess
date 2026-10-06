@@ -10,6 +10,28 @@ const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
 let ports: Ports;
 let presentation: unknown;
+const receivedAtlasMasks = new Map<number, number>();
+const queuedAtlasMasks = new Set<number>();
+let inflightAtlasMask: number | null = null;
+
+function atlasMaskId(shown: any): number | null {
+  return shown?.atlasPick === true && Number.isSafeInteger(shown.atlasMaskId) &&
+    shown.atlasMaskId > 0 ? shown.atlasMaskId : null;
+}
+
+function retireAtlasMasks(): void {
+  const needed = new Set(queuedAtlasMasks);
+  for (const id of [atlasMaskId(presentation), inflightAtlasMask,
+    atlasMaskId(touchImport?.presentation),
+    pendingRefinement?.atlasPick === true ? pendingRefinement.atlasMaskId : null]) {
+    if (id !== null) needed.add(id);
+  }
+  const masks = [...receivedAtlasMasks].filter(([id]) => !needed.has(id))
+    .map(([id, offer]) => ({ id, offer }));
+  if (!masks.length) return;
+  for (const { id } of masks) receivedAtlasMasks.delete(id);
+  worker.postMessage({ kind: 'retire-atlas-masks', masks });
+}
 let presentedControls: any[] = [];
 const queuedPickers = new WeakMap<object, PreparedPickFile>();
 const inflightPickers = new Map<number, PreparedPickFile[]>();
@@ -67,6 +89,8 @@ function scheduleTextureProbe(): void {
 function send(input: any, picker?: PreparedPickFile): void {
   if (!presentation) { if (picker) ports?.discardPickFile(picker); return; }
   if (picker) { queuedPickers.set(input, picker); activePickers.add(picker); }
+  const mask = atlasMaskId(presentation);
+  if (mask !== null) queuedAtlasMasks.add(mask);
   queue.enqueue(input, presentation);
   pump();
 }
@@ -78,6 +102,10 @@ function pump(): void {
   canvas.setAttribute('aria-busy', 'true');
   slow = window.setTimeout(() => { canvas.dataset.slow = 'true'; }, 150);
   const id = ++sequence;
+  inflightAtlasMask = atlasMaskId(batch.presentation);
+  // Conservatively retain all queued views until the queue drains, including
+  // coalesced moves; retirement never depends on an inaccurate event count.
+  if (!queue.length) queuedAtlasMasks.clear();
   const prepared = batch.events.flatMap(event => {
     const picker = queuedPickers.get(event);
     if (picker) queuedPickers.delete(event);
@@ -86,6 +114,7 @@ function pump(): void {
   if (prepared.length) inflightPickers.set(id, prepared);
   requestStarted.set(id, performance.now());
   worker.postMessage({ kind: 'events', id, events: batch.events, presentation: batch.presentation });
+  retireAtlasMasks();
 }
 // Scale the fixed-size pixel surface to the largest size that fits the window.
 function fit(): void {
@@ -143,6 +172,7 @@ function presentRefinement(message: any): void {
   if (!samePresentedView(message)) {
     canvas.dataset.spriteDiscarded = String(Number(canvas.dataset.spriteDiscarded || 0) + 1);
     discardRefinement(message);
+    retireAtlasMasks();
     return;
   }
   if (message.bitmap) {
@@ -152,16 +182,26 @@ function presentRefinement(message: any): void {
     context.putImageData(new ImageData(new Uint8ClampedArray(message.image),
       message.width, message.height), 0, 0);
   } else {
+    retireAtlasMasks();
     return;
   }
-  presentation = { ...message.presentation, atlasPick: message.atlasPick === true };
+  presentation = { ...message.presentation, atlasPick: message.atlasPick === true, atlasMaskId: message.atlasMaskId, atlasMaskOffer: message.atlasMaskOffer };
   canvas.dataset.atlasPick = String(message.atlasPick === true);
   canvas.dataset.spriteRoundTripMs = String(message.spriteMetrics?.roundTripMs ?? '');
+  retireAtlasMasks();
   canvas.dispatchEvent(new CustomEvent('rift-bend-sprite-refined',
     { bubbles: true, detail: message.spriteMetrics }));
 }
 worker.addEventListener('message', event => {
   const message = event.data;
+  if (message.atlasPick === true) {
+    if (!Number.isSafeInteger(message.atlasMaskId) || message.atlasMaskId < 1 ||
+        !Number.isSafeInteger(message.atlasMaskOffer) || message.atlasMaskOffer < 1)
+      throw new Error('Displayed atlas frame has no mask identity');
+    receivedAtlasMasks.set(message.atlasMaskId,
+      Math.max(receivedAtlasMasks.get(message.atlasMaskId) ?? 0, message.atlasMaskOffer));
+    if (receivedAtlasMasks.size > 8) throw new Error('Atlas mask retention bound exceeded');
+  }
   if (message.kind === 'ready') {
     ports = new Ports(message.keys, send, message.maxFileBytes);
     const id = ++sequence;
@@ -181,8 +221,10 @@ worker.addEventListener('message', event => {
     } else {
       presentRefinement(message);
     }
+    retireAtlasMasks();
     return;
   }
+  inflightAtlasMask = null;
   busy = false;
   clearTimeout(slow); delete canvas.dataset.slow;
   const started = requestStarted.get(message.id);
@@ -195,6 +237,7 @@ worker.addEventListener('message', event => {
     ports.cancelPickFiles();
     activePickers.clear();
     inflightPickers.delete(message.id);
+    retireAtlasMasks();
     status.textContent = `Bend runtime error: ${message.message}`; status.classList.remove('sr-only'); return;
   }
   bendCompute.add(message.renderMs);
@@ -224,7 +267,7 @@ worker.addEventListener('message', event => {
     canvas.dataset.hostPresentationMs = String(hostPresentation.value);
     publishProfile();
     scheduleTextureProbe();
-    presentation = { ...message.presentation, atlasPick: message.atlasPick === true };
+    presentation = { ...message.presentation, atlasPick: message.atlasPick === true, atlasMaskId: message.atlasMaskId, atlasMaskOffer: message.atlasMaskOffer };
     canvas.dataset.atlasPick = String(message.atlasPick === true);
     presentedControls = message.controls;
     presentedTheme = message.renderTheme;
@@ -251,6 +294,7 @@ worker.addEventListener('message', event => {
     pendingRefinement = null;
     presentRefinement(ready);
   }
+  retireAtlasMasks();
   if (qualityWindow.length >= 8) queueMicrotask(nextQualityProbe);
 });
 worker.addEventListener('error', event => {
@@ -299,6 +343,7 @@ canvas.addEventListener('pointerup', event => {
   if (touchImport?.pointerId === event.pointerId) {
     const held = touchImport;
     touchImport = null;
+    retireAtlasMasks();
     const p = point(event);
     if (held.presentation !== presentation || held.layoutVersion !== layoutVersion ||
       !importAt(held.input.x, held.input.y) || !importAt(p.x, p.y)) {
@@ -311,7 +356,7 @@ canvas.addEventListener('pointerup', event => {
   if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
 });
 canvas.addEventListener('pointercancel', event => {
-  if (touchImport?.pointerId === event.pointerId) { touchImport = null; return; }
+  if (touchImport?.pointerId === event.pointerId) { touchImport = null; retireAtlasMasks(); return; }
   send({ $: 'PointerUp', ...point(event), button: event.button });
 });
 canvas.addEventListener('contextmenu', event => event.preventDefault());

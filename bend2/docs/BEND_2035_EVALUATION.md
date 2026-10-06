@@ -1445,3 +1445,66 @@ The dedicated read-only CLI coordinator does not steer desktop writers or grant
 project/device writes. Empty scoped inbox status is separate from authorization
 to send the drafted retained-GPU-source request. ALSA installation and that
 message remain unanswered direct human requests. The full Goal stays active.
+
+## KnightR2 integration and low-memory continuation (2026-10-06)
+
+The Windows2.5GiB RAM gate is absent. Current scene/controller/menu whole-book
+selected emissions passed (`e32d90c5`, `c1beec32`, `27b5265a`). Two source issues
+were corrected: image conversion now has explicit shrinking Pix/Qua cases, and
+the view wrappers follow the filled equality function they call. Laws, accepted
+compiler pin, upstream compiler bytes and balanced parallelism are unchanged.
+Fresh Chrome emission failed with real OutOfMemory (`d09fabde`); owned exit1,
+quiescence and checked handle closure were observed. No automatic retry.
+
+Chrome's retained manifest `e4ea2af8` and JS `e2fba285` are unchanged. Exact input
+comparison found only the registry addition of three scene exports. The builder
+permits only that reviewed old/new hash transition and requires full equality
+elsewhere; its new build evidence records current compatibility separately from
+the historical emission binding. Independent source review and seven actual
+negative cases passed (`ced80fc4`); no receipt was rewritten.
+
+The existing helper3tests passed; real host/FakeWorker fixture passed (`11c470cd`)
+for queued/inflight/held-touch masks, image-free replies and latest-offer retirement.
+These do not prove real game-worker picking or retention pressure. Integrated
+dirty-source package `browser-GyAyVz` (`5165b52a`, parent8bf72101) built successfully
+(`08202e06`). Actual Chrome collection (`3bf8536e`, result `fa59a1f3`) captured
+default345/67/115, yaw90/pitch35 at zoom75/130 and top0/90/100 with no page errors
+or external requests. Earlier observer zoom100 timeout and BigInt receipt failure
+remain retained; neither is browser acceptance.
+
+Appearance remains HOLD. Root viewed actual default/low/top captures: knights
+are weak flat silhouettes beside the upright atlas pieces. Independent source
+review found no demonstrated alpha conversion or slot defect; exact-camera
+direct-mesh versus64px bake/mask comparison is the next diagnostic. Real queued
+A-click, mask pressure, stable performance, native/device/GPU/proof and compiler
+adoption remain open. Original TypeScript app remains outside the experiment.
+
+Safe cleanup removed1305 npm download-cache files,923285427 logical bytes
+(about880MiB); Vivaldi/personal/project/installed/evidence files were preserved.
+Current additional download caches inspected are empty or small; unknown app
+temporary bundles and tool-runtime caches were retained. Low disk space remains.
+
+### Actual queued atlas click qualified (2026-10-06, subsequent evidence)
+
+One actual current-package Chrome race passed in3.645s, root terminal
+`80f3d2b0d636ae025f367ad3aa67a35c943da5d2eb60bbf0c308f8b74cb897be`.
+Displayed A yaw345/pitch35/zoom115 used mask2/offer1. Genuine settled B pitch90
+used distinct mask3. With B held and A still drawn, the queued click at457,402
+selected White Knight b1; board-only inverse would target square10, and the
+source-bounded B top-pose alpha excludes that point. Actual position stayed
+unchanged; A survived until the queued reply. A genuine B refinement deferred
+and then discarded, counts1/1. No page errors. This qualifies this queued-click
+case, not pressure8, all orbit/motion, stable latency, graphics or device results.
+
+Earlier source-only race setup failed at the observer wait (`6b73a7f6`, `90872b79`).
+Actual failure state showed valid pitch35 atlas replies but no observed shown
+frame. The test marker now clears at task boundary rather than between browser
+listeners. The test also holds a real right-down acknowledgment until move/up
+queue together; B is settled so helper work is not suppressed by orbit motion.
+Original failures remain intact. Current test differs from tested bytes only by
+the explanatory comment, verified reversibly; no behavioral rerun is warranted.
+
+Test-value review retains one existing-runner flow because host mocks/first-frame
+checks cannot prove real nonfallback picking from an older displayed atlas. No
+product test hook, independent copied runner, pressure event matrix or duplicate
+unit suite was added. Appearance HOLD and remaining original sprint gates persist.

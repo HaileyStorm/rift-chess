@@ -215,8 +215,71 @@ request = eventRequests().at(-1)!;
 assert.deepEqual(request.events, [{ $: 'Activate', id: 21 }]);
 respond(request, { ...laterPresentation, revision: 7 }, controlsFor(resizedBounds), canvas.width, canvas.height, [{ $: 'PickFile' }]);
 
+// An atlas token belongs to the pixels actually shown, including an older
+// queued batch or held touch, rather than the newest worker reply.
+const atlasA = { ...laterPresentation, revision: 8, view: { yaw: 0, pitch: 67, zoom: 100 } };
+const atlasB = { ...atlasA, view: { yaw: 90, pitch: 67, zoom: 100 } };
+const atlasC = { ...atlasA, view: { yaw: 270, pitch: 90, zoom: 100 } };
+const maskA = { atlasPick: true, atlasMaskId: 1, atlasMaskOffer: 1 };
+const maskB = { atlasPick: true, atlasMaskId: 2, atlasMaskOffer: 2 };
+const maskC = { atlasPick: true, atlasMaskId: 3, atlasMaskOffer: 3 };
+const retirementStart = worker.messages.length;
+const retiredMasks = () => worker.messages.slice(retirementStart)
+  .filter(message => message.kind === 'retire-atlas-masks').flatMap(message => message.masks);
+canvas.fire('pointermove', pointer(6, 'mouse', outside));
+request = eventRequests().at(-1)!;
+worker.reply({ ...frame(request.id, atlasA, controlsFor(resizedBounds), canvas.width, canvas.height), ...maskA });
+canvas.fire('pointerdown', pointer(6, 'touch', resizedCenter));
+canvas.fire('keydown', { keyCode: 37, altKey: false, ctrlKey: false, metaKey: false, shiftKey: false, preventDefault() {} });
+request = eventRequests().at(-1)!;
+canvas.fire('pointermove', pointer(7, 'mouse', outside));
+let closedBitmap = 0;
+const bitmapB = { close() { closedBitmap++; } };
+const replyB = { ...frame(request.id, atlasB, controlsFor(resizedBounds), canvas.width, canvas.height), ...maskB, bitmap: bitmapB };
+delete replyB.image;
+worker.reply(replyB);
+assert.equal(closedBitmap, 1, 'the displayed bitmap is closed after drawing');
+request = eventRequests().at(-1)!;
+assert.equal(request.presentation.atlasMaskId, 1, 'a queued A input keeps A after B is drawn');
+assert.equal(request.presentation.atlasMaskOffer, 1);
+assert.deepEqual(request.presentation.view, atlasA.view);
+assert.ok(!retiredMasks().some(mask => mask.id === 1), 'held and inflight A remains retained');
+
+canvas.fire('pointermove', pointer(7, 'mouse', outside));
+worker.reply({ ...frame(request.id, atlasC, controlsFor(resizedBounds), canvas.width, canvas.height), ...maskC });
+request = eventRequests().at(-1)!;
+assert.equal(request.presentation.atlasMaskId, 2, 'queued B keeps its mask after C is drawn');
+assert.deepEqual(request.presentation.view, atlasB.view);
+assert.ok(!retiredMasks().some(mask => mask.id === 2), 'inflight B is retained independently of held A');
+canvas.fire('pointermove', pointer(7, 'mouse', outside));
+const imageFree = { ...frame(request.id, atlasB, controlsFor(resizedBounds), canvas.width, canvas.height),
+  atlasPick: true, atlasMaskId: 4, atlasMaskOffer: 4 };
+delete imageFree.image;
+worker.reply(imageFree);
+request = eventRequests().at(-1)!;
+assert.equal(request.presentation.atlasMaskId, 3, 'an image-free reply leaves the actually shown C mask active');
+assert.deepEqual(request.presentation.view, atlasC.view);
+assert.ok(retiredMasks().some(mask => mask.id === 4 && mask.offer === 4), 'an unshown mask is retired');
+assert.ok(retiredMasks().some(mask => mask.id === 2 && mask.offer === 2), 'B retires after its inflight batch completes');
+assert.ok(!retiredMasks().some(mask => mask.id === 1), 'unused held A survives newer shown and image-free replies');
+worker.reply({ ...frame(request.id, atlasC, controlsFor(resizedBounds), canvas.width, canvas.height),
+  ...maskC, atlasMaskOffer: 5 });
+const beforeCancel = eventRequests().length;
+canvas.fire('pointercancel', pointer(6, 'touch', resizedCenter));
+assert.equal(eventRequests().length, beforeCancel, 'canceling held Import emits no unused pointer event');
+assert.equal(pickerClicks, 3, 'the unused held Import does not open a chooser');
+assert.ok(retiredMasks().some(mask => mask.id === 1 && mask.offer === 1), 'A retires only after touch cancellation');
+assert.ok(!retiredMasks().some(mask => mask.id === 3), 'shown C remains retained');
+canvas.fire('pointermove', pointer(7, 'mouse', outside));
+request = eventRequests().at(-1)!;
+assert.equal(request.presentation.atlasMaskId, 3);
+assert.equal(request.presentation.atlasMaskOffer, 5, 'the shown presentation carries its latest received offer');
+respond(request, { ...laterPresentation, revision: 9 }, controlsFor(resizedBounds));
+assert.ok(retiredMasks().some(mask => mask.id === 3 && mask.offer === 5), 'retirement acknowledges the latest received C offer');
+
 console.log(JSON.stringify({ ok: true, checks: [
   'resize while touch Import is held suppresses chooser and unpaired PointerUp',
   'completed presentation change invalidates a held touch origin',
   'release outside Import cancels', 'normal touch, mouse, and accessible-button Import paths',
+  'atlas masks follow shown, queued, inflight and held-touch presentations; image-free replies retain actual pixels',
 ] }));

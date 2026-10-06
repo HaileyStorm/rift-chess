@@ -41,7 +41,21 @@ let menuBase: any, menuControls: any, menuBaseData: any, menuBasePlan: any;
 let menuStaticData: any, menuStaticPlan: any;
 let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
-let spritePickData: any = null, preparedAtlas = false, renderedAtlas = false;
+let preparedAtlas = false, renderedAtlas = false;
+let spriteAtlasMaskId: number | null = null;
+let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
+const MAX_ATLAS_MASKS = 8;
+let atlasMaskOffer = 0, atlasMaskPressure = false;
+const atlasMasks = new Map<number, {
+  frame: any; pieces: any; retired: boolean; firstOffer: number; lastOffer: number;
+}>();
+
+function pruneAtlasMasks(): void {
+  for (const [id, mask] of atlasMasks) {
+    if (mask.retired && id !== spriteAtlasMaskId && id !== preparedAtlasMaskId &&
+        id !== renderedAtlasMaskId) atlasMasks.delete(id);
+  }
+}
 let spritePlateTheme: number | null = null;
 let spriteHelper: Worker | null = null, spriteHello = false, spriteGeneration = 0, spriteTaskId = 0;
 let spritePending: { id: number; generation: number; frame: any; theme: number;
@@ -182,7 +196,9 @@ function disposeSprite(): void {
   clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
-  spritePickData = null;
+  spriteAtlasMaskId = preparedAtlasMaskId = renderedAtlasMaskId = null;
+  atlasMasks.clear();
+  atlasMaskPressure = false;
   preparedAtlas = renderedAtlas = false;
   spriteTheme = null;
   spritePlateTheme = null;
@@ -225,9 +241,18 @@ function ensureSpriteHelper(): void {
         if (current) scheduleSprite(current);
         return;
       }
+      if (message.pickData?.$ !== 'Pieces')
+        throw new Error('Bend atlas image has no current pose alpha data');
+      pruneAtlasMasks();
+      // Defer detail rather than evict masks used by an outstanding presentation.
+      if (atlasMasks.size >= MAX_ATLAS_MASKS) { atlasMaskPressure = true; return; }
+      if (!Number.isSafeInteger(pending.id) || pending.id < 1 || atlasMasks.has(pending.id))
+        throw new Error('Invalid or reused atlas mask identity');
+      atlasMasks.set(pending.id, { frame: pending.frame, pieces: message.pickData,
+        retired: false, firstOffer: 0, lastOffer: 0 });
+      atlasMaskPressure = false;
+      spriteAtlasMaskId = pending.id;
       spriteLayer = message.image;
-      if (message.pickData?.$ === 'Pieces') spritePickData = message.pickData;
-      if (!spritePickData) throw new Error('Bend atlas image has no source-bound alpha data');
       spriteFrame = pending.frame;
       spriteTheme = pending.theme;
       const received = performance.now();
@@ -252,6 +277,10 @@ function ensureSpriteHelper(): void {
 function startSpriteJob(frame: any, theme: number, revision: number,
   quietWindowMs = 0): void {
   const at = performance.now();
+  if (spriteTaskId >= Number.MAX_SAFE_INTEGER) {
+    spriteFault('Atlas mask identity exhausted');
+    return;
+  }
   const pending = { id: ++spriteTaskId, generation: ++spriteGeneration,
     frame, theme, revision, at, epoch: performance.timeOrigin + at, quietWindowMs };
   spritePending = pending;
@@ -263,7 +292,7 @@ function startSpriteJob(frame: any, theme: number, revision: number,
     selected.depth === 9 && ['Pix', 'Qua'].includes(selected.pixels?.$);
   const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
   spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
-    needPickData: !spritePickData,
+    needPickData: true,
     id: pending.id, generation: pending.generation, theme, frame,
     ...(sharedPlate ? { plates: sharedPlate } : {}) });
   if (sharedPlate) spritePlateTheme = theme;
@@ -334,6 +363,7 @@ function render(packet: any): any {
     scene.sprite_same_placement(spriteFrame, frame);
   if (request.prepared || (spriteSettled && !prepared)) {
     preparedAtlas = Boolean(spriteSettled);
+    preparedAtlasMaskId = preparedAtlas ? spriteAtlasMaskId : null;
     prepared = timed('prepared', () =>
     spriteSettled ? (boardSize === 512
       ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
@@ -370,6 +400,8 @@ function render(packet: any): any {
     ? scene.fast_camera256_for_512(frame, motionUnderlay)
     : scene[`fast_pointer${suffix}`](frame, prepared));
   renderedAtlas = !request.motion && preparedAtlas;
+  renderedAtlasMaskId = renderedAtlas ? preparedAtlasMaskId : null;
+  pruneAtlasMasks();
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)
     : menu.render(request.depth, request.size, data, plan, fonts, board));
@@ -424,9 +456,21 @@ async function emit(packet: any, elapsed: number, id: number,
     return { $: 'Sound', samples: samples.buffer, rate };
   });
   const audioMs = performance.now() - audioStart;
+  let maskOffer: number | null = null;
+  if (renderedAtlas) {
+    const mask = renderedAtlasMaskId === null ? undefined : atlasMasks.get(renderedAtlasMaskId);
+    if (!mask || !scene.sprite_has_view(mask.frame, packet.presentation.view))
+      throw new Error('Rendered atlas presentation has no matching pose alpha data');
+    if (atlasMaskOffer >= Number.MAX_SAFE_INTEGER)
+      throw new Error('Atlas presentation identity exhausted');
+    maskOffer = ++atlasMaskOffer;
+    if (!mask.firstOffer) mask.firstOffer = maskOffer;
+    mask.lastOffer = maskOffer;
+    mask.retired = false;
+  }
   self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,
     renderTheme: packet.render.theme,
-    atlasPick: renderedAtlas,
+    atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
     treeMs, traversalMs, sceneTimes, spriteMetrics,
@@ -435,6 +479,27 @@ async function emit(packet: any, elapsed: number, id: number,
 async function handleMessage(request: any): Promise<void> {
   const start = performance.now();
   try {
+    if (request.kind === 'retire-atlas-masks') {
+      if (Object.keys(request).length !== 2 || !Array.isArray(request.masks) ||
+          !request.masks.length || request.masks.length > MAX_ATLAS_MASKS ||
+          new Set(request.masks.map((item: any) => item?.id)).size !== request.masks.length ||
+          request.masks.some((item: any) => !Number.isSafeInteger(item?.id) || item.id < 1 ||
+            !Number.isSafeInteger(item?.offer) || item.offer < 1 || !atlasMasks.has(item.id) ||
+            item.offer < atlasMasks.get(item.id)!.firstOffer ||
+            item.offer > atlasMasks.get(item.id)!.lastOffer || Object.keys(item).length !== 2))
+        throw new Error('Invalid atlas mask retirement');
+      const before = atlasMasks.size;
+      for (const item of request.masks) {
+        const mask = atlasMasks.get(item.id)!;
+        if (item.offer === mask.lastOffer) mask.retired = true;
+      }
+      pruneAtlasMasks();
+      if (atlasMasks.size < before && atlasMaskPressure && latestPacket) {
+        atlasMaskPressure = false;
+        scheduleSprite(latestPacket);
+      }
+      return;
+    }
     if (request.kind === 'dispose') {
       disposeBot();
       disposeSprite();
@@ -450,8 +515,13 @@ async function handleMessage(request: any): Promise<void> {
       packet = api.boot_reads(request.saved.text, request.prefs.text, request.saved.ok, request.prefs.ok, request.width, request.height);
     } else {
       if (request.presentation?.atlasPick === true) {
-        if (!spritePickData) throw new Error('Displayed atlas frame lost its alpha data');
-        packet = api.dispatch_at_web_atlas(list(request.events), request.presentation, spritePickData, session);
+        const id = request.presentation.atlasMaskId;
+        const mask = Number.isSafeInteger(id) ? atlasMasks.get(id) : undefined;
+        const offer = request.presentation.atlasMaskOffer;
+        if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
+            !scene.sprite_has_view(mask.frame, request.presentation.view))
+          throw new Error('Displayed atlas frame lost its matching pose alpha data');
+        packet = api.dispatch_at_web_atlas(list(request.events), request.presentation, mask.pieces, session);
       } else {
         packet = api.dispatch_at_web(list(request.events), request.presentation, session);
       }
