@@ -16,8 +16,13 @@ guard, zero holes/fetches, actual stack readbacks and complete relative closure
 are checked. Windows runtime paths remain historical provenance. Linux compares
 relative inputs and compiler/helper inventories, never Windows absolute paths.
 
-Source ancestry permits only additive consumer/documentation files, modifications
+Source ancestry permits additive consumer/documentation files, modifications
 to its approval/README files and the listed sprint/evaluation/rollover/guide docs.
+The hash-bound `lineage-review-20261006.json` separately reconciles eleven reviewed
+UI, browser preparation and diagnostic paths through commit `390865dc`; their
+statuses and before/after Git blobs must match, and their reviewed blobs must
+remain unchanged at HEAD. Unknown drift remains rejected. This review adds no
+kernel/runtime authority and changes no memory admission.
 Every original source/evidence input must retain its hash; tracked critical inputs
 must also retain their Git blob. Pristine and derived inventories, accepted pin,
 Safe and Lean Git blobs, helper/runtime/frozen inventories and this consumer's

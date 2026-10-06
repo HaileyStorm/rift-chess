@@ -1,0 +1,76 @@
+{
+  "schema": "rift-bendtt-2035-lineage-review/1",
+  "aggregateCommit": "86594efcf29c50b171eab5ef93b6ad31b01678c1",
+  "aggregateTree": "b3c9b27dbe2ff5a5ce35c1f3d709c43070e65ad1",
+  "reviewedCommit": "390865dcfaa1b8ec39559c2e5ce4d1013d0a0f35",
+  "reviewedTree": "17d9c6bb3c687ee7012ea1156d02153942137743",
+  "scope": "Exact reviewed UI, browser preparation and diagnostic changes; original proof/compiler/evidence inputs remain byte-identical. No kernel, runtime, memory-admission or pin approval.",
+  "changes": [
+    {
+      "path": "bend2/ApplicationControl.bend",
+      "status": "M",
+      "beforeBlob": "93bce908a0a399cf4065ee11f2d39d92fd11b58f",
+      "afterBlob": "c3084b65ef319ffd4caab486db3ae7b0a777761c"
+    },
+    {
+      "path": "bend2/docs/TEST_VALUE_2026-10-05.md",
+      "status": "M",
+      "beforeBlob": "1bade48be8548a325ec8275ae7ded8cb95e4b19b",
+      "afterBlob": "f47aca88096e5bcf35c6e545a80b161db9e983b4"
+    },
+    {
+      "path": "bend2/platform/browser/sprite-helper.ts",
+      "status": "M",
+      "beforeBlob": "7836aab85ae5b3c2cdbcc2f825bf842600ac3459",
+      "afterBlob": "f285da7375780eef96458d8c9c7492887b152247"
+    },
+    {
+      "path": "bend2/tests/sprite-helper-node.mjs",
+      "status": "M",
+      "beforeBlob": "b1d52f3cf4586e39fcadcf60d528f2d9fe09a85a",
+      "afterBlob": "50e4362297f79a2c1bed5b4d5f7781cf546c1b86"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/browser-tag-boundary.mjs",
+      "status": "M",
+      "beforeBlob": "152fec6c6550a35c1a49f440f43141245763146a",
+      "afterBlob": "bd7264183041f71a2f0542aa986644802f257c3a"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "status": "M",
+      "beforeBlob": "570fee62a98966096670d5c329f33633be388b29",
+      "afterBlob": "6214721497dfd498f61254a215e555fbc69b24b0"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/prepared-ground.mjs",
+      "status": "A",
+      "beforeBlob": null,
+      "afterBlob": "64d548124b628ac4951da322d5b44a312863f14a"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/workers/diagnostic.mjs",
+      "status": "M",
+      "beforeBlob": "746d5d4dc61eae2626db9add12863df890a81168",
+      "afterBlob": "68af2444764b617135418d022a4c44516c2535c1"
+    },
+    {
+      "path": "bend2/ui/Actions.bend",
+      "status": "M",
+      "beforeBlob": "85ba9c72c8a3370a47d2dbdab6e6df13771f5a32",
+      "afterBlob": "b04e9c80247d2e0018eca97297dd1ffc256b0fcf"
+    },
+    {
+      "path": "bend2/ui/Commands.bend",
+      "status": "M",
+      "beforeBlob": "0a14e4de06d49c22be9c311eaa65cc298956200b",
+      "afterBlob": "0b6181c561147ac9ad6cc81b3b8c1aa883d6e41b"
+    },
+    {
+      "path": "bend2/ui/Program.bend",
+      "status": "M",
+      "beforeBlob": "d23726d2e22de1269bc3a5c01fe0f77958222db4",
+      "afterBlob": "3958a4583c1587ddb4aad8100c317a05d16c07cb"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ import { candidate, leanSource, safeSource, relativeInput, validateSourceApprova
 export { root, derived, readSource, sha256 };
 export const checkPath = path.join(root, 'bend2/core/v2/CHECK.bend');
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-kernel-20261005');
-export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md'];
+export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md', 'lineage-review-20261006.json'];
 const scout = path.join(root, '.artifacts/toolchains/bend-2.0.35-scout');
 const git = (directory, ...args) => execFileSync('git', ['-C', directory, ...args], {
   encoding: 'utf8', windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 ** 2,
@@ -71,6 +71,35 @@ export function captureRuntime(expected, worker = false) {
   return { ...runtime, executable: node };
 }
 
+// This reviewed descendant reconciles only eleven exact noncritical Git blobs.
+// Critical source/evidence, frozen closure and compiler checks below still apply.
+function reviewedLineage(reference) {
+  const file = 'bend2/core/v3/2035/bendtt-gate/lineage-review-20261006.json';
+  const bytes = readSource(absolute(file));
+  assert.equal(sha256(bytes), '0cd458ed8425bfb49d524ff95eb365861e98b33c4f4bba3b4d5edaa4c41d36a2', 'lineage review bytes changed');
+  const review = JSON.parse(bytes.toString('utf8'));
+  assert.equal(review.schema, 'rift-bendtt-2035-lineage-review/1');
+  assert.equal(review.aggregateCommit, reference.sourceCommit);
+  assert.equal(review.aggregateTree, reference.sourceTree);
+  assert.equal(git(root, 'rev-parse', `${review.reviewedCommit}^{tree}`), review.reviewedTree);
+  const ancestor = spawnSync('git', ['-C', root, 'merge-base', '--is-ancestor', review.reviewedCommit, 'HEAD'],
+    { windowsHide: true, timeout: 30_000, stdio: ['ignore', 'ignore', 'pipe'] });
+  assert.equal(ancestor.error, undefined); assert.equal(ancestor.status, 0, 'reviewed UI commit is not an ancestor');
+  const changes = new Map();
+  for (const change of review.changes) {
+    assert.ok(!changes.has(change.path), 'duplicate reviewed lineage path');
+    assert.equal(git(root, 'diff', '--name-status', reference.sourceCommit, review.reviewedCommit, '--', change.path),
+      `${change.status}\t${change.path}`);
+    if (change.beforeBlob !== null)
+      assert.equal(git(root, 'rev-parse', `${reference.sourceCommit}:${change.path}`), change.beforeBlob);
+    assert.equal(git(root, 'rev-parse', `${review.reviewedCommit}:${change.path}`), change.afterBlob);
+    assert.equal(git(root, 'rev-parse', `HEAD:${change.path}`), change.afterBlob, `reviewed UI input changed: ${change.path}`);
+    changes.set(change.path, change.status);
+  }
+  return { changes, identity: { path: file, sha256: sha256(bytes), reviewedCommit: review.reviewedCommit,
+    reviewedTree: review.reviewedTree, reviewedFiles: changes.size } };
+}
+
 function lineage(reference) {
   const ancestor = spawnSync('git', ['-C', root, 'merge-base', '--is-ancestor', reference.sourceCommit, 'HEAD'],
     { windowsHide: true, timeout: 30_000, stdio: ['ignore', 'ignore', 'pipe'] });
@@ -80,10 +109,11 @@ function lineage(reference) {
   const allowedDocs = new Set(['bend2/SPRINT.md', 'bend2/docs/BEND_2035_EVALUATION.md',
     'bend2/docs/ROLLOVER_2026-10-05.md', 'bend2/docs/LOCAL_BEND_GUIDE.md',
     'bend2/core/v3/2035/README.md', 'bend2/toolchain-patches/2035/README.md']);
+  const reviewed = reviewedLineage(reference);
   for (const line of changes) {
     const [status, file] = line.split('\t');
     const gate = file?.startsWith('bend2/core/v3/2035/bendtt-gate/');
-    assert.ok((status === 'A' && (gate || file.startsWith('bend2/docs/')))
+    assert.ok(reviewed.changes.get(file) === status || (status === 'A' && (gate || file.startsWith('bend2/docs/')))
       || (status === 'M' && (allowedDocs.has(file) || (gate && ['approvals.mjs', 'README.md'].includes(file.split('/').at(-1))))),
     `post-source receipt drift is not approved additive consumer/docs work: ${line}`);
   }
@@ -91,7 +121,7 @@ function lineage(reference) {
   assert.equal(git(root, 'diff', '--name-only', reference.sourceCommit, 'HEAD', '--',
     ...critical.map(file => file.path)), '', 'critical Git input changed since the accepted source receipt');
   return { aggregateCommit: reference.sourceCommit, aggregateTree: reference.sourceTree,
-    criticalTrackedFiles: critical.length, laterChanges: changes };
+    criticalTrackedFiles: critical.length, laterChanges: changes, reviewedNoncritical: reviewed.identity };
 }
 
 export function captureSource(approval, { requireClean = true } = {}) {

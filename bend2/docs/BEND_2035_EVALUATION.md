@@ -1147,3 +1147,51 @@ Full Goal remains active. Pending minimal ALSA decision, NativeV2 GUI/PCM and
 same-save restart, correct kernel authority, original GPU acceptance, stable
 device/owner graphics, ignored-byte recovery, host onboarding and reviewed chained
 amendment/adoption remain open.
+
+
+## October 6 v7 rendered head review and exact source-lineage reconciliation
+
+V7's one actual checked emission passed on clean390865dc/tree17d9c6bb:
+43 loaded files, JS131936B/f076246b, fetch0, observed exits0, checked closes,
+self-only Job settlement and exact84before/after input bindings. Observed Job
+commit peaked771506176B; no free-RAM floor. Root24-record readback19c27cfc.
+The first visual launch failed before Job creation or any render because root's
+authorization omitted three compile hashes. Its exit1, checked closes and all
+failure bytes remain immutable in2951f660. A separately reviewed routing-only
+renewal21da2a3a supplied those hashes and continued the unused workload once;
+original supervision/workload/qualification inputs were preserved, with no
+compiler or geometry replay.
+
+Actual14render/count pairs then passed, including two exact pawn controls.
+Six knight counts17/16/19/12/14/13 remained under cap20; fetch0, exits0,
+checked closes, quiescent/self-only Job and118exact input bindings passed.
+Max raster41.31ms/RSS151977984B/post-GC heap6921584B/GC13.81ms; min observed
+free RAM1414119424B. These are bounded local observations, not a benchmark.
+Root38-record readbackcf9c39b0. One lossless atlas/v6/v7 sheet assembly passed
+53inputs/42retained PPMs/36crop-and-nearest6copy checks, exit0 and checked close.
+Actual assembly handoffed1118ee/receipt84bc8f07; no rerender or retouch.
+
+Root and orbit independently viewed both actual sheets (ivorya4182ac9,
+navy537f4fe3): overall subjective HOLD. V7 improves270/67 cheek/muzzle width,
+but90/67's broad flat crown reads as a T-cap, and navy head planes still merge.
+The narrower v6 footing remains useful with no obvious detached join. Expected
+rear foreshortening and overhead height loss are not defects. Next taper/chamfer
+the forehead-cheek-crown transition within the face budget, preserving short
+separated ears. No current-atlas change, cost acceptance or promotion.
+
+A separate read-only audit found that the accepted aggregate's critical proof,
+source and compiler bytes still match, but the mutable consumer's ancestry
+allowlist rejects eleven later UI/browser-preparation/diagnostic paths. The
+independently reviewed lineage record0cd458ed binds aggregate86594efc and
+reviewed390865dc/tree17d9c6bb, exact statuses and before/after Git blobs.
+The consumer accepts only these reviewed blobs at HEAD; later changes to them
+fail closed. Unknown paths retain the original restrictions. Critical Git blobs,
+source/evidence hashes, compiler equality, frozen verification and full57-file
+closure remain mandatory. The new record joins consumer provenance; this is
+mutable tooling outside frozen Laws. Kernel/Linux approvals remain null and both
+12GiB admissions remain unchanged. Publication requires one actual clean local
+source-capture readback, with no CHECK, Safe or kernel rerun.
+
+Full Goal remains active; native GUI/PCM/restart, correct kernel authority,
+original GPU, stable performance/device/owner acceptance, recovery/onboarding and
+reviewed chained amendment/adoption remain open.
