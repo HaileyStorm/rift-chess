@@ -819,3 +819,49 @@ builder inventories the emitter/source artwork, hashes derived assets/metadata,
 and includes both in service-worker precaching; selected cache bindings remain
 verified before/after. No helper transport, Bend source/cache, frozen law,
 accepted toolchain pin, native/GPU contract or published TypeScript app changed.
+
+
+## Clean prepared package and retained ridge-ear study
+
+Fresh default buildbrowser-TlIxnB/versiona917bf6ef7250e6a72b9 binds clean
+2f151393/sourceDirtyfalse. Build SHA256
+`97167518ef1211dc0681ffe5d7dd68ebf42406889b1e6b338f67243c6cea58f8`;
+all23 payload files match the actually testedbrowser-WrdTQt trial byte-for-byte.
+Only build provenance differs; prior browser receipts retain their manifests.
+Prepared-emitter own-claim release was verified; all19 foreign claims unchanged.
+
+The private `.artifacts/bend2/knight-ear-wedge-20261005/` study retained the
+old crown renderer/materials/base and changed only knight geometry. Revision1
+stopped before compilation at3 parsed-surface intersections. A separately
+authorized v2 advanced I/J/Jinner; static manifold/normal/center and six-view
+convex-projection checks passed. Four nonplanar quads remain; A-B-C/A-C-D is an
+audit surface subdivision, while the actual renderer uses convex four-edge
+quarter-sample clipping. Static arithmetic is not a Bend/F32/render proof.
+
+Exactly one current2035 whole-book check and selected-JS emission passed on
+clean2f151393, followed by14 actual guarded local Node renders:6 views×2 knight
+colors and2 unchanged pawn controls. The controls matched retained full-U32
+pixels exactly; old crown/atlas images were read without rerender/import.
+Both owned parent exits0 and known descendant chains settled; source/cache/
+compiler/runtime bindings matched before/after and fetch0. No RAM floor,
+Vivaldi intervention or retry. Max raster9.106ms, sampled call RSS144,658,432B,
+post-GC heap6,348,040B and GC4.810ms remained within existing caps. These
+single-piece guard observations are not full-scene/native performance evidence.
+
+Root inspected both lossless six-view sheets and rejected activation:0/65 blunt
+mass;45/35 tall crest and weaker former horse profile;165/67 unresolved mass;
+270/67 block/thin post and weak notch;90/67 post;270/90 bar/block. Navy contrast
+remains weak. This is subjective visual HOLD, despite local guard PASS. No
+broader cost run, current-atlas change or adoption followed. Final92 retained
+records were independently read back; v1 failure and the harmless post-acquire
+collector error remain separate from actual compile/render success.
+Final handoff SHA256
+`051741355c07799b5ebcf731454e1e7fdceeb1c9dc0331a90199ed70d7a42976`;
+compile terminal`3b03001432cd34b1e82f7cc815aa43683e7fb52876472690cacc778cf721e4e1`;
+render terminal`97e696760c08b6d1e36d847a522ae872f8d4edefb4b2a5b5f68d625358b07c38`;
+root disposition`4774916fb1a80158d7158f6f4d573cf1f0ef5026b70d691bb64f5b7eaa181e85`.
+
+Fresh WSL inventory reports Ubuntu Stopped; no restart/install/game. Earlier
+runtime/ALSA/memory samples remain historical. The existing minimal ALSA
+installation decision is pending. Passive Coordination read03:15:53Z returned
+no new replies; no requests replayed or Linux qualification inferred.
