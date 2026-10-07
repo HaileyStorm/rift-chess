@@ -10,7 +10,7 @@ import { root, previewRoot, candidateCommit, readSource, sha256, selectedBinding
 import { createBrowserTagBoundary2035, browserTagBoundaryBinding2035 } from './browser-tag-boundary.mjs';
 import { packageAssets, writeNewFile } from '../2032/browser-preview/pack-static.mjs';
 import { assertLocalBunRuntime } from '../2032/browser-loader/runtime.mjs';
-import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
+import { prepare as workerCompilerBinding2035 } from './workers/prepare-current.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 
@@ -21,19 +21,22 @@ const selected = {
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-const botDirectory = '.artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-t0Qkcm';
-const botBindingHash = '2fb3a8633d629b5703d694dd0bf8a071ce865d1df9957aca1de45fda43613dc2';
+const botDirectory = '.artifacts/bend2/toolchain-patches/workers-2035-parser-r1/bot-4BPFvk';
+const botBindingHash = 'e33380e50eda1db29c5ba4526de408f9fdcb3aa95356c75e3e390eaf84581363';
 
 function botLibrary2035(runtime) {
   const bindingBytes = readSource(path.join(root, botDirectory, 'source-binding.json'));
   assert.equal(sha256(bindingBytes), botBindingHash, 'selected bot binding changed');
   const binding = JSON.parse(bindingBytes);
+  assert.equal(binding.schema, 'rift-bend-worker-source-binding/2035-2');
   assert.equal(binding.ok, true);
   assert.equal(binding.upstreamCommit, candidateCommit);
   assert.equal(binding.sourceRoot, 'bend2/platform/worker/BotAdapter.bend');
   assert.deepEqual(binding.exports, ['choose']);
   assert.equal(binding.networkCalls, 0);
-  assert.deepEqual(binding.compiler, workerCompilerBinding2035().hashes);
+  const preparation = workerCompilerBinding2035();
+  assert.deepEqual(binding.compiler, preparation.hashes);
+  assert.deepEqual(binding.compilerLineage, preparation.lineage, 'selected bot preparation lineage differs');
   for (const item of binding.sources) assert.equal(sha256(readSource(path.join(root, item.path))), item.sha256);
   for (const group of [binding.implementation, binding.loaderDependencies])
     for (const [file, digest] of Object.entries(group)) assert.equal(sha256(readSource(path.join(root, file))), digest);
@@ -42,6 +45,9 @@ function botLibrary2035(runtime) {
   const checked = JSON.parse(diagnostic);
   assert.equal(checked.ok, true);
   assert.deepEqual(checked.compiler, binding.compiler);
+  assert.deepEqual(checked.compilerLineage, preparation.lineage, 'diagnostic preparation lineage differs');
+  assert.deepEqual(checked.fixtures, binding.diagnostic.fixtures);
+  assert.deepEqual(checked.engine, binding.diagnostic.engine);
   assert.equal(binding.diagnostic.engine.executableSha256, runtime.sha256);
   for (const [file, digest] of Object.entries(binding.diagnostic.fixtures))
     assert.equal(sha256(readSource(path.join(root, 'bend2/toolchain-patches/2035/workers', file))), digest);

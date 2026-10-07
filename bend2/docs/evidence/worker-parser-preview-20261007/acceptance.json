@@ -1,0 +1,188 @@
+{
+  "schema": "rift-worker-parser-preview-application/1",
+  "scope": "candidate-source-browser-only",
+  "disposition": "reviewed",
+  "adopted": false,
+  "candidate": "79df8d9c40722ee9507a1e253f283b51025f9d6c",
+  "baseline": "6a770780fcdaf13bd241809de8aab90f40b017fa",
+  "parent": {
+    "path": "bend2/docs/evidence/knight-front-light-20261007/acceptance.json",
+    "sha256": "765058d5fca26d587b705bd49ecf40294af6ef5c27192fc7411b87d683a6ca8b"
+  },
+  "builderAmendment": {
+    "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+    "beforeSha256": "4f66d30233f041b41c71031ac813dd580a0ba7110f1a0ba4f2ba2015dfcaed29",
+    "afterSha256": "d513913e8bc9ff0a4918e04dacd0e594a848c6b101c8e2248d41153563d9d545",
+    "preimage": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-preview-builder-preimage-r1.mjs",
+      "sha256": "4f66d30233f041b41c71031ac813dd580a0ba7110f1a0ba4f2ba2015dfcaed29"
+    }
+  },
+  "sources": [
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "sha256": "d513913e8bc9ff0a4918e04dacd0e594a848c6b101c8e2248d41153563d9d545"
+    },
+    {
+      "path": "bend2/docs/evidence/worker-parser-preview-20261007/capture.mjs",
+      "sha256": "174a0089bf28039f992f6ada3067003b265d4ec4d53fb560f6c10d2c296ea74b"
+    },
+    {
+      "path": "bend2/docs/evidence/worker-parser-preview-20261007/README.md",
+      "sha256": "34eb242491b9c657757db91e6786aecfa4a4466c3cfc8c978b4e0982ffb0b766"
+    }
+  ],
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-independent-review-r1.json",
+    "sha256": "4b52e073a794c7b7ded670d1e4497bffeda7ad7e5c1b1f86eef0203af01d0755"
+  },
+  "workerReview": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-independent-review-r1.json",
+    "sha256": "71e0cae454e05f9a6f15d184988854dffad9a998351a10f048a46ae773aef4c0"
+  },
+  "workerVerification": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-verification-r2.json",
+    "sha256": "a4c67847873605c840c992393abe1233095f21d2813fb20c2cf948ddee55dde5"
+  },
+  "evidence": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-compiler-supervisor-r1/terminal.json",
+      "sha256": "903e87b752ff28d33411a6fbd1c5b0c9ce9c1b3d85771f193766a89f80eb04b4",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-runtime-supervisor-r1/terminal.json",
+      "sha256": "319c7220215f867488c6191ca8003b7c935da4e485b87c82e0db4dba9c100eb4",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-diagnostic-supervisor-r1/terminal.json",
+      "sha256": "d036c3b20b4003e21a7c16dc26ce22775f3873e911ecaafc6c8ebe44264e9657",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-emit-supervisor-r2/terminal.json",
+      "sha256": "c9ad12c75f237fdd178443998bd9dc99aef61036a9944f1fab794da46896cf00",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-build-r1/terminal.json",
+      "sha256": "27ee7a7ba2863bbcdf2246060bfdfacad300ac41b23fb3ea3d5bf9b095a0ea19",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-bot-offline-supervisor-r1/terminal.json",
+      "sha256": "06065d783e9537964fdc69c04e1855320b045e40a70b070670b1fc7e2e21219c",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-lineage-negative-supervisor-r2/terminal.json",
+      "sha256": "82a43cfea5e882916d304804857d47b743a87b76ef4ab52df01ddece9c3c1d16",
+      "kind": "negative-terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-materialization-r1.json",
+      "sha256": "5b108d1a8645e5e8748a0382009a29896a6370aed76190b0705da129614b17c0"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-lineage-negative-provenance-r1.json",
+      "sha256": "517bf922adce1a839f9233175bfaf7601d35dccd14f23b93e4042403efdcc74c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-compiler-r1/receipt.json",
+      "sha256": "fd8a249e510132e6d7250da5e1e1cbb7f4719c31f13f5bc865ca5e23006bc933"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-runtime-r1/receipt.json",
+      "sha256": "75b73293641b005fbe811e4bf14ba06e60f8b48f2cc5976380cc9b8addd185e4"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-publication-r1.json",
+      "sha256": "d15925481e56515656fcadd92a831b7f031c1d292e3b8c47a48ada02181e6384"
+    }
+  ],
+  "caches": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-imCYHw/scene.manifest.json",
+      "sha256": "51a0f475fa32fd014201b3264fbb803372822bc1e561b801f4aac06eb3a17479"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/controller-cRuykQ/controller.manifest.json",
+      "sha256": "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.manifest.json",
+      "sha256": "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"
+    }
+  ],
+  "build": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-sQxenc/build.json",
+    "sha256": "667d3e7ef20f6b787c2e075ba8463473d9ba74ed2c962b6256c63b84a38e556a"
+  },
+  "browserTerminal": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-bot-offline-supervisor-r1/terminal.json",
+    "sha256": "06065d783e9537964fdc69c04e1855320b045e40a70b070670b1fc7e2e21219c",
+    "kind": "terminal"
+  },
+  "botBinding": {
+    "path": ".artifacts/bend2/toolchain-patches/workers-2035-parser-r1/bot-4BPFvk/source-binding.json",
+    "sha256": "e33380e50eda1db29c5ba4526de408f9fdcb3aa95356c75e3e390eaf84581363"
+  },
+  "oldBotBinding": {
+    "path": ".artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-t0Qkcm/source-binding.json",
+    "sha256": "2fb3a8633d629b5703d694dd0bf8a071ce865d1df9957aca1de45fda43613dc2"
+  },
+  "artifacts": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-preview-builder-preimage-r1.mjs",
+      "sha256": "4f66d30233f041b41c71031ac813dd580a0ba7110f1a0ba4f2ba2015dfcaed29"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/launch-worker-preview-r1.mjs",
+      "sha256": "aa6f0c7dd31c52963fd21204c356febc33ac226abac0c3daff56ed3e60b294af"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/build-worker-preview-r1.py",
+      "sha256": "64c907746a43883059fd13d14f40aa287dcf83d845aed78bc848166dd6a7ccd6"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-bot-offline-r1.mjs",
+      "sha256": "fbf6ffbce46c6301799372db0f16a78a9355d69a933570e304e774a4e509442e"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-bot-offline-body-r1.mjs",
+      "sha256": "ef1b1b7de80b26eb59780671151dc842611878d87a81d0ee2e386e76dbc1daba"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-worker-parser-preview-bot-offline-r1.py",
+      "sha256": "8218f4cfa55ec6e4dd8c1bed872b9cdd837b3352be79d7428fc452f2560a4d09"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-browser-provenance-r1.json",
+      "sha256": "55bde00315aa023f3dc1efc15efd3abaaebbe796f774bdf6b132dc08796af606"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-current-emitter-before-r2.mjs",
+      "sha256": "547c03b7fbc7400f4e36b189024ab6a249d405feb381222b9f761f5092c07ba7"
+    }
+  ],
+  "limits": {
+    "newProofWorkers": 0,
+    "sourceCreationInputsRetained": 312,
+    "sourceCreationInputsAmended": 3,
+    "originalConsumersUnchanged": 12,
+    "packageAssetBytesUnchanged": true,
+    "currentCreationBindingChanged": true,
+    "historicalExecutionsNotRetagged": true,
+    "actualBrowserHelpers": "Three authentic jobs across bothhelpers in each phase",
+    "choices": "Fresh online/offline consistency; independent historical comparison separate",
+    "stableLatencyAccepted": false,
+    "ownerVisualAccepted": false,
+    "nativeDeviceAdopted": false
+  },
+  "buildTerminal": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-parser-preview-build-r1/terminal.json",
+    "sha256": "27ee7a7ba2863bbcdf2246060bfdfacad300ac41b23fb3ea3d5bf9b095a0ea19",
+    "kind": "terminal"
+  }
+}
