@@ -1,0 +1,183 @@
+{
+  "schema": "rift-knight-front-light-application/1",
+  "scope": "candidate-source-browser-only",
+  "disposition": "reviewed",
+  "adopted": false,
+  "candidate": "79df8d9c40722ee9507a1e253f283b51025f9d6c",
+  "baseline": "74de43b638dec21ef4ebe440d0e6ddb0f18a15d6",
+  "parent": {
+    "path": "bend2/docs/evidence/canonical-match-20261007/acceptance.json",
+    "sha256": "18d1c39fb87299802d527244162bb5d15168b912928d6538d7a16221d9e16e93"
+  },
+  "knightAmendment": {
+    "path": "bend2/graphics/v2game/KnightMesh.bend",
+    "beforeSha256": "2f90d495ed00e13d4b0cae3175ffb8cf7d578f201777103de437961fb93a2136",
+    "afterSha256": "a8a5585f8fe82e593514bfbe25fe140a1f05c9ebdbf2a2b778bbb0c2a49c6046"
+  },
+  "sources": [
+    {
+      "path": "bend2/graphics/v2game/KnightMesh.bend",
+      "sha256": "a8a5585f8fe82e593514bfbe25fe140a1f05c9ebdbf2a2b778bbb0c2a49c6046"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "sha256": "4f66d30233f041b41c71031ac813dd580a0ba7110f1a0ba4f2ba2015dfcaed29"
+    },
+    {
+      "path": "bend2/docs/evidence/knight-front-light-20261007/README.md",
+      "sha256": "a8f66a15c61f7907390c8768192778c550bdc9c77db4ba2adfd4c2b75f290945"
+    },
+    {
+      "path": "bend2/docs/evidence/knight-front-light-20261007/capture.mjs",
+      "sha256": "715bbde34bbe4343b5c5d01f6ae84955e0b27536d7e701882961708178358f42"
+    }
+  ],
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-public-review-r1.json",
+    "sha256": "39d0aa48aaf50d28915c8bda39568d050ab3fc51fb8a2d50e1a17fa0253b832c"
+  },
+  "evidence": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-emissions-r1/scene/terminal.json",
+      "sha256": "acce50ea84cef72d83f432afb997c3a366003e3ecc72338338d708f34b0f5919",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-emissions-r1/controller/terminal.json",
+      "sha256": "b320e2e31dc154a163ec7f3388d557707b9fc10ff2169c0acc4e9f20185a428b",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-preview-build-r1/terminal.json",
+      "sha256": "81b1331e1e7436d1c26232a944608252e905e33a2513b19ef2b2a86408cd0238",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-focused-supervisor-r1/terminal.json",
+      "sha256": "e7910ef1fd68248795a180d89fbec0464a29dad9e8e389723c3dc90e0e53f61c",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-offline-supervisor-r1/terminal.json",
+      "sha256": "2a2c567ff77efff171d99672dd1faa7706e0a4483ad03210cd906640b21174d3",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-focused-r1/result.json",
+      "sha256": "1712e30f1581f983b96b3ea87698624c10aceba08fb640bea15f4dcef4b2c1e7",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/compile-front-light-supervisor-r1/terminal.json",
+      "sha256": "49c916d40ae6e5f4c2f5a9647c9c6c94d38651b91373f1e077984a9f30d17bcc",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/views-front-light-supervisor-r1/terminal.json",
+      "sha256": "9204684ca538988ff7031c064528dc00402890bd8ee25932e930f20b26cd6daa",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/board-front-light-supervisor-r1/terminal.json",
+      "sha256": "1a7a5833ae01f02fe9126aab66edb6ee581897444b4932ce1f87f800599a127f",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/views-front-light-r1/result.json",
+      "sha256": "2556b543e28019381b5d1b81064550e58a3254d6a908d4d6f808558854c6de46",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/board-front-light-r1/result.json",
+      "sha256": "c08fcaee6095d843114d87d45213aa466497e62921df573a481d16e2614355ab",
+      "kind": "result"
+    }
+  ],
+  "caches": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-imCYHw/scene.manifest.json",
+      "sha256": "51a0f475fa32fd014201b3264fbb803372822bc1e561b801f4aac06eb3a17479"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/controller-cRuykQ/controller.manifest.json",
+      "sha256": "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.manifest.json",
+      "sha256": "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"
+    }
+  ],
+  "build": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-CFPNfz/build.json",
+    "sha256": "1404c1b7b51144f78686981790c901101b462d061def5d34570ea49cd8977f12"
+  },
+  "artifacts": [
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/front-light-r1.bend",
+      "sha256": "84d5db519f5837a817852fcb1731adec4b384b51ab30074f86ee2a1a4f09a273"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/compiled-front-light-r1/prototype.js",
+      "sha256": "8f86dc80d07957b7b0713d4a6a73777ee2f291cf0ad4280e76e2396ee5c08a40"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/views-front-light-r1/contact.png",
+      "sha256": "b9c3f296120c52ac3b4bd6d2639004753483fa5058468461a82ea6ff4530401e"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/board-front-light-r1/baseline.png",
+      "sha256": "3707775905c2c3963c60fb982905fbd2c50e8d4e8112934cfa8b054dfb5761b1"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/board-front-light-r1/candidate.png",
+      "sha256": "c6cddf59a2e4374d6ed3b2f9bc101552c1af04a54fbce9589741b395ad972c91"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-focused-r1.mjs",
+      "sha256": "372a1fdceab6cd2415654941157b35204478fe26291af5125aa1a63d08b16c08"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-knight-front-light-focused-r1.py",
+      "sha256": "ca4aa2e61d03076099f46e9934267471ca085f093edbcf623fed4ee945d46e4e"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-focused-r1/low-view.png",
+      "sha256": "a3d7e661921f9dfed6c24898494f45d26047a893413543526ce72002c127ecea"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-focused-r1/overhead-view.png",
+      "sha256": "f130a2f982aa0272feac38f47c3890d34410e5e1c32924d5bfdae6b40f817d15"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-offline-r1.mjs",
+      "sha256": "151f3399f18ab8bbbe2842735e221d33ac7e8079616ebac6ac7f42aae562d782"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-offline-body-r1.mjs",
+      "sha256": "ea99180a5ee5cd09bbebebb9cefed08266e79c37c24f928c03044bd5e0c33f5a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-knight-front-light-offline-r1.py",
+      "sha256": "8ea2a0709be38779b3dcaa141c5e4804d9ad65f099561185340b47bdfe43e1ad"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-offline-r1/online-initial.png",
+      "sha256": "c340a36056ef87d1db63c5c882784952ba088b6803a7bc1e20fb4e5905638a10"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-offline-r1/offline-initial.png",
+      "sha256": "c340a36056ef87d1db63c5c882784952ba088b6803a7bc1e20fb4e5905638a10"
+    }
+  ],
+  "limits": {
+    "privateTrialsPrecedeProductEdit": true,
+    "historicalSourceFencesAreNotCurrentPostimages": true,
+    "newProofWorkers": 0,
+    "sourceCreationInputsRetained": 312,
+    "sourceCreationInputsAmended": 3,
+    "controllerBytesUnchanged": true,
+    "stableLatencyAccepted": false,
+    "ownerVisualAccepted": false,
+    "nativeDeviceAdopted": false
+  }
+}

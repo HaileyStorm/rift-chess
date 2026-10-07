@@ -172,20 +172,23 @@ def project(vertex: Vertex, +size: U32, camera: Camera.Basis) -> Quad.Point:
       Quad.Point{F32.mul(U32.to_f32(size), F32.div(F32.add(x, frame_left()), frame_width())),
         F32.mul(U32.to_f32(size), F32.div(F32.add(y, frame_top()), frame_height()))}
 
-# A single fixed directional light shades every body and metal face.
-# Signed diffuse gives dark side planes; the upper-facing glint is restrained.
+# A fixed frontal key light keeps the broad visible side readable.
+# Signed diffuse shades side planes; the polished highlight favors lit bevels.
 def light(normal: Vertex) -> F32:
   match normal:
     case Vertex{file, row, height}:
       F32.add(F32.add(F32.mul(file, F32.neg(0.45)),
-        F32.mul(row, F32.neg(0.55))), F32.mul(height, 0.75))
+        F32.mul(row, 0.55)), F32.mul(height, 0.75))
 
 def diffuse(+value: F32) -> U32:
   F32.to_u32(F32.min(255.0, F32.max(0.0,
     F32.add(140.0, F32.mul(116.0, value)))))
 
 def highlight(value: F32) -> U32:
-  F32.to_u32(F32.mul(F32.max(0.0, value), 90.0))
+  +v = F32.max(0.0, F32.min(1.0, value))
+  +square = F32.mul(v, v)
+  F32.to_u32(F32.add(F32.mul(v, 18.0),
+    F32.mul(F32.mul(square, square), 180.0)))
 
 def body_ink(+normal: Vertex, body: U32, glint: U32, shadow: U32) -> U32:
   +value = light(normal)
