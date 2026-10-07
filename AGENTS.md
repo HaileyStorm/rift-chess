@@ -22,6 +22,16 @@ GPU tests and shared build outputs. Keep runtime parallelism immutable and balan
 
 ## Inherited Codex defaults
 
+- Run `npm run artifacts:check` before large artifact-producing runs and at handoff.
+  The default `.artifacts` budget is 12 GiB; an exceeded budget requires cleanup
+  before further bulk generation. Use bounded outputs and avoid repeated compiler
+  copies. Preserve pinned toolchains, active/unknown runs, claims, recovery inputs,
+  and unique evidence. Retire historical screenshots or sealed logs only through
+  an exact reviewed plan and `scripts/artifact-store.py`, which records original
+  paths and hashes and verifies lossless payloads before removing loose files.
+  Restore archived evidence with `python scripts/artifact-store.py restore
+  archive-20261007 <artifact-relative-path>`. Never use age-based recursive cleanup.
+
 Read `<CODEX_HOME>/HARNESS_OPERATIONS.md` when provider, sentinel, recovery, or host-boundary safeguards apply; this summary does not replace it.
 
 - Inherit the global model routing, adaptive-effort, cache-aware switching, context defaults, and multi-agent workflow. Scalar role efforts are strong startup preferences; preserve explicit user/task choices and frozen experiment requirements.
