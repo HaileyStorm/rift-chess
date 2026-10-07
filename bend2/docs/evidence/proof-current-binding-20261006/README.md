@@ -71,8 +71,28 @@ only the query-qualified adapter's binding dependency to the owned fixture root
 and reexports the real hash/reader helpers; it deregisters immediately after import.
 No implementation copy or new production export is introduced. Exclusive-write,
 unowned-write rejection and output-identity checks still execute the original
-adapter against real filesystem fixtures. Final contract and drift validation
-follow this correction's clean commit; their acceptance is pending here.
+adapter against real filesystem fixtures. Those controls exercise the exclusive
+write implementation; they do not simulate an atomic check/write race.
+
+Final acceptance passed at clean commit `b9fa426c71f86b958c6cfb4cb786c7570bd36880`:
+
+| Current acceptance | SHA256 |
+| --- | --- |
+| `proof-consumer-contract-supervisor-r3/terminal.json` | `04a920a248fb8e9085862645915d15cbe11feb97d121586d8b4f3a0c6da6137f` |
+| `proof-consumer-drift-supervisor-r3/terminal.json` | `676684e6c4b90956aa3005a677e0fb4c9541843e442c7bc4eeeb6f2cddd8a465` |
+| `consumer-drift-r3/result.json` | `9065d6b4e1aa9aba4ec200182269089137c4dfcf7a22204fd718bdd6fcdc02b8` |
+| `proof-consumer-validation-r3.json` | `faa5fc519d09a3422db9f3dfe6a2c2c5ffce58dae0df70c15d48d2c6df7124ea` |
+
+These paths are under the same preview evidence directory. The actual contract
+validated the current raw receipts, exact source/lineage, null approvals, pinned
+unflagged Windows runtime, output scope and serialization controls. Its synthetic
+fixtures were written only to `.artifacts/bend2/2035-preview/bendtt-contracts/contracts-ND8K89`.
+The production emitter rejected the preview path before invoking synthetic Safe.
+The fixture-only import exercised original output identity, existing-file refusal
+and unowned-write rejection. Both real temporary working-drift witnesses were
+rejected with `requireClean=false`, then exact bytes were restored. Both native
+supervisors recorded exit0, closed owned Popen handles and Jobs, and equal source
+bindings before/after. The foreign claim and incident output retained their hashes.
 
 This is Windows source/type/promise evidence. Safe elaboration, a prebuilt BendTT
 kernel, Linux admissions and runtime approval, current native CPU/GUI/PCM/restart,
