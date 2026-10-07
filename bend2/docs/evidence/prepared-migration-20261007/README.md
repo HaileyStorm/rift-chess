@@ -18,6 +18,14 @@ negatives load the same combined entry and complete cone as the positive;
 only the designated target bytes differ. Creation-compiler inputs are
 also included explicitly in the exported source inventory.
 
+Each Worker has a 900-second deadline and the unchanged 10-second settlement
+grace. In the first nine-Worker attempt, the combined positive passed in
+377700 ms, but the first prepared negative reached the former 120-second limit
+without returning a type mismatch. Its termination and exit, original parent
+exit and Job closure were observed. That timeout is retained as a failure,
+not a semantic rejection. The successor gives every full-book control the same
+allowance; all current Workers execute afresh with the new producer binding.
+
 The historical six-v2-mutation records remain immutable provenance. The artifact
 budget shortcut initially changed a frozen `package.json` dependency and the
 compiler-free preflight rejected it. That dependency was restored byte for byte;

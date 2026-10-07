@@ -178,7 +178,7 @@ if (!isMainThread) {
           const parentResourceLimits = { ...worker.resourceLimits };
           const capture = message => { if (message?.ok === false) workerFailure = message; };
           worker.on('message', capture);
-          try { result = await settleWorker(worker, { timeoutMs: name === 'aggregate' ? 900_000 : 120_000, terminateGraceMs: 10_000 }); }
+          try { result = await settleWorker(worker, { timeoutMs: 900_000, terminateGraceMs: 10_000 }); }
           finally { worker.off('message', capture); }
           assert.equal(parentResourceLimits.stackSizeMb, 64); assert.equal(result.actualResourceLimits.stackSizeMb, 64);
           assert.equal(result.name, name); assert.equal(result.positiveKey, positiveKey);
