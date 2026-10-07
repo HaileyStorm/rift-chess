@@ -17,7 +17,7 @@ const comp=await import(pathToFileURL(path.join(derived,'bend2/comp.ts')).href);
 try {
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote'];
+const exports=['plain','never_root','restored','argument_scope','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -26,6 +26,7 @@ async function until(predicate){const end=performance.now()+5000;while(!predicat
 // Instrument actual Workers without replacing their computation or handshake.
 function harness({hold=false,workerURL=null,transform=null}={}){
  const h={held:[],created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
+ h.release=()=>{hold=false;return h.held.splice(0);};
  h.factory=(url,options)=>{
   h.created++;const worker=new Worker(workerURL??url,options),own=new Map();
   return {addEventListener(type,listener){const wrapped=event=>{
@@ -103,6 +104,39 @@ for(const transport of ['clone','packed']){
   assert.equal(permissive.stats().remoteJobs,0);assert.equal(permissive.diagnostics().filter(x=>x.reason==='require_unfulfilled:policy_conflict').length,1);
   results.push({case:'permissive-never',transport,stats:permissive.stats(),diagnostics:permissive.diagnostics()});
  }finally{const post=clean(permissive);if(results.at(-1)?.case==='permissive-never'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
+ const forkHarness=harness({hold:true}),forks=api.createSession({workers:4,transport,trace:true,workerFactory:forkHarness.factory});
+ try{
+  const handle=forks.submit('quad4',[1,2,3,4]);handle.promise.catch(()=>{});
+  await until(()=>forkHarness.held.length===4);
+  const packets=forkHarness.release(),identity=packets.map(x=>({job:x.event.data.job,invocation:x.event.data.invocation,fork:x.event.data.fork,slot:x.event.data.slot}));
+  assert.ok(identity.every(x=>x.invocation===handle.id));assert.equal(new Set(identity.map(x=>x.fork)).size,2);
+  for(const fork of new Set(identity.map(x=>x.fork)))assert.deepEqual(identity.filter(x=>x.fork===fork).map(x=>x.slot).sort(),[0,1]);
+  const delivered=[];
+  for(const {listener,event}of packets.reverse()){
+   const m=event.data;listener({data:{...m,epoch:m.epoch-1}});listener(event);listener(event);
+   delivered.push({job:m.job,invocation:m.invocation,fork:m.fork,slot:m.slot});
+  }
+  assert.equal(await handle.promise,2345,'reversed compound replies changed source-order arithmetic');
+  assert.deepEqual(delivered,[...identity].reverse());assert.equal(forks.stats().remoteJobs,4);
+  assert.ok(forks.stats().ignoredReplies>=8);assert.ok(forks.stats().expandedForks>0);
+  const calls=[['nested_caps',[1,2,3,4],2345],['quad4',[2,3,4,5],3456],['nested_caps',[3,4,5,6],4567]];
+  const handles=calls.map(([name,args])=>forks.submit(name,args));
+  assert.deepEqual(await Promise.all(handles.map(h=>h.promise)),calls.map(x=>x[2]));
+  const trace=forks.trace(),dispatch=trace.filter(e=>e.kind==='dispatch'),regions=trace.filter(e=>e.kind==='region'),helperSets=[];
+  for(const region of regions){
+   const helpers=[...new Set(dispatch.filter(e=>e.invocation===region.invocation&&e.regions.includes(region.region)).map(e=>e.worker))];
+   assert.ok(helpers.length>=1&&helpers.length<=region.cap,'region used helpers beyond its cap');
+   helperSets.push({invocation:region.invocation,region:region.region,cap:region.cap,helpers});
+  }
+  for(const index of [0,2]){
+   const own=helperSets.filter(x=>x.invocation===handles[index].id);assert.equal(own.length,3);
+   assert.ok(own.every(x=>x.cap===2));assert.equal(own[0].helpers.length,2,'outer two-helper region lacked both witnesses');
+   assert.equal(dispatch.filter(e=>e.invocation===handles[index].id).length,4);
+  }
+  assert.equal(new Set(dispatch.filter(e=>e.invocation===handle.id).map(e=>e.worker)).size,4);
+  assert.equal(forks.stats().requiredRegions,forks.stats().requiredWitnesses);assert.equal(forkHarness.created,4);assert.ok(forks.stats().maxInFlight<=4);
+  results.push({case:'compound-fork-and-nested-caps',transport,identity,delivered,helperSets,expected:[2345,2345,3456,4567],stats:forks.stats(),trace});
+ }finally{const post=retire(forks,forkHarness);if(results.at(-1)?.case==='compound-fork-and-nested-caps'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
  const snapshot=api.createSession({workers:2,transport,trace:true});
  try{
   const leaf=tip(4n),tree=branch(leaf,branch(leaf,tip(7n))),right=tree.right;

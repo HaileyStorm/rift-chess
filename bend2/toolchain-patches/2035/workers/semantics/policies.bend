@@ -19,6 +19,24 @@ def text_remote(s: String) -> String:
 def leaf(n: U32) -> U32:
   U32.add(n, 1)
 
+def pair(+a: U32, +b: U32) -> U32:
+  left right = leaf(a) leaf(b)
+  U32.add(U32.mul(left, 10), right)
+
+def quad_body(+a: U32, +b: U32, +c: U32, +d: U32) -> U32:
+  left right = pair(a, b) pair(c, d)
+  U32.add(U32.mul(left, 100), right)
+
+def quad4(a: U32, b: U32, c: U32, d: U32) -> U32:
+  quad_body@4(a, b, c, d)
+
+def capped_body(+a: U32, +b: U32, +c: U32, +d: U32) -> U32:
+  left right = pair@8(a, b) pair@8(c, d)
+  U32.add(U32.mul(left, 100), right)
+
+def nested_caps(a: U32, b: U32, c: U32, d: U32) -> U32:
+  capped_body@2(a, b, c, d)
+
 def plain(n: U32) -> U32:
   leaf(n)
 

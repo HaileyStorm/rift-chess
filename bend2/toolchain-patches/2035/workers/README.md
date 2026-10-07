@@ -50,7 +50,7 @@ its owner. Run from the repository root:
 ```powershell
 node bend2/toolchain-patches/2035/workers/prepare.mjs --materialize
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/diagnostic.mjs
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/emit-bot.mjs --diagnostic diagnostic-6AtJvy
+node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/emit-bot.mjs --diagnostic diagnostic-osb93j
 ```
 
 The diagnostic writes a fresh directory and prints its name. Supply that exact
@@ -62,8 +62,11 @@ artifact hashes. No shared preview output is written.
 
 ## Current handoff evidence
 
-The final source-bound diagnostic is
-`.artifacts/bend2/toolchain-patches/workers-2035-candidate/diagnostic-6AtJvy/receipt.json`.
+The retained diagnostic matching current compiler and fixture bytes is
+`.artifacts/bend2/toolchain-patches/workers-2035-candidate/diagnostic-osb93j/receipt.json`,
+SHA256 `eb308d54f4810dab108ad4767463f153dd0c9b5b183a2da790b53efe57ab1524`.
+The former `diagnostic-6AtJvy` binds an older diagnostic runner and is historical;
+the emitter rejects it for current emission. This readback is not a new run.
 It executes actual compiler-emitted module workers on Windows/Bun 1.4.2, with
 both clone and packed transport. The bounded checks cover:
 
@@ -82,10 +85,12 @@ both clone and packed transport. The bounded checks cover:
   return or close, matching the retained scheduler contract.
 - A deliberately corrupted clone reply over a real helper rejects and closes
   the session without a serial retry.
+- An authentic packed scalar Nat reply changed from 11 to 2^48 rejects before
+  publication and closes without local fallback.
 - Byte-identical ordinary unsuffixed JS and C emission for the small independent
   plain fixture against pristine 2.0.35.
 
-The fresh bot bundle is
+The retained source-bound bot bundle is
 `.artifacts/bend2/toolchain-patches/workers-2035-candidate/bot-icn1mU/`.
 Its program hash is
 `106a48b57f632299da6ba1453641bef2238497e1304fb0904cd232e1bbb3ecd0`.
@@ -110,6 +115,14 @@ checks, and Chrome online/cold-offline bot turns. The
 [evaluation record](../../../docs/BEND_2035_EVALUATION.md) binds those distinct
 receipts. Proof, full upstream regression equivalence, native execution, GPU
 performance and adoption remain separate gates.
+
+The complementary [current semantics matrix](semantics/README.md) uses one
+checked fixture and real clone/packed helpers for dynamic policy, concurrent
+reply identity, submission snapshots, disposal/fatal errors, F32/String wire
+boundaries and compound forks/nested caps. Its [inventory audit](semantics/INVENTORY.md)
+keeps the remaining compiler/security/scheduler/hosting contracts explicit.
+Select the runner owning the changed boundary; do not rerun unchanged historical
+phases or both current runners simply to recount covered cases.
 
 Earlier diagnostic/emission directories are retained as failed or superseded
 evidence. In particular, the initial test used the wrong `maxWorkers` option,

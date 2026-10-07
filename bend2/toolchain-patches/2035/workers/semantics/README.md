@@ -1,6 +1,6 @@
 # Current Worker semantics
 
-This reduced matrix carries five independent families from the historical 004
+This reduced matrix carries six independent families from the historical 004
 inventory onto the current 2.0.35 candidate. It uses freshly checked/emitted
 source and actual Windows Bun module workers, with clone and packed transport.
 The original diagnostic, compiler, frozen proof inputs and browser package stay
@@ -32,6 +32,14 @@ reply witness changes one UTF-8 byte in an authentic result, preserving its
 header and identity; the decoder rejects it with `protocol` and closes the pool.
 These deliberate faults are negative boundary controls, not production failures.
 
+An order-sensitive balanced four-leaf computation holds four authentic replies
+from two forks, reverses them, and adds stale/duplicate copies. The independently
+calculated result remains 2345. The same four-helper pool then runs three roots
+concurrently: inner requests for eight helpers inherit an outer cap of two.
+Each invocation's region helper sets stay within that cap, with both permitted
+helpers witnessed. This is a finite nested-cap and compound-fork control, not a
+proof for every program or scheduling pattern.
+
 Run through the pinned wrapper with a fresh output path below the existing
 owned stationary-motion evidence tree:
 
@@ -39,18 +47,19 @@ owned stationary-motion evidence tree:
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/semantics/matrix.mjs .artifacts/bend2/2035-preview/stationary-motion-20261006/worker-policy-NEW
 ```
 
-Root's qualified Windows supervisor ran this extended matrix in 20.011s.
-The seventeen family/transport records passed, with zero network calls. Result:
-`worker-policy-r4/receipt.json`, SHA256
-`54755864e2984aaf5492d57e99ac1abad59bce34a2e8d5de42e4050bdfd5b678`.
-Native terminal: `worker-policy-supervisor-r4/terminal.json`, SHA256
-`76ccc97f141a46c60403bd5b79df7e49c94abf36ac7ce9759fed89e41ce89346`.
+Root's qualified Windows supervisor ran this extended matrix in 2.473s.
+The nineteen family/transport records passed, with zero network calls. Result:
+`worker-policy-r5/receipt.json`, SHA256
+`b6c25268a07972262023a283c0a94bcff62c1d138919f625e3b47ce2be8ffc15`.
+Native terminal: `worker-policy-supervisor-r5/terminal.json`, SHA256
+`e0989be8c2e7448a7d5e4b7d7f67370a3ad5525fc360dc450e2513f2f5348cea`.
 Both paths are relative to
 `.artifacts/bend2/2035-preview/stationary-motion-20261006/`. The original child
 exit, exited handle closure, self-only Job closure and unchanged input hashes
 were verified, along with 215 unchanged input hashes. Its emitted program is
-`58853eef7de4905aa6a1ae70ad7d96a7cbf8558eb0b7ee4428dd7360d5f39f09`.
-The earlier six-record r2 receipt remains a historical passing checkpoint.
+`89bc538c5152a6b584d4017e4ca116e2673d2b4bb0c4d8910d2ab5d575c4433f`.
+The earlier six-record r2 and seventeen-record r4 receipts remain historical
+passing checkpoints. These unpaired durations establish no performance result.
 
 The first attempt failed on invalid fixture syntax before emission. Its raw
 compiler error expanded the source book; the corrected runner formats Bend
@@ -61,11 +70,12 @@ retain `../` in their qualified name. Its original closed terminal, emitted
 files and exact source preimages remain retained; r4 uses the corrected key.
 
 These are finite local runtime controls. They do not establish complete 107-case
-equivalence, adaptive scheduling performance, arbitrary regional caps, browser
+equivalence, adaptive scheduling performance, general regional caps, browser
 origin/packaging, native/device/kernel results or compiler adoption. The existing
 diagnostic already owns Nat48 overflow, DAG aliases, cancellation/reuse and
 ordinary JS/C identity. This matrix adds submission timing, several outstanding
-roots and F32/String boundaries without repeating those controls. Arbitrary
-compound-fork ordering, general regional caps and the remaining full historical
-inventory still need review. Historical parser/emission pins, browser and
+roots and F32/String boundaries without repeating those controls. The
+[historical inventory audit](INVENTORY.md) identifies remaining independent
+compiler/security/continuation/protocol/budget contracts. General fork/cap
+correctness is unproved; historical parser/emission pins, browser and
 proof/native gates retain their own obligations.
