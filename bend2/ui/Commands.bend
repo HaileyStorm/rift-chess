@@ -3,6 +3,7 @@
 import Base
 import ../core/Model.bend as Model
 import ../core/v2/Facade.bend as Kernel
+import ../core/v3/prepared-match/Match.bend as Prepared
 import ../core/MatchSpec.bend as Match
 import ../graphics/Camera.bend as Camera
 import ./Types.bend as Types
@@ -57,12 +58,14 @@ def quiet_reminder(+s: S.State) -> S.State:
   +next = S.set_reminded(s, S.reminder_match(S.reminded(s), S.game(s)))
   Bool.pick(S.State, due, S.notice(next, String.append(Bool.pick(String, Model.pos_side(S.pos(s)), "White", "Black"), ": 100 quiet actions. Play on or offer a draw for agreement.")), next)
 
-def command_result.record(+s: S.State, +c: Match.Command, g: Match.Match) -> S.State:
+def command_result.record_refreshed(+s: S.State, +c: Match.Command, refreshed: S.State) -> S.State:
   +previous = S.pos(s)
   commands = List.append(&2, Match.Command, S.journal(s), [c])
   labels = List.append(&2, String, S.history(s), [R.command_label(c)])
-  refreshed = refreshed_command(c, s, g)
   S.set_previous(S.set_history(S.set_journal(S.clear(S.menu(refreshed, 0)), commands), labels), previous)
+
+def command_result.record(+s: S.State, +c: Match.Command, g: Match.Match) -> S.State:
+  command_result.record_refreshed(s, c, refreshed_command(c, s, g))
 
 def command_result.finish(capture: Bool, +id: U32, +recorded: S.State) -> S.Update:
   +next = S.set_elapsed(S.set_last(recorded, id), Bool.pick(U32, U32.is_lt(id, 21760), 1, 240))
@@ -79,10 +82,21 @@ def command_result(r: Match.StepResult, +s: S.State, +c: Match.Command) -> S.Upd
       recorded = command_result.record(s, c, g)
       command_result.finish(capture, id, recorded)
 
+# Consume only the immediate prepared command result. Its successor IDs were
+# proved equal to the canonical list; no independently supplied UI cache enters.
+def command_prepared(value: Prepared.Evaluation, +s: S.State, +c: Match.Command) -> S.Update:
+  match value:
+    case Prepared.Ordinary{r}: command_result(r, s, c)
+    case Prepared.MoveAccepted{+g, ids}:
+      +id = command_action(c)
+      +capture = Model.occupied(Model.board_get(Model.pos_board(S.pos(s)), Model.action_to(S.action(id))))
+      recorded = command_result.record_refreshed(s, c, S.refreshed.with_ids(s, g, ids))
+      command_result.finish(capture, id, recorded)
+
 def command_guard(locked: Bool, +s: S.State, +c: Match.Command) -> S.Update:
   match locked:
     case True{}: S.unchanged(s)
-    case False{}: command_result(Kernel.command(S.game(s), c), s, c)
+    case False{}: command_prepared(Prepared.command(S.game(s), c), s, c)
 
 def command_limit(full: Bool, +s: S.State, c: Match.Command) -> S.Update:
   match full:

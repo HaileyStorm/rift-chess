@@ -11,10 +11,11 @@ import { packageAssets, writeNewFile } from '../2032/browser-preview/pack-static
 import { assertLocalBunRuntime } from '../2032/browser-loader/runtime.mjs';
 import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
+import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 
 const selected = {
   scene: ["stationary-motion-20261006/scene-3utptJ", "6890966efa0d46fc344b3f3d9ff8c351a90b9649f1b8f3d670ac3b89808855f1"],
-  controller: ["stationary-motion-20261006/controller-Mn82fG", "56a1c3586c9333c8db9326995a012763600d9236ce0b32d17d97d68b8aa71032"],
+  controller: ["stationary-motion-20261006/controller-uyiRcR", "a2f50b39e73f56855f92099d8dc3fa9ec7f628d1d76050a6e6c013395da6cba2"],
   menu: ["stationary-motion-20261006/menu-CeZCVU", "6ff231aed698981d3228f1a21b0a563aac41b86cf44fb8b9683f82c2fdb24ddb"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
@@ -89,6 +90,10 @@ function caches(runtime) {
 
 export async function buildPreview2035({ preparedGround = true } = {}) {
   assert.equal(typeof preparedGround, 'boolean');
+  const preparedManifest = 'bend2/laws/semantic-prepared-v3.json';
+  const preparedBytes = readSource(path.join(root, preparedManifest));
+  const preparedCore = { ...verifyPrepared(JSON.parse(preparedBytes)),
+    manifest: preparedManifest, manifestSHA256: sha256(preparedBytes) };
   assert.equal(typeof Bun?.build, 'function', 'use the repository-local Bend wrapper');
   const executable = assertLocalBunRuntime(root, path.join(root, '.artifacts/toolchains/runtime'), process.execPath);
   const runtime = { version: Bun.version, executable: relative(executable), sha256: sha256(readSource(executable)) };
@@ -99,6 +104,7 @@ export async function buildPreview2035({ preparedGround = true } = {}) {
   const bot = botLibrary2035(runtime);
   const boundary = createBrowserTagBoundary2035();
   const extraSources = ['bend2/toolchain-patches/2035/build-preview.mjs',
+    preparedManifest, 'bend2/core/v3/prepared-match/verify.mjs',
     'bend2/toolchain-patches/2032/browser-preview/pack-static.mjs',
     'bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html',
     'bend2/platform/browser/sw.js', 'bend2/platform/browser/bitmap-surface.ts',
@@ -163,6 +169,9 @@ export async function buildPreview2035({ preparedGround = true } = {}) {
   assert.deepEqual(sourceHashes(), sources, 'build inputs changed');
   const after = caches(runtime);
   for (const name of Object.keys(before)) assert.deepEqual(after[name], before[name]);
+  assert.deepEqual(verifyPrepared(JSON.parse(readSource(path.join(root, preparedManifest)))),
+    { verified: preparedCore.verified, scope: preparedCore.scope,
+      canonicalContentSHA256: preparedCore.canonicalContentSHA256 }, 'prepared core changed during build');
   assert.deepEqual(botLibrary2035(runtime), bot, 'bot inputs changed during build');
   assert.equal(git('rev-parse', 'HEAD'), sourceRevision);
   const manifest = { schema: 'rift-bend-browser/2035-preview-1', builtAt: new Date().toISOString(),
@@ -171,7 +180,7 @@ export async function buildPreview2035({ preparedGround = true } = {}) {
     runtime, selected: Object.fromEntries(Object.entries(before).map(([name, item]) => [name, {
       manifest: item.manifestPath, manifestSha256: item.manifestSha256, outputSha256: item.manifest.output.sha256,
       bindingSha256: item.manifest.bindingSha256, compatibility: item.compatibility }])),
-    browserBoundary: boundary.binding, sources, assets, files,
+    browserBoundary: boundary.binding, preparedCore, sources, assets, files,
     workerLibraries: { bot: { entry: './worker-libs/bot/index.mjs', program: bot.manifest.program,
       backend: bot.manifest.backend, mode: bot.manifest.mode, policy: bot.manifest.policy,
       sourceBinding: botDirectory + '/source-binding.json', sourceBindingSha256: botBindingHash,
