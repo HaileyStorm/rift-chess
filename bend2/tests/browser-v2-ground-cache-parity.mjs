@@ -44,8 +44,12 @@ async function sample(label, url, directory) {
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), local,
     `${label} served build differs from its local manifest`);
   const build = JSON.parse(local);
-  assert.equal(build.schema, 'rift-bend-browser/2');
-  assert.equal(build.v2Preview, true);
+  assert.ok(['rift-bend-browser/2', 'rift-bend-browser/2035-preview-1'].includes(build.schema));
+  if (build.schema === 'rift-bend-browser/2') assert.equal(build.v2Preview, true);
+  else {
+    assert.equal(build.candidate, '79df8d9c40722ee9507a1e253f283b51025f9d6c');
+    assert.equal(build.adopted, false);
+  }
   let assetsVerified = 0;
   for (const [file, expected] of Object.entries(build.files)) {
     assert.match(file, /^[A-Za-z0-9._/-]+$/);
@@ -67,6 +71,8 @@ async function sample(label, url, directory) {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.addInitScript(() => {
     window.__shown = null;
+    window.__shownAtlas = false;
+    window.__frameTimes = [];
     window.__refinements = [];
     window.addEventListener('rift-bend-sprite-refined', event =>
       window.__refinements.push(event.detail));
@@ -75,7 +81,12 @@ async function sample(label, url, directory) {
       constructor(...args) {
         super(...args);
         this.addEventListener('message', event => {
-          if (event.data.kind === 'frame' && event.data.image) window.__shown = event.data.presentation;
+          const message = event.data;
+          if (['frame', 'refinement'].includes(message.kind) && (message.image || message.bitmap)) {
+            window.__shown = message.presentation;
+            window.__shownAtlas = message.atlasPick === true;
+            window.__frameTimes.push({ revision: message.presentation.revision, after: message.after, sceneTimes: message.sceneTimes });
+          }
         });
       }
     };
@@ -86,7 +97,7 @@ async function sample(label, url, directory) {
       null, { timeout: 60000 });
     const initialMetrics = await page.evaluate(() => window.__refinements.at(-1));
     const initial = await page.locator('canvas').screenshot({ path: path.join(output, `${label}-start.png`) });
-    const before = await page.evaluate(() => window.__refinements.length);
+    const before = await page.evaluate(() => ({ refinements: window.__refinements.length, revision: window.__shown.revision }));
     const from = await squarePoint(page, 4, 1, true);
     await page.mouse.click(from.x, from.y);
     await page.waitForFunction(() => document.querySelector('canvas')?.getAttribute('aria-label')?.includes('Pawn e2'),
@@ -95,10 +106,13 @@ async function sample(label, url, directory) {
     await page.mouse.click(to.x, to.y);
     await page.waitForFunction(() => document.querySelector('canvas')?.getAttribute('aria-label')?.includes('Black to move'),
       null, { timeout: 20000 });
-    await page.waitForFunction(previous => window.__refinements.length > previous,
+    await page.waitForFunction(previous => window.__shown?.revision === previous.revision + 1 &&
+      window.__shownAtlas && document.querySelector('canvas')?.getAttribute('aria-busy') === 'false',
       before, { timeout: 60000 });
-    await page.waitForTimeout(500);
-    const metrics = await page.evaluate(() => window.__refinements.at(-1));
+    const metrics = await page.evaluate(previous => window.__refinements.length > previous.refinements
+      ? window.__refinements.at(-1) : null, before);
+    const completion = await page.evaluate(revision => window.__frameTimes.findLast(row =>
+      row.revision === revision && row.after === 0 && row.sceneTimes?.sprite > 0), before.revision + 1);
     const moved = await page.locator('canvas').screenshot({ path: path.join(output, `${label}-e4.png`) });
     const beforeView = await page.evaluate(() => window.__refinements.length);
     await control(page, 56);
@@ -115,7 +129,7 @@ async function sample(label, url, directory) {
     return { buildVersion: build.version, buildSha256: sha(local), sourceRevision: build.sourceRevision,
       assetsVerified,
       initialSha256: sha(initial), movedSha256: sha(moved), frontSha256: sha(front),
-      initialMetrics, metrics, viewMetrics,
+      initialMetrics, metrics, completion, viewMetrics,
       initial, moved, front };
   } finally { await context.close(); }
 }
@@ -130,13 +144,16 @@ try {
   const before = results.baseline, after = results.candidate;
   assert.notEqual(before.buildVersion, after.buildVersion, 'Compare two distinct built source sets');
   if (process.env.BEND_ALLOW_BASELINE_CACHE === '1')
-    assert.equal(before.metrics.groundCacheHit, 1, 'Cached baseline did not reuse ground');
-  else assert.equal(before.metrics.groundCacheHit, undefined,
-    'Baseline must be the uncached helper, not another candidate build');
+    assert.ok(before.metrics?.groundCacheHit === 1 || before.completion, 'Cached baseline did not reuse ground or completed artwork');
+  else {
+    assert.equal(before.metrics?.groundCacheHit, undefined,
+      'Baseline must be the uncached helper, not another candidate build');
+    assert.ok(!before.completion, 'Local artwork completion requires a cached baseline');
+  }
   assert.deepEqual(after.initial, before.initial, 'First detailed canvas changed');
   assert.deepEqual(after.moved, before.moved, 'Same-view e2e4 detailed canvas changed');
   assert.deepEqual(after.front, before.front, 'Front-view detailed canvas changed');
-  assert.equal(after.metrics.groundCacheHit, 1, 'Bend-approved same-ground move did not reuse ground');
+  assert.ok(after.metrics?.groundCacheHit === 1 || after.completion, 'Same-ground move neither reused helper ground nor completed retained artwork');
   assert.equal(after.viewMetrics.groundCacheHit, 0, 'Changed camera reused stale ground');
   if (process.env.BEND_EXPECT_PREPARED_GROUND === '1') {
     assert.equal(after.initialMetrics.preparedGroundHit, 1,
@@ -147,9 +164,9 @@ try {
   console.log(JSON.stringify({ ok: true, output: path.relative(root, output), reversed,
     baseline: { version: before.buildVersion, sourceRevision: before.sourceRevision,
       assetsVerified: before.assetsVerified,
-      buildSha256: before.buildSha256, groundMs: before.metrics.groundMs,
-      spritesMs: before.metrics.spritesMs,
-      workerMs: before.metrics.workerMs, roundTripMs: before.metrics.roundTripMs,
+      buildSha256: before.buildSha256, groundMs: before.metrics?.groundMs,
+      spritesMs: before.metrics?.spritesMs,
+      workerMs: before.metrics?.workerMs, roundTripMs: before.metrics?.roundTripMs,
       initialSpritesMs: before.initialMetrics.spritesMs,
       initialGroundMs: before.initialMetrics.groundMs,
       initialWorkerMs: before.initialMetrics.workerMs,
@@ -158,16 +175,17 @@ try {
       frontSpritesMs: before.viewMetrics.spritesMs },
     candidate: { version: after.buildVersion, sourceRevision: after.sourceRevision,
       assetsVerified: after.assetsVerified,
-      buildSha256: after.buildSha256, groundMs: after.metrics.groundMs,
-      spritesMs: after.metrics.spritesMs,
-      workerMs: after.metrics.workerMs, roundTripMs: after.metrics.roundTripMs,
+      buildSha256: after.buildSha256, groundMs: after.metrics?.groundMs,
+      spritesMs: after.metrics?.spritesMs,
+      workerMs: after.metrics?.workerMs, roundTripMs: after.metrics?.roundTripMs,
       initialSpritesMs: after.initialMetrics.spritesMs,
       initialGroundMs: after.initialMetrics.groundMs,
       initialWorkerMs: after.initialMetrics.workerMs,
       initialRoundTripMs: after.initialMetrics.roundTripMs,
       initialPreparedGroundHit: after.initialMetrics.preparedGroundHit,
       frontSpritesMs: after.viewMetrics.spritesMs,
-      groundCacheHit: after.metrics.groundCacheHit,
+      groundCacheHit: after.metrics?.groundCacheHit,
+      completionSpriteMs: after.completion?.sceneTimes.sprite,
       changedViewGroundCacheHit: after.viewMetrics.groundCacheHit },
     initialSha256: after.initialSha256, movedSha256: after.movedSha256,
     frontSha256: after.frontSha256, exactInitial: true, exactMoved: true, exactFront: true }));

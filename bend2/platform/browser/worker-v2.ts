@@ -9,6 +9,7 @@ import MenuAA from '../../ui/v2/MenuAA.bend';
 import { PixelPort, extentForOutput } from './image-port';
 import { BitmapSurface } from './bitmap-surface';
 import { loadAssetRequests, loadFontPack } from './asset-port';
+import { decodePose, decodeGround } from './pose-port';
 declare const __BEND_SPRITE_HELPER__: string;
 declare const __BEND_SPRITE_SOURCE__: string;
 const api = Controller as Record<string, (...args: any[]) => any>;
@@ -42,6 +43,10 @@ let menuBase: any, menuControls: any, menuBaseData: any, menuBasePlan: any;
 let menuStaticData: any, menuStaticPlan: any;
 let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
+// One current color pose, separate from the historical presentation alpha masks.
+let spritePose: { pieces: any; frame: any; theme: number } | null = null;
+let spriteGround: { image: any; frame: any; theme: number; id: number } | null = null;
+let spriteMotion: { frame: any; old: any; clip: any } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
@@ -199,6 +204,7 @@ function disposeSprite(): void {
   clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
+  spritePose = spriteGround = spriteMotion = null;
   spriteAtlasMaskId = preparedAtlasMaskId = renderedAtlasMaskId = null;
   atlasMasks.clear();
   atlasMaskPressure = false;
@@ -214,8 +220,11 @@ function ensureSpriteHelper(): void {
   if (spriteHelper) return;
   const helper = new Worker(new URL(__BEND_SPRITE_HELPER__, import.meta.url), { type: 'module' });
   spriteHelper = helper;
-  helper.addEventListener('error', event => spriteFault(event.message));
+  helper.addEventListener('error', event => {
+    if (helper === spriteHelper) spriteFault(event.message);
+  });
   helper.addEventListener('message', event => {
+    if (helper !== spriteHelper) return;
     const message = event.data;
     if (message?.protocol !== 1 || message.source !== __BEND_SPRITE_SOURCE__) {
       spriteFault('source/protocol binding mismatch'); return;
@@ -235,6 +244,9 @@ function ensureSpriteHelper(): void {
       spriteFault('invalid image result'); return;
     }
     messageQueue = messageQueue.then(async () => {
+      // A boot/dispose or newer job may run between receipt and acceptance.
+      // Frame equality alone cannot bind helper-local ground identities.
+      if (helper !== spriteHelper || pending.generation !== spriteGeneration) return;
       const current = latestPacket;
       if (!current || (current.render.boardSize !== 512 && current.render.boardSize !== 1024) ||
           cameraOrbiting || current.render.motion ||
@@ -251,6 +263,17 @@ function ensureSpriteHelper(): void {
       if (atlasMasks.size >= MAX_ATLAS_MASKS) { atlasMaskPressure = true; return; }
       if (!Number.isSafeInteger(pending.id) || pending.id < 1 || atlasMasks.has(pending.id))
         throw new Error('Invalid or reused atlas mask identity');
+      // Decode only a reply accepted by the source/generation/current-frame
+      // guards above. No await can let an older view replace this pose.
+      const pose = message.pose ? { pieces: decodePose(message.pose),
+        frame: pending.frame, theme: pending.theme } : spritePose;
+      const settled = message.ground ? { image: decodeGround(message.ground),
+        frame: pending.frame, theme: pending.theme, id: message.groundId } : spriteGround;
+      if (!pose || pose.theme !== pending.theme || !scene.sprite_same_view(pose.frame, pending.frame) ||
+          !settled || settled.theme !== pending.theme ||
+          !Number.isSafeInteger(message.groundId) || message.groundId < 1 ||
+          settled.id !== message.groundId || !scene.sprite_same_ground(settled.frame, pending.frame))
+        throw new Error('Sprite refinement lacks its exact compatible pose or ground');
       atlasMasks.set(pending.id, { frame: pending.frame, pieces: message.pickData,
         retired: false, firstOffer: 0, lastOffer: 0 });
       atlasMaskPressure = false;
@@ -258,6 +281,9 @@ function ensureSpriteHelper(): void {
       spriteLayer = message.image;
       spriteFrame = pending.frame;
       spriteTheme = pending.theme;
+      spritePose = pose;
+      spriteGround = settled;
+      spriteMotion = null;
       const received = performance.now();
       const epoch = performance.timeOrigin + received;
       spriteMetrics = { ...message.metrics,
@@ -296,6 +322,9 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
   spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
     needPickData: true,
+    needPose: !spritePose || spritePose.theme !== theme || !scene.sprite_same_view(spritePose.frame, frame),
+    needGround: !spriteGround || spriteGround.theme !== theme || !scene.sprite_same_ground(spriteGround.frame, frame),
+    knownGroundId: spriteGround?.id,
     id: pending.id, generation: pending.generation, theme, frame,
     ...(sharedPlate ? { plates: sharedPlate } : {}) });
   if (sharedPlate) spritePlateTheme = theme;
@@ -375,10 +404,35 @@ function render(packet: any): any {
   if (!underlay || !motionUnderlay) throw new Error('Missing Bend underlay');
   if (request.ground) ground = timed('ground', () => scene[`fast_ground${suffix}`](frame, underlay));
   if (!ground) throw new Error('Missing Bend ground');
+  const spriteTransition = !cameraOrbiting && spriteLayer && spriteFrame &&
+    spriteTheme === request.theme && spritePose && spritePose.theme === request.theme &&
+    scene.sprite_same_view(spritePose.frame, frame) &&
+    spriteGround && spriteGround.theme === request.theme &&
+    scene.sprite_same_ground(spriteGround.frame, frame) &&
+    scene.sprite_motion_matches(frame, spriteFrame);
+  // RenderPlan.motion marks an orbit drag; piece animation is in Snapshot.
+  const spriteMoving = !request.motion && packet.snapshot.moving && spriteTransition;
+  const spriteCompleted = !request.motion && !packet.snapshot.moving && spriteTransition &&
+    scene.sprite_motion_complete(frame);
+  const motionOccupancy = () => {
+    if (!spriteMotion || spriteMotion.old !== spriteLayer ||
+        !scene.sprite_motion_transition_equal(spriteMotion.frame, frame)) {
+      spriteMotion = { frame, old: spriteLayer, clip: scene.sprite_motion_dirty512(frame) };
+    }
+    return scene.fast_sprite_motion512(frame, spritePose!.pieces,
+      spriteMotion.clip, spriteMotion.old, spriteGround!.image);
+  };
+  if (spriteCompleted) {
+    spriteLayer = timed('sprite', motionOccupancy);
+    spriteFrame = frame;
+    spriteMotion = null;
+    // Alpha textures describe this same view, independently of occupancy.
+    // Reuse their existing mask identity and outstanding presentation offers.
+  } else if (!spriteMoving) spriteMotion = null;
   const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
-  if (request.prepared || (spriteSettled && !prepared)) {
+  if (request.prepared || spriteCompleted || (spriteSettled && !prepared)) {
     preparedAtlas = Boolean(spriteSettled);
     preparedAtlasMaskId = preparedAtlas ? spriteAtlasMaskId : null;
     prepared = timed('prepared', () =>
@@ -410,13 +464,20 @@ function render(packet: any): any {
         menuControls));
   }
   if (!request.frame) throw new Error('Missing Bend frame request');
-  // Motion keeps depth-8 Bend pixels from the 256px preview. The aligned
-  // 512px/1024px board slots interpret that tree at depth 9/10, giving exact
-  // nearest-2/nearest-4 pixels (the multi-layout finite test checks both).
-  const board = timed('pointer', () => request.motion
-    ? scene.fast_camera256_for_512(frame, motionUnderlay)
-    : scene[`fast_pointer${suffix}`](frame, prepared));
-  renderedAtlas = !request.motion && preparedAtlas;
+  // Eligible piece motion retains depth-9 artwork. Other motion keeps the
+  // depth-8 preview, interpreted in the aligned 512px/1024px board slot.
+  const board = timed('pointer', () => {
+    if (spriteMoving) {
+      // The exact same-view ground is independent of occupancy and pointer
+      // feedback. Interpret this 512px image at the board's existing tier.
+      const occupancy = timed('sprite', motionOccupancy);
+      const artwork = scene.fast_feedback_on_pieces512(frame, occupancy);
+      return boardSize === 512 ? artwork : scene.nearest2(9n, artwork);
+    }
+    return request.motion ? scene.fast_camera256_for_512(frame, motionUnderlay)
+      : scene[`fast_pointer${suffix}`](frame, prepared);
+  });
+  renderedAtlas = !request.motion && !packet.snapshot.moving && preparedAtlas;
   renderedAtlasMaskId = renderedAtlas ? preparedAtlasMaskId : null;
   pruneAtlasMasks();
   retained = timed('compose', () => playing

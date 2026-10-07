@@ -13,10 +13,9 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
-  scene: ['stationary-motion-20261006/scene-B1GZJS', '7b81026f565bc3559fc7b56b403399c6ddee47197c5cf26d32078857b71a4e88'],
-  controller: ['stationary-motion-20261006/controller-ahmzW7', '026a81615e59c5b27d1a6d08d878f81cecac30e13878b82b99a3b7b80e077fdd'],
-  menu: ['camera-refinement-20261006/menu-S4IxDK', '0197e43645ae79b36a1ae2bb5db8519ca14ce7d1ff0e892666c6435e2506ae68'],
-  chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
+  scene: ["stationary-motion-20261006/scene-35ae6l", "f8f19fd018a3b36814fe59844ea1071f83c90223c2f5b55b07140a8da158502b"],
+  controller: ["stationary-motion-20261006/controller-cTH5o2", "85f9ec96879561d211f2485760a085c25bf54513979236a9fd2b5d042faf5d23"],
+  menu: ["stationary-motion-20261006/menu-CeZCVU", "6ff231aed698981d3228f1a21b0a563aac41b86cf44fb8b9683f82c2fdb24ddb"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
@@ -69,39 +68,6 @@ function botLibrary2035(runtime) {
   return { binding, manifest, contents };
 }
 
-// The retained Chrome emission predates added scene/controller exports. Its own
-// entry, exports, compiler and source closure are unchanged. Preserve that
-// original receipt and permit only this reviewed registry transition.
-export function assertSelectedCacheBinding2035(name, cached, current, manifestSha256) {
-  const registry = 'bend2/tools/selected-modules.mjs';
-  const oldHash = 'b3abdbcb1a6bdfe749535b90b17d54ef3205f950c87ff34efcdf31a23f37ee63';
-  const newHash = '39f4e5700c2cbad3ae1a9e44ef72e3acee97eb914466e34b3f65616b05c2de64';
-  if (name !== 'chrome' || manifestSha256 !== selected.chrome[1]
-      || cached.sourceFiles.find(item => item.path === registry)?.sha256 !== oldHash) {
-    assert.deepEqual(cached, current);
-    return null;
-  }
-  const records = current.sourceFiles.filter(item => item.path === registry);
-  assert.equal(records.length, 1);
-  assert.equal(records[0].sha256, newHash, 'unreviewed registry transition');
-  const bytes = readSource(path.join(root, registry));
-  assert.equal(sha256(bytes), newHash);
-  const addition = "'sprite_pick_data', 'sprite_pose_pieces', 'sprite_same_view', 'sprite_has_view',";
-  const controllerAddition = "'dispatch_at_web_meta', 'dispatch_at_web_atlas_meta', 'refine', 'orbiting', 'bot_job'";
-  const source = bytes.toString('utf8');
-  assert.equal(source.split(addition).length - 1, 1);
-  assert.equal(source.split(controllerAddition).length - 1, 1);
-  assert.equal(sha256(Buffer.from(source.replace(addition, "'sprite_pick_data',")
-    .replace(controllerAddition, "'refine', 'bot_job'"))), oldHash);
-  const compatible = { ...cached, sourceFiles: cached.sourceFiles.map(item =>
-    item.path === registry ? { ...item, sha256: newHash } : item) };
-  assert.deepEqual(compatible, current, 'Chrome inputs changed beyond reviewed registry exports');
-  return { schema: 'rift-selected-cache-compatibility/1', path: registry,
-    emittedSourceSha256: oldHash, currentSourceSha256: newHash,
-    currentBindingSha256: sha256(JSON.stringify(current)),
-    scope: 'retained Chrome emission, exact current module inputs; no fresh Chrome emission' };
-}
-
 function caches(runtime) {
   return Object.fromEntries(Object.entries(selected).map(([name, [directory, expected]]) => {
     const manifestPath = path.join(previewRoot, directory, name + '.manifest.json');
@@ -110,14 +76,14 @@ function caches(runtime) {
     const manifest = JSON.parse(raw);
     assert.equal(manifest.schema, 'rift-bend-selected-cache/2035-1');
     assert.equal(sha256(JSON.stringify(manifest.binding)), manifest.bindingSha256);
-    const compatibility = assertSelectedCacheBinding2035(name, manifest.binding,
-      { ...selectedBinding2035(name), runtime }, expected);
+    assert.deepEqual(manifest.binding, { ...selectedBinding2035(name), runtime },
+      `Stale current ${name} cache`);
     assert.equal(manifest.networkCalls, 0);
     assert.equal(manifest.output.file, name + '.js');
     const bytes = readSource(path.join(path.dirname(manifestPath), manifest.output.file));
     assert.equal(bytes.length, manifest.output.bytes);
     assert.equal(sha256(bytes), manifest.output.sha256);
-    return [name, { bytes, manifest, compatibility, manifestPath: relative(manifestPath), manifestSha256: expected }];
+    return [name, { bytes, manifest, compatibility: null, manifestPath: relative(manifestPath), manifestSha256: expected }];
   }));
 }
 

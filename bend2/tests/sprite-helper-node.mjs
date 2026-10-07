@@ -16,6 +16,8 @@ const assetSourcePath = path.join(root, 'bend2/platform/browser/asset-port.ts');
 const generatedRoot = fs.mkdtempSync(path.join(root, '.artifacts/bend2/v2-preview/sprite-helper-node-'));
 const helperPath = path.join(generatedRoot, 'sprite-helper.mjs');
 const assetPath = path.join(generatedRoot, 'asset-port.mjs');
+const poseSourcePath = path.join(root, 'bend2/platform/browser/pose-port.ts');
+const posePath = path.join(generatedRoot, 'pose-port.mjs');
 
 function transpile(source, fileName) {
   return stripTypeScriptTypes(source, { mode: 'strip', sourceUrl: fileName });
@@ -31,9 +33,12 @@ helperSource = helperSource.replace("import BoardScene from '../../graphics/v2ga
   'const BoardScene = {};');
 helperSource = helperSource.replace("import { boundedBytes, loadAssetRequests } from './asset-port';",
   `import { boundedBytes, loadAssetRequests } from ${JSON.stringify(pathToFileURL(assetPath).href)};`);
+helperSource = helperSource.replace("from './pose-port';",
+  `from ${JSON.stringify(pathToFileURL(posePath).href)};`);
 assert.ok(!helperSource.includes("'../../graphics/v2game/BoardScene.bend'"),
   'the protocol test injects its synthetic scene and must not require emitted game caches');
 fs.writeFileSync(assetPath, transpile(fs.readFileSync(assetSourcePath, 'utf8'), assetSourcePath));
+fs.writeFileSync(posePath, transpile(fs.readFileSync(poseSourcePath, 'utf8'), poseSourcePath));
 fs.writeFileSync(helperPath, transpile(helperSource, helperSourcePath));
 
 const bootstrap = `
@@ -44,27 +49,39 @@ const { parentPort, workerData } = require('node:worker_threads');
     delayNextPrepared: false, lastGround: null };
   const list = items => items.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' });
   const values = value => { const out = []; while (value?.$ === 'Con') { out.push(value.head); value = value.tail; } return out; };
+  const fields = ['ivory_pawn', 'ivory_knight', 'ivory_bishop', 'ivory_rook',
+    'ivory_queen', 'ivory_king', 'navy_pawn', 'navy_knight', 'navy_bishop',
+    'navy_rook', 'navy_queen', 'navy_king'];
+  const pieces = color => Object.fromEntries([['$', 'Pieces'], ...fields.map(field =>
+    [field, { $: 'Texture', depth: 6n, size: 64,
+      colors: { $: 'Pix', color }, mask: { $: 'Pix', color: 0xffffffff } }])]);
+  const groundMetadata = new WeakMap();
+  const groundImage = metadata => {
+    const image = { $: 'Pix', color: metadata.platePixel >>> 0 };
+    groundMetadata.set(image, metadata);
+    return image;
+  };
   const scene = {
     asset_ids(theme) { return list([{ id: theme, path: theme === 0 ? 'assets/observatory-astral.rga' : 'assets/observatory-stone.rga', max_bytes: 32 }]); },
     sprite_asset_ids() { return list([0, 1, 2].map(id => ({ id, path: 'assets/pieces-fast-' + id + '.rga', max_bytes: 32 }))); },
     load_plates(responses) { const item = values(responses)[0]; state.calls.push('decode-plate-' + item.id); return { theme: item.id }; },
-    load_sprite_pages(responses) { state.calls.push('decode-sprites'); return { $: 'Some', value: { prepared: true } }; },
+    load_sprite_pages(responses) { state.calls.push('decode-sprites'); return { $: 'Some', value: pieces(0) }; },
     sprite_same_view(a, b) { return JSON.stringify(a.view ?? null) === JSON.stringify(b.view ?? null); },
-    sprite_pose_pieces(frame, pieces) { return { ...pieces, pose: frame.view?.yaw ?? 0 }; },
-    sprite_pick_data(pieces) { state.calls.push('pick-data'); return { $: 'Pieces', mask: pieces.prepared, pose: pieces.pose }; },
+    sprite_pose_pieces(frame) { return pieces(frame.view?.yaw ?? 0); },
+    sprite_pick_data(pieces) { state.calls.push('pick-data'); return { $: 'Pieces', mask: true, pose: pieces.ivory_pawn.colors.color }; },
     underlay512_asset(theme, plates) { state.calls.push('underlay-' + theme); return {
       theme, platePixel: plates?.astral?.pixels?.color ?? plates?.stone?.pixels?.color ?? -1 }; },
-    settled_ground512(frame, underlay) { state.calls.push('ground-' + frame.marker); return {
-      theme: underlay.theme, marker: frame.marker, platePixel: underlay.platePixel }; },
+    settled_ground512(frame, underlay) { state.calls.push('ground-' + frame.marker); return groundImage({
+      theme: underlay.theme, marker: frame.marker, platePixel: underlay.platePixel }); },
     sprite_same_ground(a, b) { return a.theme === b.theme && a.groundKey === b.groundKey; },
     fast_sprite_pieces512(frame, pieces, ground) { state.calls.push('sprites-' + frame.marker);
-      state.lastGround = ground; return { $: 'Pix', color: frame.theme + 1 }; },
+      state.lastGround = groundMetadata.get(ground); return { $: 'Pix', color: frame.theme + 1 }; },
   };
   const scope = {
     location: { href: 'http://localhost/worker.mjs' },
     addEventListener(_type, listener) { parentPort.on('message', data => listener({ data })); },
-    postMessage(message) { parentPort.postMessage({ ...message, testState: {
-      calls: [...state.calls], fetchGroups: [...state.fetchGroups], lastGround: state.lastGround } }); },
+    postMessage(message, transfer) { parentPort.postMessage({ ...message, testState: {
+      calls: [...state.calls], fetchGroups: [...state.fetchGroups], lastGround: state.lastGround } }, transfer); },
   };
   const loadAssets = async requests => {
     const entries = [...requests];
@@ -83,7 +100,7 @@ const { parentPort, workerData } = require('node:worker_threads');
         state.delayNextPrepared = false;
         await new Promise(resolve => setTimeout(resolve, 40));
       }
-      return { theme: 0, marker: 'baked', platePixel: 7 };
+      return groundImage({ theme: 0, marker: 'baked', platePixel: 7 });
     },
     hashPlate: async ready => {
       state.calls.push('hash-plate-' + ready.pixels.color);
@@ -150,7 +167,8 @@ test('static sprite helper validates source/theme and retains Bend assets across
   assert.equal(first.source, token);
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 4, generation: 1,
-    source: token, theme: 0, frame: { $: 'Frame', theme: 0, marker: 'cached', groundKey: 'court' } });
+    source: token, theme: 0, needPose: false, needGround: false, knownGroundId: first.groundId,
+    frame: { $: 'Frame', theme: 0, marker: 'cached', groundKey: 'court' } });
   const cached = await waitFor(worker, message => message.kind === 'result' && message.id === 4);
   assert.deepEqual(cached.pickData, first.pickData, 'each same-view image carries matching pose alpha data');
   assert.equal(cached.testState.fetchGroups.length, 2, 'same-theme plate, prepared sprites and underlay are retained');
@@ -158,16 +176,23 @@ test('static sprite helper validates source/theme and retains Bend assets across
   assert.equal(cached.metrics.decodeMs, 0);
   assert.equal(cached.metrics.groundCacheHit, 1);
   assert.equal(cached.metrics.groundMs, 0);
+  assert.equal(first.pose.tokens.buffer.byteLength > 0, true, 'pose tokens crossed the real Worker transfer boundary');
+  assert.equal(first.pose.textures[0].depth, 6n, 'the source Nat representation survives transfer');
+  assert.equal(cached.pose, null, 'acknowledged current pose is omitted');
+  assert.equal(cached.ground, null, 'acknowledged current ground is omitted');
+  assert.equal(cached.groundId, first.groundId);
   assert.ok(!cached.testState.calls.includes('ground-cached'),
     'same-theme, same-view/topology occupancy changes reuse the immutable ground');
 
   worker.postMessage({ kind: 'job', protocol: 1, id: 5, generation: 1,
-    source: token, theme: 0, needPickData: true,
+    source: token, theme: 0, needPickData: true, needGround: false, knownGroundId: cached.groundId,
     frame: { $: 'Frame', theme: 0, marker: 'new-holes', groundKey: 'rift', view: { yaw: 45 } } });
   const changedGround = await waitFor(worker, message => message.kind === 'result' && message.id === 5);
   assert.deepEqual(changedGround.pickData, { $: 'Pieces', mask: true, pose: 45 },
     'changed-view images carry their new pose mask while retaining the loaded sprite assets');
   assert.equal(changedGround.metrics.groundCacheHit, 0);
+  assert.ok(changedGround.groundId > cached.groundId && changedGround.ground.tokens.byteLength > 0,
+    'rebuilt ground is resent even when the caller requested omission');
   assert.ok(changedGround.testState.calls.includes('ground-new-holes'),
     'a changed view or hole topology rebuilds ground');
 

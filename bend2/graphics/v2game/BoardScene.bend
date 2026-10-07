@@ -12,6 +12,7 @@ import ../../lib/graphics/v2/Gradient.bend as Gradient
 import ../../lib/graphics/v2/RaisedFacet.bend as RaisedFacet
 import ../../lib/graphics/v2/Ring.bend as Ring
 import ../../lib/graphics/v2/Rect.bend as Rect
+import ../../lib/graphics/v2/ImageOps.bend as ImageOps
 import ../../lib/graphics/v2/Rounded.bend as Rounded
 import ../../lib/graphics/v2/Shapes.bend as Shapes
 import ../../lib/graphics/v2/Transform2D.bend as Transform
@@ -1444,7 +1445,7 @@ def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
         U32.max(1,Ortho.pixel(F32.mul(width,0.025))), 727076, 48, image)
 
 def sprite_piece_at(show: Bool, +square: U32, +code: U32,
-  +context: Context, +pieces: PieceSprites.Pieces, image: Image) -> Image:
+  +context: Context, +pieces: PieceSprites.Pieces, clip: Rect.Box, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
@@ -1458,13 +1459,13 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +contact = sprite_contact_shadow(depth,size,width,center,image)
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
-        Rect.screen(size), contact)
+        clip, contact)
 
 def sprite_opacity(+age: U32) -> U32:
   U32.sub(255, U32.mul(U32.min(age, 7), 32))
 
 def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
-  +pieces: PieceSprites.Pieces, image: Image) -> Image:
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, +oldBoard,
@@ -1483,28 +1484,28 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
       +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix,
-        sprite_opacity(age), Rect.screen(size), image)
+        sprite_opacity(age), clip, image)
 
 def fast_sprite_piece_layer(+square: U32, +context: Context,
-  +pieces: PieceSprites.Pieces, image: Image) -> Image:
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
   match context:
     case Context{depth, size, frame, camera, +board, oldBoard,
         previous, +holes, action, theme}:
       +present = Model.present(holes, square)
       +dead = fast_sprite_dying_at(
         Bool.and(present, dying_visible(square, context)), square,
-        context, pieces, image)
+        context, pieces, clip, image)
       sprite_piece_at(Bool.and(present,
         Model.occupied(Model.board_get(board, square))), square,
-        Model.board_get(board, square), context, pieces, dead)
+        Model.board_get(board, square), context, pieces, clip, dead)
 
 def fast_sprite_piece_layers(order: List<&2, U32>, +context: Context,
-  +pieces: PieceSprites.Pieces, image: Image) -> Image:
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
   match order:
     case Nil{}: image
     case +square <> rest:
-      fast_sprite_piece_layers(rest, context, pieces,
-        fast_sprite_piece_layer(square, context, pieces, image))
+      fast_sprite_piece_layers(rest, context, pieces, clip,
+        fast_sprite_piece_layer(square, context, pieces, clip, image))
 
 # Occupancy-only stage. `ground` must contain the board/background but no old
 # piece pixels. The caller may retain this result until occupancy, camera or
@@ -1513,7 +1514,7 @@ def fast_sprite_pieces512(+frame: Scene.Frame,
   +pieces: PieceSprites.Pieces, ground: Image) -> Image:
   +context = context_for(9n, 512, frame)
   fast_sprite_piece_layers(Camera.depth_order(Camera.basis(Scene.frame_view(frame))),
-    context, pieces, ground)
+    context, pieces, Rect.screen(512), ground)
 
 def fast_sprite_selected_focus(show: Bool, +square: U32,
   +context: Context, image: Image) -> Image:
@@ -1813,3 +1814,116 @@ def sprite_asset_ids() -> List<&2,PieceAssets.AssetRequest>:
 def load_sprite_pages(responses: List<&2,PieceAssets.AssetResponse>) ->
   Maybe<&2,PieceSprites.Pieces>:
   PieceAssets.prepared(responses)
+
+# Same-view ordinary move artwork: enumerate the bounded integer stages
+# once per transition, then redraw every ordered overlapping layer.
+def sprite_motion_matrix_box(+size: U32,matrix: Transform.Matrix) -> Rect.Box:
+  PieceSprites.alpha_clip(Rect.screen(64),matrix,64,Rect.screen(size))
+
+def sprite_motion_contact_box(+size: U32,+width: F32,center: Quad.Point) -> Rect.Box:
+  match center:
+    case Quad.Point{+x,+y}:
+      +radius = F32.mul(width,0.18)
+      +half_height = F32.mul(width,0.045)
+      +base = F32.add(y,F32.mul(width,0.17))
+      Rect.intersect(Rect.screen(size),Rect.Box{
+        Ortho.pixel(F32.sub(x,radius)),Ortho.pixel(F32.sub(base,half_height)),
+        Ortho.pixel(F32.add(x,radius)),Ortho.pixel(F32.add(base,half_height))})
+
+def sprite_motion_current_box(+size: U32,+camera: Camera.Basis,+source: U32,
+  +square: U32,+kind: U32,+amount: U32) -> Rect.Box:
+  +center = sprite_center_at(U32.is_eq(amount,16),size,camera,source,square,amount)
+  Rect.union(sprite_motion_matrix_box(size,SpritePlacement.piece_matrix(size,camera,center,kind)),
+    sprite_motion_contact_box(size,SpritePlacement.width(size,camera),center))
+
+def sprite_motion_dead_box(+size: U32,+camera: Camera.Basis,+square: U32,kind: U32,+age: U32) -> Rect.Box:
+  +x = square_x(size,camera,square)
+  +y = square_y(size,camera,square)
+  +drift = scale_coord(size,U32.div(age,2))
+  +dead_x = Bool.pick(U32,U32.is_even(age),U32.add(x,drift),U32.sub(x,drift))
+  +dead_y = U32.sub(y,scale_coord(size,age))
+  sprite_motion_matrix_box(size,SpritePlacement.piece_matrix(size,camera,
+    Quad.Point{U32.to_f32(dead_x),U32.to_f32(dead_y)},kind))
+
+def sprite_motion_path_box(n: Nat,+amount: U32,+size: U32,+camera: Camera.Basis,
+  +source: U32,+square: U32,+kind: U32,acc: Rect.Box) -> Rect.Box:
+  match n:
+    case 0n: acc
+    case 1n+rest:
+      sprite_motion_path_box(rest,U32.add(amount,1),size,camera,source,square,kind,
+        Rect.union(acc,sprite_motion_current_box(size,camera,source,square,kind,amount)))
+
+def sprite_motion_death_box(n: Nat,+age: U32,+size: U32,+camera: Camera.Basis,
+  +square: U32,+kind: U32,acc: Rect.Box) -> Rect.Box:
+  match n:
+    case 0n: acc
+    case 1n+rest:
+      sprite_motion_death_box(rest,U32.add(age,1),size,camera,square,kind,
+        Rect.union(acc,sprite_motion_dead_box(size,camera,square,kind,age)))
+
+def sprite_motion_changed_box(changed: Bool,+size: U32,+camera: Camera.Basis,
+  +action: U32,+square: U32,+old: U32,+new: U32) -> Rect.Box:
+  match changed:
+    case False{}: Rect.empty()
+    case True{}:
+      +old_box = Bool.pick(Rect.Box,Model.occupied(old),
+        sprite_motion_current_box(size,camera,square,square,Model.piece_type(old),16),Rect.empty())
+      +path = Bool.pick(Rect.Box,Model.occupied(new),
+        sprite_motion_path_box(17n,0,size,camera,motion_source(Model.decode(action),square),
+          square,Model.piece_type(new),Rect.empty()),Rect.empty())
+      # Including fading paths at every changed occupied old square is
+      # conservative; the draw path still uses the original dying_visible.
+      +dead = Bool.pick(Rect.Box,Model.occupied(old),
+        sprite_motion_death_box(8n,0,size,camera,square,Model.piece_type(old),Rect.empty()),Rect.empty())
+      Rect.union(old_box,Rect.union(path,dead))
+
+def sprite_motion_dirty_loop(n: Nat,+square: U32,+size: U32,+camera: Camera.Basis,
+  +action: U32,+old: List<&2,U32>,+new: List<&2,U32>,acc: Rect.Box) -> Rect.Box:
+  match n:
+    case 0n: acc
+    case 1n+rest:
+      +before = Model.board_get(old,square)
+      +after = Model.board_get(new,square)
+      sprite_motion_dirty_loop(rest,U32.add(square,1),size,camera,action,old,new,
+        Rect.union(acc,sprite_motion_changed_box(U32.is_ne(before,after),size,camera,action,
+          square,before,after)))
+
+def sprite_motion_dirty(+size: U32,+frame: Scene.Frame) -> Rect.Box:
+  sprite_motion_dirty_loop(64n,0,size,Camera.basis(Scene.frame_view(frame)),Scene.frame_lastAction(frame),
+    Model.pos_board(Scene.frame_previous(frame)),Model.pos_board(Scene.frame_position(frame)),
+    Rect.empty())
+
+def sprite_motion_dirty512(frame: Scene.Frame) -> Rect.Box:
+  sprite_motion_dirty(512,frame)
+
+
+def sprite_motion_action(decoded: Maybe<Model.Action>) -> Bool:
+  match decoded:
+    case Some{Model.MoveAction{from,to,promotion}}: True{}
+    case _: False{}
+
+# The retained image must be occupancy-only for this exact previous position.
+# Theme/view/hole compatibility and settled progress prevent stale cache use.
+def sprite_motion_matches(+frame: Scene.Frame,+old: Scene.Frame) -> Bool:
+  Bool.and(sprite_motion_action(Model.decode(Scene.frame_lastAction(frame))),
+    Bool.and(U32.is_eq(progress(old),16),
+      Bool.and(sprite_same_ground(frame,old),
+        sprite_position_equal(Scene.frame_previous(frame),Scene.frame_position(old)))))
+
+def sprite_motion_transition_equal(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
+  Bool.and(sprite_same_placement(a,b),
+    Bool.and(sprite_position_equal(Scene.frame_previous(a),Scene.frame_previous(b)),
+      Bool.and(U32.is_eq(Scene.frame_lastAction(a),Scene.frame_lastAction(b)),
+        U32.is_eq(Scene.frame_theme(a),Scene.frame_theme(b)))))
+
+def sprite_motion_complete(frame: Scene.Frame) -> Bool:
+  U32.is_eq(progress(frame),16)
+
+def fast_sprite_motion512(+frame: Scene.Frame,pieces: PieceSprites.Pieces,
+  +clip: Rect.Box,+old: Image,ground: Image) -> Image:
+  +cleared = ImageOps.replace_rect(9n,512,clip,old,ground)
+  +drawn = fast_sprite_piece_layers(Camera.depth_order(Camera.basis(Scene.frame_view(frame))),
+    context_for(9n,512,frame),pieces,clip,cleared)
+  # Shadows keep their original geometry and coverage. Restore any transient
+  # outside writes after all pixel-local blending, without clipping corners.
+  ImageOps.replace_rect(9n,512,clip,old,drawn)

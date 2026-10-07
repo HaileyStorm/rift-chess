@@ -5,6 +5,7 @@
 // @ts-ignore Compiled by the pinned Bend loader.
 import BoardScene from '../../graphics/v2game/BoardScene.bend';
 import { boundedBytes, loadAssetRequests } from './asset-port';
+import { encodePose, transferPose, encodeGround, type PackedPose, type PackedGround } from './pose-port';
 
 declare const __BEND_SPRITE_SOURCE__: string;
 declare const __BEND_PREPARED_GROUND_PATH__: string;
@@ -27,7 +28,9 @@ const scene = BoardScene as Record<string, (...args: any[]) => any>;
 const list = (items: any[]) => items.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' } as any);
 
 async function digest(bytes: Uint8Array): Promise<string> {
-  const output = await crypto.subtle.digest('SHA-256', bytes);
+  if (!(bytes.buffer instanceof ArrayBuffer)) throw new Error('Asset digest needs an ArrayBuffer');
+  const input = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const output = await crypto.subtle.digest('SHA-256', input);
   return [...new Uint8Array(output)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
@@ -76,6 +79,8 @@ type SpriteJob = {
   kind: 'job'; protocol: number; id: number; generation: number;
   source: string; theme: number; frame: any; plates?: any;
   needPickData?: boolean;
+  needPose?: boolean; needGround?: boolean;
+  knownGroundId?: number;
 };
 
 type Timings = {
@@ -88,7 +93,7 @@ type Timings = {
 type Scope = {
   location?: { href?: string };
   addEventListener(type: 'message', listener: (event: { data: any }) => void): void;
-  postMessage(message: any): void;
+  postMessage(message: any, transfer?: Transferable[]): void;
 };
 
 type RuntimeOptions = {
@@ -122,7 +127,10 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
   let posedPieces: any = null, poseFrame: any = null;
+  let encodedPose: PackedPose | null = null;
   let settledGround: any = null, groundFrame: any = null;
+  let encodedGround: PackedGround | null = null;
+  let groundId = 0;
   let preparedLoad: Promise<any | null> | null = null;
   // Bend plates are immutable. A newly supplied/decoded plate has a new
   // identity, while orbiting away and back may reuse this same Ready object.
@@ -221,11 +229,13 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       plateTheme = theme;
       settledGround = null;
       groundFrame = null;
+      encodedGround = null;
     }
     if (missingPieces) {
       pieces = nextPieces;
       posedPieces = null;
       poseFrame = null;
+      encodedPose = null;
     }
   }
 
@@ -272,6 +282,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
         metrics.underlayMs = now() - at;
         settledGround = null;
         groundFrame = null;
+        encodedGround = null;
       }
       if (settledGround && groundFrame && board.sprite_same_ground(groundFrame, request.frame)) {
         metrics.groundCacheHit = 1;
@@ -290,18 +301,24 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
           stale(request);
           return;
         }
+        if (groundId >= Number.MAX_SAFE_INTEGER) throw new Error('Sprite ground identity exhausted');
         settledGround = candidate ?? board.settled_ground512(request.frame, underlay);
+        groundId++;
         metrics.preparedGroundHit = candidate ? 1 : 0;
         // The retained settledGround owns this image. Drop the loader promise
         // so a later orbit/Shift can release it instead of holding two large
         // ground trees. Returning to the default may fetch/parse it again.
         if (candidate) preparedLoad = null;
         groundFrame = request.frame;
+        encodedGround = null;
         metrics.groundMs = now() - groundAt;
       }
       const spriteAt = now();
       if (!posedPieces || !poseFrame || !board.sprite_same_view(poseFrame, request.frame)) {
-        posedPieces = board.sprite_pose_pieces(request.frame, pieces);
+        const nextPose = board.sprite_pose_pieces(request.frame, pieces);
+        const nextEncoded = encodePose(nextPose);
+        posedPieces = nextPose;
+        encodedPose = nextEncoded;
         poseFrame = request.frame;
       }
       const image = board.fast_sprite_pieces512(request.frame, posedPieces, settledGround);
@@ -312,11 +329,20 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       const pickAt = now();
       const pickData = board.sprite_pick_data(posedPieces);
       metrics.pickDataMs = now() - pickAt;
+      if (!encodedPose) throw new Error('Missing complete Bend sprite pose');
+      const pose = request.needPose === false ? null : transferPose(encodedPose);
+      const sendGround = request.needGround !== false || request.knownGroundId !== groundId;
+      if (sendGround && !encodedGround) encodedGround = encodeGround(settledGround);
+      const ground = !sendGround ? null :
+        { ...encodedGround!, tokens: encodedGround!.tokens.slice() };
+      const transfers: Transferable[] = [];
+      if (pose) transfers.push(pose.tokens.buffer);
+      if (ground) transfers.push(ground.tokens.buffer);
       metrics.workerMs = now() - started;
       metrics.sendEpochMs = performance.timeOrigin + now();
       scope.postMessage({ kind: 'result', protocol: PROTOCOL,
         id: request.id, generation: request.generation, source,
-        theme: request.theme, image, pickData, metrics });
+        theme: request.theme, image, pickData, pose, ground, groundId, metrics }, transfers);
     } catch (cause) {
       error(request, cause instanceof Error ? cause.message : String(cause));
     }
