@@ -7,22 +7,29 @@ actual application controller, and the unchanged candidate compiler/runtime.
 The independently derived combined cone contains 62 modules, including Base.
 The existing v2 producers and their original receipts remain unchanged.
 
-The new runner requires a clean checkout. It runs one combined positive and two
+The new runner requires a clean checkout. It runs one combined positive and eight
 negative Workers, serially, using the existing 64 MiB runtime, stable loader,
 complete closure comparison, compiler namespace guard, promise screen and
 observed Worker settlement. The negatives copy the frozen old-IDs and old-key
 mutant evidence into fresh owned cones; production frozen bytes are never
-mutated. Both must fail at their specific bridge declaration.
-Both negatives load the same combined entry and complete cone as the positive;
-only the designated prepared Match bytes differ. Creation-compiler inputs are
+mutated. Both prepared negatives must fail at their specific bridge declaration.
+The other six regenerate the unchanged frozen v2 semantic mutations. All eight
+negatives load the same combined entry and complete cone as the positive;
+only the designated target bytes differ. Creation-compiler inputs are
 also included explicitly in the exported source inventory.
 
-Historical six-v2-mutation reuse requires the complete original 228-input fence,
-exact pristine/derived compiler and runtime inventories, unchanged frozen v2
-files, and exact complete positive/mutated negative closures. The receipt keeps
-the old commit/tree/binding and positive keys. Its current keys are separate;
-the historical executions are never retagged as fresh. The old outer mutation
-supervisor's closure limitation remains an inference as originally reviewed.
+The historical six-v2-mutation records remain immutable provenance. The artifact
+budget shortcut initially changed a frozen `package.json` dependency and the
+compiler-free preflight rejected it. That dependency was restored byte for byte;
+the budget guard uses its direct Node command. The runner reports any full
+historical input drift and validates the original compiler/runtime, v2 freeze,
+raw records and mutant identities. Every current negative executes afresh.
+One fresh combined-book positive controls the same complete original cone for
+all eight negatives; extra shard positives would duplicate that control. A v2
+negative records its actual combined-book type mismatch, without claiming to
+reproduce the old shard's particular failure location. The prepared negatives
+retain their specific bridge checks. The old outer mutation supervisor's closure
+limitation remains an inference as originally reviewed.
 
 With telemetry disabled, the compiler-free preflight is:
 
@@ -30,11 +37,13 @@ With telemetry disabled, the compiler-free preflight is:
 node bend2/core/v3/2035/prepared-source.mjs --preflight-only
 ```
 
-Omitting that argument executes three candidate source Workers and writes
+Omitting that argument executes nine candidate source Workers and writes
 exclusive ignored evidence under
 `.artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-source-2035/`.
 The combined receipt has distinct schema
-`rift-prepared-aggregate-2035-source/1`. It is Windows source/type/promise
+`rift-prepared-aggregate-2035-source/2`. The prior `/1` attempt failed before CHECK;
+its closed failure and reviewed Worker-import correction remain historical.
+The successor is Windows source/type/promise
 evidence only. Fresh execution and receipt review are pending at this source
 checkpoint; no Safe, BendTT kernel, native/device or adoption result follows.
 

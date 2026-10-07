@@ -17,11 +17,11 @@ import { settleWorker, finalizeOwnedManifest } from '../../../toolchain-patches/
 process.env.BEND_NO_TELEMETRY = '1';
 // The historical mutation producer executes whenever imported in a Worker.
 // Only the parent imports its metadata/functions; each new Worker independently
-// rebinds the complete inputs already reconciled by that parent.
+// rebinds the complete inputs already bound by that parent.
 const { cases, mutationCone } = isMainThread ? await import('./mutations.mjs') : {};
 export const checkPath = path.join(root, 'bend2/core/v3/2035/PREPARED_CHECK.bend');
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-source-2035');
-export const scope = 'Current v2 plus prepared-v3 source/type/promise, two candidate prepared negatives and exact historical six-v2-mutation reuse; no Safe/kernel/native/device/adoption acceptance';
+export const scope = 'Current combined v2/prepared-v3 source/type/promise and eight fresh combined-book semantic negatives; historical records are provenance only; no Safe/kernel/native/device/adoption acceptance';
 const here = 'bend2/core/v3/2035/';
 const manifestPath = 'bend2/laws/semantic-prepared-v3.json';
 const preparedRoot = 'bend2/core/v3/prepared-match/';
@@ -48,27 +48,38 @@ export function preparedBinding({ requireClean = true } = {}) {
   assert.equal(hash(sourceFixture.handoff.path), sourceFixture.handoff.sha256);
   for (const item of handoff.mutations.cases)
     for (const variant of ['positive', 'negative']) paths.add(item[variant + 'Path']);
-  return { ...before, schema: 'rift-prepared-proof-2035-binding/1',
+  const negativeControls = ['oldids', 'oldkey'].map(name => ({ name, family: 'prepared',
+    law: name === 'oldids' ? 'carried_canonical' : 'apply_exact', target: preparedRoot + 'Match.bend',
+    mutant: `bend2/docs/evidence/prepared-match-20261007/${name}-mutant.bend`,
+    mutatedSha256: hash(`bend2/docs/evidence/prepared-match-20261007/${name}-mutant.bend`) }))
+    .concat(handoff.mutations.cases.map(item => ({ name: item.name, family: 'v2',
+      historicalProof: item.proof, target: item.target, mutatedSha256: item.mutatedSha256 })));
+  assert.equal(negativeControls.length, 8);
+  assert.equal(new Set(negativeControls.map(item => item.name)).size, 8);
+  for (const item of negativeControls) assert.ok(Object.hasOwn(proofFiles, item.target));
+  return { ...before, schema: 'rift-prepared-proof-2035-binding/2',
     frozenFiles: proofFiles, v2FrozenFiles: before.frozenFiles,
     preparedManifest: { path: manifestPath, sha256: hash(manifestPath), parent: manifest.parent },
     controller, sourceFiles: [...paths].sort().map(file => ({ path: file, sha256: hash(file) })),
     expectedLoadedPaths: expectedCheckClosure(root, checkPath, proofFiles, base),
-    historicalV2: sourceFixture };
+    historicalV2: sourceFixture, negativeControls };
 }
 
-// Bind the exact inputs that executed, rather than equating old/current whole
-// checkout bindings. Graphics/UI changes do not change a frozen proof cone.
-export function reconcileV2(before) {
+// Historical receipts remain immutable provenance. All eight current negatives
+// execute afresh on the same combined book as the new positive control; the
+// original full-input reuse fence and any observed drift remain explicit.
+export function historicalV2Provenance(before) {
   const historical = validateSourceApproval(sourceFixture, rawHistorical());
   const old = historical.aggregate.before;
   assert.deepEqual(old.runtime, before.runtime, 'historical mutation runtime differs');
   const compilerInputs = ({ sourceFiles: _sources, ...compiler }) => compiler;
   assert.deepEqual(compilerInputs(old.compiler), compilerInputs(before.compiler), 'historical compiler/loader inputs differ');
   assert.deepEqual(old.frozenFiles, before.v2FrozenFiles, 'historical v2 freeze differs');
-  // Retain the full historical 228-input fence, including incidental diagnostic
-  // inputs. Any changed byte defeats reuse rather than pruning the old claim.
-  for (const input of old.sourceFiles)
-    assert.equal(hash(input.path), input.sha256, `historical mutation input changed: ${input.path}`);
+  const inputDrift = old.sourceFiles.flatMap(input => {
+    const currentSha256 = hash(input.path);
+    return currentSha256 === input.sha256 ? [] : [{ path: input.path,
+      historicalSha256: input.sha256, currentSha256 }];
+  });
   const comparisons = cases.map(spec => {
     const current = mutationCone(spec, before), original = mutationCone(spec, old);
     assert.deepEqual(current.expected, original.expected);
@@ -83,6 +94,9 @@ export function reconcileV2(before) {
     }
     assert.equal(recorded.target, current.target); assert.equal(recorded.proof, spec.proof);
     assert.equal(recorded.mutatedSha256, current.mutatedSha256);
+    const control = before.negativeControls.find(item => item.name === spec.name);
+    assert.equal(control.family, 'v2'); assert.equal(control.target, current.target);
+    assert.equal(control.mutatedSha256, current.mutatedSha256);
     assert.equal(recorded.positiveKey, original.positiveKey);
     const expectedFiles = current.expected.map(file => ({ path: file, sha256: before.frozenFiles[file] }))
       .concat({ path: '<derived>/bend2/base.bend', sha256: before.compiler.derivedFiles.find(file => file.path === 'base.bend').sha256 })
@@ -92,16 +106,16 @@ export function reconcileV2(before) {
       ? { ...file, sha256: current.mutatedSha256 } : file));
     return { name: spec.name, proof: spec.proof, target: current.target,
       coneSHA256: sha256(JSON.stringify(expectedFiles)), mutatedSha256: current.mutatedSha256,
-      historicalPositiveKey: original.positiveKey, currentPositiveKey: current.positiveKey };
+      historicalPositiveKey: original.positiveKey };
   });
-  return { reused: true, freshWorkers: 0, historicalSourceCommit: historical.aggregate.sourceCommit,
-    receipts: sourceFixture, comparisons,
-    scope: 'Six historical actual v2 negatives/four positives/two reuses, unchanged complete cones/compiler/runtime/helpers; old outer mutation closure remains inferred, not a fresh execution' };
+  return { executionReused: false, historicalSourceCommit: historical.aggregate.sourceCommit,
+    receipts: sourceFixture, comparisons, inputDrift,
+    scope: 'Historical six-v2 mutation provenance only; no current execution reuse. Old outer mutation closure remains inferred; all current negatives execute in the combined book.' };
 }
 
-const negativeSpecs = ['oldids', 'oldkey'].map(name => ({ name,
-  law: name === 'oldids' ? 'carried_canonical' : 'apply_exact',
-  mutant: `bend2/docs/evidence/prepared-match-20261007/${name}-mutant.bend` }));
+const combinedPositiveKey = before => sha256(JSON.stringify({ entry: rel(checkPath),
+  files: sourceCone(checkPath, before).map(file => [file, before.frozenFiles[file]]),
+  bindingSha256: sha256(JSON.stringify(before)) }));
 
 if (!isMainThread) {
   let Bend, stage = 'binding', fetches = 0;
@@ -109,11 +123,13 @@ if (!isMainThread) {
   try {
     const actualResourceLimits = workerResourceReadback();
     const before = preparedBinding(); assert.deepEqual(before, workerData.before);
-    const negative = negativeSpecs.find(spec => spec.name === workerData.name);
+    const negative = before.negativeControls.find(spec => spec.name === workerData.name);
+    assert.ok(negative || workerData.name === 'aggregate', 'unknown Worker name');
+    const positiveKey = combinedPositiveKey(before); assert.equal(positiveKey, workerData.positiveKey);
     const entry = negative ? path.join(workerData.directory, rel(checkPath)) : checkPath;
     const directory = negative ? workerData.directory : root;
     const expected = sourceCone(checkPath, before);
-    const substitution = negative ? { [preparedRoot + 'Match.bend']: hash(negative.mutant) } : {};
+    const substitution = negative ? { [negative.target]: negative.mutatedSha256 } : {};
     stage = 'load'; Bend = await import(pathToFileURL(path.join(derived, 'bend2/bend.ts')).href);
     const { book, seen, preloaded } = await loadProof(Bend, entry, directory);
     const closure = loadedClosure(seen, directory, expected, before, substitution);
@@ -123,11 +139,12 @@ if (!isMainThread) {
       try { Bend.book_valid(book, 0); }
       catch (error) { mismatch = typeMismatchEvidence(error, item => Bend.err_show(item)); }
       assert.ok(mismatch, 'prepared mutation was accepted');
-      assert.ok(mismatch.location.includes('LAWS.' + negative.law), 'prepared mutation rejected outside its bridge declaration');
-      verdict = { rejected: true, law: negative.law, ...mismatch, definitions: book.order.length };
+      if (negative.family === 'prepared')
+        assert.ok(mismatch.location.includes('LAWS.' + negative.law), 'prepared mutation rejected outside its bridge declaration');
+      verdict = { rejected: true, control: negative, ...mismatch, definitions: book.order.length };
     } else verdict = await positiveVerdict(Bend, book, value => { stage = value; });
     assert.equal(fetches, 0); stage = 'post-binding'; assert.deepEqual(preparedBinding(), before);
-    parentPort.postMessage({ ok: true, name: workerData.name, ...verdict, closure, preloaded,
+    parentPort.postMessage({ ok: true, name: workerData.name, positiveKey, ...verdict, closure, preloaded,
       actualResourceLimits, fetches, scope });
   } catch (error) {
     parentPort.postMessage({ ok: false, stage, fetches,
@@ -138,7 +155,8 @@ if (!isMainThread) {
   assert.ok(process.argv.length === 2 || (process.argv.length === 3 && process.argv[2] === '--preflight-only'));
   const preflight = process.argv[2] === '--preflight-only';
   const before = preparedBinding({ requireClean: !preflight });
-  const historicalV2 = reconcileV2(before);
+  const historicalV2 = historicalV2Provenance(before);
+  const positiveKey = combinedPositiveKey(before);
   if (preflight) {
     assert.deepEqual(preparedBinding({ requireClean: false }), before);
     console.log(JSON.stringify({ ok: true, binding: before, bindingSha256: sha256(JSON.stringify(before)),
@@ -155,7 +173,7 @@ if (!isMainThread) {
       async function attempt(name, copiedDirectory = undefined) {
         const started = Date.now(); let result, worker, workerFailure;
         try {
-          worker = new Worker(fileURLToPath(import.meta.url), { workerData: { name, directory: copiedDirectory, before },
+          worker = new Worker(fileURLToPath(import.meta.url), { workerData: { name, directory: copiedDirectory, before, positiveKey },
             resourceLimits: { stackSizeMb: 64 }, execArgv: [] });
           const parentResourceLimits = { ...worker.resourceLimits };
           const capture = message => { if (message?.ok === false) workerFailure = message; };
@@ -163,6 +181,7 @@ if (!isMainThread) {
           try { result = await settleWorker(worker, { timeoutMs: name === 'aggregate' ? 900_000 : 120_000, terminateGraceMs: 10_000 }); }
           finally { worker.off('message', capture); }
           assert.equal(parentResourceLimits.stackSizeMb, 64); assert.equal(result.actualResourceLimits.stackSizeMb, 64);
+          assert.equal(result.name, name); assert.equal(result.positiveKey, positiveKey);
           assert.deepEqual(preparedBinding(), before);
           const record = { ...result, parentResourceLimits, elapsedMs: Date.now() - started };
           fs.writeFileSync(path.join(directory, name + '.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' });
@@ -178,30 +197,35 @@ if (!isMainThread) {
       }
       const aggregate = await attempt('aggregate');
       const negatives = [];
-      for (const spec of negativeSpecs) {
+      for (const spec of before.negativeControls) {
         const copied = path.join(directory, spec.name); fs.mkdirSync(copied);
         // The negative has the same combined entry and full cone as the fresh
-        // positive; only the designated prepared Match bytes differ.
+        // positive; only the designated target bytes differ.
         for (const file of sourceCone(checkPath, before)) {
           const destination = path.join(copied, file); fs.mkdirSync(path.dirname(destination), { recursive: true });
           const bytes = readSource(path.join(root, file)); assert.equal(sha256(bytes), before.frozenFiles[file]);
           fs.writeFileSync(destination, bytes, { flag: 'wx' });
         }
-        // Frozen mutant evidence is copied only into this fresh owned cone.
-        fs.writeFileSync(path.join(copied, preparedRoot + 'Match.bend'), readSource(path.join(root, spec.mutant)));
+        const mutated = spec.family === 'prepared' ? readSource(path.join(root, spec.mutant))
+          : mutationCone(cases.find(item => item.name === spec.name), before).mutated;
+        assert.equal(sha256(mutated), spec.mutatedSha256);
+        fs.writeFileSync(path.join(copied, spec.target), mutated);
+        assert.equal(sha256(readSource(path.join(copied, spec.target))), spec.mutatedSha256);
         negatives.push(await attempt(spec.name, copied));
       }
+      assert.deepEqual(negatives.map(item => item.name), before.negativeControls.map(item => item.name));
+      assert.ok(negatives.every(item => item.rejected && item.positiveKey === aggregate.positiveKey));
       const after = preparedBinding(); assert.deepEqual(after, before);
-      const receipt = { schema: 'rift-prepared-aggregate-2035-source/1', passed: true, producerScope: 'source/type/promise',
+      const receipt = { schema: 'rift-prepared-aggregate-2035-source/2', passed: true, producerScope: 'source/type/promise',
         sourceCommit: before.sourceCommit, sourceTree: before.sourceTree, bindingSha256: sha256(JSON.stringify(before)),
         frozenSha256: before.frozenSha256, preparedManifest: before.preparedManifest,
-        aggregate, negatives, historicalV2, before, after, actualFreshWorkers: 3, scope };
+        aggregate, negatives, historicalV2, before, after, actualFreshWorkers: 9, positiveKey, scope };
       const bytes = Buffer.from(JSON.stringify(receipt, null, 2) + '\n');
       finalizeOwnedManifest(path.join(directory, 'receipt.pending'), path.join(directory, 'receipt.json'), bytes,
         { beforeCommit: () => assert.deepEqual(preparedBinding(), before) });
       assert.deepEqual(readSource(path.join(directory, 'receipt.json')), bytes);
       console.log(JSON.stringify({ passed: true, output: rel(directory), receiptSha256: sha256(bytes),
-        freshWorkers: 3, historicalMutationWorkers: 0, scope }));
+        freshWorkers: 9, historicalExecutionReuses: 0, scope }));
     });
   }
 }
