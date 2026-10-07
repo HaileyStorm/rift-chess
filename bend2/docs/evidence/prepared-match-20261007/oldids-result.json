@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "name": "oldids",
+  "terminalSHA256": "4639d36f996f3546a3922350c6c059d65a0b3b62ca214cb7b06a7b2ce4116899",
+  "diagnosticSHA256": "4eb094ec7864317eda7488e0273649d7cdbfd99a6f062f85a573583c7eb8eddd",
+  "claim": "carried_canonical",
+  "exitCode": 1,
+  "nativeClosed": true,
+  "restoredSHA256": "45b79774689bc4b882a0085730322f38841b752ebea55b07b5eada7e9b5cf436",
+  "originalSHA256": "45b79774689bc4b882a0085730322f38841b752ebea55b07b5eada7e9b5cf436",
+  "mutantSHA256": "4149600eb16f152c464aa261baaa68d7ebbb2c291a9d445fb3bc1981a69b4d85",
+  "scope": "Actual well-typed mutation of final unfrozen source rejected by unchanged accepted2.0.27 proof runner at bridge obligation. Raw failure terminal unchanged; original exact bytes restored after qualified exit."
+}

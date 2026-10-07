@@ -1,0 +1,54 @@
+{
+  "schema": "rift-bend-prepared-match/3",
+  "version": 3,
+  "semanticMeaning": "unchanged",
+  "parent": {
+    "path": "bend2/laws/semantic-v2.json",
+    "sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+  },
+  "files": {
+    "bend2/core/v3/prepared-match/CHECK.bend": "4ff37a357b702ef05a7e891687173a31f8ccb5814c9a846dea18b3d33716fe1f",
+    "bend2/core/v3/prepared-match/LAWS.bend": "1b7c02fc23a5027e95250dd659232b6cf4c628730b74ecae59e8f3c9a94d0450",
+    "bend2/core/v3/prepared-match/Match.bend": "45b79774689bc4b882a0085730322f38841b752ebea55b07b5eada7e9b5cf436",
+    "bend2/core/v3/prepared-match/PROOF.bend": "898cf084ce2790242e5d246f75db965ae890da0e948fab4bf5cdcfec45d2a6d3",
+    "bend2/core/v3/prepared-match/verify.mjs": "975d0f395d6adf2ca977baf44b13125d0b18ceb45c74ae68ab42b5cdb0842278"
+  },
+  "compiler": {
+    "version": "2.0.27",
+    "commit": "d37909174ebd664338ae3194799a9e0899dedd51",
+    "inputs": {
+      ".artifacts/toolchains/bend/bend2/bend.ts": "45ab9507e3e8a1a60a2caaf3b71d3d235aa7cc9e57b4231758a0692d2879dd46",
+      ".artifacts/toolchains/bend/bend2/comp.ts": "b00c5db995efd9698208b9b3c14f6a454fab3a10dca7bb85e962e2fb82bba25c",
+      ".artifacts/toolchains/bend/bend2/base.bend": "dfb62b4db3f76602ad2475a4b53d668bddfc767ec387f78ad1df46ab4765c4b3",
+      "bend2/TOOLCHAIN.json": "17419db1617fece38c72dba9136463a313db43bf2c61f657334d9fdce0ae51a6"
+    },
+    "proofInputs": {
+      "bend2/core/v2/node-check.mjs": "cd440769cfbe23d264b692f88644191a4eaf4377aff824fe4fda26c09608c148",
+      "bend2/core/v2/proof-runtime.json": "45e3de051fdc3b3e2260d2a2af4036234c39354c284c7b6d94f30e75a7413cbf"
+    },
+    "emissionInputs": {
+      "bend2/tools/bend.mjs": "74971c35a350a1e107fd96723c44c25e1ecb7f3da747e447e66de8085788ca30",
+      "bend2/tools/loader.ts": "478081ea8be6e4c55948ddec523cc17cd39a006a47926bab5653d6cabd88fe93",
+      "bend2/tools/loader-v2.ts": "cc1e5d75c5895dd82e86690517e65c5cb9a7d0d3c5cfa42a415e202b01f28d5f",
+      "bend2/tools/selected-modules.mjs": "3638db30ce2c4d9e3ba13272bed451c093bf36de6edae227c16463d832ee766d"
+    }
+  },
+  "evidence": {
+    "bend2/docs/evidence/prepared-match-20261007/differential-result.json": "9bc70c32044c8f55f8f3e7ca29f05072f8245b28a12cc1878df958d5ca0917af",
+    "bend2/docs/evidence/prepared-match-20261007/differential.json": "c0e68a3ebded6340edf5da4183dc02f07e96ff283257c2fb2e2992d7d7333f27",
+    "bend2/docs/evidence/prepared-match-20261007/differential.mjs": "90f08cb752a2898a8c2bdf9b8a866cd7f887d1a9276a2136054eb31394cb3f0a",
+    "bend2/docs/evidence/prepared-match-20261007/emission.json": "1fb8499ae5d8adde4e178aeec0d2b6180999aab4a8dec7db6e4d6a550eeeed86",
+    "bend2/docs/evidence/prepared-match-20261007/emitter.mjs": "4720e51b25f12dcdb8426795f3654d9112e6528276f435b0e8b5fa170c8d0d9a",
+    "bend2/docs/evidence/prepared-match-20261007/oldids-diagnostic.txt": "4eb094ec7864317eda7488e0273649d7cdbfd99a6f062f85a573583c7eb8eddd",
+    "bend2/docs/evidence/prepared-match-20261007/oldids-mutant.bend": "4149600eb16f152c464aa261baaa68d7ebbb2c291a9d445fb3bc1981a69b4d85",
+    "bend2/docs/evidence/prepared-match-20261007/oldids-result.json": "1d535f59f8bdd7ba9864a3909dda67e72036c6b83f612bf961eec965171f5b36",
+    "bend2/docs/evidence/prepared-match-20261007/oldids.json": "4639d36f996f3546a3922350c6c059d65a0b3b62ca214cb7b06a7b2ce4116899",
+    "bend2/docs/evidence/prepared-match-20261007/oldkey-diagnostic.txt": "cda7d35abed255bb89da2b4b967b5dd2a6002ce7b724fe8a1c5be6d605adc2e9",
+    "bend2/docs/evidence/prepared-match-20261007/oldkey-mutant.bend": "2fadf702af3f309e3cd2a09e7a225ecb98018d729373cc1371d39798595d14cc",
+    "bend2/docs/evidence/prepared-match-20261007/oldkey-result.json": "7c4e9e2dc178db10e75bc2c798332e4029076413c87f67d9a8a892c468dabae4",
+    "bend2/docs/evidence/prepared-match-20261007/oldkey.json": "45f2083ad9bde870d052e90700eedab735d3f724d579eaa775e681638b78106e",
+    "bend2/docs/evidence/prepared-match-20261007/probe.bend": "d0c738cbe1a20562b32c054ca1f660ca226e08a054eeba032b6e7555d58f1147",
+    "bend2/docs/evidence/prepared-match-20261007/proof.json": "37d6324fcc4c760c1bc8023a5d988ba49d2a4e0fc08ebcab26d0d3f09d415646",
+    "bend2/docs/evidence/prepared-match-20261007/review.md": "ba095e15b2d513b881c34a841660c29f255d8c22f2f836c5420ffd59093951cd"
+  }
+}

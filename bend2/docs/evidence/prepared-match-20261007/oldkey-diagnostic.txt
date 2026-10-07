@@ -1,0 +1,18 @@
+Error:
+- expected : ../../MatchSpec.Accepted{../../MatchSpec.Match{initial, ../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id)), List.append(&2, U32, actions, [id]), List.append(&2, ../../Model.Position, states, [../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id))]), List.append(&2, ../../MatchSpec.RepetitionKey, keys, [../../v2/MatchKernel.repetition_key(state, ../../v2/RuleKernel.legal_tree(5n, state, 0, 21760))]), 1n+revision, policy, ../../MatchSpec.NoOffer{}, ../../MatchSpec.NoOverride{}}}
+- observed : ../../MatchSpec.Accepted{../../MatchSpec.Match{initial, ../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id)), List.append(&2, U32, actions, [id]), List.append(&2, ../../Model.Position, states, [../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id))]), List.append(&2, ../../MatchSpec.RepetitionKey, keys, [../../v2/MatchKernel.repetition_key(../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id)), ../../v2/RuleKernel.legal_tree(5n, ../../v2/RuleKernel.position(../../v2/RuleKernel.decide(../../v2/RuleContracts.contract_decoded(state, ../../v2/RuleContracts.expected_decoded(state, ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), ../../Model.decode.in_range(id, Cmp.is_lt(U32.cmp(id, 21760)))), state, id)), 0, 21760))]), 1n+revision, policy, ../../MatchSpec.NoOffer{}, ../../MatchSpec.NoOverride{}}}
+Context:
+- initial  : ../../Model.Position
+- state    : ../../Model.Position
+- actions  : List<&2, U32>
+- states   : List<&2, ../../Model.Position>
+- keys     : List<&2, ../../MatchSpec.RepetitionKey>
+- revision : Nat
+- policy   : ../../MatchSpec.DrawPolicy
+- offer    : ../../MatchSpec.DrawOffer
+- forced   : ../../MatchSpec.Override
+- id       : U32
+Location: LAWS.apply_exact
+ 8 |   match m:
+ 9>|     case T.Match{initial, state, actions, states, keys, revision, policy, offer, forced}: {==}
+10 | 

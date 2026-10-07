@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "name": "oldkey",
+  "terminalSHA256": "45f2083ad9bde870d052e90700eedab735d3f724d579eaa775e681638b78106e",
+  "diagnosticSHA256": "cda7d35abed255bb89da2b4b967b5dd2a6002ce7b724fe8a1c5be6d605adc2e9",
+  "claim": "apply_exact",
+  "exitCode": 1,
+  "nativeClosed": true,
+  "restoredSHA256": "45b79774689bc4b882a0085730322f38841b752ebea55b07b5eada7e9b5cf436",
+  "originalSHA256": "45b79774689bc4b882a0085730322f38841b752ebea55b07b5eada7e9b5cf436",
+  "mutantSHA256": "2fadf702af3f309e3cd2a09e7a225ecb98018d729373cc1371d39798595d14cc",
+  "scope": "Actual well-typed mutation of final unfrozen source rejected by unchanged accepted2.0.27 proof runner at bridge obligation. Raw failure terminal unchanged; original exact bytes restored after qualified exit."
+}

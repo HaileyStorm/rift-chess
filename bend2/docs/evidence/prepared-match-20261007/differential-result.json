@@ -1,0 +1,1075 @@
+{
+  "ok": true,
+  "emissionTerminalSHA256": "1fb8499ae5d8adde4e178aeec0d2b6180999aab4a8dec7db6e4d6a550eeeed86",
+  "moduleSHA256": "cd854476f06baf98a3a08f69cca9fb3c8b52bb84ebf8a7f254572647faed00a5",
+  "rows": [
+    {
+      "label": "move/accepted",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 3980
+      },
+      "accepted": true,
+      "matchSHA256": "1bdc09061b8b8f9bbfe837c1ccc0cf2306c4d0cb9562f58354835f8104f9bde6",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 825.8847000000001,
+        "candidate": 672.0048999999999
+      }
+    },
+    {
+      "label": "capture/prefix0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 2680
+      },
+      "accepted": true,
+      "matchSHA256": "983858411de4be14c52c2c12e3e73aa4aef54ed1735edd7339ec478f5348935a",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 1153.4295999999995,
+        "frozen": 798.1360999999997
+      }
+    },
+    {
+      "label": "capture/prefix1",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 15845
+      },
+      "accepted": true,
+      "matchSHA256": "1dda907846e43b1786ac0ea0b4f890d830607ad0b04e22c5534dff08494b6643",
+      "carriedCount": 20,
+      "callMs": {
+        "frozen": 1006.0061999999998,
+        "candidate": 923.6925000000001
+      }
+    },
+    {
+      "label": "capture/accepted",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 7845
+      },
+      "accepted": true,
+      "matchSHA256": "9709a6f748c04853174f9f720e8a10ea33abad68479ad9ce1bc692889327a29e",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 1239.0823,
+        "frozen": 1136.7891
+      }
+    },
+    {
+      "label": "castle/prefix0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 3980
+      },
+      "accepted": true,
+      "matchSHA256": "1bdc09061b8b8f9bbfe837c1ccc0cf2306c4d0cb9562f58354835f8104f9bde6",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 1114.9259000000002,
+        "candidate": 976.1130000000012
+      }
+    },
+    {
+      "label": "castle/prefix1",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 16820
+      },
+      "accepted": true,
+      "matchSHA256": "610c2f67527b3a6b976d5f6497667e950534f0817073c3ba6b94311dc9bea638",
+      "carriedCount": 23,
+      "callMs": {
+        "candidate": 992.2391000000007,
+        "frozen": 1072.5028999999995
+      }
+    },
+    {
+      "label": "castle/prefix2",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 2025
+      },
+      "accepted": true,
+      "matchSHA256": "431038b38158f113cc420d1507568b9ac0f32f4fc7b36b0417e817619e580099",
+      "carriedCount": 23,
+      "callMs": {
+        "frozen": 2148.477600000002,
+        "candidate": 1911.6371
+      }
+    },
+    {
+      "label": "castle/prefix3",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "3"
+        },
+        "action": 20065
+      },
+      "accepted": true,
+      "matchSHA256": "e78742bcc8e17931de2b158b04dfe71110bdfa4f36551f90f2933047e8ddec9b",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 1563.418099999999,
+        "frozen": 1428.329099999999
+      }
+    },
+    {
+      "label": "castle/prefix4",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "4"
+        },
+        "action": 1660
+      },
+      "accepted": true,
+      "matchSHA256": "b79345848ed2c99b75332264c621a617169e5ce7455fb7ce2de65feb0eb1a49e",
+      "carriedCount": 19,
+      "callMs": {
+        "frozen": 1756.9205000000002,
+        "candidate": 1850.280899999998
+      }
+    },
+    {
+      "label": "castle/prefix5",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "5"
+        },
+        "action": 19780
+      },
+      "accepted": true,
+      "matchSHA256": "e741a541bfabf930dd9886c0d681cec684b053e8c8d1938a790775d949446746",
+      "carriedCount": 20,
+      "callMs": {
+        "candidate": 1081.5895000000019,
+        "frozen": 1150.847700000002
+      }
+    },
+    {
+      "label": "castle/accepted",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "6"
+        },
+        "action": 1310
+      },
+      "accepted": true,
+      "matchSHA256": "8d513ab7a460da6594f9c55047f6cb5ddf7023808e377910b1ce1b5d3e22bdf5",
+      "carriedCount": 20,
+      "callMs": {
+        "frozen": 1440.1438999999955,
+        "candidate": 1208.486699999994
+      }
+    },
+    {
+      "label": "enpassant/prefix0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 3980
+      },
+      "accepted": true,
+      "matchSHA256": "1bdc09061b8b8f9bbfe837c1ccc0cf2306c4d0cb9562f58354835f8104f9bde6",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 951.7255000000005,
+        "frozen": 1576.4256000000023
+      }
+    },
+    {
+      "label": "enpassant/prefix1",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 16820
+      },
+      "accepted": true,
+      "matchSHA256": "610c2f67527b3a6b976d5f6497667e950534f0817073c3ba6b94311dc9bea638",
+      "carriedCount": 23,
+      "callMs": {
+        "frozen": 2558.573099999994,
+        "candidate": 1432.712599999999
+      }
+    },
+    {
+      "label": "enpassant/prefix2",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 2025
+      },
+      "accepted": true,
+      "matchSHA256": "431038b38158f113cc420d1507568b9ac0f32f4fc7b36b0417e817619e580099",
+      "carriedCount": 23,
+      "callMs": {
+        "candidate": 2067.052899999995,
+        "frozen": 1774.1717999999964
+      }
+    },
+    {
+      "label": "enpassant/prefix3",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "3"
+        },
+        "action": 20065
+      },
+      "accepted": true,
+      "matchSHA256": "e78742bcc8e17931de2b158b04dfe71110bdfa4f36551f90f2933047e8ddec9b",
+      "carriedCount": 19,
+      "callMs": {
+        "frozen": 1528.8317000000025,
+        "candidate": 799.0334999999977
+      }
+    },
+    {
+      "label": "enpassant/prefix4",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "4"
+        },
+        "action": 1660
+      },
+      "accepted": true,
+      "matchSHA256": "b79345848ed2c99b75332264c621a617169e5ce7455fb7ce2de65feb0eb1a49e",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 1293.532100000004,
+        "frozen": 837.9504000000015
+      }
+    },
+    {
+      "label": "enpassant/prefix5",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "5"
+        },
+        "action": 19780
+      },
+      "accepted": true,
+      "matchSHA256": "e741a541bfabf930dd9886c0d681cec684b053e8c8d1938a790775d949446746",
+      "carriedCount": 20,
+      "callMs": {
+        "frozen": 1180.6463000000003,
+        "candidate": 767.8867000000027
+      }
+    },
+    {
+      "label": "enpassant/prefix6",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "6"
+        },
+        "action": 1310
+      },
+      "accepted": true,
+      "matchSHA256": "8d513ab7a460da6594f9c55047f6cb5ddf7023808e377910b1ce1b5d3e22bdf5",
+      "carriedCount": 20,
+      "callMs": {
+        "candidate": 1305.3573000000033,
+        "frozen": 678.963499999998
+      }
+    },
+    {
+      "label": "enpassant/prefix7",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "7"
+        },
+        "action": 19510
+      },
+      "accepted": true,
+      "matchSHA256": "878efa0d6906bd79d693ae58c48505cb2a7ffe51bb7f8414dd49c5adb51929be",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 1016.9749999999985,
+        "candidate": 1526.2627000000066
+      }
+    },
+    {
+      "label": "enpassant/prefix8",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "8"
+        },
+        "action": 4955
+      },
+      "accepted": true,
+      "matchSHA256": "97d0971f962830357aeb9e34e912a7c51dcdc2b12ee60ad0857e03d070613cde",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 717.1333999999988,
+        "frozen": 1308.5797999999922
+      }
+    },
+    {
+      "label": "enpassant/prefix9",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "9"
+        },
+        "action": 15560
+      },
+      "accepted": true,
+      "matchSHA256": "84376d31ae4bfd936e2099aed07052e5a6e827f2697c5ccf227e25c4cfeed980",
+      "carriedCount": 17,
+      "callMs": {
+        "frozen": 1265.0099000000046,
+        "candidate": 1359.8860999999888
+      }
+    },
+    {
+      "label": "enpassant/prefix10",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "10"
+        },
+        "action": 10115
+      },
+      "accepted": true,
+      "matchSHA256": "15559beeb7cf7cfa3f1739812bb64f4812d08534aea07f2b53ddde7c585a19a0",
+      "carriedCount": 16,
+      "callMs": {
+        "candidate": 1682.5998000000109,
+        "frozen": 1200.0676999999996
+      }
+    },
+    {
+      "label": "enpassant/prefix11",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "11"
+        },
+        "action": 17470
+      },
+      "accepted": true,
+      "matchSHA256": "0a316ac14b4a3aa61d69d07afbf8aa82d92321e4a269a4db5e3970bbc0d79aa9",
+      "carriedCount": 19,
+      "callMs": {
+        "frozen": 1624.0950999999914,
+        "candidate": 1293.959600000002
+      }
+    },
+    {
+      "label": "enpassant/accepted",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "12"
+        },
+        "action": 12710
+      },
+      "accepted": true,
+      "matchSHA256": "edb46ed021268c805a5a51d5b06d773f151c67077468b04ff0461d3a6017c3c6",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 1434.1850000000122,
+        "frozen": 1798.7318999999989
+      }
+    },
+    {
+      "label": "promotion/prefix0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 2680
+      },
+      "accepted": true,
+      "matchSHA256": "983858411de4be14c52c2c12e3e73aa4aef54ed1735edd7339ec478f5348935a",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 696.6765000000014,
+        "candidate": 755.5966000000044
+      }
+    },
+    {
+      "label": "promotion/prefix1",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 15845
+      },
+      "accepted": true,
+      "matchSHA256": "1dda907846e43b1786ac0ea0b4f890d830607ad0b04e22c5534dff08494b6643",
+      "carriedCount": 20,
+      "callMs": {
+        "candidate": 855.5443999999989,
+        "frozen": 750.2051999999967
+      }
+    },
+    {
+      "label": "promotion/prefix2",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 7845
+      },
+      "accepted": true,
+      "matchSHA256": "9709a6f748c04853174f9f720e8a10ea33abad68479ad9ce1bc692889327a29e",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 1318.790399999998,
+        "candidate": 1251.1598999999987
+      }
+    },
+    {
+      "label": "promotion/prefix3",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "3"
+        },
+        "action": 18440
+      },
+      "accepted": true,
+      "matchSHA256": "fddf24c30bd45c489c72707b46f6bad4dc5315966face10c7028a1d5dad1fe2d",
+      "carriedCount": 23,
+      "callMs": {
+        "candidate": 1164.9051999999938,
+        "frozen": 1649.585699999996
+      }
+    },
+    {
+      "label": "promotion/prefix4",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "4"
+        },
+        "action": 10765
+      },
+      "accepted": true,
+      "matchSHA256": "75c6af83e4089239315cc16fe328aa5630c825fbb0429e2e4ed713750937a61b",
+      "carriedCount": 19,
+      "callMs": {
+        "frozen": 1379.6101999999955,
+        "candidate": 1766.1470999999874
+      }
+    },
+    {
+      "label": "promotion/prefix5",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "5"
+        },
+        "action": 17835
+      },
+      "accepted": true,
+      "matchSHA256": "4a76be43e4b4446c10970eac3d2bb3a68272973e99f2cf83b880ce3df110505f",
+      "carriedCount": 24,
+      "callMs": {
+        "candidate": 785.7163,
+        "frozen": 1370.8935999999958
+      }
+    },
+    {
+      "label": "promotion/prefix6",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "6"
+        },
+        "action": 13365
+      },
+      "accepted": true,
+      "matchSHA256": "df48db008a64ce13a136945aa8fc10623ce32e7f78a3d8a0a9c57ed734b1ddda",
+      "carriedCount": 17,
+      "callMs": {
+        "frozen": 1452.0364999999874,
+        "candidate": 1028.7341000000015
+      }
+    },
+    {
+      "label": "promotion/prefix7",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "7"
+        },
+        "action": 15235
+      },
+      "accepted": true,
+      "matchSHA256": "0322ecd706e9b65e77a6255f36b866850c85903debaa9b5aacbf38d4d657c50f",
+      "carriedCount": 33,
+      "callMs": {
+        "candidate": 925.2226000000082,
+        "frozen": 1359.5308000000077
+      }
+    },
+    {
+      "label": "promotion/accepted",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "8"
+        },
+        "action": 15969
+      },
+      "accepted": true,
+      "matchSHA256": "df4c48a256461532062d237c15108d16079e15030643c9774eb8faf214fb5330",
+      "carriedCount": 19,
+      "callMs": {
+        "frozen": 1644.1083999999973,
+        "candidate": 1298.2621999999974
+      }
+    },
+    {
+      "label": "shift",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 20825
+      },
+      "accepted": true,
+      "matchSHA256": "bb305a88bb12f1b7411baa5b8f8461df7075fc07f8cccbd654be5d432fc60ede",
+      "carriedCount": 20,
+      "callMs": {
+        "candidate": 684.238599999997,
+        "frozen": 686.6187999999966
+      }
+    },
+    {
+      "label": "invalid-0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 0
+      },
+      "accepted": false,
+      "matchSHA256": "4bfe2e7c3b56d3a04e81d60631f93e4ab454edc01e92414d4197a93a7e7a1d48",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 325.96729999998934,
+        "candidate": 363.4488999999885
+      }
+    },
+    {
+      "label": "invalid-21760",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 21760
+      },
+      "accepted": false,
+      "matchSHA256": "4bfe2e7c3b56d3a04e81d60631f93e4ab454edc01e92414d4197a93a7e7a1d48",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 407.9927999999927,
+        "frozen": 383.0737999999983
+      }
+    },
+    {
+      "label": "invalid-4294967295",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 4294967295
+      },
+      "accepted": false,
+      "matchSHA256": "4bfe2e7c3b56d3a04e81d60631f93e4ab454edc01e92414d4197a93a7e7a1d48",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 310.252800000002,
+        "candidate": 284.79550000000745
+      }
+    },
+    {
+      "label": "stale-revision",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "256"
+        },
+        "action": 3980
+      },
+      "accepted": false,
+      "matchSHA256": "4bfe2e7c3b56d3a04e81d60631f93e4ab454edc01e92414d4197a93a7e7a1d48",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 282.5228000000061,
+        "frozen": 366.5743000000075
+      }
+    },
+    {
+      "label": "empty-undo",
+      "command": {
+        "$": "UndoCommand",
+        "expected": {
+          "bigint": "0"
+        }
+      },
+      "accepted": false,
+      "matchSHA256": "4bfe2e7c3b56d3a04e81d60631f93e4ab454edc01e92414d4197a93a7e7a1d48",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 0.45229999998991843,
+        "candidate": 0.07549999999173451
+      }
+    },
+    {
+      "label": "offer-white",
+      "command": {
+        "$": "OfferCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "side": true
+      },
+      "accepted": true,
+      "matchSHA256": "a3567690e2db88e2c14a09403af6bc2dae8eb6bf6bbe5132fec0c5e1f2ce72c4",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 349.745900000009,
+        "frozen": 279.55740000000515
+      }
+    },
+    {
+      "label": "own-offer-accept",
+      "command": {
+        "$": "AcceptCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "side": true
+      },
+      "accepted": false,
+      "matchSHA256": "400d009d4c9e747fc61672c210be9342c1f06a03d9f68cb34a7aff2a55973785",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 272.9545000000071,
+        "candidate": 270.1631999999954
+      }
+    },
+    {
+      "label": "opponent-decline",
+      "command": {
+        "$": "DeclineCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "side": false
+      },
+      "accepted": true,
+      "matchSHA256": "2f840bf8a1aea0ec17f18ce411a7f7c2308fcd5b39bc25cb6f83cb8904d36c8e",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 266.3457000000053,
+        "frozen": 285.38529999999446
+      }
+    },
+    {
+      "label": "opponent-accept",
+      "command": {
+        "$": "AcceptCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "side": false
+      },
+      "accepted": true,
+      "matchSHA256": "11f2055cf7b17c9f675c0af3b1e386ec41704aa7630709140685ce950e68607a",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 266.5252999999939,
+        "candidate": 298.12699999999313
+      }
+    },
+    {
+      "label": "move-after-agreement",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 3980
+      },
+      "accepted": false,
+      "matchSHA256": "496d242d61e84bbd87fb17051687fc48862fea3aa4db33eea0af12d89c4b07f6",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 6.51929999999993,
+        "frozen": 6.408600000009756
+      }
+    },
+    {
+      "label": "resign-true",
+      "command": {
+        "$": "ResignCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "side": true
+      },
+      "accepted": true,
+      "matchSHA256": "841091de53c96ccf1f3c4ac69e91dbd5d86664ab7de6e973618e7314e5b53ad0",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 270.52449999999953,
+        "candidate": 293.3947000000044
+      }
+    },
+    {
+      "label": "move-after-resign-true",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 3980
+      },
+      "accepted": false,
+      "matchSHA256": "1e33713e6d25fe9874b5c1b8b62e486e2c50be0c0dc33698a2066d20b96e39a2",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 6.643100000001141,
+        "frozen": 6.95779999998922
+      }
+    },
+    {
+      "label": "resign-false",
+      "command": {
+        "$": "ResignCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "side": false
+      },
+      "accepted": true,
+      "matchSHA256": "3a522c13cee881cb8e0351797b49a8ae364aef95a646fe5b8fb932a71575dfda",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 267.6110000000044,
+        "candidate": 276.8368000000046
+      }
+    },
+    {
+      "label": "move-after-resign-false",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 3980
+      },
+      "accepted": false,
+      "matchSHA256": "08282c1fc4ac5ffe0deaa36141c384bb4635d980c7a0c14b72c8a1fadd2205e7",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 7.163199999995413,
+        "frozen": 6.793000000005122
+      }
+    },
+    {
+      "label": "undo-prefix",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 3980
+      },
+      "accepted": true,
+      "matchSHA256": "1bdc09061b8b8f9bbfe837c1ccc0cf2306c4d0cb9562f58354835f8104f9bde6",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 794.8463000000047,
+        "candidate": 683.4545999999973
+      }
+    },
+    {
+      "label": "undo-accepted",
+      "command": {
+        "$": "UndoCommand",
+        "expected": {
+          "bigint": "1"
+        }
+      },
+      "accepted": true,
+      "matchSHA256": "2f840bf8a1aea0ec17f18ce411a7f7c2308fcd5b39bc25cb6f83cb8904d36c8e",
+      "carriedCount": null,
+      "callMs": {
+        "candidate": 0.6359000000084052,
+        "frozen": 0.03299999999580905
+      }
+    },
+    {
+      "label": "threefold/prefix0",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 2025
+      },
+      "accepted": true,
+      "matchSHA256": "dd6249f7350516584e94d6decca3edebd996e4fd5c489d6d2fedc98be5587e7d",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 857.5777999999991,
+        "candidate": 1031.9958000000042
+      }
+    },
+    {
+      "label": "threefold/prefix1",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 20065
+      },
+      "accepted": true,
+      "matchSHA256": "298c1b4ab36fdeaabed92a77a335b0165a21c3c82b347eed66fc0dcf5f9fdaa5",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 613.0178000000014,
+        "frozen": 686.7592999999906
+      }
+    },
+    {
+      "label": "threefold/prefix2",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "2"
+        },
+        "action": 6750
+      },
+      "accepted": true,
+      "matchSHA256": "f8111fdde9f10b47e18327f6ec5ece435080fec633f0466bf24c83e01cbba012",
+      "carriedCount": 20,
+      "callMs": {
+        "frozen": 647.9793999999965,
+        "candidate": 609.7364999999991
+      }
+    },
+    {
+      "label": "threefold/prefix3",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "3"
+        },
+        "action": 14710
+      },
+      "accepted": true,
+      "matchSHA256": "9c904099059205179508a8e2e0259392952947de56b7b9e497c71e0e4f793c44",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 639.196299999996,
+        "frozen": 642.0167000000074
+      }
+    },
+    {
+      "label": "threefold/prefix4",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "4"
+        },
+        "action": 2025
+      },
+      "accepted": true,
+      "matchSHA256": "c935dc4838770c7afe4806d6ce31316f6b0cdbcc9c63bc230aecbe1cc680a133",
+      "carriedCount": 18,
+      "callMs": {
+        "frozen": 758.1463999999978,
+        "candidate": 745.3656999999948
+      }
+    },
+    {
+      "label": "threefold/prefix5",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "5"
+        },
+        "action": 20065
+      },
+      "accepted": true,
+      "matchSHA256": "32103bf5ffaa373a2592cad4f89c298f72330ce0c34f84a66435a58132ce7c9d",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 602.9109000000026,
+        "frozen": 644.1999999999971
+      }
+    },
+    {
+      "label": "threefold/prefix6",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "6"
+        },
+        "action": 6750
+      },
+      "accepted": true,
+      "matchSHA256": "625eaa72019d89b656b384a1aa750a2ff1c3c8fbf3b88d5cf4c6b828a04b6395",
+      "carriedCount": 20,
+      "callMs": {
+        "frozen": 974.6116000000038,
+        "candidate": 1279.8842000000004
+      }
+    },
+    {
+      "label": "threefold/prefix7",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "7"
+        },
+        "action": 14710
+      },
+      "accepted": true,
+      "matchSHA256": "d930ee4578244e1bf6732ae944a71e5568a3fe118df53d56bb4dc2504eea0b64",
+      "carriedCount": 19,
+      "callMs": {
+        "candidate": 1535.1534000000102,
+        "frozen": 956.6625000000058
+      }
+    },
+    {
+      "label": "move-after-threefold",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "8"
+        },
+        "action": 3980
+      },
+      "accepted": false,
+      "matchSHA256": "c3d0d8d8125e78fc4fe4a1a637cbc285c40a6ea346a2eeabd549195d79e7c43f",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 290.99479999998584,
+        "candidate": 291.6935999999987
+      }
+    },
+    {
+      "label": "quiet100-knight",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "0"
+        },
+        "action": 2025
+      },
+      "accepted": true,
+      "matchSHA256": "b7e904542e0dde506d8e8f107e97f1a8bd221453161e21c7c437b2a2622f5c13",
+      "carriedCount": 18,
+      "callMs": {
+        "candidate": 929.8130999999994,
+        "frozen": 1013.3814999999886
+      }
+    },
+    {
+      "label": "move-after-quiet100",
+      "command": {
+        "$": "MoveCommand",
+        "expected": {
+          "bigint": "1"
+        },
+        "action": 20065
+      },
+      "accepted": false,
+      "matchSHA256": "6e03b5a3e9c78cee4dda4a6745f941978dd48c60ed4b8f922bbca65be6eb6d42",
+      "carriedCount": null,
+      "callMs": {
+        "frozen": 752.2752000000037,
+        "candidate": 822.8399999999965
+      }
+    }
+  ],
+  "controls": [
+    {
+      "label": "move",
+      "oldIdsMismatch": true,
+      "oldIdsSHA256": "d7aa7469d9be59983f6dbd4122e93ba18078aa339ffb53910a19c3cacef156e5",
+      "newIdsSHA256": "770e93a69d2274de77a96a0cdd7233640eb0860f40c97c53ee7219dad019db16"
+    },
+    {
+      "label": "capture",
+      "oldIdsMismatch": true,
+      "oldIdsSHA256": "234e35cfa61021a91c76b9333c0a350a4d280cd122bdd5cdc988c6855930a5b4",
+      "newIdsSHA256": "64ba970fdd30afe52507558370e8f3ebff4a8214b6c7ee3087c7d9b27cad1247"
+    },
+    {
+      "label": "castle",
+      "oldIdsMismatch": true,
+      "oldIdsSHA256": "0721a76dbad23899f157407cdb5dbcd17881032f3d1071324c5d588e417a66f0",
+      "newIdsSHA256": "10f2c933c3d9f3d74486be696e5ba00cb301d4981720d527372b99be031efcbe"
+    },
+    {
+      "label": "enpassant",
+      "oldIdsMismatch": true,
+      "oldIdsSHA256": "3d8e8bb03c4b7f3ad647133740f259e987677376659679736f48d83e8370319b",
+      "newIdsSHA256": "ba6262d7b1ab0cc58a8bd63f6ca7df25c3b55d575b06064a4791a77b332bbb68"
+    },
+    {
+      "label": "promotion",
+      "oldIdsMismatch": true,
+      "oldIdsSHA256": "09a51cc9006ced06715f0a1abf9d8489f9e0e83cee9ddaa9f3e307f06da08664",
+      "newIdsSHA256": "b3fe7d4944b8c13f0b68c922f85563bd65bc7ac235e9a63d2050f1dc5bc81d84"
+    }
+  ],
+  "scope": "Final versioned accepted2.0.27 prepared command/frozen complete-result and ordered-post-list differential; actual committed ordinary/capture/castle/EP/promotion/Shift, revision/invalid/Undo/offer/reply/resign/threefold/Auto100 boundaries. Controlled Node call costs, no UI/browser latency/adoption/Safe/kernel claim. Old-position-list controls discriminate input/post-position IDs; compiled proof mutation controls remain separate."
+}
