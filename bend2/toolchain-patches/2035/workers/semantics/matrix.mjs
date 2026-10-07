@@ -17,12 +17,33 @@ const comp=await import(pathToFileURL(path.join(derived,'bend2/comp.ts')).href);
 try {
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','remote_island','nested_require','conflict','conflict_remote','conditional_never'];
+const exports=['plain','never_root','restored','argument_scope','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
 async function until(predicate){const end=performance.now()+5000;while(!predicate()){assert.ok(performance.now()<end,'authentic replies not observed');await new Promise(r=>setTimeout(r,1));}}
+// Instrument actual Workers without replacing their computation or handshake.
+function harness({hold=false,workerURL=null,transform=null}={}){
+ const h={held:[],created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
+ h.factory=(url,options)=>{
+  h.created++;const worker=new Worker(workerURL??url,options),own=new Map();
+  return {addEventListener(type,listener){const wrapped=event=>{
+    if(type==='error')h.errors++;
+    if(type==='message'&&event.data.kind==='result'){
+     if(hold){h.held.push({listener,event});return;}
+     if(transform){transform(listener,event);return;}
+    }listener(event);
+   };own.set(listener,wrapped);worker.addEventListener(type,wrapped);h.listeners.set(listener,type);},
+   removeEventListener(type,listener){h.removed++;worker.removeEventListener(type,own.get(listener));h.listeners.delete(listener);},
+   postMessage(...args){worker.postMessage(...args);},terminate(){h.terminated++;worker.terminate();}};
+ };return h;
+}
+function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
+const tag=k=>bend.name_key(book.ctrs[k].k),tip=value=>({$:tag('../fixture-tree:Tip'),value}),branch=(left,right)=>({$:tag('../fixture-tree:Branch'),left,right});
+const faultFile='assigned-helper-fault.mjs';
+const faultSource=`import './${Object.keys(build.files).find(n=>n.endsWith('.worker.mjs'))}';\naddEventListener('message',event=>{if(event.data.kind==='job')queueMicrotask(()=>{throw Error('intentional assigned-helper failure');});});\n`;
+fs.writeFileSync(path.join(output,faultFile),faultSource,{flag:'wx'});
 for(const transport of ['clone','packed']){
  const s=api.createSession({workers:3,transport,trace:true});
  try{
@@ -55,6 +76,7 @@ for(const transport of ['clone','packed']){
   const calls=[['remote_island',[30],31],['nested_require',[60],61],['restored',[90],92],['never_root',[120],121],['plain',[150],151]];
   const handles=calls.map(([name,args])=>concurrent.submit(name,args));
   const settled=Promise.all(handles.map(h=>h.promise)); // Attach immediately, including any rejection.
+  settled.catch(()=>{}); // Observe failures while authentic-reply waiting is in progress.
   await until(()=>held.length>=2);
   const originalOrder=held.map(x=>({job:x.event.data.job,invocation:x.event.data.invocation}));
   holding=false;const packets=held.splice(0).reverse();
@@ -81,9 +103,69 @@ for(const transport of ['clone','packed']){
   assert.equal(permissive.stats().remoteJobs,0);assert.equal(permissive.diagnostics().filter(x=>x.reason==='require_unfulfilled:policy_conflict').length,1);
   results.push({case:'permissive-never',transport,stats:permissive.stats(),diagnostics:permissive.diagnostics()});
  }finally{const post=clean(permissive);if(results.at(-1)?.case==='permissive-never'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
+ const snapshot=api.createSession({workers:2,transport,trace:true});
+ try{
+  const leaf=tip(4n),tree=branch(leaf,branch(leaf,tip(7n))),right=tree.right;
+  const handle=snapshot.submit('snapshot',[tree]);handle.promise.catch(()=>{});
+  leaf.value=100n;tree.right=tip(200n); // Synchronous mutation immediately after submission.
+  assert.equal(await handle.promise,87n,'caller mutation changed the submitted value');
+  assert.equal(leaf.value,100n);assert.equal(tree.right.value,200n);assert.equal(right.left,leaf);
+  assert.equal(Object.isFrozen(tree),false);assert.equal(Object.isFrozen(leaf),false);
+  assert.ok(snapshot.stats().remoteJobs>0);assert.ok(snapshot.trace().some(e=>e.kind==='started'));
+  results.push({case:'submission-snapshot',transport,expected:'87',callerLeafAfter:'100',callerRightAfter:'200',stats:snapshot.stats(),trace:snapshot.trace()});
+ }finally{const post=clean(snapshot);if(results.at(-1)?.case==='submission-snapshot'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
+ const pendingHarness=harness({hold:true}),pending=api.createSession({workers:2,transport,trace:true,workerFactory:pendingHarness.factory});
+ try{
+  const handles=[10,20,30].map(n=>pending.submit('remote_island',[n]));
+  const settled=Promise.allSettled(handles.map(h=>h.promise));
+  await until(()=>pendingHarness.held.length===2);
+  const before=pending.stats();assert.equal(before.activeInvocations,3);assert.equal(before.remoteJobs,2);
+  const post=retire(pending,pendingHarness),outcomes=await settled;
+  assert.ok(outcomes.every(x=>x.status==='rejected'&&x.reason.code==='closed'));
+  for(const {listener,event}of pendingHarness.held)listener(event); // Actual delayed replies remain inert after close.
+  assert.deepEqual(pending.stats(),postToStats(post));pending.close();
+  await assert.rejects(pending.call('remote_island',[40]),e=>e.code==='closed');assert.equal(pendingHarness.created,2);
+  results.push({case:'outstanding-close',transport,before,rejectionCodes:outcomes.map(x=>x.reason.code),heldActualReplies:pendingHarness.held.length,postClose:post});
+ }finally{retire(pending,pendingHarness);}
+ const fatalHarness=harness({hold:true,workerURL:pathToFileURL(path.join(output,faultFile))});
+ const fatal=api.createSession({workers:1,transport,trace:true,workerFactory:fatalHarness.factory});
+ try{
+  await assert.rejects(fatal.call('remote_island',[50]),e=>e.code==='worker_error');
+  assert.equal(fatalHarness.errors,1);assert.equal(fatal.stats().remoteJobs,1);assert.equal(fatal.stats().closed,true);
+  const post=retire(fatal,fatalHarness);for(const {listener,event}of fatalHarness.held)listener(event);
+  assert.deepEqual(fatal.stats(),postToStats(post));
+  results.push({case:'assigned-helper-error',transport,postClose:post,trace:fatal.trace(),heldActualReplies:fatalHarness.held.length});
+ }finally{retire(fatal,fatalHarness);}
+ const wire=api.createSession({workers:1,transport,trace:true});
+ try{
+  for(const n of [-0,0,Math.fround(1/3)])assert.ok(Object.is(await wire.call('float_remote',[n]),n),'F32 bits changed');
+  const text='Rift ☄️ \0 😀';assert.equal(await wire.call('text_remote',[text]),text);
+  const jobs=wire.stats().remoteJobs;assert.equal(jobs,4);
+  for(const n of [Infinity,-Infinity,NaN])await assert.rejects(wire.call('float_remote',[n]),e=>e.code==='required_nonfinite_input');
+  for(const text of ['\ud800','\udc00'])await assert.rejects(wire.call('text_remote',[text]),e=>e.code==='input_shape');
+  assert.equal(wire.stats().remoteJobs,jobs);assert.equal(wire.stats().closed,false);
+  results.push({case:'float-string-wire',transport,floatValues:['-0','+0','fround(1/3)'],text,negativeCodes:['required_nonfinite_input','input_shape'],stats:wire.stats(),trace:wire.trace()});
+ }finally{const post=clean(wire);if(results.at(-1)?.case==='float-string-wire'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
+ const budgetHarness=harness(),budget=api.createSession({workers:1,transport,wire:{maxStringUnits:4},workerFactory:budgetHarness.factory});
+ try{await assert.rejects(budget.call('text_remote',['12345']),e=>e.code==='wire_budget');assert.equal(budget.stats().remoteJobs,0);assert.equal(budgetHarness.created,0);
+  results.push({case:'string-input-budget',transport,code:'wire_budget',postClose:retire(budget,budgetHarness)});
+ }finally{retire(budget,budgetHarness);}
 }
+function postToStats(post){const {created,removed,terminated,errors,...stats}=post;return stats;}
+const corruptions=[],decoderHarness=harness({transform:(listener,event)=>{
+ const m=event.data;assert.ok(m.packet instanceof ArrayBuffer);const original=new DataView(m.packet);
+ assert.equal(original.getUint32(0,true),0x32574442);assert.equal(original.getUint32(4,true),1);
+ assert.equal(original.getUint32(8,true),m.packet.byteLength-12);assert.equal(original.getUint8(12),82);
+ const packet=m.packet.slice(0);new DataView(packet).setUint8(12,255);
+ corruptions.push({originalSHA256:sha(new Uint8Array(m.packet)),mutatedSHA256:sha(new Uint8Array(packet)),bytes:packet.byteLength,changedOffset:12,originalByte:82,mutatedByte:255});
+ listener({data:{...m,packet}});
+}}),decoder=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:decoderHarness.factory});
+try{await assert.rejects(decoder.call('text_remote',['Rift 😀']),e=>e.code==='protocol'&&/UTF-8/.test(e.message));
+ assert.equal(corruptions.length,1);assert.equal(decoder.stats().remoteJobs,1);assert.equal(decoder.stats().closed,true);
+ results.push({case:'packed-utf8-reply',transport:'packed',code:'protocol',corruptions,trace:decoder.trace(),postClose:retire(decoder,decoderHarness)});
+}finally{retire(decoder,decoderHarness);}
 assert.equal(networkCalls,0);
-const receipt={schema:'rift-worker-policy-semantics/1',passed:true,compiler:binding.hashes,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply semantics only. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
+const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 } catch(error) {

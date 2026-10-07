@@ -1,4 +1,20 @@
 import Base
+import ../fixture-tree.bend as Trees
+
+def snapshot(t: Trees.Tree) -> Nat:
+  Trees.sum@2(t)
+
+def float_value(n: F32) -> F32:
+  n
+
+def float_remote(n: F32) -> F32:
+  float_value@(n)
+
+def text_value(s: String) -> String:
+  s
+
+def text_remote(s: String) -> String:
+  text_value@(s)
 
 def leaf(n: U32) -> U32:
   U32.add(n, 1)
