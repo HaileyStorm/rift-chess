@@ -19,7 +19,7 @@ const actual = sourceEvidence(sourceFixture);
 assert.equal(actual.aggregate.closure.files.length, 57);
 const binding = captureSource(sourceFixture, { requireClean: false });
 const currentRuntime = captureRuntime(windowsProbeRuntime);
-assert.equal(binding.acceptedSource.sourceCommit, '86594efcf29c50b171eab5ef93b6ad31b01678c1');
+assert.equal(binding.acceptedSource.sourceCommit, '0815db9a47d493748265b47fb294191c0edd4e73');
 const raw = Object.fromEntries(['aggregate', 'mutations', 'handoff', 'review'].map(key =>
   [key, fs.readFileSync(path.join(root, sourceFixture[key].path))]));
 const changed = structuredClone(sourceFixture);

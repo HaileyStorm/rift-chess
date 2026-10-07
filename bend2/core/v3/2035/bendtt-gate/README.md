@@ -16,13 +16,30 @@ guard, zero holes/fetches, actual stack readbacks and complete relative closure
 are checked. Windows runtime paths remain historical provenance. Linux compares
 relative inputs and compiler/helper inventories, never Windows absolute paths.
 
-Source ancestry permits additive consumer/documentation files, modifications
-to its approval/README files and the listed sprint/evaluation/rollover/guide docs.
-The hash-bound `lineage-review-20261006.json` separately reconciles eleven reviewed
-UI, browser preparation and diagnostic paths through commit `390865dc`; their
-statuses and before/after Git blobs must match, and their reviewed blobs must
-remain unchanged at HEAD. Unknown drift remains rejected. This review adds no
-kernel/runtime authority and changes no memory admission.
+The active source fixture binds fresh CHECK and mutation receipts at commit
+`0815db9a47d493748265b47fb294191c0edd4e73`, including the current selected-module
+registry. The earlier `86594efc` receipts and `lineage-review-20261006.json`
+remain historical provenance; they no longer authorize the current consumer.
+
+The hash-bound `lineage-current-20261006.json` permits exactly four reviewed
+consumer modifications: binding, contracts, test and this README. It pins the
+base blobs and final postimages. Only one designated digest literal in binding
+is normalized to break the manifest's self-reference; every other byte is exact.
+The manifest must exist at HEAD with identical working bytes. Unamended consumer
+files retain their base blobs and working bytes, including the null approvals.
+Unknown executable drift is rejected. Listed documentation modifications and
+additive evidence docs remain permitted. This amendment adds no kernel/runtime
+authority and changes no memory admission.
+
+The fresh mutation producer passed all six cases. Its outer supervisor exited1
+while parsing seven JSON lines as one document, after its native closure checks.
+The immutable reconciliation retains that failure and labels closure as an
+inference from the reached parser and retained supervisor source, rather than
+a recovered terminal or fresh native query. The independent review accepts only
+the raw Windows source/type/promise screens with that limitation.
+See `bend2/docs/evidence/proof-current-binding-20261006/README.md` for exact
+receipt identities and the remaining gates.
+
 Every original source/evidence input must retain its hash; tracked critical inputs
 must also retain their Git blob. Pristine and derived inventories, accepted pin,
 Safe and Lean Git blobs, helper/runtime/frozen inventories and this consumer's

@@ -1,0 +1,37 @@
+{
+  "schema": "rift-bendtt-2035-lineage-amendment/1",
+  "aggregateCommit": "0815db9a47d493748265b47fb294191c0edd4e73",
+  "aggregateTree": "00fbe077c6cedaf37f869ed1b65265b34832d141",
+  "bindingSha256": "cb7a09fc04e3f6f602070c3f1b482c077cf637ab1e4a387faaa5fbce3f96f789",
+  "aggregateReceiptSha256": "58b3ee7d958d55003cebe76895ca0bf58eabd2a647c728f351c3f67f66edda54",
+  "mutationReceiptSha256": "d38b54c7f7807622b9003d10e7abe34c61cd84cda6157d65accb18c6807e34d1",
+  "handoffSha256": "02fd5d294d2d0060c2a12eb7645d79d29391503f488121361ce81780781c1538",
+  "scope": "Exact consumer postimages for reviewed current Windows source/type/promise receipts; no kernel/runtime/native/adoption authority",
+  "changes": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/binding.mjs",
+      "status": "M",
+      "beforeBlob": "b2e7331a1ca20e70b627c1d4b032d7343ab1c066",
+      "normalization": "one-lineage-digest-literal",
+      "normalizedSha256": "c9408c18042e7034577c6a58cde0efd3b7f6a85049bfe1277df9da6e771e573c"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/contracts.mjs",
+      "status": "M",
+      "beforeBlob": "a06f04873e6c67d53942f6f30b1bdd31e14582c7",
+      "afterBlob": "2ba17cc7a4ec89ce189965b6ee658478b22ff833"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/test.mjs",
+      "status": "M",
+      "beforeBlob": "d0e33ae8f5935163e7025a31ca1825dfe9439e4f",
+      "afterBlob": "e6d5037c6f2466b6ab6705112fd6fcf612483e1d"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/README.md",
+      "status": "M",
+      "beforeBlob": "24a28416aa1b7f20a1f2fda41af7501899546039",
+      "afterBlob": "b13b25dfc44e0a1d19f9c7ed4ca89b005e2e7baa"
+    }
+  ]
+}

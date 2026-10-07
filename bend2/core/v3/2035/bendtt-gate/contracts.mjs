@@ -15,15 +15,24 @@ export const sourceScope = 'source/type/promise';
 export const namespaceGuard = 'successor 2.0.35 compiler-owned guard via empty-root js_lib; no definition emission';
 export const artifactLimitBytes = 64 * 1024 ** 2;
 export const sourceFixture = Object.freeze({
-  schema: 'rift-bendtt-source-approval-2035/1',
-  aggregate: { path: '.artifacts/bend2/2035-proof-20261005/aggregate-E2EnCN/receipt.json',
-    sha256: 'b62243c115e5eab8a97f62d6e3f8abdb79542cbae89cfc1285e3c8fed1ecca91' },
-  mutations: { path: '.artifacts/bend2/2035-proof-20261005/mutations-C7DCKL/receipt.json',
-    sha256: '661d60f5a8b817bef6e28c5ee558d6aabdf9dfab582a5b83e23c88481a60381f' },
-  handoff: { path: '.artifacts/bend2/2035-proof-20261005/node-final-source-handoff.json',
-    sha256: 'd723f586723e0d1c00ab6b42fd3ee8a646d15562603a81f5db17df248df1085e' },
-  review: { disposition: 'accepted', path: '.artifacts/bend2/2035-preview/independent-2035-source-review-20261005.md',
-    sha256: '6fd51b4218788ef2b4dec1e647169536981d414528ae4728dbf0330803fa461b' },
+  "schema": "rift-bendtt-source-approval-2035/1",
+  "aggregate": {
+    "path": ".artifacts/bend2/2035-proof-20261005/aggregate-4yBzfb/receipt.json",
+    "sha256": "58b3ee7d958d55003cebe76895ca0bf58eabd2a647c728f351c3f67f66edda54"
+  },
+  "mutations": {
+    "path": ".artifacts/bend2/2035-proof-20261005/mutations-lUsGDy/receipt.json",
+    "sha256": "d38b54c7f7807622b9003d10e7abe34c61cd84cda6157d65accb18c6807e34d1"
+  },
+  "handoff": {
+    "path": ".artifacts/bend2/2035-proof-20261005/node-current-source-handoff-20261006.json",
+    "sha256": "02fd5d294d2d0060c2a12eb7645d79d29391503f488121361ce81780781c1538"
+  },
+  "review": {
+    "disposition": "accepted",
+    "path": ".artifacts/bend2/2035-proof-20261005/independent-current-source-review-20261006.md",
+    "sha256": "fd6aa506b19d62cf674c753d092bcbea856f1396a5e8da98acf2e59ebd94250d"
+  }
 });
 
 export function exactKeys(value, keys, label) {
