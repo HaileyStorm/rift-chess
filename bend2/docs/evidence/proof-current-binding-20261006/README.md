@@ -43,8 +43,22 @@ HEAD and working bytes must agree. Unamended consumers, including null kernel
 and Linux runtime approvals, retain their base blobs. The prior receipts and
 historical lineage record remain immutable provenance.
 
-The actual consumer contract and drift-rejection checks follow the clean consumer
-commit; their acceptance is not claimed by this precommit evidence record.
+The initial consumer contract passed on clean local commit `a3aa908`, terminal
+SHA256 `659961b1a7850e386d3181214e105eb87777c740ddb9039dfe186f4cbad2008a`.
+Both actual working-drift witnesses were rejected with exact restoration, terminal
+SHA256 `efa5784c17624fb2c901333d3aeb65f78fe5846c9a9a5f0139b399925bd35934`.
+Those supervisors recorded actual native closure and equal before/after bindings.
+
+The existing contract test wrote a fresh synthetic fixture directory
+`.artifacts/bend2/2035-kernel-20261005/contracts-hgpANH` inside a foreign-reserved
+output tree before root noticed the ownership conflict. Its two files and the
+foreign claim are preserved; no cleanup or claim takeover followed. Incident
+`proof-consumer-output-ownership-incident-r1.json` under the same preview evidence
+directory records their hashes. Future pure contract fixtures now use the separate
+owned `.artifacts/bend2/2035-preview/bendtt-contracts` scope. Kernel output and
+production execution paths are unchanged. The exact test postimage and manifest
+digest were amended for this output-path fix. Final contract and drift validation
+follow its clean commit; their acceptance is still pending here.
 
 This is Windows source/type/promise evidence. Safe elaboration, a prebuilt BendTT
 kernel, Linux admissions and runtime approval, current native CPU/GUI/PCM/restart,

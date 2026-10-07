@@ -89,7 +89,7 @@ export function captureRuntime(expected, worker = false) {
 // The manifest pins exact consumer postimages. Only this one embedded digest
 // is normalized to break the manifest/binding self-reference; all other bytes
 // remain reviewed inputs. Historical lineage records are retained unchanged.
-const approvedLineageSha256 = '1e0689b72f803813094d8da0a7a05f6805a838341a29e3ddda4631ab1223ac59';
+const approvedLineageSha256 = 'd9aff7a7e32f8438e229685e276519eaf84591f87c74a199505ee31125123c84';
 function reviewedLineage(reference, approval) {
   const file = 'bend2/core/v3/2035/bendtt-gate/lineage-current-20261006.json';
   const bytes = readSource(absolute(file));

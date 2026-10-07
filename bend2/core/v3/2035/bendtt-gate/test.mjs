@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sourceFixture, validateSourceApproval, validateSafeOutput, assertSafeRuntime,
   assertSerializedUnchanged, safeWorkerFlags } from './contracts.mjs';
-import { root, sourceEvidence, captureSource, captureRuntime, sha256, outputRoot } from './binding.mjs';
+import { root, sourceEvidence, captureSource, captureRuntime, sha256 } from './binding.mjs';
 import { executeCandidate, assertMemoryAdmission, writeJson } from './run.mjs';
 import { approvedSource, approvedKernel, approvedLinuxRuntime } from './approvals.mjs';
 import { windowsProbeRuntime, runtimeProbePacket } from './probe.mjs';
@@ -46,8 +46,9 @@ assertMemoryAdmission(memory);
 assert.throws(() => assertMemoryAdmission({ ...memory, availableBytes: memory.availableBytes - 1 }), /STOP/);
 assert.throws(() => assertMemoryAdmission({ ...memory, ancestryMode: 'namespace-visible' }));
 
-fs.mkdirSync(outputRoot, { recursive: true });
-const directory = fs.mkdtempSync(path.join(outputRoot, 'contracts-'));
+const fixtureRoot = path.join(root, '.artifacts/bend2/2035-preview/bendtt-contracts');
+fs.mkdirSync(fixtureRoot, { recursive: true });
+const directory = fs.mkdtempSync(path.join(fixtureRoot, 'contracts-'));
 const out = path.join(directory, 'synthetic.bendtt');
 let syntheticEmitCalls = 0;
 const fakeSafe = { safe_emit: (_book, file) => { syntheticEmitCalls++; fs.writeFileSync(file, 'synthetic-not-proof'); return []; } };
