@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { root, captureSource, captureRuntime, sha256 } from './binding.mjs';
 import { sourceFixture, safeWorkerFlags } from './contracts.mjs';
+import { approvedSource } from './approvals.mjs';
 import { createRun, safeWorker, writeJson } from './run.mjs';
 import { acquireOwnedLock, releaseOwnedLock, closeOwnedLock } from '../../../../toolchain-patches/2032/preview/lifecycle.mjs';
 
@@ -31,25 +32,33 @@ export const linuxRuntimeProbePacket = Object.freeze({ ...runtimeProbePacket,
   resourcePolicy: '64MiB actual stack readbacks; memory observations only; kernel full-ancestry/two12GiB admission unchanged',
 });
 
+// Original packet exports remain historical provenance; active probes bind the
+// reviewed combined source descriptor through these versioned packets.
+export const preparedRuntimeProbePacket = Object.freeze({ ...runtimeProbePacket,
+  schema: 'rift-bendtt-2035-safe-import-probe-packet/2', sourceEvidence: approvedSource });
+export const preparedLinuxRuntimeProbePacket = Object.freeze({ ...linuxRuntimeProbePacket,
+  schema: 'rift-bendtt-2035-safe-import-probe-packet/2', sourceEvidence: approvedSource });
+
 export function importProbePacketForPlatform(platform = process.platform) {
   assert.ok(platform === 'win32' || platform === 'linux', 'unsupported Safe import probe platform');
-  return platform === 'win32' ? runtimeProbePacket : linuxRuntimeProbePacket;
+  return platform === 'win32' ? preparedRuntimeProbePacket : preparedLinuxRuntimeProbePacket;
 }
 
 export async function executeImportProbe() {
   process.env.BEND_NO_TELEMETRY = '1';
   const packet = importProbePacketForPlatform();
   assert.equal(path.resolve(process.execPath), path.resolve(packet.command[0]), 'Safe import probe executable path differs');
-  const before = captureSource(sourceFixture), runtime = captureRuntime(packet.runtime);
+  const source = packet.sourceEvidence;
+  const before = captureSource(source), runtime = captureRuntime(packet.runtime);
   const run = createRun('import-probe');
   const lease = acquireOwnedLock(run.lock, JSON.stringify({ schema: 'rift-safe-import-probe-2035-lease/1',
     ownerTask: process.env.CODEX_THREAD_ID ?? null, sourceBindingSha256: sha256(JSON.stringify(before)), workerMayBeLive: true }));
   try {
     writeJson(path.join(run.directory, 'before.json'), { source: before, runtime });
-    const result = await safeWorker({ mode: 'import-probe', source: sourceFixture,
+    const result = await safeWorker({ mode: 'import-probe', source,
       runtime: packet.runtime, expectedSource: before }, packet.workerTimeoutMs);
     assert.equal(result.mode, 'import-probe');
-    assert.deepEqual(captureSource(sourceFixture), before);
+    assert.deepEqual(captureSource(source), before);
     assert.deepEqual(captureRuntime(packet.runtime), runtime);
     const receipt = { schema: 'rift-safe-import-probe-2035/1', passed: true, result,
       before, after: before, runtime, sourceBindingSha256: sha256(JSON.stringify(before)),

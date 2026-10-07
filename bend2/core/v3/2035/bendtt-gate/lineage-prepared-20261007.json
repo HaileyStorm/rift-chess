@@ -1,0 +1,52 @@
+{
+  "schema": "rift-bendtt-2035-lineage-amendment/2",
+  "sourceCommit": "da0915da556da2a5288280e779099af30877301d",
+  "sourceTree": "66e027b6a3d5ebab5d643937b335c64eba26c260",
+  "bindingSha256": "ca277692440a5600f6d32cb9aba4f4deafc102d96bb0beff384c962ad1bf0de5",
+  "receiptSha256": "a5ccbfdb0a009501525785ffb94640d573593517b02942ad470c6c977c04f698",
+  "sourceReviewSha256": "d9e2d34c410f2d54f8ff47317bc6efd8f1b7eb595f7d301dc70649c27ac0be22",
+  "scope": "Exact prepared consumer postimages; Windows source/type/promise only; no kernel/runtime/native/adoption authority",
+  "changes": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/binding.mjs",
+      "status": "M",
+      "beforeBlob": "ac704cb20ac5e88e7e46cf807110e7545a4ad379",
+      "normalization": "one-lineage-digest-literal",
+      "normalizedSha256": "0c9026d87ef3fcb030710abab5c2f54c4528cb3984d7fd30b715557ec996af74"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/approvals.mjs",
+      "status": "M",
+      "beforeBlob": "1dc5fc22bc9b5f5bd8a24d5d1fc4cfcac685e351",
+      "afterBlob": "833b1647ff077414b66b42356b5992717e0d5d2e"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/test.mjs",
+      "status": "M",
+      "beforeBlob": "9c4a91701ac04d772cdba4080a949cfbdaf5475b",
+      "afterBlob": "c84a257bf505e8080588f684240451e8f317a7b1"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/README.md",
+      "status": "M",
+      "beforeBlob": "b13b25dfc44e0a1d19f9c7ed4ca89b005e2e7baa",
+      "afterBlob": "17b4d6aae97b3a8281838954f005e5a83e12f5a2"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/contracts-prepared.mjs",
+      "status": "A",
+      "afterBlob": "e64664f299c5c371f27888a4d42f1f8d4a45f82f"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/source-prepared.mjs",
+      "status": "A",
+      "afterBlob": "aa8ad901fb06c1d591e95820962a70244ac2e02d"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/probe.mjs",
+      "status": "M",
+      "beforeBlob": "091f326073059a6cbe5e87634dc15a78d3338dbb",
+      "afterBlob": "170661644c208abebd1de076c7fadd3d5965ccc6"
+    }
+  ]
+}

@@ -1,49 +1,48 @@
 # Bend 2.0.35 Safe / BendTT consumer preparation
 
-This consumer remains unarmed. Source approval reuses the reviewed descriptor;
-prebuilt-kernel and Linux runtime approvals remain null. The entrypoint stops before
-creating an attempt, admitting memory, importing compiler TypeScript or launching
-a process. No CLI or environment approval override exists. Root owns review,
-arming, Git and later execution. The canonical 2.0.27 pin, immutable Laws and old
-2032 receipt consumer remain unchanged.
+The source approval binds the complete reviewed Windows proof receipt and checked
+native settlement at da0915da556da2a5288280e779099af30877301d.
+This consumer remains unarmed until its separate kernel and Linux runtime reviews.
+Prebuilt-kernel and Linux runtime approvals remain null. The entrypoint stops before
+creating an attempt, admitting memory, importing compiler TypeScript or launching a
+process. Root owns review, arming, Git and later execution. No CLI or environment
+approval override exists.
 
-The current evidence is Windows **source/type/promise** only: the full frozen
-57-file CHECK cone and six unchanged mutations, with four actual positive
-Workers and two exact positive reuses. `contracts.mjs` contains a read-only fixture
-for those immutable raw receipts and the accepted review; it does not arm the
-entrypoint. Raw SHA-256s, clean source commit/tree, identical bindings, namespace
-guard, zero holes/fetches, actual stack readbacks and complete relative closure
-are checked. Windows runtime paths remain historical provenance. Linux compares
-relative inputs and compiler/helper inventories, never Windows absolute paths.
+The successor source approval covers the combined frozen v2 and prepared-match v3
+CHECK cone: 62 files, one fresh positive Worker and eight fresh negative Workers in
+the same complete cone. The two prepared controls target carried_canonical and
+apply_exact by compiler-owned namespace and definition identity. The original six
+v2 mutations retain their exact target and mutant bytes; their old executions are
+provenance and are not reused as current acceptance.
 
-The active source fixture binds fresh CHECK and mutation receipts at commit
-`0815db9a47d493748265b47fb294191c0edd4e73`, including the current selected-module
-registry. The earlier `86594efc` receipts and `lineage-review-20261006.json`
-remain historical provenance; they no longer authorize the current consumer.
+contracts-prepared.mjs authenticates the complete source receipt, captured binding,
+original native terminal, checked settlement, supervisor and complete input manifest.
+A separately hash-bound accepted review must name all of them and limit its approval
+to Windows source/type/promise. Full rendered compiler errors, intended prepared-law
+identity, exact single-target substitutions, the common positive key, zero holes and
+fetches, and observed 64 MiB stacks are required. Source approval gives no Linux Safe
+runtime, prebuilt kernel, device, native or adoption authority.
 
-The hash-bound `lineage-current-20261006.json` permits exactly four reviewed
-consumer modifications: binding, contracts, test and this README. It pins the
-base blobs and final postimages. Only one designated digest literal in binding
-is normalized to break the manifest's self-reference; every other byte is exact.
-The manifest must exist at HEAD with identical working bytes. Unamended consumer
-files retain their base blobs and working bytes, including the null approvals.
-Unknown executable drift is rejected. Listed documentation modifications and
-additive evidence docs remain permitted. This amendment adds no kernel/runtime
-authority and changes no memory admission.
+source-prepared.mjs independently reconstructs the complete 315 source/evidence
+inputs, frozen manifests, scene/controller bindings, eight mutation controls and
+combined 62-file cone without importing the executing Windows producer. Linux
+compares relative inputs and compiler/helper inventories. Historical Windows
+absolute paths and executable hashes authenticate the original source proof; actual
+Linux execution retains its separately approved runtime and admissions.
 
-The fresh mutation producer passed all six cases. Its outer supervisor exited1
-while parsing seven JSON lines as one document, after its native closure checks.
-The immutable reconciliation retains that failure and labels closure as an
-inference from the reached parser and retained supervisor source, rather than
-a recovered terminal or fresh native query. The independent review accepts only
-the raw Windows source/type/promise screens with that limitation.
-See `bend2/docs/evidence/proof-current-binding-20261006/README.md` for exact
-receipt identities and the remaining gates.
+lineage-prepared-20261007.json pins exactly seven successor consumer changes and its
+own added path. It binds source commit/tree, full receipt, source binding and accepted
+source review. Only the one designated digest literal in binding is normalized to
+break self-reference. Other postimages are exact Git blobs; working bytes must match HEAD exactly. Every post-source change must
+appear in the exact manifest; there is no general documentation exemption. Original
+critical source/evidence hashes and tracked Git inputs must remain unchanged.
 
-Every original source/evidence input must retain its hash; tracked critical inputs
-must also retain their Git blob. Pristine and derived inventories, accepted pin,
-Safe and Lean Git blobs, helper/runtime/frozen inventories and this consumer's
-source inventory are rebound before/after execution and receipt commit.
+The earlier contracts.mjs fixture, raw proof/mutation receipts and historical
+lineage records remain immutable provenance. They no longer arm this successor.
+The canonical accepted 2.0.27 pin, frozen Laws, prepared creation evidence, original
+2032 consumer, Safe emitter, Worker, process supervisor and two Linux admissions
+remain unchanged. The existing Worker receives the new combined entry and frozen
+file map through the reviewed binding.
 
 ## Prepared execution contract
 
@@ -107,7 +106,8 @@ lifecycle/output/process-group coverage is reused without copying its suite.
 
 `node bend2/core/v3/2035/bendtt-gate/probe.mjs` prints a concrete compiler-free
 Safe-import packet without executing it. **Do not run `--import-only` until root
-reviews this source and authorizes that distinct probe.** The prepared Windows
+reviews this source and authorizes that distinct probe.** The active /2 packet binds the reviewed combined source approval. Historical /1
+packet exports remain provenance. The prepared Windows
 probe imports exact derived bend.ts/comp.ts/safe.ts in a60s Worker and checks API
 shapes, flags/executable, both64MiB readbacks, fetch0, exact before/after bindings
 and observed exit. It never calls book_nil/load/valid/js_lib/safe_emit. Use the
@@ -137,7 +137,7 @@ A version/path/hash inventory
 establishes no Safe import compatibility or runtime approval. Full kernel
 admission still requires two12GiB/full-ancestry samples.
 
-The private Linux wrapper proposes450s prelaunch, an1800s owned parent group
+The retained historical private Linux wrapper proposed450s prelaunch, an1800s owned parent group
 and1980s elapsed checks. Its Windows bridge observes through2020s, rebinds by
 2030s, settles by2039s and has a2040s outer bound; the client observes through
 2045s. These elapsed checks do
@@ -147,7 +147,7 @@ Worker includes its own two captures; each capture retains both upstream status
 checks. These enclosing operational deadlines bound validity, not a guarantee
 that every component maximum or actual attempt will fit. The canonical dirty
 status is explained by the retained CRLF audit; the status delay's cause and
-other costs remain unmeasured. A corrected Linux source-only capture child
+other costs remain unmeasured. A retained historical Linux source-only capture child
 completed in224.151s with exact57-file closure,10 consumers,194 compiler inputs
 and runtime/Git identities before/after; it imported no compiler TypeScript or
 Safe and created no Worker. The old240s Worker could not fit two captures at
@@ -155,7 +155,10 @@ that observed cost. Two captures each contain three90s status allowances:
 540s of status allowances leave110s of the proposed650s Worker for remaining
 source checks and imports. Six captures contain18 such status calls;650s is an
 operational Worker deadline, not a guaranteed worst-case completion time.
-The kernel admissions, flags, stack and Windows60s/120s packet remain unchanged. An outer client expiry can
+These historical timings do not establish cost or execution of the new 62-file/315-input
+consumer. A future Linux packet requires a separately reviewed current binding and
+outer supervision before invocation. The kernel admissions, flags, stack and
+Windows60s/120s packet remain unchanged. An outer client expiry can
 leave a live guest; retain its leases and uncertain state without replay or
 unverified signaling.
 

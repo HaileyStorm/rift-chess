@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { root, derived, readSource, sha256, selectedBinding2035 } from '../../../../toolchain-patches/2035/selected-binding.mjs';
-import { verifyV2 } from '../../../../tools/freeze-v2.mjs';
-import { expectedCheckClosure } from '../../2032/aggregate-safety.mjs';
-import { candidate, leanSource, safeSource, relativeInput, validateSourceApproval,
+import { root, derived, readSource, sha256 } from '../../../../toolchain-patches/2035/selected-binding.mjs';
+import { capturePreparedInputs, preparedCheckPath } from './source-prepared.mjs';
+import { validatePreparedSourceApproval } from './contracts-prepared.mjs';
+import { candidate, leanSource, safeSource, relativeInput, exactKeys,
   validateKernelApproval, validateLinuxRuntimeApproval, assertSafeRuntime } from './contracts.mjs';
 
 export { root, derived, readSource, sha256 };
-export const checkPath = path.join(root, 'bend2/core/v2/CHECK.bend');
+export const checkPath = preparedCheckPath;
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-kernel-20261005');
-export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md', 'lineage-current-20261006.json'];
+export const consumerFiles = ['approvals.mjs', 'binding.mjs', 'contracts.mjs', 'contracts-prepared.mjs', 'source-prepared.mjs', 'output.mjs', 'run.mjs', 'worker.mjs', 'probe.mjs', 'test.mjs', 'README.md', 'lineage-prepared-20261007.json'];
 const scout = path.join(root, '.artifacts/toolchains/bend-2.0.35-scout');
 const canonical = path.join(root, '.artifacts/toolchains/bend');
 const git = (directory, ...args) => {
@@ -51,8 +51,10 @@ export function localRecord(entry) {
 }
 export function sourceEvidence(approval) {
   assert.ok(approval, 'source approval is null');
-  return validateSourceApproval(approval, Object.fromEntries(['aggregate', 'mutations', 'handoff', 'review']
-    .map(key => [key, localRecord(approval[key])])));
+  const records = { receipt: localRecord(approval.receipt), review: localRecord(approval.review) };
+  for (const key of ['terminal', 'settlement', 'supervisor', 'capture', 'start'])
+    records[key] = localRecord(approval.native[key]);
+  return validatePreparedSourceApproval(approval, records);
 }
 
 // The sole executing Node and the approved prebuilt kernel may be external.
@@ -86,41 +88,50 @@ export function captureRuntime(expected, worker = false) {
   return { ...runtime, executable: node };
 }
 
-// The manifest pins exact consumer postimages. Only this one embedded digest
-// is normalized to break the manifest/binding self-reference; all other bytes
-// remain reviewed inputs. Historical lineage records are retained unchanged.
-const approvedLineageSha256 = '3ed08102cf2131d1347cfc0497aea9f6db13bc2643b78306abfd5ead1de06e75';
+// Only the designated digest literal is normalized to break self-reference.
+// Every listed postimage and every post-source change is otherwise exact.
+const approvedLineageSha256 = '0e9c38e22a11246edbd494afc82da810ce8c6e6567a177de205bdec2e1765653';
+const lineagePath = 'bend2/core/v3/2035/bendtt-gate/lineage-prepared-20261007.json';
+const lineageChanges = new Map([
+  ['binding.mjs', 'M'], ['approvals.mjs', 'M'], ['test.mjs', 'M'], ['README.md', 'M'], ['probe.mjs', 'M'],
+  ['contracts-prepared.mjs', 'A'], ['source-prepared.mjs', 'A'],
+].map(([name, status]) => [`bend2/core/v3/2035/bendtt-gate/${name}`, status]));
+const gitBytes = file => execFileSync('git', ['-C', root, 'show', `HEAD:${file}`],
+  { windowsHide: true, timeout: 30_000, maxBuffer: 1024 ** 2, stdio: ['ignore', 'pipe', 'pipe'] });
+
 function reviewedLineage(reference, approval) {
-  const file = 'bend2/core/v3/2035/bendtt-gate/lineage-current-20261006.json';
-  const bytes = readSource(absolute(file));
+  const bytes = readSource(absolute(lineagePath));
   assert.equal(sha256(bytes), approvedLineageSha256, 'lineage amendment bytes changed');
-  const committed = execFileSync('git', ['-C', root, 'show', `HEAD:${file}`],
-    { windowsHide: true, timeout: 30_000, maxBuffer: 1024 ** 2, stdio: ['ignore', 'pipe', 'pipe'] });
+  const committed = gitBytes(lineagePath);
   assert.equal(sha256(committed), approvedLineageSha256, 'committed lineage amendment bytes changed');
   assert.deepEqual(bytes, committed, 'lineage amendment working bytes differ from HEAD');
   const review = JSON.parse(bytes.toString('utf8'));
-  assert.equal(review.schema, 'rift-bendtt-2035-lineage-amendment/1');
-  assert.equal(review.aggregateCommit, reference.sourceCommit);
-  assert.equal(review.aggregateTree, reference.sourceTree);
+  exactKeys(review, ['schema', 'sourceCommit', 'sourceTree', 'bindingSha256',
+    'receiptSha256', 'sourceReviewSha256', 'scope', 'changes'], 'prepared lineage');
+  assert.equal(review.schema, 'rift-bendtt-2035-lineage-amendment/2');
+  assert.equal(review.sourceCommit, reference.sourceCommit);
+  assert.equal(review.sourceTree, reference.sourceTree);
   assert.equal(review.bindingSha256, reference.bindingSha256);
-  assert.equal(review.aggregateReceiptSha256, approval.aggregate.sha256);
-  assert.equal(review.mutationReceiptSha256, approval.mutations.sha256);
-  assert.equal(review.handoffSha256, approval.handoff.sha256);
+  assert.equal(review.receiptSha256, approval.receipt.sha256);
+  assert.equal(review.sourceReviewSha256, approval.review.sha256);
+  assert.equal(review.scope, 'Exact prepared consumer postimages; Windows source/type/promise only; no kernel/runtime/native/adoption authority');
   const changed = new Map();
-  const executable = new Set(['binding.mjs', 'contracts.mjs', 'test.mjs']);
   for (const change of review.changes) {
     assert.ok(!changed.has(change.path), 'duplicate amended lineage path');
-    assert.equal(change.status, 'M');
-    assert.ok(change.path.startsWith('bend2/core/v3/2035/bendtt-gate/'));
-    const name = change.path.split('/').at(-1);
-    assert.ok(executable.has(name) || name === 'README.md', 'unknown consumer amendment path');
-    assert.equal(git(root, 'rev-parse', `${reference.sourceCommit}:${change.path}`), change.beforeBlob);
-    const headBytes = execFileSync('git', ['-C', root, 'show', `HEAD:${change.path}`],
-      { windowsHide: true, timeout: 30_000, maxBuffer: 1024 ** 2, stdio: ['ignore', 'pipe', 'pipe'] });
-    let text = headBytes.toString('utf8').replaceAll('\r\n', '\n');
-    const working = readSource(absolute(change.path)).toString('utf8').replaceAll('\r\n', '\n');
-    assert.equal(working, text, `amended consumer working bytes differ from HEAD: ${change.path}`);
-    if (name === 'binding.mjs') {
+    assert.equal(lineageChanges.get(change.path), change.status, 'unknown consumer amendment path/status');
+    if (change.status === 'M') {
+      assert.equal(git(root, 'rev-parse', `${reference.sourceCommit}:${change.path}`), change.beforeBlob);
+    } else {
+      const absent = spawnSync('git', ['-C', root, 'cat-file', '-e', `${reference.sourceCommit}:${change.path}`],
+        { windowsHide: true, timeout: 30_000, stdio: ['ignore', 'ignore', 'pipe'] });
+      assert.equal(absent.error, undefined); assert.equal(absent.status, 128, 'added consumer existed at source receipt');
+    }
+    const head = gitBytes(change.path), working = readSource(absolute(change.path));
+    let text = head.toString('utf8');
+    assert.deepEqual(Buffer.from(text), head, 'consumer postimage is not valid UTF-8');
+    assert.deepEqual(working, head, `amended consumer working bytes differ from HEAD: ${change.path}`);
+    if (change.path.endsWith('/binding.mjs')) {
+      exactKeys(change, ['path', 'status', 'beforeBlob', 'normalization', 'normalizedSha256'], 'normalized binding lineage');
       assert.equal(change.normalization, 'one-lineage-digest-literal');
       const matches = [...text.matchAll(/^const approvedLineageSha256 = '[0-9a-f]{64}';$/gm)];
       assert.equal(matches.length, 1, 'lineage digest declaration must occur exactly once');
@@ -128,62 +139,54 @@ function reviewedLineage(reference, approval) {
       text = text.replace(matches[0][0], "const approvedLineageSha256 = '" + '0'.repeat(64) + "';");
       assert.equal(sha256(Buffer.from(text)), change.normalizedSha256, 'normalized binding postimage differs');
     } else {
-      assert.equal(change.normalization, undefined, 'only binding may normalize its digest literal');
+      exactKeys(change, change.status === 'M' ? ['path', 'status', 'beforeBlob', 'afterBlob']
+        : ['path', 'status', 'afterBlob'], 'consumer postimage lineage');
       assert.equal(git(root, 'rev-parse', `HEAD:${change.path}`), change.afterBlob, `consumer postimage differs: ${change.path}`);
     }
     changed.set(change.path, change.status);
   }
-  assert.deepEqual([...changed.keys()].sort(), [...executable, 'README.md']
-    .map(name => `bend2/core/v3/2035/bendtt-gate/${name}`).sort(), 'consumer amendment inventory differs');
+  assert.deepEqual([...changed].sort(), [...lineageChanges].sort(), 'consumer amendment inventory differs');
   // Its own added path is authenticated by the complete-byte digest above.
-  changed.set(file, 'A');
+  changed.set(lineagePath, 'A');
   for (const name of consumerFiles) {
-    const unchanged = `bend2/core/v3/2035/bendtt-gate/${name}`;
-    if (changed.has(unchanged)) continue;
-    assert.equal(git(root, 'rev-parse', `HEAD:${unchanged}`),
-      git(root, 'rev-parse', `${reference.sourceCommit}:${unchanged}`), `unreviewed consumer HEAD change: ${unchanged}`);
-    const head = execFileSync('git', ['-C', root, 'show', `HEAD:${unchanged}`],
-      { windowsHide: true, timeout: 30_000, maxBuffer: 1024 ** 2, stdio: ['ignore', 'pipe', 'pipe'] });
-    assert.equal(readSource(absolute(unchanged)).toString('utf8').replaceAll('\r\n', '\n'),
-      head.toString('utf8').replaceAll('\r\n', '\n'), `unreviewed consumer working change: ${unchanged}`);
+    const file = `bend2/core/v3/2035/bendtt-gate/${name}`;
+    if (changed.has(file)) continue;
+    assert.equal(git(root, 'rev-parse', `HEAD:${file}`),
+      git(root, 'rev-parse', `${reference.sourceCommit}:${file}`), `unreviewed consumer HEAD change: ${file}`);
+    assert.deepEqual(readSource(absolute(file)), gitBytes(file), `unreviewed consumer working change: ${file}`);
   }
-  return { changes: changed, identity: { path: file, sha256: sha256(bytes),
-    aggregateCommit: review.aggregateCommit, reviewedFiles: changed.size,
-    normalization: 'binding: exactly one designated digest value; other bytes exact' } };
+  return { changes: changed, identity: { path: lineagePath, sha256: sha256(bytes),
+    sourceCommit: review.sourceCommit, reviewedFiles: changed.size,
+    normalization: 'binding: exactly one designated digest value; all other bytes exact' } };
 }
 function lineage(reference, approval) {
   const ancestor = spawnSync('git', ['-C', root, 'merge-base', '--is-ancestor', reference.sourceCommit, 'HEAD'],
     { windowsHide: true, timeout: 30_000, stdio: ['ignore', 'ignore', 'pipe'] });
   assert.equal(ancestor.error, undefined); assert.equal(ancestor.status, 0, 'source receipt is not an ancestor');
   assert.equal(git(root, 'rev-parse', `${reference.sourceCommit}^{tree}`), reference.sourceTree);
-  const changes = git(root, 'diff', '--name-status', reference.sourceCommit, 'HEAD').split('\n').filter(Boolean);
-  const allowedDocs = new Set(['bend2/SPRINT.md', 'bend2/docs/BEND_2035_EVALUATION.md',
-    'bend2/docs/ROLLOVER_2026-10-05.md', 'bend2/docs/LOCAL_BEND_GUIDE.md',
-    'bend2/core/v3/2035/README.md', 'bend2/toolchain-patches/2035/README.md']);
   const reviewed = reviewedLineage(reference, approval);
+  const changes = git(root, 'diff', '--no-renames', '--name-status', reference.sourceCommit, 'HEAD').split('\n').filter(Boolean);
   for (const line of changes) {
-    const [status, file] = line.split('\t');
-      assert.ok(reviewed.changes.get(file) === status || (status === 'A' && file.startsWith('bend2/docs/'))
-      || (status === 'M' && allowedDocs.has(file)),
-    `post-source receipt drift is not approved additive consumer/docs work: ${line}`);
+    const [status, file, extra] = line.split('\t');
+    assert.equal(extra, undefined, 'unexpected diff record');
+    assert.equal(reviewed.changes.get(file), status, `post-source receipt drift is unreviewed: ${line}`);
   }
+  assert.deepEqual(changes.map(line => line.split('\t').reverse()).sort(),
+    [...reviewed.changes].sort(), 'reviewed consumer changes are missing at HEAD');
   const critical = reference.before.sourceFiles.filter(file => !file.path.startsWith('.artifacts/'));
   assert.equal(git(root, 'diff', '--name-only', reference.sourceCommit, 'HEAD', '--',
     ...critical.map(file => file.path)), '', 'critical Git input changed since the accepted source receipt');
-  return { aggregateCommit: reference.sourceCommit, aggregateTree: reference.sourceTree,
+  return { sourceCommit: reference.sourceCommit, sourceTree: reference.sourceTree,
     criticalTrackedFiles: critical.length, laterChanges: changes, reviewedNoncritical: reviewed.identity };
 }
 
 export function captureSource(approval, { requireClean = true } = {}) {
   assert.equal(process.env.BEND_NO_TELEMETRY, '1');
-  const { aggregate, mutations, handoff } = sourceEvidence(approval);
+  const { receipt } = sourceEvidence(approval);
   const status = git(root, 'status', '--porcelain=v1', '--untracked-files=all');
   if (requireClean) assert.equal(status, '', 'BendTT consumer needs a clean checkout');
-  const frozen = verifyV2(); assert.equal(frozen.sha256, aggregate.frozenSha256);
-  const compiler = selectedBinding2035('scene', true);
-  assert.deepEqual(compiler, aggregate.before.compiler, 'compiler/helper inventories differ from accepted source receipt');
-  for (const file of aggregate.before.sourceFiles)
-    assert.equal(hash(absolute(file.path)), file.sha256, `critical source/evidence bytes changed: ${file.path}`);
+  const captured = capturePreparedInputs(receipt);
+  const { compiler, closure, frozenFiles, frozenSha256, preparedManifest } = captured;
   for (const [dir, commit] of [[scout, candidate.commit],
     [path.join(root, '.artifacts/toolchains/bend'), compiler.canonicalPin]]) {
     assert.equal(git(dir, 'rev-parse', 'HEAD'), commit);
@@ -197,25 +200,21 @@ export function captureSource(approval, { requireClean = true } = {}) {
     assert.equal(sha256(bytes), source.sha256);
     assert.equal(hash(path.join(derived, source.path)), source.sha256, 'derived Safe/kernel source differs from pristine LF blob');
   }
-  const expectedPaths = expectedCheckClosure(root, checkPath, frozen.manifest.files, path.join(derived, 'bend2/base.bend'));
-  const closure = expectedPaths.map(file => ({ path: file === path.join(derived, 'bend2/base.bend')
-    ? '<derived>/bend2/base.bend' : path.relative(root, file).split(path.sep).join('/'), sha256: hash(file) }))
-    .sort((a, b) => a.path.localeCompare(b.path));
-  assert.deepEqual(closure, aggregate.closure.files, 'full frozen CHECK relative closure differs');
   const sources = consumerFiles.map(name => ({ path: `bend2/core/v3/2035/bendtt-gate/${name}`,
     sha256: hash(path.join(root, 'bend2/core/v3/2035/bendtt-gate', name)) }));
   const helpers = Object.entries(reusedHelpers).map(([file, expected]) => {
     assert.equal(hash(absolute(file)), expected, `reused lifecycle/helper changed: ${file}`);
     return { path: file, sha256: expected };
   });
-  return { schema: 'rift-bendtt-2035-source-binding/1', producerScope: 'source/type/promise',
-    namespaceGuard: aggregate.namespaceGuard, sourceCommit: git(root, 'rev-parse', 'HEAD'),
+  return { schema: 'rift-bendtt-2035-source-binding/2', producerScope: 'source/type/promise',
+    namespaceGuard: receipt.aggregate.namespaceGuard, sourceCommit: git(root, 'rev-parse', 'HEAD'),
     sourceTree: git(root, 'rev-parse', 'HEAD^{tree}'), sourceStatus: status,
-    frozenSha256: frozen.sha256, frozenFiles: frozen.manifest.files, closure, compiler,
-    acceptedSource: { approval, sourceCommit: aggregate.sourceCommit, sourceTree: aggregate.sourceTree,
-      bindingSha256: aggregate.bindingSha256, windowsRuntime: aggregate.before.runtime,
-      mutationSchema: mutations.schema, handoffSchema: handoff.schema },
-    lineage: lineage(aggregate, approval), consumerFiles: sources, reusedHelpers: helpers, safeSource, leanSource };
+    frozenSha256, frozenFiles, preparedManifest, closure, compiler, controller: captured.controller,
+    negativeControls: captured.negativeControls,
+    acceptedSource: { approval, sourceCommit: receipt.sourceCommit, sourceTree: receipt.sourceTree,
+      bindingSha256: receipt.bindingSha256, windowsRuntime: receipt.before.runtime,
+      receiptSchema: receipt.schema, actualFreshWorkers: receipt.actualFreshWorkers },
+    lineage: lineage(receipt, approval), consumerFiles: sources, reusedHelpers: helpers, safeSource, leanSource };
 }
 
 export function captureBinding(approvals, options = {}) {
