@@ -15,9 +15,9 @@ production browser evidence retain their own authority.
 
 | Contract and historical pointer | Current independent evidence | Remaining disposition |
 | --- | --- | --- |
-| Parser/metadata: 5051 valid forms; 5055 malformed caps; 5057 computed/partial calls; 5061 rewrite/templates; 5295 bang whitespace; 5355 printer round-trip | Checked `@`, `@N`, `~` fixture calls and real emitted execution | Add one compiler-only corpus for rejection and reconstruction. Runtime success does not prove malformed syntax or legacy whitespace behavior. |
-| Equality/erasure/native spelling: 5301 erased require; 5307 cap omission; 5372 checked equality | Diagnostic plain ordinary JS/C byte identity against pristine2035 | Policy-bearing erased terms, mathematical equality and native bang retention are distinct missing contracts. They need emission/checking, not native execution. |
-| Eligibility/security: 4447 foreign/IO/reachable unsafe rejection and unused unsafe pruning; 5086 unsupported closures; 5266 bit-sensitive F32 | Diagnostic closures, arrays, intrinsic and lifted arity; current implementation rejects strict runtime closures | Prioritize reachable IO/unsafe/bit-sensitive F32 negatives and one permitted safe sibling with the current compiler. Do not infer security from the positive fixture. |
+| Parser/metadata: 5051 valid forms; 5055 malformed caps; 5057 computed/partial calls; 5061 rewrite/templates; 5295 bang whitespace; 5355 printer round-trip | Canonical runtime fixture; isolated corpus syntax/reconstruction, typed ordinary controls and four rewrite AST forms | Two canonical omissions reproduced; separate corrected candidate passes. Canonical integration and fresh runtime bindings remain open. |
+| Equality/erasure/native spelling: 5301 erased require; 5307 cap omission; 5372 checked equality | Diagnostic ordinary JS/C identity; isolated corpus erased require, checked equality and six native policy/bang byte comparisons | Finite candidate emission/checking only. Native execution and broad compatibility remain separate. |
+| Eligibility/security: 4447 foreign/IO/reachable unsafe rejection and unused unsafe pruning; 5086 unsupported closures; 5266 bit-sensitive F32 | Diagnostic closure/array/intrinsic boundaries; isolated corpus unsafe/foreign reachability, safe pruning and bit-sensitive F32 rejection | Preserve separate runtime-closure obligations and canonical integration. |
 | Continuations/ABI: 4369 fields, arguments, matches, closures, arrays, tail/non-tail; 4404 upstream fixtures; 5364 normalization | Diagnostic recursive ADT/Nat, local arrays/closure and real bot emission; R5 compound fork joins | Inspect missing constructor/match resumption, tail/non-tail trampolines, erased captures and value leakage. Keep independent small expected results; avoid copying every old fixture. |
 | Dynamic policy: 5098–5165 require/never; 5314 argument/callee ownership | Matrix scoped arguments, restore after never, remote never, coalesced require, conflicts/branches/permissive warning; concurrent plain/never isolation | Argument and callee both-required ownership is still distinct. Existing argument-scope success does not establish separate witnesses. |
 | Fork/cap scheduling: 4888 reverse source slots; 5167 nested concurrent caps; 5180 frontier expansion | R5 reverses four authentic replies from two forks, preserves 2345, rejects stale/duplicate publication; concurrent inner8/outer2 regions use two helpers within a four-helper pool | Finite boundary now covered. General caps/programs and expansion/task-budget limits remain unproved. No additional duplicate two-root reply runner is justified. |
@@ -41,8 +41,10 @@ and cannot replace production nested-module hosting evidence.
 Fast feedback selects the current runner owning a changed boundary. The matrix
 extends one fixture and one session harness; it does not add a new runner for
 each family. Do not rerun both unchanged current runners or historical phases
-to recount covered families. The next useful addition is a bounded current
-compiler-only parser/eligibility/erasure corpus; broader required release,
+to recount covered families. The isolated compiler corpus now covers parser,
+eligibility, equality/erasure and native spelling contracts in 48 controls.
+It exposed two canonical parser omissions, corrected in a separate candidate.
+Integrating those transformations with fresh bindings is next; broader release,
 proof, native, device and browser gates stay in the adoption set.
 
 The stale parent README diagnostic was corrected to `diagnostic-osb93j`; the

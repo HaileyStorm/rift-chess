@@ -79,3 +79,50 @@ roots and F32/String boundaries without repeating those controls. The
 compiler/security/continuation/protocol/budget contracts. General fork/cap
 correctness is unproved; historical parser/emission pins, browser and
 proof/native gates retain their own obligations.
+
+The compiler-only corpus found two actual 2.0.35 Worker port omissions: the
+accepted declared-arity check after argument parsing, and rewrite-binder
+priority before parsing evidence. The canonical compiler remains unchanged.
+A separate 98-file candidate restores both accepted branches; only `bend.ts`
+differs. The rewrite branch adapts `p.sc.stk`/`p.sc.frs` to modern
+`p.stk`/`p.frs` and retains the accepted evidence span `e.s`.
+
+The ordinary partial call type-checks, while its `f@(7)` variant must fail
+during loading. Canonical `worker-compiler-supervisor-r3/terminal.json`, SHA256
+`b41d3c826556053052bbfbc30d11614798483532f5c41d0074300c57324c6c34`,
+failed this discriminator. An arity-only candidate then exposed the rewrite
+omission. Both named rewrite forms failed; their sources and closed native
+terminals remain retained. A test repair removed an obsolete `Book.open` field.
+
+[`compiler-corpus.mjs`](compiler-corpus.mjs) now checks 48 bounded compiler
+controls: canonical/malformed syntax, typed ordinary controls, legacy bang,
+metadata reconstruction, equality/erasure, templates, four rewrite evidence
+forms, unsafe/foreign reachability, unused unsafe pruning, bit-sensitive F32
+eligibility and exact native C spelling erasure. It checks rewrite AST binder
+names and evidence metadata: `%name@(proof)` owns the rewrite delimiter, while
+`%(refl@(x))` preserves a required policy on grouped evidence. C is not executed.
+
+The existing matrix exposes `--compiler-only --saturation-candidate`.
+[`saturation-candidate.mjs`](saturation-candidate.mjs) verifies the entire
+retained candidate before and after the corpus against freshly checked
+canonical preparation and the hash-bound accepted parser. It does not recopy
+a compiler per run. Retained `worker-saturation-candidate-r2` has Bend SHA256
+`0eab46d06cd349ecd2dd0495b116a6f57f1e483040597cf7aded953711bf8d26`.
+Two 1.2 MB candidate versions retain the successive source corrections.
+
+Actual `worker-compiler-candidate-r6/receipt.json`, SHA256
+`f955287b93dbb14bd4e1dbc15054ad7e146bc29f55706d6ea04c3cea4f5406d6`,
+passed all 48 records in 7.606s, with zero network calls or Worker construction.
+Review removed a duplicate partial-call rejection; the stronger paired
+load-only discriminator remains. The earlier 49-control receipt is retained.
+Native `worker-compiler-candidate-supervisor-r6/terminal.json`, SHA256
+`9c71c3ffbfe4e220c0109fa4e917217d175e1439f42da2706eb853f577d30ef0`,
+binds unchanged canonical/candidate inputs, original child exit/handle closure
+and self-only Job closure. These paths are relative to the stationary-motion
+artifact directory above; original failures remain failures.
+
+This proves finite isolated compiler contracts. The runtime R5 receipt above
+still binds its original canonical compiler. Candidate runtime/browser/proof
+bindings and a reviewed amendment need separate validation before integration
+or adoption. Broad compatibility, kernel/device and original GPU gates remain
+open; no historical receipt is retagged.
