@@ -26,6 +26,17 @@ exit and Job closure were observed. That timeout is retained as a failure,
 not a semantic rejection. The successor gives every full-book control the same
 allowance; all current Workers execute afresh with the new producer binding.
 
+The next attempt's positive passed, but its first mutation failed a display-name
+assertion after a genuine Bend type mismatch. That closed failure remains
+unaccepted: the assertion discarded its precise compiler diagnostic. A read-only
+inspection of the unchanged combined book shows that candidate `err_show` renders
+the proof's `L` import alias, whereas the creation compiler displayed `LAWS`.
+The runner now retains the complete rendered mismatch, canonical definition key
+and span metadata, including on assertion failure. Each prepared negative must
+match the exact law key derived from its bound loaded LAWS module. This preserves
+the specific bridge obligation without depending on diagnostic display spelling;
+it does not accept the earlier failed record. All nine Workers execute afresh.
+
 The historical six-v2-mutation records remain immutable provenance. The artifact
 budget shortcut initially changed a frozen `package.json` dependency and the
 compiler-free preflight rejected it. That dependency was restored byte for byte;

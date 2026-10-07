@@ -118,7 +118,7 @@ const combinedPositiveKey = before => sha256(JSON.stringify({ entry: rel(checkPa
   bindingSha256: sha256(JSON.stringify(before)) }));
 
 if (!isMainThread) {
-  let Bend, stage = 'binding', fetches = 0;
+  let Bend, stage = 'binding', fetches = 0, compilerFailure;
   globalThis.fetch = async () => { fetches++; throw Error('network denied in prepared source Worker'); };
   try {
     const actualResourceLimits = workerResourceReadback();
@@ -137,17 +137,32 @@ if (!isMainThread) {
     if (negative) {
       let mismatch;
       try { Bend.book_valid(book, 0); }
-      catch (error) { mismatch = typeMismatchEvidence(error, item => Bend.err_show(item)); }
+      catch (error) {
+        if (error?.$ === 'Err') compilerFailure = {
+          rendered: Bend.err_show(error), definition: error.def ?? null,
+          span: error.spn ? { namespace: error.spn.file.ns, aliases: error.spn.file.al,
+            begin: error.spn.beg, end: error.spn.end } : null,
+        };
+        mismatch = { ...typeMismatchEvidence(error, item => Bend.err_show(item)), ...compilerFailure };
+      }
       assert.ok(mismatch, 'prepared mutation was accepted');
-      if (negative.family === 'prepared')
-        assert.ok(mismatch.location.includes('LAWS.' + negative.law), 'prepared mutation rejected outside its bridge declaration');
+      if (negative.family === 'prepared') {
+        const declarationPath = preparedRoot + 'LAWS.bend';
+        const namespace = seen.get(fs.realpathSync(path.join(directory, declarationPath)));
+        assert.equal(namespace, declarationPath.slice('bend2/'.length, -'.bend'.length));
+        mismatch.bridge = { path: declarationPath, namespace, definition: namespace + ':' + negative.law };
+        // Candidate err_show uses the proof's import alias (L), rather than the
+        // creation compiler's LAWS spelling. Check the bound declaration key.
+        assert.equal(mismatch.definition, mismatch.bridge.definition,
+          'prepared mutation rejected outside its bridge declaration');
+      }
       verdict = { rejected: true, control: negative, ...mismatch, definitions: book.order.length };
     } else verdict = await positiveVerdict(Bend, book, value => { stage = value; });
     assert.equal(fetches, 0); stage = 'post-binding'; assert.deepEqual(preparedBinding(), before);
     parentPort.postMessage({ ok: true, name: workerData.name, positiveKey, ...verdict, closure, preloaded,
       actualResourceLimits, fetches, scope });
   } catch (error) {
-    parentPort.postMessage({ ok: false, stage, fetches,
+    parentPort.postMessage({ ok: false, stage, fetches, compilerFailure,
       error: String(error?.$ === 'Err' && Bend ? Bend.err_show(error) : error?.message ?? error).slice(0, 1800),
       failureStack: error?.$ === 'Err' ? undefined : String(error?.stack ?? error).slice(0, 6000) });
   } finally { parentPort.close(); }
