@@ -7,7 +7,6 @@
   "main": "electron/main.cjs",
   "license": "MIT",
   "scripts": {
-    "artifacts:check": "node scripts/check-artifact-budget.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "node scripts/verify-reflections.mjs && tsc --noEmit && vite build && node scripts/prepare-static.mjs",
     "test": "vitest run",

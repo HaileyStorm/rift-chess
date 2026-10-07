@@ -22,7 +22,7 @@ GPU tests and shared build outputs. Keep runtime parallelism immutable and balan
 
 ## Inherited Codex defaults
 
-- Run `npm run artifacts:check` before large artifact-producing runs and at handoff.
+- Run `node scripts/check-artifact-budget.mjs` before large artifact-producing runs and at handoff.
   The default `.artifacts` budget is 12 GiB; an exceeded budget requires cleanup
   before further bulk generation. Use bounded outputs and avoid repeated compiler
   copies. Preserve pinned toolchains, active/unknown runs, claims, recovery inputs,
