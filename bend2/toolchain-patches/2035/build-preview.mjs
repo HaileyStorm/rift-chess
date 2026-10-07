@@ -13,7 +13,7 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
-  scene: ["moving-atlas-picking-20261006/scene-zSzzNa", "0e3c52a5ab95ed7f2137800acec1e74867dbfcb50afb649a7b3fc02f56e9db62"],
+  scene: ["stationary-motion-20261006/scene-3utptJ", "6890966efa0d46fc344b3f3d9ff8c351a90b9649f1b8f3d670ac3b89808855f1"],
   controller: ["stationary-motion-20261006/controller-Mn82fG", "56a1c3586c9333c8db9326995a012763600d9236ce0b32d17d97d68b8aa71032"],
   menu: ["stationary-motion-20261006/menu-CeZCVU", "6ff231aed698981d3228f1a21b0a563aac41b86cf44fb8b9683f82c2fdb24ddb"],
 };

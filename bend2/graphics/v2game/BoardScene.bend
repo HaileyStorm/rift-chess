@@ -1399,6 +1399,14 @@ def sprite_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
   source: U32, +square: U32, amount: U32) -> Quad.Point:
   SpriteMotion.center_at(complete, size, camera, source, square, amount)
 
+# Contacts follow the board-plane path while the artwork hops above it.
+# Completion keeps the exact destination center, as artwork placement does.
+def sprite_ground_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
+  source: U32, +square: U32, amount: U32) -> Quad.Point:
+  match complete:
+    case True{}: projected_square(size, camera, square)
+    case False{}: camera_ground_point(size, camera, source, square, amount)
+
 # A low, translucent footprint sits behind the existing alpha-cut artwork.
 # Its dimensions follow the same screen-facing sprite width and base shift,
 # leaving the source atlas and the fast motion silhouettes untouched.
@@ -1428,7 +1436,9 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
         square, amount)
       +width = sprite_width(size, camera)
       +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
-      +contact = sprite_contact_shadow(depth,size,width,center,image)
+      +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),size,camera,
+        source,square,amount)
+      +contact = sprite_contact_shadow(depth,size,width,contact_center,image)
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
         clip, contact)
@@ -1797,8 +1807,10 @@ def sprite_motion_contact_box(+size: U32,+width: F32,center: Quad.Point) -> Rect
 def sprite_motion_current_box(+size: U32,+camera: Camera.Basis,+source: U32,
   +square: U32,+kind: U32,+amount: U32) -> Rect.Box:
   +center = sprite_center_at(U32.is_eq(amount,16),size,camera,source,square,amount)
+  +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),size,camera,
+    source,square,amount)
   Rect.union(sprite_motion_matrix_box(size,SpritePlacement.piece_matrix(size,camera,center,kind)),
-    sprite_motion_contact_box(size,SpritePlacement.width(size,camera),center))
+    sprite_motion_contact_box(size,SpritePlacement.width(size,camera),contact_center))
 
 def sprite_motion_dead_box(+size: U32,+camera: Camera.Basis,+square: U32,kind: U32,+age: U32) -> Rect.Box:
   +x = square_x(size,camera,square)
