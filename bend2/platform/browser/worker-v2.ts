@@ -38,6 +38,9 @@ const pixelPort = new PixelPort();
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
 let underlay: any, motionUnderlay: any, ground: any, prepared: any, chrome: any, retained: any;
+// Bend requests invalidate these caches even when the current artwork/orbit
+// path does not consume them. Preserve that work until the cache is needed.
+let groundInvalidated = true, preparedInvalidated = true;
 let fonts: any, fontLoad: Promise<void> | null = null;
 let menuBase: any, menuControls: any, menuBaseData: any, menuBasePlan: any;
 let menuStaticData: any, menuStaticPlan: any;
@@ -402,8 +405,11 @@ function render(packet: any): any {
     motionUnderlay = timed('motionUnderlay', () => scene.underlay128_asset(request.theme, plates));
   }
   if (!underlay || !motionUnderlay) throw new Error('Missing Bend underlay');
-  if (request.ground) ground = timed('ground', () => scene[`fast_ground${suffix}`](frame, underlay));
-  if (!ground) throw new Error('Missing Bend ground');
+  if (request.background || request.ground) {
+    groundInvalidated = true;
+    preparedInvalidated = true;
+  }
+  if (request.prepared) preparedInvalidated = true;
   const spriteTransition = !cameraOrbiting && spriteLayer && spriteFrame &&
     spriteTheme === request.theme && spritePose && spritePose.theme === request.theme &&
     scene.sprite_same_view(spritePose.frame, frame) &&
@@ -432,16 +438,27 @@ function render(packet: any): any {
   const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
-  if (request.prepared || spriteCompleted || (spriteSettled && !prepared)) {
-    preparedAtlas = Boolean(spriteSettled);
-    preparedAtlasMaskId = preparedAtlas ? spriteAtlasMaskId : null;
-    prepared = timed('prepared', () =>
-    spriteSettled ? (boardSize === 512
-      ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
-      : scene.nearest2(9n, scene.fast_sprite_feedback_static512(frame, spriteLayer)))
-      : scene[`fast_prepare${suffix}`](frame, ground));
+  // Orbit preserves Bend's original cache keys. Never rebuild a deferred cache
+  // at an intermediate orbit view and clear the invalidation for that old key.
+  if (!request.motion && !spriteMoving) {
+    if (!spriteSettled && (groundInvalidated || !ground)) {
+      ground = timed('ground', () => scene[`fast_ground${suffix}`](frame, underlay));
+      groundInvalidated = false;
+      preparedInvalidated = true;
+    }
+    if (!spriteSettled && !ground) throw new Error('Missing Bend ground');
+    if (preparedInvalidated || spriteCompleted || !prepared) {
+      preparedAtlas = Boolean(spriteSettled);
+      preparedAtlasMaskId = preparedAtlas ? spriteAtlasMaskId : null;
+      prepared = timed('prepared', () =>
+        spriteSettled ? (boardSize === 512
+          ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
+          : scene.nearest2(9n, scene.fast_sprite_feedback_static512(frame, spriteLayer)))
+          : scene[`fast_prepare${suffix}`](frame, ground));
+      preparedInvalidated = false;
+    }
+    if (!prepared) throw new Error('Missing Bend prepared scene');
   }
-  if (!prepared) throw new Error('Missing Bend prepared scene');
   const data = packet.chromeData, plan = packet.plan;
   const playing = menu.play(data);
   if (playing) {
@@ -590,6 +607,8 @@ async function handleMessage(request: any): Promise<void> {
     if (request.kind === 'boot') {
       disposeBot();
       disposeSprite();
+      ground = prepared = null;
+      groundInvalidated = preparedInvalidated = true;
       bitmapSurface = new BitmapSurface(request.imageBitmap === true);
       packet = api.boot_reads(request.saved.text, request.prefs.text, request.saved.ok, request.prefs.ok, request.width, request.height);
     } else {
