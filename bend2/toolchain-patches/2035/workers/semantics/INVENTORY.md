@@ -44,7 +44,8 @@ each family. Do not rerun both unchanged current runners or historical phases
 to recount covered families. The isolated compiler corpus now covers parser,
 eligibility, equality/erasure and native spelling contracts in 48 controls.
 It exposed two canonical parser omissions, corrected in a separate candidate.
-Integrating those transformations with fresh bindings is next; broader release,
+Corrected preparation now drives fresh compiler and runtime bindings. Selecting
+its newly emitted bot creation binding in the preview is next; broader release,
 proof, native, device and browser gates stay in the adoption set.
 
 The stale parent README diagnostic was corrected to `diagnostic-osb93j`; the

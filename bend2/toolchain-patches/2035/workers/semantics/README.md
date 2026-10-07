@@ -126,3 +126,19 @@ still binds its original canonical compiler. Candidate runtime/browser/proof
 bindings and a reviewed amendment need separate validation before integration
 or adoption. Broad compatibility, kernel/device and original GPU gates remain
 open; no historical receipt is retagged.
+
+Corrected preparation is now the default route for this same matrix. The
+original preparation and isolated-candidate flag remain available for the named
+historical evidence above. Fresh current compiler receipt
+`worker-current-compiler-r1/receipt.json`, SHA256
+`fd8a249e510132e6d7250da5e1e1cbb7f4719c31f13f5bc865ca5e23006bc933`,
+passed the 48 compiler controls. Fresh real Worker receipt
+`worker-current-runtime-r1/receipt.json`, SHA256
+`75b73293641b005fbe811e4bf14ba06e60f8b48f2cc5976380cc9b8addd185e4`,
+passed all 19 runtime records with zero network calls. Both bind the new
+compiler lineage and original-handle/Job closure through their matching native
+terminals, with 328 unchanged inputs each. The same corrected parser bytes now
+own actual checked/emitted helper execution; no earlier receipt was relabelled.
+See [current preparation and bot handoff](../README.md) for the complementary
+diagnostic and full BotAdapter emission. Preview selection, browser compatibility
+and compiler adoption retain their separate unfinished obligations.

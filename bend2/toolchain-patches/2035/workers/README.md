@@ -6,9 +6,11 @@ static module-worker target onto pristine Bend 2.0.35 commit
 change the accepted 2.0.27 pin, upstream checkouts, frozen Laws, browser builds,
 AI splitting, or deterministic tie-breaking.
 
-`prepare.mjs` checks the existing source-bound Windows loader, verifies the
-accepted 004 source preimages, and constructs the isolated derived tree at
-`.artifacts/bend2/toolchain-patches/workers-2035-candidate/bend2/`. Existing
+`prepare-current.mjs` authenticates the existing `prepare.mjs` parent and the
+accepted parser, restoring the two independently reproduced omissions:
+declared saturation and rewrite-binder precedence. It constructs the current
+Worker candidate at
+`.artifacts/bend2/toolchain-patches/workers-2035-parser-r1/bend2/`. Existing
 derived compiler bytes and inventory must match exactly. Materialization creates
 a missing tree; it never overwrites a drifted tree. The candidate CLI remains
 upstream; the worker target is exposed through `Comp.js_worker_lib` and the
@@ -48,9 +50,9 @@ The existing 2.0.35 Windows source-loader tree must already be materialized by
 its owner. Run from the repository root:
 
 ```powershell
-node bend2/toolchain-patches/2035/workers/prepare.mjs --materialize
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/diagnostic.mjs
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/emit-bot.mjs --diagnostic diagnostic-osb93j
+node bend2/toolchain-patches/2035/workers/prepare-current.mjs --materialize
+node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/diagnostic-current.mjs
+node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/emit-bot-current.mjs --diagnostic diagnostic-ngbaji
 ```
 
 The diagnostic writes a fresh directory and prints its name. Supply that exact
@@ -60,9 +62,46 @@ fetches. Each bot emission creates five static runtime files and a build-only
 `source-binding.json`, with source, compiler, loader, emitter, diagnostic, and
 artifact hashes. No shared preview output is written.
 
-## Current handoff evidence
+## Corrected candidate evidence
 
-The retained diagnostic matching current compiler and fixture bytes is
+Fresh compiler-only controls passed 48 records, and the complementary real
+module-Worker matrix passed 19 records on the corrected tree. The full diagnostic
+passed both transports and ordinary JS/C identity. Then `emit-bot-current.mjs`
+checked the entire five-source BotAdapter book and emitted 96 functions and its
+balanced fork site. The final bot is `workers-2035-parser-r1/bot-4BPFvk` under
+`.artifacts/bend2/toolchain-patches/`. Its five runtime artifacts are byte-identical
+to the selected parent `bot-t0Qkcm`; its creation binding is new, with schema
+`rift-bend-worker-source-binding/2035-2` and both preparation layers recorded.
+
+The corrected `bend.ts` SHA256 is
+`0eab46d06cd349ecd2dd0495b116a6f57f1e483040597cf7aded953711bf8d26`.
+The other 97 compiler files match the parent, including the compiler and runtime
+hashes below. `worker-current-verification-r2.json`, SHA256
+`a4c67847873605c840c992393abe1233095f21d2813fb20c2cf948ddee55dde5`,
+binds all four stages and their artifacts. It is under
+`.artifacts/bend2/2035-preview/stationary-motion-20261006/`. Each native stage
+observed the original child exit, closed its handle and self-only Job, and
+retained unchanged input hashes. Durations establish no performance claim.
+
+The emitter now requires exact diagnostic preparation-lineage equality as well
+as compiler hashes. An owned copy missing that lineage rejected at the guard
+with expected child exit 1; its original child handle and Job closed. Fresh
+guarded emission then passed. The first emission and exact source preimage
+remain retained. That emitter guard was not executed in the earlier compiler,
+matrix or diagnostic stages; those native fences remain original evidence,
+with the later unused-input postimage explicitly recorded in verification.
+
+Active semantic checks use corrected preparation by default. The isolated
+candidate flag and original source preimages remain historical discriminators.
+`build-preview.mjs` still selects the parent bot and authenticates its original
+preparation, diagnostic and emitter files. They remain unchanged for that named
+compatibility obligation. Selecting the new creation binding requires a separate
+reviewed preview postimage, package and browser/offline evidence. These compiler
+and runtime results do not establish proof, device, native or adoption acceptance.
+
+## Retained parent evidence
+
+The retained diagnostic matching the unchanged parent compiler and fixtures is
 `.artifacts/bend2/toolchain-patches/workers-2035-candidate/diagnostic-osb93j/receipt.json`,
 SHA256 `eb308d54f4810dab108ad4767463f153dd0c9b5b183a2da790b53efe57ab1524`.
 The former `diagnostic-6AtJvy` binds an older diagnostic runner and is historical;
@@ -100,7 +139,7 @@ network calls. `source-binding.json` identifies `choose`, `manifest`,
 `createSession`, and the common `core/Model.Pos` tag. Root owns copying only the
 explicit retained artifact bytes into the candidate preview.
 
-Final derived source hashes:
+Parent derived source hashes:
 
 | File | SHA256 |
 | --- | --- |

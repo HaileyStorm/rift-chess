@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {prepare,root,derived,sha} from '../prepare.mjs';
+import {prepare as prepareCurrent} from '../prepare-current.mjs';
 process.env.BEND_NO_TELEMETRY='1';
 let networkCalls=0;
 globalThis.fetch=async()=>{networkCalls++;throw Error('no network in Worker semantics');};
@@ -14,7 +15,7 @@ assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandid
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
 assert.equal(fs.realpathSync(path.dirname(output)),path.dirname(output));
 fs.mkdirSync(output); // Exclusive run identity; no overwrite or replay.
-const parent=prepare();
+const parent=saturationCandidate?prepare():prepareCurrent();
 const verifyCandidate=saturationCandidate?(await import('./saturation-candidate.mjs')).verifySaturationCandidate:null;
 const binding=verifyCandidate?verifyCandidate(parent):parent;
 const bend=await import(pathToFileURL(path.join(binding.derived,'bend2/bend.ts')).href);
@@ -26,7 +27,7 @@ if(compilerOnly){
  const corpus=await runCompilerCorpus({bend,comp,output,sha});assert.equal(networkCalls,0);assert.equal(workerConstructions,0);
  if(verifyCandidate)assert.deepEqual(verifyCandidate(parent),binding);
  const dependencies=Object.fromEntries(['compiler-corpus.mjs','compiler-fixture.bend',...(verifyCandidate?['saturation-candidate.mjs']:[])].map(n=>[n,sha(fs.readFileSync(fileURLToPath(new URL(n,import.meta.url))))]));
- const receipt={schema:'rift-worker-compiler-corpus/1',passed:true,compiler:binding.hashes,runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),dependencies,engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},networkCalls,workerConstructions,...corpus,scope:'Checked current compiler-only parser, security/eligibility, equality/erasure and C emission controls. No Worker/native-C execution, full107, browser/proof/device/adoption acceptance.'};
+ const receipt={schema:'rift-worker-compiler-corpus/1',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),dependencies,engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},networkCalls,workerConstructions,...corpus,scope:'Checked current compiler-only parser, security/eligibility, equality/erasure and C emission controls. No Worker/native-C execution, full107, browser/proof/device/adoption acceptance.'};
  if(verifyCandidate)receipt.candidate={parentCompiler:binding.parentCompiler,changedFiles:binding.changedFiles,guardSha256:binding.guardSha256,rewriteSha256:binding.rewriteSha256,derived:binding.derived};
  fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
  console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:corpus.results.length,networkCalls,workerConstructions}));
@@ -215,7 +216,7 @@ try{await assert.rejects(decoder.call('text_remote',['Rift 😀']),e=>e.code==='
  results.push({case:'packed-utf8-reply',transport:'packed',code:'protocol',corruptions,trace:decoder.trace(),postClose:retire(decoder,decoderHarness)});
 }finally{retire(decoder,decoderHarness);}
 assert.equal(networkCalls,0);
-const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
+const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }
