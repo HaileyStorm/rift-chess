@@ -1,0 +1,194 @@
+{
+  "schema": "rift-canonical-match-application/1",
+  "scope": "candidate-source-browser-only",
+  "disposition": "reviewed",
+  "adopted": false,
+  "candidate": "79df8d9c40722ee9507a1e253f283b51025f9d6c",
+  "baseline": "5d592aee1ca3d88bfc9f67ef6538e85f8b207b3a",
+  "sources": [
+    {
+      "path": "bend2/core/canonical/Match.bend",
+      "sha256": "c76ecde9bac026d780a0d31ec052e4a31ea9af4874c24b07f2544a8fe6194712"
+    },
+    {
+      "path": "bend2/core/canonical/README.md",
+      "sha256": "cbeaa479ce44ca87d3830177a3d680a5c8f86085fb141d67e747059f45f2e230"
+    },
+    {
+      "path": "bend2/ui/State.bend",
+      "sha256": "9a857aa7c78be749f0781d5769c10f7094c1c120ec07b2abd0ba148cb4c52f0f"
+    },
+    {
+      "path": "bend2/ui/Commands.bend",
+      "sha256": "f42886eaf1bb5afb4d76a20c7f6cad0e96cdaab1e4863e1a2adad8676cf021a1"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "sha256": "561530c814ea1108b6fee283d385fdaceb9744c25accaedbed0e3eee2e4277cf"
+    },
+    {
+      "path": "bend2/docs/evidence/canonical-match-20261007/README.md",
+      "sha256": "6ae5ca6a5b26cf74ad7ad7e82257ff6eca6ea9b0edbedc91d3ff790f794fee16"
+    },
+    {
+      "path": "bend2/docs/evidence/canonical-match-20261007/capture.mjs",
+      "sha256": "c3b2b83abfb1f0e40a1598deeb22693d505594333ebbde9de2efaf27cbf32863"
+    }
+  ],
+  "creationReceipt": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-source-2035/combined-ICkDXA/receipt.json",
+    "sha256": "a5ccbfdb0a009501525785ffb94640d573593517b02942ad470c6c977c04f698"
+  },
+  "creationSourceAmendments": [
+    {
+      "path": "bend2/ui/Commands.bend",
+      "beforeSha256": "bbc742924e0e30d8314f56abdbf4a3445393fd52c06869f0b47a10038d89a516",
+      "afterSha256": "f42886eaf1bb5afb4d76a20c7f6cad0e96cdaab1e4863e1a2adad8676cf021a1"
+    },
+    {
+      "path": "bend2/ui/State.bend",
+      "beforeSha256": "6c7fc23f69d56d00b3fcdb1f2118684fed72661e28b16561215bdebc3bb47605",
+      "afterSha256": "9a857aa7c78be749f0781d5769c10f7094c1c120ec07b2abd0ba148cb4c52f0f"
+    }
+  ],
+  "originalConsumers": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/approvals.mjs",
+      "sha256": "5c41e27658f25cf2f461d8fdb7963e5fcc80ca00ab0238c1a879ecb7e25a7ac3"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/binding.mjs",
+      "sha256": "c2c6aab23bcef18c495f30aa6b77442195ed5415bf6f33952e1db78143224716"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/contracts.mjs",
+      "sha256": "fc907be78066e615fcd3bd0a3c91b565b8d106b526d0a243b6ca79aaaa05a635"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/contracts-prepared.mjs",
+      "sha256": "bfaec33823655fff8283daf2c8001d5c0196e12b1628ef898be79b2e7574a32a"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/source-prepared.mjs",
+      "sha256": "4867f90d0f22c7a0ba4db3222eda73662db04ae66bbdb8dc12cf49737bfd56a8"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/output.mjs",
+      "sha256": "527f6d3896d836cfd057e6db7b6c3cad1544e8f2fd8dc0668f3ed866d84f3757"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/run.mjs",
+      "sha256": "3c6984d377155b613d3e153d57944fa7343d77e394a4d706b7912c7b21e51317"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/worker.mjs",
+      "sha256": "08e4dd9cd1083562a2db2f24c68c4c1293147ba9a9261aa56b35bc291dfe2ef7"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/probe.mjs",
+      "sha256": "e45b0f11b6ef4826da3608427d08d5260068e1728996721d811ecfded0be96a4"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/test.mjs",
+      "sha256": "282d4f804046c4c4721dbfecfca45dc88f80562207c089d9b38e83f37be15d9b"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/README.md",
+      "sha256": "d34379650e258ac10c9c54e014effe6fa705acac21515b9f696d4ebd04b27178"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/lineage-prepared-20261007.json",
+      "sha256": "0e9c38e22a11246edbd494afc82da810ce8c6e6567a177de205bdec2e1765653"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-emission-r2/result.json",
+      "sha256": "df8c7367458827616accd5dc62379897e6583db15dd207df876c6f815f15a2f8",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-owned-source-r1/result.json",
+      "sha256": "743ae6d2ef11da67764ab14233f05fcd34afe7cbbf733c0d283a5d3797c623a2",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-runtime-r3/result.json",
+      "sha256": "6404e923c96e3d9389fb3c0d8661fd09c32addac80b0e84b9aac9a4c47f60288",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-supplement-r1/result.json",
+      "sha256": "72b22f5b9dc09e0bb6b561f76d2fdacb6e4bd4dbca86a633fd680afd2e66dd8b",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-move-browser-r2/result.json",
+      "sha256": "d42688b3c7d2e8ed5ec817fdf714e42549d91e8f11675ed8470d87bacc1dda3d",
+      "kind": "result"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-emission-supervisor-r2/terminal.json",
+      "sha256": "962b70be4a4687e927089f1103fb11421909eebffa744b7a9165c16c05da002a",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-owned-source-supervisor-r1/terminal.json",
+      "sha256": "5787353e0e991c4b08093c411c26181c7688c6d10c981d42bb0cfeed5bb2cdac",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-runtime-supervisor-r3/terminal.json",
+      "sha256": "48b39a4fa13bfd3b5ccaa13b9f95597f81cd348392575edc0dc0f60cf3d4180e",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-supplement-supervisor-r1/terminal.json",
+      "sha256": "61693641eb43edd4e5b4e0ad2d0a1d7fa213d799a3d4be308a048f030fcd46f2",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-move-browser-supervisor-r2/terminal.json",
+      "sha256": "de18dfd30c809fe11cbf3bc91ca1050633400cd74ce7b5885a29742a50e2a1bb",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-preview-build-r1/terminal.json",
+      "sha256": "89d1a07996a6b8a3263d6fe696ce4f106dc30e422078e097af45c10ed0672c2f",
+      "kind": "terminal"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-offline-supervisor-r1/terminal.json",
+      "sha256": "728bb99025763b005e9ac720ad90bd3e7b8d2c66f9123161261e4a27bae3bc26",
+      "kind": "terminal"
+    }
+  ],
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-browser-supplement-review-r1.md",
+    "sha256": "182c3b3e82ebce393a28b4c8cfdacb822504e73f73de85e389089af9e5ddbd3b"
+  },
+  "caches": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/canonical-ui-emission-r2/controller.manifest.json",
+      "sha256": "f3292a336c26a3978f7c3764e721a3d2241cba9cb8c100a30a60f173c3917b5a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-3utptJ/scene.manifest.json",
+      "sha256": "6890966efa0d46fc344b3f3d9ff8c351a90b9649f1b8f3d670ac3b89808855f1"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.manifest.json",
+      "sha256": "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"
+    }
+  ],
+  "build": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-tzMNjz/build.json",
+    "sha256": "b0235603bd4d04f425b8f88d1d11f12ebee3563f22f6773527f714b6416c6d64"
+  },
+  "limits": [
+    "General source/type/promise and ownership checks are not BendTT/Safe/kernel verdicts.",
+    "Creation receipt315 inputs retains313 exact inputs and two explicit reviewed UI amendments; historical12 consumers and their reject behavior are unchanged.",
+    "Headless small-cohort move improvement; startup tails regress.",
+    "No physical scanout/constrained-device/owner/native/hosted/toolchain-adoption acceptance."
+  ]
+}

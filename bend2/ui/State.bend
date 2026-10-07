@@ -1,9 +1,10 @@
-# Controller state and the pure predicates derived from it. Legality and
-# adjudication are cached answers from the frozen kernel, never recomputed here.
+# Controller state owns a certified canonical Match. Visible legal IDs are
+# presentation data and may be empty after adjudication; Ready retains its IDs.
 import Base
 import ../core/Model.bend as Model
 import ../core/v2/BoardSpec.bend as Spec
 import ../core/v2/Facade.bend as Kernel
+import ../core/canonical/Match.bend as Prepared
 import ../core/MatchSpec.bend as Match
 import ../graphics/Camera.bend as Camera
 import ./Types.bend as Types
@@ -13,7 +14,7 @@ type Reminder is Data:
   Reminder{white: Bool, black: Bool}
 
 type Replay is Data:
-  Replay{candidate: Match.Match, remaining: List<&2, Match.Command>, record: Codec.Record, text: String, imported: Bool, done: U32, total: U32, preferenceFallback: Bool, reminded: Reminder}
+  Replay{candidate: Prepared.Ready, remaining: List<&2, Match.Command>, record: Codec.Record, text: String, imported: Bool, done: U32, total: U32, preferenceFallback: Bool, reminded: Reminder}
 
 # A gesture in progress: a camera orbit, or a board press that may end as a
 # drag-and-drop move. `toggle` defers deselecting a re-pressed piece to release.
@@ -23,19 +24,19 @@ type Pointer is Data:
 # `pending` is a promotion awaiting its piece choice; `intent` is an accepted
 # click whose kernel command runs on the next Tick, after its frame is shown.
 type State is Data:
-  State{game: Match.Match, pos: Model.Position, legal: List<&2, U32>, meta: Types.Meta, prefs: Types.Preferences, panels: Types.Panels, journal: List<&2, Match.Command>, history: List<&2, String>, previous: Model.Position, last: U32, elapsed: U32, selected: U32, tile: U32, hover: U32, focus: U32, width: U32, height: U32, pointer: Pointer, pending: U32, intent: U32, raw: String, replay: Maybe<&2, Replay>, reminded: Reminder}
+  State{ready: Prepared.Ready, pos: Model.Position, legal: List<&2, U32>, meta: Types.Meta, prefs: Types.Preferences, panels: Types.Panels, journal: List<&2, Match.Command>, history: List<&2, String>, previous: Model.Position, last: U32, elapsed: U32, selected: U32, tile: U32, hover: U32, focus: U32, width: U32, height: U32, pointer: Pointer, pending: U32, intent: U32, raw: String, replay: Maybe<&2, Replay>, reminded: Reminder}
 
 type Update is Data:
   Update{state: State, effects: List<&2, Types.Effect>, redraw: U32, after: U32}
 
 # BEGIN GENERATED ACCESSORS: State replay=replay_state
-def game(s: State) -> Match.Match:
+def ready(s: State) -> Prepared.Ready:
   match s:
-    case State{game, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _}: game
+    case State{ready, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _}: ready
 
-def set_game(s: State, v: Match.Match) -> State:
+def set_ready(s: State, v: Prepared.Ready) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{v, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{v, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def pos(s: State) -> Model.Position:
   match s:
@@ -43,7 +44,7 @@ def pos(s: State) -> Model.Position:
 
 def set_pos(s: State, v: Model.Position) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, v, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, v, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def legal(s: State) -> List<&2, U32>:
   match s:
@@ -51,7 +52,7 @@ def legal(s: State) -> List<&2, U32>:
 
 def set_legal(s: State, v: List<&2, U32>) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, v, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, v, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def meta(s: State) -> Types.Meta:
   match s:
@@ -59,7 +60,7 @@ def meta(s: State) -> Types.Meta:
 
 def set_meta(s: State, v: Types.Meta) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, v, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, v, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def prefs(s: State) -> Types.Preferences:
   match s:
@@ -67,7 +68,7 @@ def prefs(s: State) -> Types.Preferences:
 
 def set_prefs(s: State, v: Types.Preferences) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, v, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, v, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def panels(s: State) -> Types.Panels:
   match s:
@@ -75,7 +76,7 @@ def panels(s: State) -> Types.Panels:
 
 def set_panels(s: State, v: Types.Panels) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, v, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, v, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def journal(s: State) -> List<&2, Match.Command>:
   match s:
@@ -83,7 +84,7 @@ def journal(s: State) -> List<&2, Match.Command>:
 
 def set_journal(s: State, v: List<&2, Match.Command>) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, v, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, v, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def history(s: State) -> List<&2, String>:
   match s:
@@ -91,7 +92,7 @@ def history(s: State) -> List<&2, String>:
 
 def set_history(s: State, v: List<&2, String>) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, v, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, v, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def previous(s: State) -> Model.Position:
   match s:
@@ -99,7 +100,7 @@ def previous(s: State) -> Model.Position:
 
 def set_previous(s: State, v: Model.Position) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, v, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, v, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def last(s: State) -> U32:
   match s:
@@ -107,7 +108,7 @@ def last(s: State) -> U32:
 
 def set_last(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, v, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, v, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def elapsed(s: State) -> U32:
   match s:
@@ -115,7 +116,7 @@ def elapsed(s: State) -> U32:
 
 def set_elapsed(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, v, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, v, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def selected(s: State) -> U32:
   match s:
@@ -123,7 +124,7 @@ def selected(s: State) -> U32:
 
 def set_selected(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, v, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, v, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def tile(s: State) -> U32:
   match s:
@@ -131,7 +132,7 @@ def tile(s: State) -> U32:
 
 def set_tile(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, v, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, v, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def hover(s: State) -> U32:
   match s:
@@ -139,7 +140,7 @@ def hover(s: State) -> U32:
 
 def set_hover(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, v, focus, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, v, focus, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def focus(s: State) -> U32:
   match s:
@@ -147,7 +148,7 @@ def focus(s: State) -> U32:
 
 def set_focus(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, v, width, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, v, width, height, pointer, pending, intent, raw, replay, reminded}
 
 def width(s: State) -> U32:
   match s:
@@ -155,7 +156,7 @@ def width(s: State) -> U32:
 
 def set_width(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, v, height, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, v, height, pointer, pending, intent, raw, replay, reminded}
 
 def height(s: State) -> U32:
   match s:
@@ -163,7 +164,7 @@ def height(s: State) -> U32:
 
 def set_height(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, v, pointer, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, v, pointer, pending, intent, raw, replay, reminded}
 
 def pointer(s: State) -> Pointer:
   match s:
@@ -171,7 +172,7 @@ def pointer(s: State) -> Pointer:
 
 def set_pointer(s: State, v: Pointer) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, v, pending, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, v, pending, intent, raw, replay, reminded}
 
 def pending(s: State) -> U32:
   match s:
@@ -179,7 +180,7 @@ def pending(s: State) -> U32:
 
 def set_pending(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, v, intent, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, v, intent, raw, replay, reminded}
 
 def intent(s: State) -> U32:
   match s:
@@ -187,7 +188,7 @@ def intent(s: State) -> U32:
 
 def set_intent(s: State, v: U32) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, v, raw, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, v, raw, replay, reminded}
 
 def raw(s: State) -> String:
   match s:
@@ -195,7 +196,7 @@ def raw(s: State) -> String:
 
 def set_raw(s: State, v: String) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, v, replay, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, v, replay, reminded}
 
 def replay_state(s: State) -> Maybe<&2, Replay>:
   match s:
@@ -203,7 +204,7 @@ def replay_state(s: State) -> Maybe<&2, Replay>:
 
 def set_replay(s: State, v: Maybe<&2, Replay>) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, v, reminded}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, v, reminded}
 
 def reminded(s: State) -> Reminder:
   match s:
@@ -211,8 +212,11 @@ def reminded(s: State) -> Reminder:
 
 def set_reminded(s: State, v: Reminder) -> State:
   match s:
-    case State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{game, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, v}
+    case State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, reminded}: State{ready, pos, legal, meta, prefs, panels, journal, history, previous, last, elapsed, selected, tile, hover, focus, width, height, pointer, pending, intent, raw, replay, v}
 # END GENERATED ACCESSORS
+
+def game(s: State) -> Match.Match:
+  Prepared.game(ready(s))
 
 # BEGIN GENERATED ACCESSORS: Pointer prefix=pointer_ getters
 def pointer_orbiting(s: Pointer) -> Bool:
@@ -304,28 +308,17 @@ def offer_code(o: Match.DrawOffer) -> U32:
     case Match.NoOffer{}: 0
     case Match.Offered{side}: Bool.pick(U32, side, 1, 2)
 
-def refreshed.with_ids(+s: State, +g: Match.Match, +ids: List<&2, U32>) -> State:
+# Install game and certified IDs together; terminal presentation can hide IDs
+# without invalidating the authoritative Ready used by later Undo.
+def refreshed.game(+s: State, +r: Prepared.Ready, +g: Match.Match, +ids: List<&2, U32>) -> State:
   match g:
     case Match.Match{initial, +p, actions, states, keys, rev, pol, offer, forced}:
       +end = end_code(forced, p, keys, pol, ids)
       +m = meta(s)
-      set_meta(set_legal(set_pos(set_game(s, g), p), Bool.pick(List<&2, U32>, U32.is_eq(end, 0), ids, [])), Types.Meta{U32.from_nat(rev), Model.pos_side(p), Spec.in_check(p, Model.pos_side(p)), end, offer_code(offer), Bool.not(List.is_empty(&2, U32, actions)), Types.meta_botPaused(m), Types.meta_recovery(m)})
+      set_meta(set_legal(set_pos(set_ready(s, r), p), Bool.pick(List<&2, U32>, U32.is_eq(end, 0), ids, [])), Types.Meta{U32.from_nat(rev), Model.pos_side(p), Spec.in_check(p, Model.pos_side(p)), end, offer_code(offer), Bool.not(List.is_empty(&2, U32, actions)), Types.meta_botPaused(m), Types.meta_recovery(m)})
 
-# The full refresh is required whenever the position may have changed. The
-# balanced ID enumeration is inert on JavaScript and can offload natively.
-def refreshed(+s: State, +g: Match.Match) -> State:
-  match g:
-    case Match.Match{initial, +p, actions, states, keys, rev, pol, offer, forced}:
-      +ids = Kernel.legal_ids!(p)
-      refreshed.with_ids(s, g, ids)
-
-# Caller contract: only use after an accepted Offer/Accept/Decline/Resign.
-# MatchKernel preserves the position, action history and repetition keys for
-# those commands, so the state's legal cache is still the answer for `p`.
-# Outcome, offer, revision and all presentation metadata are still recomputed
-# from the accepted Match; terminal states still clear the cached legal IDs.
-def refreshed_same_position(+s: State, +g: Match.Match) -> State:
-  refreshed.with_ids(s, g, legal(s))
+def refreshed(+s: State, +r: Prepared.Ready) -> State:
+  refreshed.game(s, r, Prepared.game(r), Prepared.ids(r))
 
 def revision(s: State) -> Nat:
   U32.to_nat(Types.meta_revision(meta(s)))
@@ -455,4 +448,4 @@ def set_view(+s: State, v: Camera.View) -> State:
 
 def blank(+w: U32, h: U32) -> State:
   +p = Model.start(True{})
-  State{Kernel.start(True{}, Match.Prompt{}), p, [], Types.Meta{0, True{}, False{}, 0, 0, False{}, False{}, False{}}, Types.default_preferences(), Types.Panels{0, 0, "", 0, True{}, 0}, [], [], p, 21760, 240, 64, 16, 64, 0, w, h, released(0, 0, Camera.default_view()), 21760, 21760, "", None{}, Reminder{False{}, False{}}}
+  State{Prepared.start(True{}, Match.Prompt{}), p, [], Types.Meta{0, True{}, False{}, 0, 0, False{}, False{}, False{}}, Types.default_preferences(), Types.Panels{0, 0, "", 0, True{}, 0}, [], [], p, 21760, 240, 64, 16, 64, 0, w, h, released(0, 0, Camera.default_view()), 21760, 21760, "", None{}, Reminder{False{}, False{}}}

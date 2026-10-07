@@ -16,7 +16,7 @@ import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 
 const selected = {
   scene: ["stationary-motion-20261006/scene-3utptJ", "6890966efa0d46fc344b3f3d9ff8c351a90b9649f1b8f3d670ac3b89808855f1"],
-  controller: ["stationary-motion-20261006/controller-uyiRcR", "a2f50b39e73f56855f92099d8dc3fa9ec7f628d1d76050a6e6c013395da6cba2"],
+  controller: ["stationary-motion-20261006/canonical-ui-emission-r2", "f3292a336c26a3978f7c3764e721a3d2241cba9cb8c100a30a60f173c3917b5a"],
   menu: ["stationary-motion-20261006/menu-app-Ft8mws", "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');

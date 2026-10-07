@@ -2,8 +2,7 @@
 # transition comes from the frozen kernel; this module only sequences it.
 import Base
 import ../core/Model.bend as Model
-import ../core/v2/Facade.bend as Kernel
-import ../core/v3/prepared-match/Match.bend as Prepared
+import ../core/canonical/Match.bend as Prepared
 import ../core/MatchSpec.bend as Match
 import ../graphics/Camera.bend as Camera
 import ./Types.bend as Types
@@ -42,17 +41,6 @@ def command_action(c: Match.Command) -> U32:
     case Match.MoveCommand{_, id}: id
     case _: 21760
 
-# These are the only accepted commands that preserve the match position. Keep
-# the fallback on the full refresh: Undo and Move can change it, while New and
-# Import enter through their own full-refresh paths below.
-def refreshed_command(c: Match.Command, +s: S.State, +g: Match.Match) -> S.State:
-  match c:
-    case Match.OfferCommand{_, _}: S.refreshed_same_position(s, g)
-    case Match.AcceptCommand{_, _}: S.refreshed_same_position(s, g)
-    case Match.DeclineCommand{_, _}: S.refreshed_same_position(s, g)
-    case Match.ResignCommand{_, _}: S.refreshed_same_position(s, g)
-    case _: S.refreshed(s, g)
-
 def quiet_reminder(+s: S.State) -> S.State:
   +due = Bool.and(U32.is_eq(Types.preferences_policy(S.prefs(s)), 0), Bool.and(Nat.is_ge(Model.pos_quiet(S.pos(s)), 100n), Bool.and(U32.is_eq(S.outcome_code(s), 0), Bool.not(S.reminder_seen(S.reminded(s), Model.pos_side(S.pos(s)))))))
   +next = S.set_reminded(s, S.reminder_match(S.reminded(s), S.game(s)))
@@ -64,39 +52,27 @@ def command_result.record_refreshed(+s: S.State, +c: Match.Command, refreshed: S
   labels = List.append(&2, String, S.history(s), [R.command_label(c)])
   S.set_previous(S.set_history(S.set_journal(S.clear(S.menu(refreshed, 0)), commands), labels), previous)
 
-def command_result.record(+s: S.State, +c: Match.Command, g: Match.Match) -> S.State:
-  command_result.record_refreshed(s, c, refreshed_command(c, s, g))
-
 def command_result.finish(capture: Bool, +id: U32, +recorded: S.State) -> S.Update:
   +next = S.set_elapsed(S.set_last(recorded, id), Bool.pick(U32, U32.is_lt(id, 21760), 1, 240))
   +audible = Bool.or(U32.is_lt(id, 21760), Bool.not(U32.is_eq(S.outcome_code(next), 0)))
   +effects = List.append(&2, Types.Effect, stored(next), Bool.pick(List<&2, Types.Effect>, audible, sound_effect(capture, next, id), []))
   S.result(quiet_reminder(next), effects, 2)
 
-def command_result(r: Match.StepResult, +s: S.State, +c: Match.Command) -> S.Update:
-  match r:
-    case Match.Rejected{_}: S.result(S.notice(s, "That command is unavailable."), [], 2)
-    case Match.Accepted{g}:
-      +id = command_action(c)
-      +capture = Model.occupied(Model.board_get(Model.pos_board(S.pos(s)), Model.action_to(S.action(id))))
-      recorded = command_result.record(s, c, g)
-      command_result.finish(capture, id, recorded)
-
-# Consume only the immediate prepared command result. Its successor IDs were
-# proved equal to the canonical list; no independently supplied UI cache enters.
-def command_prepared(value: Prepared.Evaluation, +s: S.State, +c: Match.Command) -> S.Update:
+# The authoritative reply supplies the certified successor. Rejected commands
+# retain the prior controller state; presentation never supplies canonical IDs.
+def command_prepared(value: Prepared.Reply, +s: S.State, +c: Match.Command) -> S.Update:
   match value:
-    case Prepared.Ordinary{r}: command_result(r, s, c)
-    case Prepared.MoveAccepted{+g, ids}:
+    case Prepared.Rejected{_}: S.result(S.notice(s, "That command is unavailable."), [], 2)
+    case Prepared.Accepted{r}:
       +id = command_action(c)
       +capture = Model.occupied(Model.board_get(Model.pos_board(S.pos(s)), Model.action_to(S.action(id))))
-      recorded = command_result.record_refreshed(s, c, S.refreshed.with_ids(s, g, ids))
+      recorded = command_result.record_refreshed(s, c, S.refreshed(s, r))
       command_result.finish(capture, id, recorded)
 
 def command_guard(locked: Bool, +s: S.State, +c: Match.Command) -> S.Update:
   match locked:
     case True{}: S.unchanged(s)
-    case False{}: command_prepared(Prepared.command(S.game(s), c), s, c)
+    case False{}: command_prepared(Prepared.command(S.ready(s), c), s, c)
 
 def command_limit(full: Bool, +s: S.State, c: Match.Command) -> S.Update:
   match full:
@@ -116,7 +92,7 @@ def with_notice(u: S.Update, +before: U32, text: String) -> S.Update:
 def invalid_record(+s: S.State, +text: String) -> S.Update:
   S.result(S.notice(S.menu(S.recovery(S.set_raw(S.set_replay(s, None{}), text), True{}), 6), "Record rejected. Original text retained; download recovery or start a new match."), [Types.Store{2, text}], 2)
 
-def install_record(g: Maybe<&2, Match.Match>, +s: S.State, +text: String, +r: Codec.Record, +imported: Bool) -> S.Update:
+def install_record(g: Maybe<&2, Prepared.Ready>, +s: S.State, +text: String, +r: Codec.Record, +imported: Bool) -> S.Update:
   match g r:
     case None{} _: invalid_record(s, text)
     case Some{m} Codec.Record{layout, pol, +cs}:
@@ -131,7 +107,7 @@ def load_record(r: Maybe<&2, Codec.Record>, +s: S.State, text: String, imported:
     case Some{+record}:
       match record:
         case Codec.Record{layout, pol, +cs}:
-          +replay : S.Replay = S.Replay{Kernel.start(layout, S.policy(pol)), cs, record, text, imported, 0, U32.from_nat(List.length(&2, Match.Command, cs)), False{}, S.Reminder{False{}, False{}}}
+          +replay : S.Replay = S.Replay{Prepared.start(layout, S.policy(pol)), cs, record, text, imported, 0, U32.from_nat(List.length(&2, Match.Command, cs)), False{}, S.Reminder{False{}, False{}}}
           S.redrawn(S.notice(S.set_replay(S.clear(S.page(s, 0)), Some{replay}), "Validating record. New Match or Import cancels validation."))
 
 # One accepted command per scheduled Tick. Candidate state never enters the
@@ -142,10 +118,10 @@ def replay_progress(+s: S.State, r: S.Replay) -> S.Update:
       +status = String.append("Validating record: ", String.append(U32.show(done), String.append(" / ", String.append(U32.show(total), ". New Match or Import cancels."))))
       S.redrawn(S.notice(S.set_replay(s, Some{S.Replay{g, cs, record, text, imported, done, total, warning, r}}), String.append(Bool.pick(String, warning, "Preferences could not be read; defaults are in use. ", ""), status)))
 
-def replay_accepted(step: Match.StepResult, s: S.State, cs: List<&2, Match.Command>, record: Codec.Record, text: String, imported: Bool, done: U32, total: U32, warning: Bool, r: S.Reminder) -> S.Update:
+def replay_accepted(step: Prepared.Reply, s: S.State, cs: List<&2, Match.Command>, record: Codec.Record, text: String, imported: Bool, done: U32, total: U32, warning: Bool, r: S.Reminder) -> S.Update:
   match step:
-    case Match.Rejected{_}: invalid_record(s, text)
-    case Match.Accepted{+g}: replay_progress(s, S.Replay{g, cs, record, text, imported, U32.add(done, 1), total, warning, S.reminder_match(r, g)})
+    case Prepared.Rejected{_}: invalid_record(s, text)
+    case Prepared.Accepted{+g}: replay_progress(s, S.Replay{g, cs, record, text, imported, U32.add(done, 1), total, warning, S.reminder_match(r, Prepared.game(g))})
 
 def replay_finished(u: S.Update, warning: Bool, r: S.Reminder) -> S.Update:
   match u warning:
@@ -158,7 +134,7 @@ def replay_tick(r: Maybe<&2, S.Replay>, s: S.State) -> S.Update:
     case Some{S.Replay{g, cs, record, text, imported, done, total, warning, r}}:
       match cs:
         case []: replay_finished(install_record(Some{g}, s, text, record, imported), warning, r)
-        case c <> tail: replay_accepted(Kernel.command(g, c), s, tail, record, text, imported, done, total, warning, r)
+        case c <> tail: replay_accepted(Prepared.command(g, c), s, tail, record, text, imported, done, total, warning, r)
 
 def saved(empty: Bool, +s: S.State, +text: String) -> S.Update:
   match empty:
@@ -167,7 +143,7 @@ def saved(empty: Bool, +s: S.State, +text: String) -> S.Update:
 
 def start(+saved_text: String, preferences: String, width: U32, height: U32) -> S.Update:
   +s = R.load_preferences(Json.parse(preferences), S.blank(width, height))
-  saved(String.is_empty(saved_text), S.refreshed(s, S.game(s)), saved_text)
+  saved(String.is_empty(saved_text), S.refreshed(s, S.ready(s)), saved_text)
 
 def draft(+s: S.State, m: U32, l: Bool, p: U32) -> S.State:
   S.set_panels(s, Types.Panels{1, 0, "", m, l, p})
@@ -184,9 +160,8 @@ def new_match.box_failure(fallback: NewMatchFallback) -> S.Update:
         "New Match could not be prepared; your current game remains unchanged.")
       S.result(S.notice(state, message), [], 2)
 
-def new_match.refreshed_box(+base: S.State, +g: Match.Match,
-  +ids: List<&2, U32>) -> List<&2, S.State>:
-  [S.refreshed.with_ids(base, g, ids)]
+def new_match.refreshed_box(+base: S.State, g: Prepared.Ready) -> List<&2, S.State>:
+  [S.refreshed(base, g)]
 
 def new_match.after_refresh(next_box: List<&2, S.State>,
   fallback: NewMatchFallback) -> S.Update:
@@ -197,21 +172,14 @@ def new_match.after_refresh(next_box: List<&2, S.State>,
         case _: new_match.box_failure(fallback)
     case Nil{}: new_match.box_failure(fallback)
 
-def new_match.after_ids(state_box: List<&2, S.State>, fallback: NewMatchFallback,
-  +g: Match.Match, +ids: List<&2, U32>) -> S.Update:
+def new_match.refresh(state_box: List<&2, S.State>, fallback: NewMatchFallback,
+  +g: Prepared.Ready) -> S.Update:
   match state_box:
     case +base <> tail:
       match tail:
-        case Nil{}: new_match.after_refresh(new_match.refreshed_box(base, g, ids), fallback)
+        case Nil{}: new_match.after_refresh(new_match.refreshed_box(base, g), fallback)
         case _: new_match.box_failure(fallback)
     case Nil{}: new_match.box_failure(fallback)
-
-def new_match.refresh(state_box: List<&2, S.State>, fallback: NewMatchFallback,
-  +g: Match.Match) -> S.Update:
-  match g:
-    case Match.Match{initial, +p, actions, states, keys, rev, pol, offer, forced}:
-      +ids = Kernel.legal_ids!(p)
-      new_match.after_ids(state_box, fallback, g, ids)
 
 def new_match(+s: S.State) -> S.Update:
   +d = S.panels(s)
@@ -222,7 +190,7 @@ def new_match(+s: S.State) -> S.Update:
   +reset = S.recovery(S.pause(S.clear(S.menu(S.set_last(S.set_reminded(S.set_replay(s, None{}), S.Reminder{False{}, False{}}), 21760), 0)), False{}), False{})
   +base = S.set_elapsed(S.set_history(S.set_journal(S.set_prefs(reset, loaded), []), []), 240)
   state_box: List<&2, S.State> = [base]
-  +g = Kernel.start(l, S.policy(pol))
+  +g = Prepared.start(l, S.policy(pol))
   new_match.refresh(state_box, fallback, g)
 
 def corrupt_storage(recovering: Bool, +s: S.State) -> S.Update:
