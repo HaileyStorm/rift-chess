@@ -25,6 +25,7 @@ import ../../lib/graphics/v2/Color.bend as Color
 import ./PieceSprites.bend as PieceSprites
 import ./PieceAssets.bend as PieceAssets
 import ./SpritePlacement.bend as SpritePlacement
+import ./SpriteMotion.bend as SpriteMotion
 import ./AtlasPickData.bend as AtlasPickData
 import ./KnightMesh.bend as KnightMesh
 
@@ -577,29 +578,12 @@ def tile(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
 def progress(frame: Scene.Frame) -> U32:
   U32.min(Scene.frame_progress(frame), 16)
 
-def motion_source.action(action: Model.Action, +square: U32) -> U32:
-  match action:
-    case Model.MoveAction{from, to, promotion}:
-      Bool.pick(U32, U32.is_eq(square, to), from, square)
-    case Model.ShiftAction{from, to, promotion}:
-      Bool.pick(U32, U32.is_eq(Model.macro_of(square), to),
-        Model.square_in_macro(from, U32.add(U32.mod(Model.file_of(square), 2),
-          U32.mul(U32.mod(Model.rank_of(square), 2), 2))), square)
-
 def motion_source(decoded: Maybe<Model.Action>, +square: U32) -> U32:
-  match decoded:
-    case None{}: square
-    case Some{action}: motion_source.action(action, square)
+  SpriteMotion.source(decoded, square)
 
 def interpolated_point(+size: U32, +basis: Camera.Basis, +source: U32,
   +dest: U32, +amount: U32) -> Quad.Point:
-  +from = projected_square(size, basis, source)
-  +to = projected_square(size, basis, dest)
-  +t = F32.div(U32.to_f32(amount), 16.0)
-  +lift = Bool.pick(U32, U32.is_ne(source, dest),
-    scale_coord(size, U32.div(U32.mul(amount, U32.sub(16, amount)), 4)), 0)
-  Quad.Point{F32.lerp(point_x(from), point_x(to), t),
-    F32.sub(F32.lerp(point_y(from), point_y(to), t), U32.to_f32(lift))}
+  SpriteMotion.interpolated_point(size, basis, source, dest, amount)
 
 # Selection is a piece-level silhouette cue, visible immediately on the proxy
 # frame and retained when the authored sprite replaces that frame. The broad
@@ -632,17 +616,7 @@ def piece_at(show: Bool, +square: U32, code: U32, +c: Context,
         depth, size, x, y, 16768672, selected)
 
 def captured_square(decoded: Maybe<Model.Action>, +previous: Model.Position) -> U32:
-  match decoded:
-    case None{}: 64
-    case Some{action}:
-      match action:
-        case Model.ShiftAction{from, to, promotion}: 64
-        case Model.MoveAction{+from, +to, promotion}:
-          +board = Model.pos_board(previous)
-          +ep = Bool.and(U32.is_eq(to, Model.pos_ep(previous)),
-            Model.is_pawn(Model.board_get(board, from)))
-          Bool.pick(U32, Model.occupied(Model.board_get(board, to)), to,
-            Bool.pick(U32, ep, Model.pos_ep_pawn(previous), 64))
+  SpriteMotion.captured_square(decoded, previous)
 
 def dying_at(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
   match show c:
@@ -1423,9 +1397,7 @@ def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
 # lerp(source, destination, 1) can retain source-dependent rounding.
 def sprite_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
   source: U32, +square: U32, amount: U32) -> Quad.Point:
-  match complete:
-    case True{}: SpritePlacement.center(size, camera, square)
-    case False{}: interpolated_point(size, camera, source, square, amount)
+  SpriteMotion.center_at(complete, size, camera, source, square, amount)
 
 # A low, translucent footprint sits behind the existing alpha-cut artwork.
 # Its dimensions follow the same screen-facing sprite width and base shift,
@@ -1462,7 +1434,7 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
         clip, contact)
 
 def sprite_opacity(+age: U32) -> U32:
-  U32.sub(255, U32.mul(U32.min(age, 7), 32))
+  SpriteMotion.opacity(age)
 
 def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
   +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
@@ -1471,15 +1443,7 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
     case True{} Context{depth, +size, +frame, +camera, board, +oldBoard,
         previous, holes, action, theme}:
       +age = progress(frame)
-      +x = square_x(size, camera, square)
-      +y = square_y(size, camera, square)
-      +drift = scale_coord(size, U32.div(age, 2))
-      +lift = scale_coord(size, age)
-      +dead_x = Bool.pick(U32, U32.is_even(age), U32.add(x, drift),
-        U32.sub(x, drift))
-      +dead_y = U32.sub(y, lift)
-      +center: Quad.Point = Quad.Point{U32.to_f32(dead_x),
-        U32.to_f32(dead_y)}
+      +center = SpriteMotion.dying_center(size, camera, square, age)
       +code = Model.board_get(oldBoard, square)
       +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),

@@ -30,7 +30,7 @@ function name(relative: string, symbol: string): string {
   return namespace ? `${namespace}.${symbol}` : symbol;
 }
 const roots = ['pick', 'piece_hit', 'geometry_hit',
-  name('bend2/graphics/v2game/SpritePlacement.bend', 'square_matrix'),
+  name('bend2/graphics/v2game/SpritePlacement.bend', 'piece_square_matrix'),
   name('bend2/graphics/v2game/AtlasPickData.bend', 'from_pieces'),
   ...['decode_page', 'prepare', 'draw_axis_aligned'].map(symbol =>
     name('bend2/graphics/v2game/PieceSprites.bend', symbol)),
@@ -41,12 +41,19 @@ const witnessRoots = witnessOutput ? [...['basis', 'default_view', 'center_x', '
   name('bend2/graphics/Camera.bend', symbol)), ...['start', 'present'].map(symbol =>
   name('bend2/core/Model.bend', symbol)), name('bend2/graphics/Picking.bend', 'pick')] : [];
 roots.push(...witnessRoots);
+const motionRoots = ['pick_pose', 'geometry_hit_opacity',
+  name('bend2/graphics/v2game/SpritePlacement.bend', 'piece_matrix'),
+  ...['from_frame', 'center', 'dying_center', 'opacity'].map(symbol =>
+    name('bend2/graphics/v2game/SpriteMotion.bend', symbol))];
+roots.push(...motionRoots);
 const emitted = Comp.js_lib(book, roots, roots);
 const api = (await import(`data:text/javascript;base64,${Buffer.from(emitted).toString('base64')}`)).default;
 const [pick, pieceHit, geometryHit, matrix, alphaOnly, decode, prepare, draw, depthOrder, floor, uv,
   prepareGeometry, drawGeometry] =
   roots.map(symbol => api[symbol]);
 assert.ok(roots.every(symbol => typeof api[symbol] === 'function'));
+const [pickPose, geometryHitOpacity, pieceMatrix, fromFrame, motionCenter, dyingCenter, opacity] =
+  motionRoots.map(symbol => api[symbol]);
 
 const list = (xs: any[]) => xs.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' });
 const unlist = (xs: any) => { const out: number[] = []; for (; xs.$ === 'Con'; xs = xs.tail) out.push(xs.head); return out; };
@@ -107,12 +114,12 @@ const basis = { $: 'Basis', cosYaw: 1, sinYaw: 0, sinPitch: .30, cosPitch: .954,
 function rendered(square: number, code: number, camera = basis): Uint32Array {
   const side = { $: code < 8 ? 'Ivory' : 'Navy' };
   const kind = { $: ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][(code - 1) % 8] ?? 'Pawn' };
-  return pixels(draw(9n, 512, support, side, kind, matrix(512, camera, square), 255, screen, pix(0)));
+  return pixels(draw(9n, 512, support, side, kind, matrix(512, camera, square, code % 8), 255, screen, pix(0)));
 }
 let renderedChecks = 0, transparentControls = 0, feetControls = 0;
 for (let id = 0; id < 12; id++) {
   const square = 27, code = id < 6 ? id + 1 : id + 3;
-  const raster = rendered(square, code), m = matrix(512, basis, square);
+  const raster = rendered(square, code), m = matrix(512, basis, square, code % 8);
   let transparent: number[] | undefined, feet: number[] | undefined;
   const samples: number[][] = [];
   for (let y = Math.max(0, Math.floor(m.ty) - 1); y <= Math.ceil(m.ty + m.d); y++) {
@@ -168,6 +175,86 @@ for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
 }
 assert.equal(faintRaster[0], 0, 'alpha one at quarter coverage rounds to no painted pixel');
 assert.notEqual(faintRaster[17], 0, 'alpha one at full coverage paints a faint pixel');
+let fadePixels = 0;
+for (const amount of [1, 31, 63, 127, 223]) {
+  const raster = pixels(drawGeometry(4n, 16, geometry, faint, { $: 'Linear' }, amount,
+    { $: 'Box', left: 0, top: 0, right: 16, bottom: 16 }, pix(0)), 16);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    assert.equal(geometryHitOpacity(geometry, faint, amount, x, y), raster[y * 16 + x] !== 0);
+    fadePixels++;
+  }
+}
+
+// Placement is shared with the product renderer. Independently drawing each
+// white-on-black layer checks sampled opacity and painter support rather than
+// restating the picker's geometry/coverage formula. A separate retained-renderer
+// differential checks that extracting placement did not change rendered pixels.
+const motionFixtures = [
+  { label: 'move', from: 12, to: 28, kind: 1, previous: [[12, 1], [27, 13]], current: [[28, 1], [27, 13]], victim: 64 },
+  { label: 'capture', from: 28, to: 27, kind: 1, previous: [[28, 1], [27, 9], [35, 13]], current: [[27, 1], [35, 13]], victim: 27 },
+  { label: 'en-passant', from: 36, to: 43, kind: 1, previous: [[36, 1], [35, 9], [27, 13]], current: [[43, 1], [27, 13]], victim: 35, ep: 43 },
+  { label: 'promotion', from: 48, to: 56, kind: 5, previous: [[48, 1], [27, 13]], current: [[56, 5], [27, 13]], victim: 64, promotion: 4 },
+  { label: 'castle', from: 4, to: 6, kind: 6, previous: [[4, 6], [7, 4], [27, 13]], current: [[6, 6], [5, 4], [27, 13]], victim: 64 },
+];
+let motionChecks = 0, movingSupport = 0, dyingOcclusion = 0, fadingTransparent = 0;
+for (const fixture of motionFixtures) for (const age of [0, 1, 7, 8, 15, 16]) {
+  const before = position(fixture.previous as [number, number][]);
+  if (fixture.ep !== undefined) { before.ep = fixture.ep; before.epPawn = fixture.victim; }
+  const current = position(fixture.current as [number, number][]);
+  const frame = { $: 'Frame', previous: before, position: current,
+    lastAction: fixture.from * 320 + fixture.to * 5 + (fixture.promotion ?? 0), progress: age };
+  const pose = fromFrame(frame);
+  const layers: { square: number; raster: Uint32Array; opaque?: Uint32Array; dying: boolean }[] = [];
+  const candidates = new Set<number>();
+  function layer(square: number, code: number, dying: boolean): void {
+    const center = dying ? dyingCenter(512, basis, square, age) : motionCenter(pose, 512, basis, square);
+    const m = pieceMatrix(512, basis, center, code % 8), geometry = prepareGeometry(m);
+    const amount = dying ? opacity(age) : 255;
+    const field = fields[(code < 8 ? 0 : 6) + code % 8 - 1];
+    const raster = pixels(draw(9n, 512, support, { $: code < 8 ? 'Ivory' : 'Navy' },
+      { $: ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][code % 8 - 1] },
+      m, amount, screen, pix(0)));
+    const opaque = dying && age === 7 ? pixels(draw(9n, 512, support,
+      { $: code < 8 ? 'Ivory' : 'Navy' },
+      { $: ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'][code % 8 - 1] },
+      m, 255, screen, pix(0))) : undefined;
+    if (geometry.$ === 'Empty') return;
+    const bounds = geometry.bounds;
+    const left = Math.max(0, bounds.left), right = Math.min(512, bounds.right);
+    const top = Math.max(0, bounds.top), bottom = Math.min(512, bounds.bottom);
+    let firstPaint = -1, lastPaint = -1, firstClear = -1, firstFaded = -1;
+    for (let y = top; y < bottom; y++) for (let x = left; x < right; x++) {
+      const painted = raster[y * 512 + x] !== 0;
+      assert.equal(geometryHitOpacity(geometry, alpha[field], amount, x, y), painted,
+        `${fixture.label}/${age}/${dying ? 'dying' : square} support at ${x},${y}`);
+      motionChecks++;
+      if (painted) { if (firstPaint < 0) firstPaint = y * 512 + x; lastPaint = y * 512 + x; }
+      else if (firstClear < 0) firstClear = y * 512 + x;
+      if (!painted && opaque?.[y * 512 + x] && firstFaded < 0) firstFaded = y * 512 + x;
+      if (x % 13 === 0 && y % 13 === 0) candidates.add(y * 512 + x);
+    }
+    for (const index of [firstPaint, lastPaint, firstClear, firstFaded]) if (index >= 0) candidates.add(index);
+    layers.push({ square, raster, opaque, dying });
+  }
+  const cells = unlist(current.board), priorCells = unlist(before.board);
+  for (const square of unlist(depthOrder(basis))) {
+    if (square === fixture.victim && age < 8) layer(square, priorCells[square], true);
+    if (cells[square]) layer(square, cells[square], false);
+  }
+  for (const index of candidates) {
+    const x = index % 512, y = Math.floor(index / 512);
+    const painted = layers.filter(layer => layer.raster[index] !== 0), last = painted.at(-1);
+    const expected = last ? last.dying ? 64 : last.square : floor(x, y, basis);
+    assert.equal(pickPose(current, pose, x, y, basis, alpha), expected, `${fixture.label}/${age} painter support`);
+    if (last?.square === fixture.to && !last.dying && floor(x, y, basis) !== fixture.to) movingSupport++;
+    if (last?.dying && painted.slice(0, -1).some(layer => !layer.dying)) dyingOcclusion++;
+    if (!last && layers.some(layer => layer.dying && layer.opaque?.[index] &&
+      layer.raster[index] === 0)) fadingTransparent++;
+  }
+}
+assert.ok(movingSupport, 'moving artwork remains selectable outside its floor');
+assert.ok(dyingOcclusion, 'painted removed piece blocks earlier artwork');
+assert.ok(fadingTransparent, 'faded transparent texels fall through');
 if (witnessOutput) {
   const [cameraBasis, defaultView, centerX, centerY, start, present, legacyPick] = witnessRoots.map(symbol => api[symbol]);
   const frontView = { ...defaultView(), yaw: 0, pitch: 65 };
@@ -203,7 +290,7 @@ if (witnessOutput) {
     let paintedCandidates = 0;
     const envelopes: any[] = [];
     for (const layer of layers.filter(layer => cells[layer.square] < 8)) {
-      const m = matrix(512, frontBasis, layer.square);
+      const m = matrix(512, frontBasis, layer.square, cells[layer.square] % 8);
       const cx = centerX(layer.square, frontBasis), cy = centerY(layer.square, frontBasis);
       const legacy = { left: cx - 12, top: cy - 32, right: cx + 12, bottom: cy + 4 };
       let candidate: number[] | undefined;
@@ -242,7 +329,7 @@ if (witnessOutput) {
   let transparentCount = 0;
   for (const layer of layers.filter(layer => cells[layer.square] < 8)) {
     if (transparentCount >= 2) break;
-    const m = matrix(512, frontBasis, layer.square);
+    const m = matrix(512, frontBasis, layer.square, cells[layer.square] % 8);
     let candidate: number[] | undefined;
     for (let y = Math.max(1, Math.ceil(m.ty + 1)); y < Math.min(511, Math.floor(m.ty + m.d - 1)) && !candidate; y++) {
       for (let x = Math.max(1, Math.ceil(m.tx + 1)); x < Math.min(511, Math.floor(m.tx + m.a - 1)) && !candidate; x++) {
@@ -292,4 +379,5 @@ if (witnessOutput) {
 }
 console.log(JSON.stringify({ ok: true, samplerChecks, renderedChecks,
   transparentControls, feetControls, overlapAndHoleControls: 2, faintBoundaryPixels: 256,
+  fadePixels, motionChecks, movingSupport, dyingOcclusion, fadingTransparent,
   scope: 'Selected pinned Bend JS; real source alpha, exact painted-pixel support, transparent/feet/overlap/hole/floor controls. No browser/native claim.' }));

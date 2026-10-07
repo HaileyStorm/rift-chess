@@ -13,8 +13,8 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
-  scene: ["stationary-motion-20261006/scene-35ae6l", "f8f19fd018a3b36814fe59844ea1071f83c90223c2f5b55b07140a8da158502b"],
-  controller: ["stationary-motion-20261006/controller-cTH5o2", "85f9ec96879561d211f2485760a085c25bf54513979236a9fd2b5d042faf5d23"],
+  scene: ["moving-atlas-picking-20261006/scene-zSzzNa", "0e3c52a5ab95ed7f2137800acec1e74867dbfcb50afb649a7b3fc02f56e9db62"],
+  controller: ["moving-atlas-picking-20261006/controller-CLYlMa", "8dcd69f309d3b93d935ae060b76f738c1e396970a40888fe32d76b067d3c6374"],
   menu: ["stationary-motion-20261006/menu-CeZCVU", "6ff231aed698981d3228f1a21b0a563aac41b86cf44fb8b9683f82c2fdb24ddb"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');

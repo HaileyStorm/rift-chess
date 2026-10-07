@@ -7,6 +7,7 @@ import ./graphics/Camera.bend as Camera
 import ./graphics/Picking.bend as Picking
 import ./graphics/v2game/AtlasPicking.bend as AtlasPicking
 import ./graphics/v2game/PieceSprites.bend as PieceSprites
+import ./graphics/v2game/SpriteMotion.bend as SpriteMotion
 import ./graphics/Scene.bend as Scene
 import ./ui/Types.bend as T
 import ./ui/Layout.bend as Layout
@@ -61,7 +62,7 @@ type Session is Data:
 
 type Presentation is Data:
   Presentation{position: Model.Position, view: Camera.View, revision: U32,
-    menu: U32, plan: ChromePlan.Plan}
+    menu: U32, plan: ChromePlan.Plan, pose: SpriteMotion.Pose}
 
 # Worker input is only a Bend-approved bot position and its current legal IDs.
 # `eligible` may be true during the move animation so computation overlaps it;
@@ -179,7 +180,7 @@ def presentation(+snapshot: T.Snapshot,
   +frame = T.snapshot_frame(snapshot)
   Presentation{Scene.frame_position(frame), Scene.frame_view(frame),
     T.meta_revision(T.snapshot_meta(snapshot)),
-    T.panels_menu(T.snapshot_panels(snapshot)), plan}
+    T.panels_menu(T.snapshot_panels(snapshot)), plan, SpriteMotion.from_frame(frame)}
 
 def pack(+session: Session, effects: List<&2, T.Effect>,
   +snapshot: T.Snapshot, +plan: ChromePlan.Plan,
@@ -413,7 +414,7 @@ def presented_square.on(inside: Bool, +position: Model.Position,
 
 def presented_square(+shown: Presentation, +x: U32, +y: U32) -> U32:
   match shown:
-    case Presentation{position, view, revision, menu, +plan}:
+    case Presentation{position, view, revision, menu, +plan, pose}:
       +bounds = ChromeModel.plan_board(plan)
       presented_square.on(Bool.and(U32.is_zero(menu), Layout.in_rect(x, y, bounds)),
         position, view, bounds, ChromeModel.plan_scale(plan), x, y)
@@ -423,7 +424,7 @@ def select_at(in_board: Bool, +shown: Presentation, x: U32, y: U32) -> T.Input:
     case False{}: T.Activate{0}
     case True{}:
       match shown:
-        case Presentation{position, view, revision, menu, +plan}:
+        case Presentation{position, view, revision, menu, +plan, pose}:
           +bounds = ChromeModel.plan_board(plan)
           +scale = ChromeModel.plan_scale(plan)
           T.SquareInput{Picking.pick(position,
@@ -434,7 +435,7 @@ def click_at(control: U32, +shown: Presentation, +x: U32, +y: U32) -> T.Input:
   match control:
     case 0:
       match shown:
-        case Presentation{position, view, revision, menu, +plan}:
+        case Presentation{position, view, revision, menu, +plan, pose}:
           select_at(Bool.and(U32.is_zero(menu), Layout.in_rect(x, y,
             ChromeModel.plan_board(plan))), shown, x, y)
     case _: T.Activate{control}
@@ -443,7 +444,7 @@ def event_at(event: T.Input, +shown: Presentation) -> T.Input:
   match event:
     case T.PointerDown{+x, +y, 0, False{}}:
       match shown:
-        case Presentation{position, view, revision, menu, +plan}:
+        case Presentation{position, view, revision, menu, +plan, pose}:
           click_at(ChromeModel.hit(plan, x, y), shown, x, y)
     case T.PointerMove{+x, +y}:
       T.PresentedMove{x, y, presented_square(shown, x, y)}
@@ -490,32 +491,32 @@ def dispatch_at_web(+events: List<&2, T.Input>, shown: Presentation,
   session: Session) -> Packet:
   web_packet_packet(dispatch_at_web_meta(events, shown, session))
 
-# Only displayed, settled browser atlas frames use this silhouette. Native and
+# Displayed browser atlas frames use their immutable artwork pose. Native and
 # procedural presentations retain events_at and the original picker.
 def atlas_square.on(inside: Bool, +position: Model.Position,
-  +view: Camera.View, +bounds: T.Rect, +scale: U32,
+  pose: SpriteMotion.Pose, +view: Camera.View, +bounds: T.Rect, +scale: U32,
   +x: U32, +y: U32, pieces: PieceSprites.Pieces) -> U32:
   match inside:
     case False{}: 64
     case True{}:
-      AtlasPicking.pick(position,
+      AtlasPicking.pick_pose(position, pose,
         U32.div(U32.sub(x, T.rect_x(bounds)), scale),
         U32.div(U32.sub(y, T.rect_y(bounds)), scale), Camera.basis(view), pieces)
 
 def atlas_square(+shown: Presentation, +x: U32, +y: U32,
   pieces: PieceSprites.Pieces) -> U32:
   match shown:
-    case Presentation{position, view, revision, menu, +plan}:
+    case Presentation{position, view, revision, menu, +plan, pose}:
       +bounds = ChromeModel.plan_board(plan)
       atlas_square.on(Bool.and(U32.is_zero(menu), Layout.in_rect(x,y,bounds)),
-        position,view,bounds,ChromeModel.plan_scale(plan),x,y,pieces)
+        position,pose,view,bounds,ChromeModel.plan_scale(plan),x,y,pieces)
 
 def atlas_click(control: U32, +shown: Presentation, +x: U32, +y: U32,
   pieces: PieceSprites.Pieces) -> T.Input:
   match control:
     case 0:
       match shown:
-        case Presentation{position,view,revision,menu,+plan}:
+        case Presentation{position,view,revision,menu,+plan,pose}:
           +bounds = ChromeModel.plan_board(plan)
           Bool.pick(T.Input,
             Bool.and(U32.is_zero(menu),Layout.in_rect(x,y,bounds)),
@@ -527,7 +528,7 @@ def atlas_event_at(event: T.Input, +shown: Presentation,
   match event:
     case T.PointerDown{+x,+y,0,False{}}:
       match shown:
-        case Presentation{position,view,revision,menu,+plan}:
+        case Presentation{position,view,revision,menu,+plan,pose}:
           atlas_click(ChromeModel.hit(plan,x,y),shown,x,y,pieces)
     case T.PointerMove{+x,+y}:
       T.PresentedMove{x,y,atlas_square(shown,x,y,pieces)}

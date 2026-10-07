@@ -494,8 +494,10 @@ function render(packet: any): any {
     return request.motion ? scene.fast_camera256_for_512(frame, motionUnderlay)
       : scene[`fast_pointer${suffix}`](frame, prepared);
   });
-  renderedAtlas = !request.motion && !packet.snapshot.moving && preparedAtlas;
-  renderedAtlasMaskId = renderedAtlas ? preparedAtlasMaskId : null;
+  renderedAtlas = !request.motion && (spriteMoving
+    ? spriteAtlasMaskId !== null : !packet.snapshot.moving && preparedAtlas);
+  renderedAtlasMaskId = renderedAtlas
+    ? (spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
   pruneAtlasMasks();
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)
