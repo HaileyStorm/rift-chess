@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { registerHooks } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { sourceFixture, validateSourceApproval, validateSafeOutput, assertSafeRuntime,
   assertSerializedUnchanged, safeWorkerFlags } from './contracts.mjs';
 import { root, sourceEvidence, captureSource, captureRuntime, sha256 } from './binding.mjs';
@@ -52,11 +54,30 @@ const directory = fs.mkdtempSync(path.join(fixtureRoot, 'contracts-'));
 const out = path.join(directory, 'synthetic.bendtt');
 let syntheticEmitCalls = 0;
 const fakeSafe = { safe_emit: (_book, file) => { syntheticEmitCalls++; fs.writeFileSync(file, 'synthetic-not-proof'); return []; } };
-const output = emitExclusive(fakeSafe, {}, out);
+// The production export keeps its fixed kernel-output fence. Only this distinct
+// import of the original module receives an owned synthetic fixture dependency.
+assert.throws(() => emitExclusive(fakeSafe, {}, out));
+assert.equal(syntheticEmitCalls, 0); assert.equal(fs.existsSync(out), false);
+const fixtureOutputUrl = new URL('./output.mjs?owned-contract-fixture', import.meta.url).href;
+const bindingUrl = pathToFileURL(path.join(root, 'bend2/core/v3/2035/bendtt-gate/binding.mjs')).href;
+const fixtureBinding = `export { readSource, sha256 } from ${JSON.stringify(bindingUrl)}; export const outputRoot = ${JSON.stringify(fixtureRoot)};`;
+let fixtureRedirects = 0;
+const hooks = registerHooks({ resolve(specifier, context, next) {
+  if (specifier === './binding.mjs' && context.parentURL === fixtureOutputUrl) {
+    fixtureRedirects++;
+    return { url: 'data:text/javascript,' + encodeURIComponent(fixtureBinding), shortCircuit: true };
+  }
+  return next(specifier, context);
+} });
+let fixtureEmit;
+try { fixtureEmit = (await import(fixtureOutputUrl)).emitExclusive; }
+finally { hooks.deregister(); }
+assert.equal(fixtureRedirects, 1);
+const output = fixtureEmit(fakeSafe, {}, out);
 assert.equal(syntheticEmitCalls, 1); assert.deepEqual(output.file, outputIdentity(out));
-assert.throws(() => emitExclusive(fakeSafe, {}, out), /existing/);
+assert.throws(() => fixtureEmit(fakeSafe, {}, out), /existing/);
 const foreign = path.join(directory, 'unowned');
-assert.throws(() => emitExclusive({ safe_emit: () => { fs.writeFileSync(foreign, 'x'); return []; } }, {},
+assert.throws(() => fixtureEmit({ safe_emit: () => { fs.writeFileSync(foreign, 'x'); return []; } }, {},
   path.join(directory, 'new.bendtt')), /unowned/);
 assert.equal(fs.existsSync(foreign), false);
 writeJson(path.join(directory, 'scope.json'), { synthetic: true, proof: false, output });

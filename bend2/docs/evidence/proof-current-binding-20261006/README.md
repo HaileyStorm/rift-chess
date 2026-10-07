@@ -57,8 +57,22 @@ foreign claim are preserved; no cleanup or claim takeover followed. Incident
 directory records their hashes. Future pure contract fixtures now use the separate
 owned `.artifacts/bend2/2035-preview/bendtt-contracts` scope. Kernel output and
 production execution paths are unchanged. The exact test postimage and manifest
-digest were amended for this output-path fix. Final contract and drift validation
-follow its clean commit; their acceptance is still pending here.
+digest were amended for this output-path fix.
+
+The first corrective contract run at clean `e4a05e5` failed at the adapter's fixed
+production-output fence, terminal SHA256
+`15a4c26feff0736bae36bac3857f4e85139d8f37387bff8c560c52a5b38460a3`.
+Actual native closure and equal source bindings were recorded; that failure is
+retained, with no foreign output write. Production `output.mjs`, its fixed root
+fence and the Worker remain unchanged. The test now asserts the production export
+rejects its owned preview path before invoking the synthetic emitter, then imports
+the original adapter in one test-only Node24 hook context. That context redirects
+only the query-qualified adapter's binding dependency to the owned fixture root
+and reexports the real hash/reader helpers; it deregisters immediately after import.
+No implementation copy or new production export is introduced. Exclusive-write,
+unowned-write rejection and output-identity checks still execute the original
+adapter against real filesystem fixtures. Final contract and drift validation
+follow this correction's clean commit; their acceptance is pending here.
 
 This is Windows source/type/promise evidence. Safe elaboration, a prebuilt BendTT
 kernel, Linux admissions and runtime approval, current native CPU/GUI/PCM/restart,
