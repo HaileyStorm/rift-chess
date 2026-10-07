@@ -361,10 +361,9 @@ def apply(u: S.Update, ground: GroundKey, style: U32,
   probe: Maybe<&2, Quality.Probe>) -> Packet:
   match u:
     case S.Update{+state, effects, redraw, after}:
-      +snapshot = Program.snapshot(state)
       apply.decision(state, effects, redraw, after, ground, style, old_quality,
         shell,
-        quality_for(probe, old_quality, T.snapshot_mobile(snapshot)))
+        quality_for(probe, old_quality, S.mobile(state)))
 
 def apply_web(update: Program.WebUpdate, ground: GroundKey, style: U32,
   quality: Quality.State, shell: ShellKey, probe: Maybe<&2, Quality.Probe>) -> WebPacket:
