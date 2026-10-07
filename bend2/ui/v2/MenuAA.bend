@@ -509,14 +509,19 @@ def chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
 def compose(+depth: Nat,+plan: Plan.Plan,board_image: Image,prepared: Image) -> Image:
   embed(depth,plan,board_image,prepared)
 
-# Uncached convenience path for menus, screenshots, and diagnostics. During
-# gameplay the host caches chrome() and calls compose() for board-only changes.
-def render(+depth: Nat,+size: U32,+data: Data.Presentation,
-  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image) -> Image:
+# Menus reuse only the immutable shell admitted by same_base. Paint current
+# text, board, panel/scrim and controls in their original order on every call.
+def render_on_base(+depth: Nat,+size: U32,+data: Data.Presentation,
+  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image,base_image: Image) -> Image:
   +theme = Data.theme(data)
   +menu = Data.menu(data)
-  +shell = shell_for(Plan.plan_mobile(plan),depth,size,data,theme,plan,fonts)
-  +dynamic = dynamic_chrome(depth,size,data,plan,fonts,shell)
+  +dynamic = dynamic_chrome(depth,size,data,plan,fonts,base_image)
   +board = compose(depth,plan,board_image,dynamic)
   +panel = panel_for(menu,depth,size,theme,plan,fonts,board)
   paint_controls(depth,size,theme,menu,fonts,Plan.plan_controls(plan),panel)
+
+# Convenience facade for native callers, screenshots and diagnostics.
+def render(+depth: Nat,+size: U32,+data: Data.Presentation,
+  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image) -> Image:
+  +base = base_chrome(depth,size,data,plan,fonts)
+  render_on_base(depth,size,data,plan,fonts,board_image,base)

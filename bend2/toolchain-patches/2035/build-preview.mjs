@@ -1,6 +1,7 @@
 // Isolated current-source candidate preview. This does not adopt the compiler
 // or substitute the accepted bot Worker/proof/native package.
 import assert from 'node:assert/strict';
+import { menuApplicationBinding2035 } from '../../core/v3/2035/bendtt-gate/application/menu-binding.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -16,7 +17,7 @@ import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 const selected = {
   scene: ["stationary-motion-20261006/scene-3utptJ", "6890966efa0d46fc344b3f3d9ff8c351a90b9649f1b8f3d670ac3b89808855f1"],
   controller: ["stationary-motion-20261006/controller-uyiRcR", "a2f50b39e73f56855f92099d8dc3fa9ec7f628d1d76050a6e6c013395da6cba2"],
-  menu: ["stationary-motion-20261006/menu-CeZCVU", "6ff231aed698981d3228f1a21b0a563aac41b86cf44fb8b9683f82c2fdb24ddb"],
+  menu: ["stationary-motion-20261006/menu-app-Ft8mws", "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
@@ -77,7 +78,7 @@ function caches(runtime) {
     const manifest = JSON.parse(raw);
     assert.equal(manifest.schema, 'rift-bend-selected-cache/2035-1');
     assert.equal(sha256(JSON.stringify(manifest.binding)), manifest.bindingSha256);
-    assert.deepEqual(manifest.binding, { ...selectedBinding2035(name), runtime },
+    assert.deepEqual(manifest.binding, { ...(name === 'menu' ? menuApplicationBinding2035() : selectedBinding2035(name)), runtime },
       `Stale current ${name} cache`);
     assert.equal(manifest.networkCalls, 0);
     assert.equal(manifest.output.file, name + '.js');
@@ -104,6 +105,8 @@ export async function buildPreview2035({ preparedGround = true } = {}) {
   const bot = botLibrary2035(runtime);
   const boundary = createBrowserTagBoundary2035();
   const extraSources = ['bend2/toolchain-patches/2035/build-preview.mjs',
+    'bend2/core/v3/2035/bendtt-gate/application/menu-binding.mjs',
+    'bend2/core/v3/2035/bendtt-gate/application/emit-menu.mjs',
     preparedManifest, 'bend2/core/v3/prepared-match/verify.mjs',
     'bend2/toolchain-patches/2032/browser-preview/pack-static.mjs',
     'bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html',

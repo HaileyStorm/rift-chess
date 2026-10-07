@@ -461,14 +461,14 @@ function render(packet: any): any {
   }
   const data = packet.chromeData, plan = packet.plan;
   const playing = menu.play(data);
+  if (request.shell || !menuBase || !menuBaseData ||
+      !menu.same_base(menuBaseData, menuBasePlan, data, plan)) {
+    menuBase = timed('shell', () => menu.base_chrome(request.depth, request.size,
+      data, plan, fonts));
+    menuBaseData = data; menuBasePlan = plan;
+    menuControls = null; chrome = null;
+  }
   if (playing) {
-    if (request.shell || !menuBase || !menuBaseData ||
-        !menu.same_base(menuBaseData, menuBasePlan, data, plan)) {
-      menuBase = timed('shell', () => menu.base_chrome(request.depth, request.size,
-        data, plan, fonts));
-      menuBaseData = data; menuBasePlan = plan;
-      menuControls = null; chrome = null;
-    }
     if (!menuControls || !menuStaticData ||
         !menu.same_static(menuStaticData, menuStaticPlan, data, plan)) {
       menuControls = timed('chrome', () => menu.controls_chrome(request.depth,
@@ -501,7 +501,7 @@ function render(packet: any): any {
   pruneAtlasMasks();
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)
-    : menu.render(request.depth, request.size, data, plan, fonts, board));
+    : menu.render_on_base(request.depth, request.size, data, plan, fonts, board, menuBase));
   return retained;
 }
 async function ensurePlate(packet: any): Promise<void> {

@@ -1,0 +1,306 @@
+{
+  "schema": "rift-bend-2035-application-amendment/1",
+  "disposition": "accepted",
+  "baseline": "1fe43efdcb33580051a29e60b36c909b05b5ff94",
+  "baselineTree": "8580d9e1e4c28d53e9f324900ab3c0cc01ee17cf",
+  "creationReceiptSha256": "a5ccbfdb0a009501525785ffb94640d573593517b02942ad470c6c977c04f698",
+  "registry": {
+    "path": "bend2/tools/selected-modules.mjs",
+    "sha256": "3638db30ce2c4d9e3ba13272bed451c093bf36de6edae227c16463d832ee766d",
+    "changed": false
+  },
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-accepted-review-r1.md",
+    "sha256": "fc0c2a3cd51719c382a64fd0398199b93c734a4755d4f1c55b0458acd55165a9",
+    "disposition": "accepted"
+  },
+  "reviewPacket": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-final-review-packet-r1.json",
+    "sha256": "a9070ac1b21cc86a2f9576e37c943cb5cb3e89715a5f85a2f6657d4a7c470cfd"
+  },
+  "changes": [
+    {
+      "path": "bend2/ui/v2/MenuAA.bend",
+      "status": "M",
+      "afterSha256": "716ac5c85bc20c2beeac40887ed86e95e00b32dbf004d71226b308c894cb6d5f",
+      "beforeSha256": "f8db207989a3d7c010691fd38ce1cf3936b034c97b96dc485e832b0d5bee91e4"
+    },
+    {
+      "path": "bend2/platform/browser/worker-v2.ts",
+      "status": "M",
+      "afterSha256": "2637866a8050bb9a95b73f84b90715c1c25c1e2c51a06ce79efd995e96c397d5",
+      "beforeSha256": "f3a78f8c34270924620a56497bb145b0ebcb2569232cf91ad01a2de62b3384c5"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "status": "M",
+      "afterSha256": "c0315109a60821f3ef2e4364e5c31288181ad414d3122b5693ee7b1fd1f9a9af",
+      "beforeSha256": "88357e5aefdd3be9abbbc976167168a5b30b56f179b31083fd0762a4a678691d"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/browser-tag-boundary.mjs",
+      "status": "M",
+      "afterSha256": "06fa04c515ca42c49dbdfdb0fb69d1ad8141723eca25484dc18ae95e05e6ab4c",
+      "beforeSha256": "2be49cc02a57dd9c87da363f2c5ab6c7fa4f90f1855ed114523d43dbe2251175"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/application/menu-binding.mjs",
+      "status": "A",
+      "afterSha256": "ef3678f0c16754d3cf0b1a42de3d5a27732c92c668052281887d7371a41accc5"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/application/emit-menu.mjs",
+      "status": "A",
+      "afterSha256": "0a469095cf8cb363bb2daada3117dd8fc6cd6bfabc8a82083644b584650c1750"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/application/capture.mjs",
+      "status": "A",
+      "afterSha256": "e70b624c8dc3ca4a3e3384d55541b3ccabb0fa01eb35d5cae341fa4e634ac567",
+      "normalization": "one-application-digest-literal"
+    },
+    {
+      "path": "bend2/docs/evidence/menu-base-20261007/README.md",
+      "status": "A",
+      "afterSha256": "778f8711ddffe07f2e04e7ab27def49d720ec3b9169340ec39430268367a295c"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-emission-r3/terminal.json",
+      "sha256": "c14c02f13d2395eb0567b22ca72789a6dbbf9d778fd69b0dae32e94b25b30589"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-rgba-supervisor-r1/terminal.json",
+      "sha256": "c0b4ac19eda69677f8cdb63952c8666943ba36da08ed67e358975d125b96fbcb"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-preview-build-r2/terminal.json",
+      "sha256": "a713c4386a3751a58764d4226dcf97d4da7c48abe4e80925d83eaa215a59f072"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-supervisor-r1/terminal.json",
+      "sha256": "808e6b16efe001465641ba444adeaf4928899139ee0fd967d789b4f387ccca1c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.manifest.json",
+      "sha256": "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.js",
+      "sha256": "03046e4dff9b4a0f73fe12a76e6c688ec72569faa9c64d4231c4517ed70b540f"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-rgba-r1/result.json",
+      "sha256": "adb52bd7e4acac44a249d99732ff05ea8b62082459996b469503004fe79dfde5"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-bG3iQ8/build.json",
+      "sha256": "ec7bb684fafee019abc2fa7defe1b1418a10c3632b3861ddc45924ab5e4c4dc1"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-Hn62nk/build.json",
+      "sha256": "d5a1726980756727047fed0f8f9ec7d9d76a2829cc3ef1d8efe5ea5499f5b003"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/result.json",
+      "sha256": "b574c4d764d7d13736784362c2c58f43d11f3aaba5878e868b3d5d037e7ab044"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-attribution-r1.json",
+      "sha256": "aee9ad299727e027d9368ce3761bb70ede49eb11f7262c252797740f00dd2bfd"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-application-draft-r2.stdout.json",
+      "sha256": "993d3d992b0e4cbfa4278663673e14c8cc50104f8095a7d018ac045f636ec530"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/emit-menu-application-r3.py",
+      "sha256": "811b02b6d1369a0dd13504ff06ffd6ed1d491daa2353ccb2c7d398852676f8a6"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-application-rgba-r1.mjs",
+      "sha256": "b3f1734ed555d4c0b4ccb88e1adaa50f34ddfcd7feb4acdc067c4651a20afda2"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-menu-application-rgba-r1.py",
+      "sha256": "71e40da81188e78c1696e3f570e92c080175b93ca44df1b24ab0b74802b98ddf"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/build-menu-application-r2.py",
+      "sha256": "d2b6b6a12f39ee142f23eeb5800b5a5fe904a9f0d48226e34e9599f12423aa47"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1.mjs",
+      "sha256": "585f72fc702581b98dd39c5c968fe4285b1018f21e38d2f179b6ac93d5cc7bb2"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-menu-base-browser-r1.py",
+      "sha256": "3d68e694c383293876298bbc74a3573cf0b45c9bacacaade88747290ad4be74f"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-baseline.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-baseline-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-baseline-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-baseline-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-candidate.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-candidate-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-candidate-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/0-candidate-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-candidate.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-candidate-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-candidate-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-candidate-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-baseline.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-baseline-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-baseline-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/1-baseline-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-baseline.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-baseline-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-baseline-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-baseline-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-candidate.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-candidate-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-candidate-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/2-candidate-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-candidate.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-candidate-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-candidate-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-candidate-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-baseline.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-baseline-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-baseline-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/3-baseline-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-baseline.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-baseline-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-baseline-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-baseline-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-candidate.png",
+      "sha256": "fad70bb977610c75bd0bf43c52ef34ded4f2f74408545bb52128f47b67ffa621"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-candidate-prefs.png",
+      "sha256": "adb048da061f093c266bbbdd2ea13b4614fe6a32097cfea69804f579669d67ce"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-candidate-newmatch.png",
+      "sha256": "58f2fa087809a30d56ffd797a48b42868a935942a99f7d53f00d4313484cfb62"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-base-browser-r1/4-candidate-camera.png",
+      "sha256": "5177ad0399794dcb096240ebfa295abf40500518f3da99e5d585a96c07838e0a"
+    }
+  ],
+  "scope": "Candidate-only application compatibility and finite renderer/installedChrome behavior; unchanged original proof source/type/promise creation execution retained. The reviewed manifest authenticates exact application postimages and evidence with one pinned digest. No proof reexecution, Safe/kernel/Linux/native/device/adoption/stable30percent overall authority.",
+  "newProofWorkers": 0,
+  "approvedKernel": null,
+  "approvedLinuxRuntime": null
+}
