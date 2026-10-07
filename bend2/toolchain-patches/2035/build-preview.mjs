@@ -13,8 +13,8 @@ import { prepare as workerCompilerBinding2035 } from './workers/prepare.mjs';
 import { emitDefaultGround2035 } from './prepared-ground.mjs';
 
 const selected = {
-  scene: ['stationary-motion-20261006/scene-yHJgb5', '6045830dc3fdd3c274612458622671ca228ded21eb0d37f56462d7cd58c9e6b8'],
-  controller: ['camera-refinement-20261006/controller-eZtJGy', '00d6655ae5586ce36eb650762b9c6c138204dba932b49d6432c36c350833d07d'],
+  scene: ['stationary-motion-20261006/scene-B1GZJS', '7b81026f565bc3559fc7b56b403399c6ddee47197c5cf26d32078857b71a4e88'],
+  controller: ['stationary-motion-20261006/controller-ahmzW7', '026a81615e59c5b27d1a6d08d878f81cecac30e13878b82b99a3b7b80e077fdd'],
   menu: ['camera-refinement-20261006/menu-S4IxDK', '0197e43645ae79b36a1ae2bb5db8519ca14ce7d1ff0e892666c6435e2506ae68'],
   chrome: ['chrome-knTtdv', 'e4ea2af8e09125df337715d1a3e3c2948ba593a91e275f2b98ec035e675d68c8'],
 };

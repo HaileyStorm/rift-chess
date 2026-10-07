@@ -91,23 +91,42 @@ def excluded(+shape: Quad.Shape,+clip: Rect.Box,+x: U32,+y: U32,+size: U32) -> B
   Bool.or(Bool.not(Rect.overlaps(clip,Rect.cell(x,y,size))),
     Facet.outside_pixels(shape,U32.to_f32(x),U32.to_f32(y),size))
 
+# The existing inside predicate includes a conservative one-pixel inset.
+# Inherited full coverage skips quad tests, while every child still checks its
+# clip and every surviving pixel keeps the original sampling and alpha paint.
+def region_inside(full: Bool,shape: Quad.Shape,x: U32,y: U32,size: U32) -> Bool:
+  match full:
+    case True{}: True{}
+    case False{}: Facet.inside_pixels(shape,U32.to_f32(x),U32.to_f32(y),size)
+
+def region_excluded(full: Bool,+shape: Quad.Shape,+clip: Rect.Box,+x: U32,+y: U32,+size: U32) -> Bool:
+  match full:
+    case True{}: Bool.not(Rect.overlaps(clip,Rect.cell(x,y,size)))
+    case False{}: excluded(shape,clip,x,y,size)
+
+def region_count(full: Bool,shape: Quad.Shape,x: U32,y: U32) -> U32:
+  match full:
+    case True{}: 4
+    case False{}: Facet.coverage(shape,U32.to_f32(x),U32.to_f32(y))
+
 # Bounded sequential quadtree work. The surrounding prepared RenderPlan can
 # parallelize independent coarse tiles without per-pixel task creation.
-def region(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,
+def region(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,full: Bool,
   +shape: Quad.Shape,+inverse: Transform.Matrix,+clip: Rect.Box,
   +texture: Sample.Texture,+filter: Sample.Filter,+opacity: U32,+target: Image) -> Image:
   match depth outside:
     case _ True{}: target
     case 0n False{}:
-      leaf(Facet.coverage(shape,U32.to_f32(x),U32.to_f32(y)),inverse,x,y,texture,filter,opacity,target)
+      leaf(region_count(full,shape,x,y),inverse,x,y,texture,filter,opacity,target)
     case 1n+rest False{}:
+      +covered = region_inside(full,shape,x,y,size)
       +h = U32.div(size,2)
       +xx = U32.add(x,h)
       +yy = U32.add(y,h)
-      a = region(rest,h,x,y,excluded(shape,clip,x,y,h),shape,inverse,clip,texture,filter,opacity,ImageOps.tl(target))
-      b = region(rest,h,xx,y,excluded(shape,clip,xx,y,h),shape,inverse,clip,texture,filter,opacity,ImageOps.tr(target))
-      c = region(rest,h,x,yy,excluded(shape,clip,x,yy,h),shape,inverse,clip,texture,filter,opacity,ImageOps.bl(target))
-      d = region(rest,h,xx,yy,excluded(shape,clip,xx,yy,h),shape,inverse,clip,texture,filter,opacity,ImageOps.br(target))
+      a = region(rest,h,x,y,region_excluded(covered,shape,clip,x,y,h),covered,shape,inverse,clip,texture,filter,opacity,ImageOps.tl(target))
+      b = region(rest,h,xx,y,region_excluded(covered,shape,clip,xx,y,h),covered,shape,inverse,clip,texture,filter,opacity,ImageOps.tr(target))
+      c = region(rest,h,x,yy,region_excluded(covered,shape,clip,x,yy,h),covered,shape,inverse,clip,texture,filter,opacity,ImageOps.bl(target))
+      d = region(rest,h,xx,yy,region_excluded(covered,shape,clip,xx,yy,h),covered,shape,inverse,clip,texture,filter,opacity,ImageOps.br(target))
       Qua{a,b,c,d}
 
 def region_geometry(geometry: Geometry,+depth: Nat,+size: U32,+x: U32,+y: U32,
@@ -115,7 +134,7 @@ def region_geometry(geometry: Geometry,+depth: Nat,+size: U32,+x: U32,+y: U32,
   match geometry:
     case Empty{}: target
     case Surface{+shape,inverse,bounds}:
-      region(depth,size,x,y,excluded(shape,clip,x,y,size),shape,inverse,clip,texture,filter,opacity,target)
+      region(depth,size,x,y,excluded(shape,clip,x,y,size),False{},shape,inverse,clip,texture,filter,opacity,target)
 
 def draw_zero(zero: Bool,depth: Nat,size: U32,geometry: Geometry,
   texture: Sample.Texture,filter: Sample.Filter,opacity: U32,clip: Rect.Box,target: Image) -> Image:
