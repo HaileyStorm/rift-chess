@@ -7,7 +7,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { binding2035, root, derived, readSource, sha256, base, sourceCone,
   loadedClosure, loadProof, positiveVerdict, workerResourceReadback } from './binding.mjs';
-import { cases, mutationCone } from './mutations.mjs';
 import { sourceFixture, validateSourceApproval } from './bendtt-gate/contracts.mjs';
 import { verifyPrepared } from '../prepared-match/verify.mjs';
 import { selectedBinding2035 } from '../../../toolchain-patches/2035/selected-binding.mjs';
@@ -16,6 +15,10 @@ import { typeMismatchEvidence } from '../2032/mutation-verdict.mjs';
 import { settleWorker, finalizeOwnedManifest } from '../../../toolchain-patches/2032/preview/lifecycle.mjs';
 
 process.env.BEND_NO_TELEMETRY = '1';
+// The historical mutation producer executes whenever imported in a Worker.
+// Only the parent imports its metadata/functions; each new Worker independently
+// rebinds the complete inputs already reconciled by that parent.
+const { cases, mutationCone } = isMainThread ? await import('./mutations.mjs') : {};
 export const checkPath = path.join(root, 'bend2/core/v3/2035/PREPARED_CHECK.bend');
 export const outputRoot = path.join(root, '.artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-source-2035');
 export const scope = 'Current v2 plus prepared-v3 source/type/promise, two candidate prepared negatives and exact historical six-v2-mutation reuse; no Safe/kernel/native/device/adoption acceptance';
@@ -106,7 +109,6 @@ if (!isMainThread) {
   try {
     const actualResourceLimits = workerResourceReadback();
     const before = preparedBinding(); assert.deepEqual(before, workerData.before);
-    reconcileV2(before);
     const negative = negativeSpecs.find(spec => spec.name === workerData.name);
     const entry = negative ? path.join(workerData.directory, rel(checkPath)) : checkPath;
     const directory = negative ? workerData.directory : root;
