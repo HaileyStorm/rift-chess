@@ -34,7 +34,7 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -482,8 +482,70 @@ try{await assert.rejects(decoder.call('text_remote',['Rift 😀']),e=>e.code==='
  assert.equal(corruptions.length,1);assert.equal(decoder.stats().remoteJobs,1);assert.equal(decoder.stats().closed,true);
  results.push({case:'packed-utf8-reply',transport:'packed',code:'protocol',corruptions,trace:decoder.trace(),postClose:retire(decoder,decoderHarness)});
 }finally{retire(decoder,decoderHarness);}
+// A helper returns an actual shared DAG; scalar results cannot test reference decoding.
+const treeFunction=build.manifest.functions.find(f=>f.name==='tree_value');assert.ok(treeFunction);
+const treeSchema=build.manifest.schemas[treeFunction.output];assert.equal(treeSchema.kind,'adt');
+const branchOrdinal=treeSchema.arms.findIndex(a=>a.tag===tag('../fixture-tree:Branch'));
+const tipOrdinal=treeSchema.arms.findIndex(a=>a.tag===tag('../fixture-tree:Tip'));
+assert.ok(branchOrdinal>=0&&tipOrdinal>=0);
+function checkTreeReply(m,invocation){
+ assert.equal(m.invocation,invocation);assert.equal(m.functionId,treeFunction.id);assert.equal(m.schemaId,treeFunction.id); // Envelope schemaId identifies the function signature.
+ assert.ok(m.packet instanceof ArrayBuffer);assert.equal(m.packet.byteLength,39);
+ const v=new DataView(m.packet);
+ for(const [at,value]of [[0,0x32574442],[4,1],[9,0],[13,branchOrdinal],[18,1],[22,tipOrdinal],[35,1]])assert.equal(v.getUint32(at,true),value,'packed tree offset '+at);
+ for(const [at,value]of [[8,1],[17,1],[34,0]])assert.equal(v.getUint8(at),value,'packed tree flag '+at);
+ assert.equal(v.getBigUint64(26,true),4n);
+}
+const replyArtifacts={};
+function saveReply(name,packet){
+ const bytes=new Uint8Array(packet);fs.writeFileSync(path.join(output,name),bytes,{flag:'wx'});
+ const hash=sha(bytes);replyArtifacts[name]=hash;return {file:name,sha256:hash,bytes:bytes.length};
+}
+{
+ const h=harness({hold:true}),s=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:h.factory});
+ try{
+  const shared=tip(4n),input=branch(shared,shared),owner=s.submit('tree_remote',[input]);owner.promise.catch(()=>{});
+  await until(()=>h.held.length===1);const first=h.drainHeld()[0];checkTreeReply(first.event.data,owner.id);
+  const packet=saveReply('packed-dag-positive.bin',first.event.data.packet);first.listener(first.event);
+  const actual=await owner.promise;assert.deepEqual(actual,branch(tip(4n),tip(4n)));
+  assert.equal(actual.left,actual.right);assert.notEqual(actual,input);assert.notEqual(actual.left,shared);
+  assert.equal(input.left,input.right);assert.equal(shared.value,4n);assert.equal(Object.isFrozen(input),false);assert.equal(Object.isFrozen(shared),false);
+  noSchedulerValues(actual);noPendingWork(s);const trace=s.trace();
+  for(const kind of ['dispatch','result','witness'])assert.equal(trace.filter(e=>e.kind===kind&&e.invocation===owner.id).length,1);
+  assert.equal(trace.find(e=>e.kind==='dispatch').functionId,treeFunction.id);
+  results.push({case:'packed-dag-result',transport:'packed',invocation:owner.id,functionId:treeFunction.id,schemaId:treeFunction.id,outputTypeSchemaId:treeFunction.output,packet,expectedLeaf:'4',sharedResultLeaf:true,detachedFromCaller:true,statsBeforeClose:s.stats(),trace,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+const framingRejections=[];
+for(const [label,message,mutate]of [
+ ['header-count','packed header mismatch',p=>{const v=new DataView(p);v.setUint32(4,2,true);return p;}],
+ ['truncation','truncated packed value',p=>p.slice(0,-1)],
+ ['dangling-reference','invalid packed graph reference',p=>{new DataView(p).setUint32(35,2,true);return p;}],
+ ['active-ancestor-reference','invalid packed graph reference',p=>{new DataView(p).setUint32(35,0,true);return p;}],
+ ['trailing-byte','trailing packed data',p=>{const bytes=new Uint8Array(p.byteLength+1);bytes.set(new Uint8Array(p));bytes[p.byteLength]=127;return bytes.buffer;}],
+]){
+ const h=harness({hold:true}),s=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:h.factory});
+ try{
+  const shared=tip(4n),owner=s.submit('tree_remote',[branch(shared,shared)]);owner.promise.catch(()=>{});
+  await until(()=>h.held.length===1);const first=h.drainHeld()[0],m=first.event.data;checkTreeReply(m,owner.id);
+  const original=saveReply('packed-'+label+'-original.bin',m.packet),packet=mutate(m.packet.slice(0));
+  const corrupted=saveReply('packed-'+label+'-corrupt.bin',packet);assert.notEqual(original.sha256,corrupted.sha256);
+  const changed={...m,packet};assert.deepEqual(Object.keys(m).filter(k=>!Object.is(m[k],changed[k])),['packet']);
+  const before=s.stats();assert.equal(before.activeInvocations,1);assert.equal(before.remoteJobs,1);
+  first.listener({data:changed});let rejection;
+  await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='protocol'&&e.message.includes(message);});
+  const automatic=s.stats(),trace=s.trace();assert.equal(automatic.closed,true);assert.equal(automatic.remoteJobs,1);assert.equal(automatic.localCalls,0);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,label+':'+key);
+  assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+  first.listener(first.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);
+  const post=retire(s,h);assert.deepEqual(s.stats(),automatic);
+  framingRejections.push({label,original,corrupted,changedFields:['packet'],invocation:owner.id,functionId:m.functionId,schemaId:m.schemaId,before,rejection,publishedResults:0,publishedWitnesses:0,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},delayedOriginalReplyInert:true,trace,postClose:post});
+ }finally{retire(s,h);}
+}
+results.push({case:'packed-framing-reference-replies',transport:'packed',rejections:framingRejections,scope:'Five distinct corruptions of authentic structured helper replies. Positive completed backward alias retained. No general packed-format, incompatible-schema alias, deep traversal or output-range claim.'});
 assert.equal(networkCalls,0);
-const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
+const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }

@@ -119,3 +119,9 @@ def resume_drop(-ghost: U32, value: U32) -> U32:
 
 def resume_erased(n: U32) -> U32:
   resume_drop(leaf@(n), 7)
+
+def tree_value(t: Trees.Tree) -> Trees.Tree:
+  t
+
+def tree_remote(t: Trees.Tree) -> Trees.Tree:
+  tree_value@(t)

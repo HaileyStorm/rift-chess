@@ -312,3 +312,36 @@ policy fixture and emitted program changed; compiler inventory/lineage and the
 imported Tree fixture remain unchanged. These are finite continuation/ABI and
 erasure controls, not general stack/memory bounds, closure or array eligibility,
 erasure completeness, performance, device behavior or adoption acceptance.
+
+A real `tree_value` helper now returns `Branch(sharedTip4,sharedTip4)` through
+packed transport. The returned value has both Nat leaves4n and preserves
+`left === right`, while its objects are detached from the mutable caller input.
+The authentic 39-byte result is checked against manifest constructor ordinals,
+the helper function/signature identity and its expected completed back reference.
+Original and mutated packet bytes are retained alongside the run receipt.
+
+Five packed-only controls change only the packet of an authentic helper reply:
+header count1 to2, an incomplete reference from truncating the final byte,
+reference index1 to missing object2, reference index1 to still-active ancestor0,
+and one trailing byte. Each rejects with `protocol` and its corresponding decoder
+message. No result or required witness is published. Helpers, listeners and all
+pending/retained work retire automatically before explicit close; delivering the
+unchanged original afterward leaves stats and trace unchanged. Existing UTF-8
+and Nat-overflow negatives retain their distinct decoder authority.
+
+Fresh `worker-packed-runtime-r2/receipt.json`, SHA256
+`825e763e805d288752e5a608195cdaa364010bbcc02ae336cb7b7e6c8da516bc`,
+passes30 records with zero network calls. Native
+`worker-packed-runtime-supervisor-r2/terminal.json`, SHA256
+`074bfb081c7daad80a00554951410f15f2d3768237870662fe6764d9067609e5`,
+records original process/handle and Job closure with unchanged inputs. R1 stopped
+at an incorrect test assertion comparing envelope `schemaId` with output-type ID;
+the protocol uses the function-signature ID. Its exact failed postimage and
+original closed run are preserved; R2 corrects that assertion under a distinct
+identity. Compiler inventory/lineage, imported Tree fixture and runtime remain
+unchanged; the owned policy fixture and emitted program changed.
+
+These finite controls do not prove general packed-format correctness,
+incompatible-schema aliases, invalid constructor records, deep traversal,
+oversized accepted output, Char or nonfinite-output handling, performance,
+device behavior or adoption acceptance.
