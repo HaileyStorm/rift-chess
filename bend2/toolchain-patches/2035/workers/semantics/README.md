@@ -550,7 +550,42 @@ coverage reviews accepted this finite differential. The one sequential timing
 pair is not a performance comparison.
 
 This closes the admitted ordinary compiler differential, preserving the historical
-runner as provenance. Original expected-result behavior, interpreter and runnable
-JS main/output-display ABI, remaining upstream groups, generic Worker CLI/HTML,
+runner as provenance. The pure interpreter subset below adds original expected-result
+coverage. Runnable JS main/output-display ABI, remaining upstream groups, generic Worker CLI/HTML,
 remote native/cluster/kernel/device/GPU gates and reviewed adoption remain open.
 Do not repeat this unchanged differential after fixture-only Worker edits.
+
+## Original pure interpreter expectations
+
+A separate paired run uses the same authenticated97-file baseline and98-file
+candidate without copying or changing either compiler. From the831-fixture corpus,
+487 successful, hole-free books with root-source mains and nonnegative original
+expectations are classified at runtime. The other344 fixtures retain explicit
+preselection exclusions. Each freshly loaded book is checked from declaration0.
+Filled pure mains run the exact upstream `term_snf` → `term_lower` → `term_show`
+path and compare with untouched `#|` lines under upstream whitespace normalization.
+No CLI entrypoint, generated module or IO runner is invoked.
+
+Both lanes pass all188 admitted pure-main expectations: parse50, check54,
+compile9, proof38, show8, comptime11, reg9 and import9. All487 complete rows
+agree. The299 runtime exclusions remain exclusions:294 IO mains, one book with
+non-Base foreign definitions and four books with non-Base unsafe definitions.
+The whole-book foreign/unsafe rule deliberately also excludes unused declarations;
+it establishes no reachability result. Base's authenticated definitions retain
+their original status. Output is bounded to1MiB per result,8MiB cumulative and
+16MiB per receipt; these limits are not physical-memory or performance evidence.
+
+`upstream-interpreter-supervisor-2035-r1/terminal.json`, SHA256
+`4c97c8b6b00d0777a244467ee3a1be6a8078b80e26428175b2c57dbd6255ca80`,
+records both original exits0, exited-handle and Job closure, zero network calls
+and1944 unchanged input hashes. The comparison SHA256 is
+`198fe0941b487a5cbd90028b9bf453c7d54ebfd48f12b6cc49f13c87d849a204`.
+The independent original-expectation and current-hash readback disposition,
+`upstream-interpreter-disposition-2035-20261008-r1.json`, has SHA256
+`57c7f1ac4a44cc53444279aa92984fbfbbc462d564776ce6510aa6957dbfc887`.
+
+This closes only the admitted pure interpreter lane. IO/foreign execution,
+runnable-JS display, negative CLI verdicts, remaining original upstream groups,
+native/C, kernel, device, GPU and reviewed adoption requirements remain open.
+The accepted pristine2.0.27 pin is unchanged. Do not repeat this unchanged lane
+after fixture-only Worker or documentation edits.
