@@ -172,3 +172,24 @@ reflection traps; this is ordinary getter non-invocation evidence. Recursive
 descriptor preservation, deep traversal and the separate local closure route
 remain outside these added controls. No compiler transformation, Bend fixture,
 browser/proof/device result or adoption claim changes.
+
+The dynamic-policy record now includes `leaf@(leaf@(18))`, which independently
+expects20. Fresh `worker-ownership-runtime-r1/receipt.json`, SHA256
+`488c271f8027d119f04cb5b66584581dba9688f46c397306e331f1bf6b535e42`,
+passed the same21 records with zero network calls. Matching native
+`worker-ownership-runtime-supervisor-r1/terminal.json`, SHA256
+`7ddbf123da7bec353df8f9069cfbdb408c239c042722651660ec379d015bf3d8`,
+binds unchanged inputs and original process/Job closure. The current fixture
+and executed runner have new hashes; earlier receipts retain their originals.
+
+For clone and packed transport, the actual invocation trace records two
+successful `leaf` jobs, each owning exactly one distinct required region.
+Each region receives its witness from its own job. The argument job's result
+and witness precede entry into the callee region; each job has matching started
+and result events. Neither region is waived or coalesced. Counter deltas of two
+regions, jobs and witnesses are secondary evidence; counts alone would not
+establish ownership. A physical helper may execute both jobs sequentially.
+This adds one expression to the existing fixture and one case within each
+existing dynamic-policy record, preserving the session cleanup controls.
+It proves this finite boundary, with no compiler transformation, general
+nested-policy proof, browser/device result or adoption claim.

@@ -53,6 +53,9 @@ def restored(n: U32) -> U32:
 def argument_scope(n: U32) -> U32:
   never_body~(leaf@(n))
 
+def both_required(n: U32) -> U32:
+  leaf@(leaf@(n))
+
 def remote_island(n: U32) -> U32:
   never_body@(n)
 

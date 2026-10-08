@@ -34,7 +34,7 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -78,7 +78,25 @@ for(const transport of ['clone','packed']){
   const before=s.stats().remoteJobs;assert.equal(await s.call('conditional_never',[false,18]),18);
   await assert.rejects(s.call('conditional_never',[true,18]),e=>e.code==='policy_conflict');assert.equal(s.stats().remoteJobs,before);
   assert.equal(await s.call('restored',[28]),30,'session remains usable after policy errors');
-  results.push({case:'dynamic-policy',transport,stats:s.stats(),trace:s.trace()});
+  const ownerBefore=s.stats(),ownerHandle=s.submit('both_required',[18]);
+  assert.equal(await ownerHandle.promise,20,'required argument and callee arithmetic');
+  const ownerTrace=s.trace().filter(e=>e.invocation===ownerHandle.id);
+  const regions=ownerTrace.filter(e=>e.kind==='region'),jobs=ownerTrace.filter(e=>e.kind==='dispatch'),witnesses=ownerTrace.filter(e=>e.kind==='witness');
+  const leafFunction=build.manifest.functions.find(f=>f.name==='leaf');assert.ok(leafFunction);const leafId=leafFunction.id;
+  assert.equal(regions.length,2);assert.equal(jobs.length,2);assert.equal(witnesses.length,2);
+  assert.equal(new Set(jobs.map(e=>e.job)).size,2);assert.equal(new Set(regions.map(e=>e.region)).size,2);
+  for(let i=0;i<2;i++){
+   const region=regions[i],job=jobs[i];assert.equal(region.functionId,leafId);assert.equal(job.functionId,leafId);
+   assert.equal(region.waived,false);assert.deepEqual(job.regions,[region.region]);
+   assert.deepEqual(witnesses.filter(e=>e.region===region.region).map(e=>e.job),[job.job]);
+   const started=ownerTrace.filter(e=>e.kind==='started'&&e.job===job.job),result=ownerTrace.filter(e=>e.kind==='result'&&e.job===job.job);
+   assert.equal(started.length,1);assert.equal(result.length,1);
+   assert.ok(ownerTrace.indexOf(region)<ownerTrace.indexOf(job)&&ownerTrace.indexOf(job)<ownerTrace.indexOf(started[0])&&ownerTrace.indexOf(started[0])<ownerTrace.indexOf(result[0])&&ownerTrace.indexOf(result[0])<ownerTrace.indexOf(witnesses[i]));
+  }
+  assert.ok(ownerTrace.indexOf(witnesses[0])<ownerTrace.indexOf(regions[1]),'argument helper must finish before callee region entry');
+  assert.ok(!ownerTrace.some(e=>e.event==='coalesced_require'));
+  const ownerAfter=s.stats();for(const key of ['remoteJobs','requiredRegions','requiredWitnesses'])assert.equal(ownerAfter[key]-ownerBefore[key],2,key);
+  results.push({case:'dynamic-policy',transport,bothRequired:{invocation:ownerHandle.id,expected:20,leafFunctionId:leafId,trace:ownerTrace,counterDeltas:Object.fromEntries(['remoteJobs','requiredRegions','requiredWitnesses'].map(k=>[k,ownerAfter[k]-ownerBefore[k]]))},stats:ownerAfter,trace:s.trace()});
  }finally{const post=clean(s);if(results.at(-1)?.case==='dynamic-policy'&&results.at(-1)?.transport===transport)results.at(-1).postClose=post;}
  // Hold only actual result messages; handshake and started messages pass through.
  let holding=true;const held=[],delivered=[],listeners=new Map();let created=0,removed=0,terminated=0;
