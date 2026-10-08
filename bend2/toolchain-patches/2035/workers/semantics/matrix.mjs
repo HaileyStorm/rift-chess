@@ -302,6 +302,36 @@ results.push({case:'continuation-resumption',controls:continuationControls,scope
   results.push({case:'shared-handshake-cancellation',transport:'shared-before-dispatch',executedTransport:'clone',cancelledInvocation:cancelled.id,survivingInvocation:survivor.id,rejectionCode,rejectionName,before,afterCancellation:after,abortAdds,abortRemoves,authenticHandshakes:handshakes,cancelledTrace,survivingResult:31,recoveryResult:41,statsAfterRecovery:s.stats(),postClose:retire(s,h)});
  }finally{retire(s,h);}
 }
+// A malformed authentic startup envelope is fatal even under permissive policy;
+// this happens before transport decoding or any assigned job.
+const malformedReadies=[];
+for(const policy of ['strict','permissive']){
+ const h=harness({holdReady:true}),s=api.createSession({workers:2,transport:'clone',trace:true,policy,workerFactory:h.factory});
+ try{
+  const first=s.submit('remote_island',[18]);first.promise.catch(()=>{});
+  await until(()=>h.readyHeld.length===2);
+  const sibling=s.submit('remote_island',[30]);sibling.promise.catch(()=>{});
+  await until(()=>s.stats().activeInvocations===2&&s.trace().some(e=>e.invocation===sibling.id&&e.kind==='region'));
+  const before=s.stats();assert.equal(before.remoteJobs,0);assert.equal(before.localCalls,0);assert.equal(before.inFlight,0);assert.equal(before.ready,0);
+  assert.equal(h.created,2);assert.equal(h.terminated,0);assert.equal(h.listeners.size,6);
+  const packets=h.releaseReady(),originals=packets.map(p=>JSON.stringify(p.event.data));
+  assert.ok(packets.every(p=>p.event.data.kind==='ready'&&p.event.data.program===build.manifest.program));
+  const authentic=packets[0].event.data,changed={...authentic,kind:'result'};
+  assert.deepEqual({...changed,kind:'ready'},authentic);assert.notEqual(changed.kind,authentic.kind);
+  packets[0].listener({data:changed});
+  const settled=await Promise.allSettled([first.promise,sibling.promise]);
+  const rejections=settled.map((r,i)=>{assert.equal(r.status,'rejected');assert.equal(r.reason.code,'protocol');assert.match(r.reason.message,/expected ready handshake/);return {invocation:[first.id,sibling.id][i],code:r.reason.code,message:r.reason.message};});
+  const automatic=s.stats();assert.equal(automatic.closed,true);assert.equal(automatic.unavailable,false);assert.equal(automatic.workers,0);assert.equal(automatic.remoteJobs,0);assert.equal(automatic.localCalls,0);assert.equal(automatic.requiredWitnesses,0);
+  for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,key);
+  assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);
+  const trace=s.trace();assert.ok(!trace.some(e=>['dispatch','result','witness'].includes(e.kind)));assert.ok(!s.diagnostics().some(d=>d.reason==='require_unfulfilled:workers_unavailable'));
+  for(const {listener,event}of packets)listener(event);
+  assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);assert.deepEqual(packets.map(p=>JSON.stringify(p.event.data)),originals);
+  await assert.rejects(s.call('remote_island',[40]),e=>e.code==='closed');assert.deepEqual(s.stats(),{...automatic,failed:automatic.failed+1});
+  malformedReadies.push({policy,before,authentic,changed,changedFields:['kind'],rejections,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,unchangedAuthenticReplies:true,delayedOriginalReadiesInert:true,closedSubmissionRejected:true,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'authentic-malformed-ready-envelope',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:malformedReadies,scope:'Only kind changed on a genuine held ready envelope while two roots await the shared handshake. Protocol failure is fatal under strict and permissive policies, before job dispatch, result/witness or local fallback. No wrong-build asset, malformed packed payload, duplicate/stale-handshake, timing or general protocol proof.'});
 // Actual unavailable asset failure differs from configured workers:0 and from
 // fatal failure after a dispatched job. Permissive fallback is explicit policy.
 const availability=[];

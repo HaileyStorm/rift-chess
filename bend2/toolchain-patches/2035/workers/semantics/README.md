@@ -471,3 +471,35 @@ basis and remains unselected. Its disposition is
 These source identities are distinct. General regime forgetting, profitability,
 production scheduling and adoption remain open; the required-only matrix is
 not an auto benchmark.
+
+## Malformed authentic startup handshake
+
+The current matrix checks one independent startup protocol boundary. Two real
+helpers produce genuine ready envelopes while two roots await the shared
+handshake. The harness changes only one envelope's `kind` from `ready` to
+`result`. Under both strict and permissive policies, both roots reject with
+`protocol` and `expected ready handshake`. Before explicit close, the session
+automatically retires both helpers, removes all listeners and clears pending
+retention. No job, result, required witness or local fallback occurs. Delayed
+unchanged original readies remain inert; another submission rejects `closed`
+and increments the failed-call counter once. Existing successful shared-handshake
+cancellation remains the positive control. Clone transport exercises this shared
+startup boundary once; repeating it with packed transport would add no distinct
+decoder evidence.
+
+`worker-handshake-runtime-r1/receipt.json`, SHA256
+`765da7e509c3a53c9a5e69326e838589b0f6e1b6ce212cd9e0a7d0c782a57695`,
+passes38 records with zero network calls on actual Windows Bun1.4.2 module
+Workers. `worker-handshake-runtime-supervisor-r1/terminal.json`, SHA256
+`97b0b62bfb4c24065637acecdf96d430fb4633fbdb686c774deb61a704c884fd`,
+records the original exited-process handle and Job closure with331 unchanged
+input hashes. The runner's Bun selection and actual executable hash are bound.
+Compiler lineage, fixture and all emitted files match the previous37-record
+run. Two pre-execution review findings were repaired before the single run:
+the closed-submission failed-counter expectation and an inherited Bun override.
+No compiler, runtime, fixture, frozen input or production parallelism changed.
+
+This finite witness covers malformed startup kind and automatic fatal cleanup.
+Wrong-build assets, duplicate/stale handshakes, transport failure, timing metadata,
+general protocol correctness and browser/native-C/device/adoption acceptance
+remain separate.
