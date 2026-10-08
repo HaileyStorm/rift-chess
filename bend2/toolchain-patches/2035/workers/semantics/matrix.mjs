@@ -694,6 +694,37 @@ function checkAuthenticResult(m,sent,fn,owner){
   results.push({case:'accepted-output-retention',transport:'packed',maxRetainedBytes:256,functionId:fn.id,controls,postClose:retire(s,h),scope:'Same-session16-character positive then genuine256-character result rejected after valid decoding by completed-result accounting. Packet268bytes differs from decoded accounting520bytes; no physical heap/performance claim.'});
  }finally{retire(s,h);}
 }
+// Withhold one genuine result after a same-helper positive control. This tests
+// the assigned-job timer, not a nonterminating body or hard execution-time bound.
+{
+ let stall=false;const jobs=[],observed=[],held=[];
+ const h=harness({observe:m=>observed.push(m),observeJob:m=>{if(m.kind==='job')jobs.push(m);},transform:(listener,event)=>{if(stall)held.push({listener,event});else listener(event);}});
+ const taskTimeoutMs=10000,s=api.createSession({workers:1,transport:'clone',trace:true,taskTimeoutMs,workerFactory:h.factory});
+ try{
+  assert.equal(await s.call('remote_island',[18]),19);noPendingWork(s);
+  const positive=s.stats();assert.equal(positive.remoteJobs,1);assert.equal(positive.requiredWitnesses,1);assert.equal(h.created,1);
+  stall=true;const owner=s.submit('remote_island',[30]);let rejectionCode;
+  const rejected=assert.rejects(owner.promise,e=>{rejectionCode=e.code;return e.code==='task_timeout';});
+  await until(()=>held.length===1);
+  const original=held[0],m=original.event.data;assert.equal(m.invocation,owner.id);assert.equal(m.kind,'result');assert.equal(m.program,build.manifest.program);
+  const job=jobs.find(x=>x.invocation===owner.id);assert.ok(job);
+  for(const key of ['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'])assert.equal(m[key],job[key],key);
+  const before=s.stats();assert.equal(before.closed,false);assert.equal(before.inFlight,1);assert.equal(before.activeInvocations,1);assert.equal(before.remoteJobs,2);assert.equal(before.requiredWitnesses,1);
+  const traceBefore=s.trace().filter(e=>e.invocation===owner.id);
+  assert.equal(traceBefore.filter(e=>e.kind==='dispatch'&&e.job===m.job).length,1);assert.equal(traceBefore.filter(e=>e.kind==='started'&&e.job===m.job).length,1);
+  assert.equal(observed.filter(x=>x.kind==='result'&&x.invocation===owner.id).length,1);
+  const envelopeSHA256=sha(JSON.stringify(m));
+  await rejected;
+  const automatic=s.stats(),trace=s.trace(),ownerTrace=trace.filter(e=>e.invocation===owner.id);
+  assert.equal(automatic.closed,true);assert.equal(automatic.remoteJobs,2);assert.equal(automatic.localCalls,0);assert.equal(automatic.requiredWitnesses,1);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,key);
+  assert.ok(!ownerTrace.some(e=>e.kind==='result'||e.kind==='witness'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+  original.listener(original.event);assert.equal(sha(JSON.stringify(m)),envelopeSHA256);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);
+  await assert.rejects(s.call('remote_island',[40]),e=>e.code==='closed');assert.deepEqual(s.stats(),{...automatic,failed:automatic.failed+1});
+  results.push({case:'assigned-job-timeout',transport:'shared-lifecycle-before-decode',executedTransport:'clone',taskTimeoutMs,positiveControl:{expected:19,stats:positive},invocation:owner.id,authenticEnvelopeSHA256:envelopeSHA256,identity:Object.fromEntries(['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'].map(k=>[k,m[k]])),before,rejectionCode,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace:ownerTrace,unchangedAuthenticResult:true,delayedOriginalReplyInert:true,closedSubmissionRejected:true,postClose:retire(s,h),scope:'Timer-triggered rejection while authentic completed helper reply is withheld; same-helper positive control. No exact latency, nonterminating-body, hard execution-time, heap or general resource guarantee.'});
+ }finally{retire(s,h);}
+}
 assert.equal(networkCalls,0);
 const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});

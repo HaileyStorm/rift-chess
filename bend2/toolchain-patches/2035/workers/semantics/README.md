@@ -47,7 +47,7 @@ owned stationary-motion evidence tree:
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/semantics/matrix.mjs .artifacts/bend2/2035-preview/stationary-motion-20261006/worker-policy-NEW
 ```
 
-Root's qualified Windows supervisor ran this extended matrix in 2.473s.
+Historical R5's qualified Windows supervisor ran that matrix in 2.473s.
 The nineteen family/transport records passed, with zero network calls. Result:
 `worker-policy-r5/receipt.json`, SHA256
 `b6c25268a07972262023a283c0a94bcff62c1d138919f625e3b47ce2be8ffc15`.
@@ -431,3 +431,43 @@ closed native run and exact source remain retained. R2 accepts the runtime's
 message prefix without changing the fixture, budgets, compiler or runtime.
 These finite controls do not establish general wire/resource safety, browser or
 device behavior, responsiveness or adoption.
+
+## Assigned-job timeout and current coverage
+
+The current matrix adds one independent timer control using `remote_island`.
+One real helper first returns19. The same helper computes the next required
+call, but the harness withholds its unchanged authentic reply. The dispatch,
+started event and held result identities match. The fixture-local10,000ms timer
+rejects with `task_timeout`; before any explicit close, the session is closed,
+the helper/listeners are retired and all pending/retained accounting is zero.
+The failed invocation publishes no result or required witness and receives no
+local retry. Delivering the original afterward leaves stats and trace unchanged;
+a subsequent submission rejects `closed` and adds one failed-call counter.
+
+`worker-timeout-runtime-r2/receipt.json`, SHA256
+`1f765ee5f473af77f9fe08ea9a2d8cd5ea6875d3c74e301d36c3322c724409e0`,
+passes37 records with zero network calls. Native
+`worker-timeout-runtime-supervisor-r2/terminal.json`, SHA256
+`aac12339f82152b937a56fde0e920c87f2090907be28ace138f341afa0d8fe81`,
+records original exited-process handle and Job closure with328 unchanged input
+hashes. Compiler, fixture and every emitted file match the previous36-record
+wire run. R1 stopped before matrix execution because the sandbox refused
+`spawnSync git` with `EPERM`; its failed receipt and closed handles remain
+retained. R2 used the unchanged wrapper after read-only pin verification.
+This models stalled delivery after genuine computation; it does not establish
+nonterminating-body behavior, exact timing or a hard execution-time bound.
+
+The adaptive inventory also has bounded evidence now. The unchanged corrected
+runtime's private legal-move caller completed85 ordered reference matches
+across three default-auto sessions/five positions, with natural profile
+observations and no helper dispatch. Its disposition is
+`legal-worker-disposition-20261008-r1.json`, SHA256
+`bcc83aa089ae483203d19446ccdebc39a5278aef01b9854e7e7b6998a0a06ee4`.
+A separately modified private runtime completed60 ordered matches with exact
+finite partition coverage and one natural two-helper fork; it showed no benefit
+basis and remains unselected. Its disposition is
+`auto-descent-disposition-20261008-r2.json`, SHA256
+`82a71f8b8097fe12330d316c29a92dfeab73fda683c15642c62fc7d1381fb360`.
+These source identities are distinct. General regime forgetting, profitability,
+production scheduling and adoption remain open; the required-only matrix is
+not an auto benchmark.
