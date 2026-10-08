@@ -222,3 +222,32 @@ its original closed failure remains retained. R3 waits for the actual queued-wor
 predicate before mutation. These are distinct harness revisions, with their
 source preimages and original receipts preserved. They do not establish malformed
 handshake, timeout, transport failure, general ABI/security or adoption acceptance.
+
+Two shared admission/budget families now test limits before transport-specific
+delivery. One real helper holds an authentic result while a second root is
+observably queued. With `maxInvocations:2` or `maxQueue:1`, the third root rejects
+with `invocation_limit` or `required_queue_budget` respectively. Rejection leaves
+the admitted roots and their live retention intact, without remote work or serial
+fallback for the declined root. Releasing the authentic result yields11/21;
+another call returns41 in the same session. A separate `maxQueuedBytes:64`
+control rejects an ordinary valid string before helper creation, then completes
+a smaller string call. This differs from the existing input wire-budget check.
+
+`maxJobs:1` and `maxRegions:1` each allow the authentic required argument of
+`leaf@(leaf@(18))` to return and witness its region before rejecting the callee
+with `required_task_budget` or `region_budget`. `maxRegionDepth:1` rejects the
+nested required regions of `nested_caps` before helper construction. Each session
+remains open, clears the failed invocation's retained work before explicit close,
+and subsequently returns19 from a real remote call. Fixture-local limits leave
+production's balanced parallelism unchanged.
+
+Fresh actual `worker-admission-runtime-r1/receipt.json`, SHA256
+`9c3a7480b298c1983c5580bfeb4f5b3cc732b454b1f4313b3f7ecc23b5fef2af`,
+passes24 records with zero network calls. Native
+`worker-admission-runtime-supervisor-r1/terminal.json`, SHA256
+`99f55fc258baa1392abe678a341b8ad43ee8f378e1adf70f8eff09b8e0c17684`,
+records original process/handle and Job closure with unchanged input hashes.
+Paths remain relative to the stationary-motion artifact directory. Compiler,
+fixture and emitted program hashes match the preceding reply-identity run.
+These finite strict-enforcement and recovery controls do not prove every budget,
+permissive availability, handshake cancellation, adaptive performance or adoption.

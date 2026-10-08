@@ -220,6 +220,68 @@ for(const transport of ['clone','packed']){
   results.push({case:'string-input-budget',transport,code:'wire_budget',postClose:retire(budget,budgetHarness)});
  }finally{retire(budget,budgetHarness);}
 }
+// Admission and regional enforcement precede transport selection. Check live
+// pressure and failure recovery before close can erase legitimate or leaked work.
+function noPendingWork(s){
+ assert.equal(s.stats().closed,false);
+ for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s.stats()[key],0,key);
+}
+const admissionRejections=[];
+for(const [label,limits,code]of [['invocation-count',{maxInvocations:2},'invocation_limit'],['queued-count',{maxQueue:1},'required_queue_budget']]){
+ const h=harness({hold:true}),s=api.createSession({workers:1,transport:'clone',trace:true,...limits,workerFactory:h.factory});
+ try{
+  const first=s.submit('remote_island',[10]);first.promise.catch(()=>{});
+  await until(()=>h.held.length===1);
+  const second=s.submit('remote_island',[20]);second.promise.catch(()=>{});
+  await until(()=>s.stats().ready>0&&s.stats().queuedBytes>0);
+  const before=s.stats();assert.equal(before.activeInvocations,2);assert.equal(before.inFlight,1);assert.equal(before.ready,1);
+  const declined=s.submit('remote_island',[30]);let rejectionCode;
+  await assert.rejects(declined.promise,e=>{rejectionCode=e.code;return e.code===code;});
+  const after=s.stats();assert.equal(after.closed,false);
+  for(const key of ['activeInvocations','inFlight','ready','snapshotBytes','completedBytes','queuedBytes','inFlightBytes','remoteJobs','localCalls'])assert.equal(after[key],before[key],label+':'+key);
+  const declinedTrace=s.trace().filter(e=>e.invocation===declined.id);
+  assert.ok(!declinedTrace.some(e=>['dispatch','result','witness'].includes(e.kind)),'declined root ran remotely or published');
+  for(const {listener,event}of h.release())listener(event);
+  const admittedResults=await Promise.all([first.promise,second.promise]);assert.deepEqual(admittedResults,[11,21]);
+  assert.equal(await s.call('remote_island',[40]),41);noPendingWork(s);
+  admissionRejections.push({case:label,limits,rejectionCode,admittedInvocations:[first.id,second.id],declinedInvocation:declined.id,before,afterRejection:after,declinedTrace,admittedResults,recoveryResult:41,statsAfterRecovery:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+{
+ const h=harness(),s=api.createSession({workers:1,transport:'clone',trace:true,maxQueuedBytes:64,workerFactory:h.factory});
+ try{
+  const declined=s.submit('text_remote',['R'.repeat(64)]);let rejectionCode;
+  await assert.rejects(declined.promise,e=>{rejectionCode=e.code;return e.code==='required_queue_budget';});
+  noPendingWork(s);assert.equal(h.created,0);assert.equal(s.stats().remoteJobs,0);
+  const declinedTrace=s.trace().filter(e=>e.invocation===declined.id);assert.ok(!declinedTrace.some(e=>['dispatch','result','witness'].includes(e.kind)));
+  const after=s.stats();assert.equal(await s.call('text_remote',['R']),'R');noPendingWork(s);
+  admissionRejections.push({case:'queued-bytes',limits:{maxQueuedBytes:64},inputStringUnits:64,rejectionCode,declinedInvocation:declined.id,declinedTrace,afterRejection:after,helpersBeforeRecovery:0,recoveryResult:'R',statsAfterRecovery:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'live-admission-budgets',transport:'shared-before-dispatch',executedTransport:'clone',rejections:admissionRejections});
+const requiredBudgetRejections=[];
+for(const [label,limits,name,args,code,expectedJobs]of [
+ ['invocation-jobs',{maxJobs:1},'both_required',[18],'required_task_budget',1],
+ ['region-count',{maxRegions:1},'both_required',[18],'region_budget',1],
+ ['region-depth',{maxRegionDepth:1},'nested_caps',[1,2,3,4],'region_budget',0],
+]){
+ const h=harness(),s=api.createSession({workers:2,transport:'clone',trace:true,...limits,workerFactory:h.factory});
+ try{
+  const declined=s.submit(name,args);let rejectionCode;
+  await assert.rejects(declined.promise,e=>{rejectionCode=e.code;return e.code===code;});
+  noPendingWork(s);assert.equal(s.stats().remoteJobs,expectedJobs);
+  const failedTrace=s.trace().filter(e=>e.invocation===declined.id),jobs=failedTrace.filter(e=>e.kind==='dispatch'),published=failedTrace.filter(e=>e.kind==='result'),witnesses=failedTrace.filter(e=>e.kind==='witness');
+  assert.equal(jobs.length,expectedJobs);assert.equal(published.length,expectedJobs);assert.equal(witnesses.length,expectedJobs);
+  if(expectedJobs){
+   const leaf=build.manifest.functions.find(f=>f.name==='leaf').id;
+   assert.equal(jobs[0].functionId,leaf);assert.equal(published[0].job,jobs[0].job);assert.equal(witnesses[0].job,jobs[0].job);
+   assert.ok(failedTrace.indexOf(published[0])<failedTrace.indexOf(witnesses[0]));
+  }else assert.equal(h.created,0);
+  const after=s.stats();assert.equal(await s.call('remote_island',[18]),19);noPendingWork(s);
+  requiredBudgetRejections.push({case:label,limits,rejectionCode,failedInvocation:declined.id,failedTrace,actualArgumentJobs:expectedJobs,afterRejection:after,helpersBeforeRecovery:expectedJobs?h.created:0,recoveryResult:19,statsAfterRecovery:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'required-work-budgets',transport:'shared-before-dispatch',executedTransport:'clone',rejections:requiredBudgetRejections});
 // Reply identity is checked before clone/packed decoding. Mutate one field in
 // an authentic result once at this shared boundary; do not duplicate a packed
 // decoder test or substitute synthetic computation for the real helpers.
