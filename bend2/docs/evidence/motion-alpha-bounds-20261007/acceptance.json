@@ -1,0 +1,333 @@
+{
+  "schema": "rift-motion-alpha-bounds-application/1",
+  "scope": "candidate-source-browser-only",
+  "disposition": "reviewed",
+  "adopted": false,
+  "candidate": "79df8d9c40722ee9507a1e253f283b51025f9d6c",
+  "baseline": "041a86582fc09f628dddeb126fff486d44757384",
+  "parent": {
+    "path": "bend2/docs/evidence/worker-parser-preview-20261007/acceptance.json",
+    "sha256": "a57db81ac5747908d18911323486545b9d8ce6c67fc33fbbefb9cffb8f95abf0"
+  },
+  "amendments": [
+    {
+      "path": "bend2/graphics/v2game/BoardScene.bend",
+      "beforeSha256": "b52a576f00b90acbfcfba1901e6e832177a843a2cd2b3cbce60e61e889cf0b26",
+      "afterSha256": "4ca7329967d5bb33f7dd338c05a3265021801cbec055fc8ac0d5505aa51c903b",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-preimage-BoardScene.bend",
+        "sha256": "b52a576f00b90acbfcfba1901e6e832177a843a2cd2b3cbce60e61e889cf0b26"
+      }
+    },
+    {
+      "path": "bend2/platform/browser/worker-v2.ts",
+      "beforeSha256": "2637866a8050bb9a95b73f84b90715c1c25c1e2c51a06ce79efd995e96c397d5",
+      "afterSha256": "f162c72ab30d804e4c644d9f8a7ecbe05dab444cce4068e9001ba269eabdfa75",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-preimage-worker-v2.ts",
+        "sha256": "2637866a8050bb9a95b73f84b90715c1c25c1e2c51a06ce79efd995e96c397d5"
+      }
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "beforeSha256": "d513913e8bc9ff0a4918e04dacd0e594a848c6b101c8e2248d41153563d9d545",
+      "afterSha256": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-preimage-build-preview.mjs",
+        "sha256": "d513913e8bc9ff0a4918e04dacd0e594a848c6b101c8e2248d41153563d9d545"
+      }
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/browser-tag-boundary.mjs",
+      "beforeSha256": "06fa04c515ca42c49dbdfdb0fb69d1ad8141723eca25484dc18ae95e05e6ab4c",
+      "afterSha256": "8b9baab2fe7cc66d888a90c03f841ce8664397d538528c84647bcae7774a01b7",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-preimage-browser-tag-boundary.mjs",
+        "sha256": "06fa04c515ca42c49dbdfdb0fb69d1ad8141723eca25484dc18ae95e05e6ab4c"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "bend2/graphics/v2game/BoardScene.bend",
+      "sha256": "4ca7329967d5bb33f7dd338c05a3265021801cbec055fc8ac0d5505aa51c903b"
+    },
+    {
+      "path": "bend2/platform/browser/worker-v2.ts",
+      "sha256": "f162c72ab30d804e4c644d9f8a7ecbe05dab444cce4068e9001ba269eabdfa75"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "sha256": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4"
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/browser-tag-boundary.mjs",
+      "sha256": "8b9baab2fe7cc66d888a90c03f841ce8664397d538528c84647bcae7774a01b7"
+    }
+  ],
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-alpha-bounds-independent-review-r1.json",
+    "sha256": "d992a9aae4266b27f6c5b28953f4998bb57f28a50e77eed37f28168b7aa1c0c8"
+  },
+  "caches": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-MhDSFU/scene.manifest.json",
+      "sha256": "4fbb0917f634927a459fee0c8d5d8dcb6e47cc5e6b28e4a71173fbb6f8e9fb33"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/controller-cRuykQ/controller.manifest.json",
+      "sha256": "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/menu-app-Ft8mws/menu.manifest.json",
+      "sha256": "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"
+    }
+  ],
+  "build": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-ZAiFjI/build.json",
+    "sha256": "18a7768fcaf2f85a0d03e8869a2d05f39282112de97b40a5c04257a81b1d2192"
+  },
+  "sceneTerminal": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-emissions-r3/scene/terminal.json",
+    "sha256": "ebef08d3f2450918b1e115a710ccee4476be0a06960f78ac08c085b0f61763f6",
+    "kind": "terminal"
+  },
+  "buildTerminal": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-preview-build-r1/terminal.json",
+    "sha256": "3e200f2322d183982d11b9fe4dbc2d719aea1ab06cadf9fd42c03413d79b6d61",
+    "kind": "terminal"
+  },
+  "privateFinite": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-finite-r2/result.json",
+      "sha256": "74a446854dfe553c7cde6debd16d09e6e0a4080437723deaf73af57dccb5131e"
+    },
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-finite-supervisor-r2/terminal.json",
+      "sha256": "7bd330b757b1330ab57155cad09e4f293baeb2ade1ae3eaf7f6f3279970928ae",
+      "kind": "terminal"
+    }
+  },
+  "correctedAlpha": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-alpha-r1/result.json",
+      "sha256": "8629a1ebea0a4d5fe3fc29134f9c0fdeeb0347e74c53b29a366e37add4269787"
+    },
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-alpha-supervisor-r1/terminal.json",
+      "sha256": "89a28c0ab885dee8957c03b6272f4db0739c3d2197bc44eaf0279bc797b38488",
+      "kind": "terminal"
+    }
+  },
+  "productFinite": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-product-parity-r1/result.json",
+      "sha256": "cac198897b3c2fc14bb51deacf139e5dfc08d8ef936c03861ed1c7fad0d8f1b3"
+    },
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-product-parity-supervisor-r1/terminal.json",
+      "sha256": "6d62cd8ac29f907df4515a1ee76e051df5df9a7cf54eeb1a2d2edc3d37d1463c",
+      "kind": "terminal"
+    }
+  },
+  "browser": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-browser-pairs-r1/result.json",
+      "sha256": "7a524b64750861f38cf89080a22e3f6b21780ce5078c5469238e4ea5a9570dff"
+    },
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-browser-pairs-supervisor-r1/terminal.json",
+      "sha256": "420a509f3de7f57e3a6ea1f6a37f75deab24d754016ff56a87cfeaeec9727ed0",
+      "kind": "terminal"
+    }
+  },
+  "offline": {
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-offline-supervisor-r1/terminal.json",
+      "sha256": "0d7bd3abb7851c592befd158927266ab13fbcc010be79fc333c819b8402984ec",
+      "kind": "terminal"
+    }
+  },
+  "unchangedAssets": [
+    {
+      "path": "assets/LICENSES.md",
+      "sha256": "65628c3a44a5a2baf63a86bb3a6a237ff6b9081986d8acc0f3fc2549ab7de4f8"
+    },
+    {
+      "path": "assets/ground-initial-7acd8b71c260.json",
+      "sha256": "7acd8b71c26095d7aa359ceed71073b0924d4ec6290603231c3972af3d485eb9"
+    },
+    {
+      "path": "assets/observatory-astral.rga",
+      "sha256": "9d4701ca52957506ec58466fa7d63b49a8f6338bd257f5e8f9b69f76b67067bb"
+    },
+    {
+      "path": "assets/observatory-stone.rga",
+      "sha256": "0c782ce0f07fa8387ee1a3baba37fda20c46d2cc3febf285e8a104ea5c0e734f"
+    },
+    {
+      "path": "assets/pieces-fast-0.rga",
+      "sha256": "92355991cbf99556a73754fd904ec53a13f8e05fe1d1837d0696ebe6cdd7ad12"
+    },
+    {
+      "path": "assets/pieces-fast-1.rga",
+      "sha256": "35e898841546ea10655c08ec763cb7793a038194c6058f9cbb312155da06ebeb"
+    },
+    {
+      "path": "assets/pieces-fast-2.rga",
+      "sha256": "06aefb53eb2bc4d982add3690a3c0fbdb82dcaf9639797b374e908a49992e6eb"
+    },
+    {
+      "path": "assets/rift-observatory-font.rga",
+      "sha256": "d67f6b3321b0821fdb41ac3c59d42d633757db75a32328f7c38f7a94e5a91977"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/MotionBoundsTrialR1.bend",
+      "sha256": "faf2f2d0706d0ee650806b55682bf4efb3293442a20cc8062f4d76b1e6861cc9"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/emit-motion-bounds-r1.mjs",
+      "sha256": "b41013706fc7d46a234bab2dd7f3f71800c797052e94cc980c289800087f390c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-emission-r1/manifest.json",
+      "sha256": "6544bdd6744896b00cf247fe0e76d897f958c53a817bb0e75dcf52a78e77048e"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-emission-r1/trial.js",
+      "sha256": "e5400504d0d31fd0b23fc767933ec9f3af58d2738ae14d32602d2114771e35bf"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-emission-supervisor-r1/terminal.json",
+      "sha256": "7b01c704c05cbf015c805650cd53235deb13c96ad187f730d482cbc622cc40b6"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-finite-r2.mjs",
+      "sha256": "ddc9418d63daf23a5f4e7069eba965af6d98843b49faa4ef46c559921dc8d029"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-finite-r2.py",
+      "sha256": "a0ec4df6cdff1780aa26d9998ea77b347f143622201f71aca476f5995b6963a5"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-alpha-r1.mjs",
+      "sha256": "bbb2ba8be4dfe4ff9906aa12f07e64fa0eca1afdb8718b60bb8c358eb7cf1f15"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-alpha-r1.py",
+      "sha256": "2814121dbdf4903a7f281ecbc72d4375d756aff1debaaf29ba42b651bc8f276a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-product-parity-r1.mjs",
+      "sha256": "aae8901a66ba1601cb5f4a5058007b14a2d70a87a95eeeda2728a711635bd84f"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-product-parity-r1.py",
+      "sha256": "1ea988d65b7fa4b3aa7809fff2d2332878b6da4c1a0d62f5797677a530967391"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/emit-motion-bounds-product-r3.py",
+      "sha256": "343d47127e9114bc54847c751f4818904dc3130e807a0e9987a1fa8cb4e78d13"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/build-motion-bounds-preview-r1.py",
+      "sha256": "e89facad241b86f12358106c18bae55d76026ddaf5d9306fcedb92e5084869e1"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-finite-supervisor-r1/terminal.json",
+      "sha256": "cf135f8ec39fc085403bfe73e7dd0c995f1c7631e9c588aac4c74bba03370e72"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-browser-pairs-r1.mjs",
+      "sha256": "db14753d73057426b9c92096b9aaaa58b86b57cfabc07f43b884a06ae7bd0e81"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-browser-pairs-r1.py",
+      "sha256": "1f232d60182e22b176a6234e1562a44d4cc9fdf38e852d6880350ece7722f82c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-offline-r1.mjs",
+      "sha256": "fc96b6fa816c49cbe9802845384a1aad73805c6f75cdfae5ac1cf2cf40f71461"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-offline-body-r1.mjs",
+      "sha256": "97fb92fe9ff42d65e441a139f818795b758cca70da418525941e416964fcfebe"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-offline-r1.py",
+      "sha256": "b58bbe7586d296eaa03781f497a7a4e452e8a0944f0308018507d5c35315f219"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1.mjs",
+      "sha256": "4e9155aa77ee12d0fa18757765c04687055d9648312455e5eefc8b560ac59b02"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-bounds-moving-pick-r1.py",
+      "sha256": "35bda13d8bb7e56efd6133a3edfd72c6c68fd24ec2bc070e08d15516c9e5593b"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/worker-observer.js",
+      "sha256": "fe6edbb4f5f23f45efb93a98889a09f25e722f1a4fe7769cb45f30b0e93213d8"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/observer-binding.json",
+      "sha256": "95befd34421c778053b14bbf4622b139920b7ccb99a61807ee9ec619211ce63d"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/pose-a.png",
+      "sha256": "428bdde424cf51958c655baadb02399dbd2b3f0e0dd8e49b1461623bf4e3dc6d"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/pose-b-old-click.png",
+      "sha256": "c34524b1f9fff6805a371fea8833567ba50c487b0625d5c40caf70cfd9171884"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-offline-r1/online-initial.png",
+      "sha256": "c340a36056ef87d1db63c5c882784952ba088b6803a7bc1e20fb4e5905638a10"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-offline-r1/offline-initial.png",
+      "sha256": "c340a36056ef87d1db63c5c882784952ba088b6803a7bc1e20fb4e5905638a10"
+    }
+  ],
+  "limits": {
+    "newProofWorkers": 0,
+    "sourceCreationInputsRetained": 312,
+    "sourceCreationInputsAmended": 3,
+    "originalConsumersUnchanged": 12,
+    "newApplicationSourceAmendments": 4,
+    "historicalExecutionsNotRetagged": true,
+    "stableLatencyAccepted": false,
+    "physicalDeviceAccepted": false,
+    "nativeCPUAccepted": false,
+    "kernelAccepted": false,
+    "linuxRuntimeAccepted": false,
+    "adopted": false,
+    "browserEvidence": "Natural three-pair browser, distinct controlled moving-pick and separate offline/save/reload witnesses passed; independent source/evidence/capture review accepted.",
+    "independentReview": "accepted candidate-source-browser-only",
+    "R2ExpandedAlphaLabel": "255 encoded blue and was transparent; corrected supplement uses red alpha16711680",
+    "naturalBrowserEvidence": "Three alternating pairs passed six fresh starts/36 native canvas actions; mixed timings do not establish dependable improvement."
+  },
+  "movingPick": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/result.json",
+      "sha256": "12d0d60d9f19b18fd7937e2ff4697629c8164fa8509dd1c75045636537ac1d0a"
+    },
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-supervisor-r1/terminal.json",
+      "sha256": "71de5d50f1af15843d7206446825b22c47e428655043bd74e0cbbb1ba5b4062f",
+      "kind": "terminal"
+    },
+    "observerBinding": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-bounds-moving-pick-r1/observer-binding.json",
+      "sha256": "95befd34421c778053b14bbf4622b139920b7ccb99a61807ee9ec619211ce63d"
+    },
+    "controllerEmissionTerminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/knight-front-light-emissions-r1/controller/terminal.json",
+      "sha256": "b320e2e31dc154a163ec7f3388d557707b9fc10ff2169c0acc4e9f20185a428b",
+      "kind": "terminal"
+    }
+  }
+}

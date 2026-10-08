@@ -23,6 +23,8 @@ import ./MotionWall.bend as MotionWall
 import ./Assets.bend as Assets
 import ../../lib/graphics/v2/Color.bend as Color
 import ./PieceSprites.bend as PieceSprites
+import ./SpriteBounds.bend as SpriteBounds
+import ../../lib/graphics/v2/RgbaSample.bend as Sample
 import ./PieceAssets.bend as PieceAssets
 import ./SpritePlacement.bend as SpritePlacement
 import ./SpriteMotion.bend as SpriteMotion
@@ -1789,11 +1791,9 @@ def load_sprite_pages(responses: List<&2,PieceAssets.AssetResponse>) ->
   Maybe<&2,PieceSprites.Pieces>:
   PieceAssets.prepared(responses)
 
-# Same-view ordinary move artwork: enumerate the bounded integer stages
-# once per transition, then redraw every ordered overlapping layer.
-def sprite_motion_matrix_box(+size: U32,matrix: Transform.Matrix) -> Rect.Box:
-  PieceSprites.alpha_clip(Rect.screen(64),matrix,64,Rect.screen(size))
-
+# Same-view move dirty bounds use the retained color pose alpha support.
+# Compute each changed texture support once, then retain every live/contact
+# stage and only the real captured piece's fading stages.
 def sprite_motion_contact_box(+size: U32,+width: F32,center: Quad.Point) -> Rect.Box:
   match center:
     case Quad.Point{+x,+y}:
@@ -1804,79 +1804,152 @@ def sprite_motion_contact_box(+size: U32,+width: F32,center: Quad.Point) -> Rect
         Ortho.pixel(F32.sub(x,radius)),Ortho.pixel(F32.sub(base,half_height)),
         Ortho.pixel(F32.add(x,radius)),Ortho.pixel(F32.add(base,half_height))})
 
-def sprite_motion_current_box(+size: U32,+camera: Camera.Basis,+source: U32,
-  +square: U32,+kind: U32,+amount: U32) -> Rect.Box:
-  +center = sprite_center_at(U32.is_eq(amount,16),size,camera,source,square,amount)
-  +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),size,camera,
-    source,square,amount)
-  Rect.union(sprite_motion_matrix_box(size,SpritePlacement.piece_matrix(size,camera,center,kind)),
+def sprite_motion_action(decoded: Maybe<Model.Action>) -> Bool:
+  match decoded:
+    case Some{Model.MoveAction{from,to,promotion}}: True{}
+    case _: False{}
+
+type MotionSupport is Data:
+  MotionSupport{valid: Bool, bounds: Rect.Box, source_size: U32}
+
+def sprite_motion_support_case(valid: Bool,+texture: Sample.Texture) -> MotionSupport:
+  match valid:
+    case False{}: MotionSupport{False{},Rect.empty(),Sample.size(texture)}
+    case True{}: MotionSupport{True{},SpriteBounds.bounds(texture),Sample.size(texture)}
+
+def sprite_motion_support(+pieces: PieceSprites.Pieces,+code: U32) -> MotionSupport:
+  +texture = PieceSprites.texture(pieces,SpritePlacement.piece_side(code),
+    SpritePlacement.piece_kind(Model.piece_type(code)))
+  sprite_motion_support_case(PieceSprites.source_valid(texture),texture)
+
+# alpha_clip is valid only for positive, axis-aligned matrices. Its original
+# two-texel and two-destination-pixel margins retain bilinear neighbor support.
+# Full screen is deliberately broader than the old unit-square fallback.
+def sprite_motion_matrix_box_case(valid: Bool,+size: U32,+bounds: Rect.Box,
+  source_size: U32,matrix: Transform.Matrix) -> Rect.Box:
+  match valid:
+    case False{}: Rect.screen(size)
+    case True{}: PieceSprites.alpha_clip(bounds,matrix,source_size,Rect.screen(size))
+
+def sprite_motion_matrix_box(+size: U32,source: MotionSupport,+matrix: Transform.Matrix) -> Rect.Box:
+  match source:
+    case MotionSupport{valid,bounds,source_size}:
+      sprite_motion_matrix_box_case(Bool.and(valid,PieceSprites.axis_valid(matrix)),
+        size,bounds,source_size,matrix)
+
+def sprite_motion_artwork_box(empty: Bool,+size: U32,source: MotionSupport,
+  matrix: Transform.Matrix) -> Rect.Box:
+  match empty:
+    case True{}: Rect.empty()
+    case False{}: sprite_motion_matrix_box(size,source,matrix)
+
+def sprite_motion_artwork(+size: U32,+source: MotionSupport,matrix: Transform.Matrix) -> Rect.Box:
+  match source:
+    case MotionSupport{+valid,+bounds,source_size}:
+      sprite_motion_artwork_box(Bool.and(valid,Rect.is_empty(bounds)),size,
+        MotionSupport{valid,bounds,source_size},matrix)
+
+def sprite_motion_current_box(+size: U32,+camera: Camera.Basis,+from: U32,
+  +square: U32,+kind: U32,+amount: U32,source: MotionSupport) -> Rect.Box:
+  +center = sprite_center_at(U32.is_eq(amount,16),size,camera,
+    from,square,amount)
+  +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),
+    size,camera,from,square,amount)
+  Rect.union(sprite_motion_artwork(size,source,SpritePlacement.piece_matrix(size,camera,center,kind)),
     sprite_motion_contact_box(size,SpritePlacement.width(size,camera),contact_center))
 
-def sprite_motion_dead_box(+size: U32,+camera: Camera.Basis,+square: U32,kind: U32,+age: U32) -> Rect.Box:
-  +x = square_x(size,camera,square)
-  +y = square_y(size,camera,square)
-  +drift = scale_coord(size,U32.div(age,2))
-  +dead_x = Bool.pick(U32,U32.is_even(age),U32.add(x,drift),U32.sub(x,drift))
-  +dead_y = U32.sub(y,scale_coord(size,age))
-  sprite_motion_matrix_box(size,SpritePlacement.piece_matrix(size,camera,
-    Quad.Point{U32.to_f32(dead_x),U32.to_f32(dead_y)},kind))
+def sprite_motion_dead_box(+size: U32,+camera: Camera.Basis,+square: U32,
+  kind: U32,age: U32,source: MotionSupport) -> Rect.Box:
+  sprite_motion_artwork(size,source,SpritePlacement.piece_matrix(size,camera,
+    SpriteMotion.dying_center(size,camera,square,age),kind))
 
 def sprite_motion_path_box(n: Nat,+amount: U32,+size: U32,+camera: Camera.Basis,
-  +source: U32,+square: U32,+kind: U32,acc: Rect.Box) -> Rect.Box:
+  +from: U32,+square: U32,+kind: U32,+source: MotionSupport,acc: Rect.Box) -> Rect.Box:
   match n:
     case 0n: acc
     case 1n+rest:
-      sprite_motion_path_box(rest,U32.add(amount,1),size,camera,source,square,kind,
-        Rect.union(acc,sprite_motion_current_box(size,camera,source,square,kind,amount)))
+      sprite_motion_path_box(rest,U32.add(amount,1),size,camera,from,square,kind,source,
+        Rect.union(acc,sprite_motion_current_box(size,camera,from,square,kind,amount,source)))
 
 def sprite_motion_death_box(n: Nat,+age: U32,+size: U32,+camera: Camera.Basis,
-  +square: U32,+kind: U32,acc: Rect.Box) -> Rect.Box:
+  +square: U32,+kind: U32,+source: MotionSupport,acc: Rect.Box) -> Rect.Box:
   match n:
     case 0n: acc
     case 1n+rest:
-      sprite_motion_death_box(rest,U32.add(age,1),size,camera,square,kind,
-        Rect.union(acc,sprite_motion_dead_box(size,camera,square,kind,age)))
+      sprite_motion_death_box(rest,U32.add(age,1),size,camera,square,kind,source,
+        Rect.union(acc,sprite_motion_dead_box(size,camera,square,kind,age,source)))
+
+def sprite_motion_victim_box(victim: Bool,size: U32,camera: Camera.Basis,
+  square: U32,kind: U32,source: MotionSupport) -> Rect.Box:
+  match victim:
+    case False{}: Rect.empty()
+    case True{}: sprite_motion_death_box(8n,0,size,camera,square,kind,source,Rect.empty())
+
+# One old texture support computation is shared by the settled endpoint and
+# all eight possible dying stages. The noncaptured moving source never fades.
+def sprite_motion_old_box(occupied: Bool,+size: U32,+camera: Camera.Basis,
+  +square: U32,+code: U32,+victim: U32,pieces: PieceSprites.Pieces) -> Rect.Box:
+  match occupied:
+    case False{}: Rect.empty()
+    case True{}:
+      +source = sprite_motion_support(pieces,code)
+      +kind = Model.piece_type(code)
+      Rect.union(sprite_motion_current_box(size,camera,square,square,kind,16,source),
+        sprite_motion_victim_box(U32.is_eq(square,victim),size,camera,square,kind,source))
+
+# One new texture support computation is shared by all seventeen live stages.
+# This keeps the renderer's actual motion_source behavior, including its
+# stationary companion placement for castling and its promoted piece kind.
+def sprite_motion_new_box(occupied: Bool,+size: U32,+camera: Camera.Basis,
+  action: U32,+square: U32,+code: U32,pieces: PieceSprites.Pieces) -> Rect.Box:
+  match occupied:
+    case False{}: Rect.empty()
+    case True{}:
+      sprite_motion_path_box(17n,0,size,camera,motion_source(Model.decode(action),square),
+        square,Model.piece_type(code),sprite_motion_support(pieces,code),Rect.empty())
 
 def sprite_motion_changed_box(changed: Bool,+size: U32,+camera: Camera.Basis,
-  +action: U32,+square: U32,+old: U32,+new: U32) -> Rect.Box:
+  action: U32,+square: U32,+old: U32,+new: U32,+victim: U32,
+  +pieces: PieceSprites.Pieces) -> Rect.Box:
   match changed:
     case False{}: Rect.empty()
     case True{}:
-      +old_box = Bool.pick(Rect.Box,Model.occupied(old),
-        sprite_motion_current_box(size,camera,square,square,Model.piece_type(old),16),Rect.empty())
-      +path = Bool.pick(Rect.Box,Model.occupied(new),
-        sprite_motion_path_box(17n,0,size,camera,motion_source(Model.decode(action),square),
-          square,Model.piece_type(new),Rect.empty()),Rect.empty())
-      # Including fading paths at every changed occupied old square is
-      # conservative; the draw path still uses the original dying_visible.
-      +dead = Bool.pick(Rect.Box,Model.occupied(old),
-        sprite_motion_death_box(8n,0,size,camera,square,Model.piece_type(old),Rect.empty()),Rect.empty())
-      Rect.union(old_box,Rect.union(path,dead))
+      Rect.union(sprite_motion_old_box(Model.occupied(old),size,camera,square,old,victim,pieces),
+        sprite_motion_new_box(Model.occupied(new),size,camera,action,square,new,pieces))
 
 def sprite_motion_dirty_loop(n: Nat,+square: U32,+size: U32,+camera: Camera.Basis,
-  +action: U32,+old: List<&2,U32>,+new: List<&2,U32>,acc: Rect.Box) -> Rect.Box:
+  +action: U32,+victim: U32,+old: List<&2,U32>,+new: List<&2,U32>,
+  +pieces: PieceSprites.Pieces,acc: Rect.Box) -> Rect.Box:
   match n:
     case 0n: acc
     case 1n+rest:
       +before = Model.board_get(old,square)
       +after = Model.board_get(new,square)
-      sprite_motion_dirty_loop(rest,U32.add(square,1),size,camera,action,old,new,
+      sprite_motion_dirty_loop(rest,U32.add(square,1),size,camera,action,victim,old,new,pieces,
         Rect.union(acc,sprite_motion_changed_box(U32.is_ne(before,after),size,camera,action,
-          square,before,after)))
+          square,before,after,victim,pieces)))
 
-def sprite_motion_dirty(+size: U32,+frame: Scene.Frame) -> Rect.Box:
-  sprite_motion_dirty_loop(64n,0,size,Camera.basis(Scene.frame_view(frame)),Scene.frame_lastAction(frame),
-    Model.pos_board(Scene.frame_previous(frame)),Model.pos_board(Scene.frame_position(frame)),
-    Rect.empty())
+# The product partial-redraw contract is ordinary moves only. Other actions
+# conservatively cover the full screen; the caller still rejects Shift transitions.
+def sprite_motion_dirty_case(ordinary: Bool,+size: U32,+frame: Scene.Frame,
+  pieces: PieceSprites.Pieces) -> Rect.Box:
+  match ordinary:
+    case False{}: Rect.screen(size)
+    case True{}:
+      +previous = Scene.frame_previous(frame)
+      +action = Scene.frame_lastAction(frame)
+      sprite_motion_dirty_loop(64n,0,size,Camera.basis(Scene.frame_view(frame)),action,
+        SpriteMotion.captured_square(Model.decode(action),previous),
+        Model.pos_board(previous),Model.pos_board(Scene.frame_position(frame)),
+        pieces,Rect.empty())
 
-def sprite_motion_dirty512(frame: Scene.Frame) -> Rect.Box:
-  sprite_motion_dirty(512,frame)
+def sprite_motion_dirty(+size: U32,+frame: Scene.Frame,pieces: PieceSprites.Pieces) -> Rect.Box:
+  sprite_motion_dirty_case(sprite_motion_action(Model.decode(Scene.frame_lastAction(frame))),
+    size,frame,pieces)
 
+def sprite_motion_dirty512(frame: Scene.Frame,pieces: PieceSprites.Pieces) -> Rect.Box:
+  sprite_motion_dirty(512,frame,pieces)
 
-def sprite_motion_action(decoded: Maybe<Model.Action>) -> Bool:
-  match decoded:
-    case Some{Model.MoveAction{from,to,promotion}}: True{}
-    case _: False{}
 
 # The retained image must be occupancy-only for this exact previous position.
 # Theme/view/hole compatibility and settled progress prevent stale cache use.

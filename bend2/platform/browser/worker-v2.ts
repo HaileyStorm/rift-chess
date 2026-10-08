@@ -49,7 +49,7 @@ let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
 // One current color pose, separate from the historical presentation alpha masks.
 let spritePose: { pieces: any; frame: any; theme: number } | null = null;
 let spriteGround: { image: any; frame: any; theme: number; id: number } | null = null;
-let spriteMotion: { frame: any; old: any; clip: any } | null = null;
+let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
@@ -422,8 +422,10 @@ function render(packet: any): any {
     scene.sprite_motion_complete(frame);
   const motionOccupancy = () => {
     if (!spriteMotion || spriteMotion.old !== spriteLayer ||
+        spriteMotion.pieces !== spritePose!.pieces ||
         !scene.sprite_motion_transition_equal(spriteMotion.frame, frame)) {
-      spriteMotion = { frame, old: spriteLayer, clip: scene.sprite_motion_dirty512(frame) };
+      spriteMotion = { frame, old: spriteLayer, pieces: spritePose!.pieces,
+        clip: scene.sprite_motion_dirty512(frame, spritePose!.pieces) };
     }
     return scene.fast_sprite_motion512(frame, spritePose!.pieces,
       spriteMotion.clip, spriteMotion.old, spriteGround!.image);

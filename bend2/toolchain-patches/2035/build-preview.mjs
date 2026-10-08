@@ -15,7 +15,7 @@ import { emitDefaultGround2035 } from './prepared-ground.mjs';
 import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 
 const selected = {
-  scene: ["stationary-motion-20261006/scene-imCYHw", "51a0f475fa32fd014201b3264fbb803372822bc1e561b801f4aac06eb3a17479"],
+  scene: ["stationary-motion-20261006/scene-MhDSFU", "4fbb0917f634927a459fee0c8d5d8dcb6e47cc5e6b28e4a71173fbb6f8e9fb33"],
   controller: ["stationary-motion-20261006/controller-cRuykQ", "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af"],
   menu: ["stationary-motion-20261006/menu-app-Ft8mws", "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"],
 };
