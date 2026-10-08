@@ -1,0 +1,21 @@
+{
+  "schema": "rift-bend-2035-current-source-extension/1",
+  "baseline": {
+    "commit": "e739679eaf9da366cfde24b3a2b445848a6bf030",
+    "tree": "512e76928ab85073130524a7cb4948103ac9c821"
+  },
+  "packet": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-source-admission-20261008-r1.json",
+    "sha256": "31e07114e10c872355ae9cba3b13980f9b9cfef9a022ee409eaef5b8b2a85bdb"
+  },
+  "files": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current-source/admission.mjs",
+      "sha256": "015c0614f3858110c105a3691cf5e8802bcaf92e808b0819ab697f714bf2ed38"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current-source/README.md",
+      "sha256": "d2848431e1a55af1aeca023311bbadc03530611dda70eadea316a87ec49ef096"
+    }
+  ]
+}
