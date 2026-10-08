@@ -15,8 +15,8 @@ import { emitDefaultGround2035 } from './prepared-ground.mjs';
 import { verifyPrepared } from '../../core/v3/prepared-match/verify.mjs';
 
 const selected = {
-  scene: ["stationary-motion-20261006/scene-MhDSFU", "4fbb0917f634927a459fee0c8d5d8dcb6e47cc5e6b28e4a71173fbb6f8e9fb33"],
-  controller: ["stationary-motion-20261006/controller-cRuykQ", "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af"],
+  scene: ["stationary-motion-20261006/scene-IBQFOb", "8be1747c96d74ea2e573c4f498046880d9096108ff3bd6ca067d2b0a635b26bf"],
+  controller: ["stationary-motion-20261006/controller-HgmiHi", "7b7bea1cf24274b1d31092c85ca6a921ab37b32b4437c3ac097bb422424ca7e4"],
   menu: ["stationary-motion-20261006/menu-app-Ft8mws", "cc95018a8c8ec97509c7b6d4f8dee5985fd84f20601ba9fba7f4bad77539feba"],
 };
 const relative = file => path.relative(root, file).split(path.sep).join('/');

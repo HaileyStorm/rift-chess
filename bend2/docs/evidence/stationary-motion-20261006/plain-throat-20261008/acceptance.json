@@ -1,0 +1,145 @@
+{
+  "schema": "rift-plain-throat-application/1",
+  "scope": "candidate-source-browser-only",
+  "disposition": "reviewed",
+  "adopted": false,
+  "candidate": "79df8d9c40722ee9507a1e253f283b51025f9d6c",
+  "baseline": "85781354bc00fa97bcc67a4d3cca7df3b7d51035",
+  "parent": {
+    "path": "bend2/docs/evidence/motion-alpha-bounds-20261007/acceptance.json",
+    "sha256": "94c49592c364877be3dfd9d5deeb18a76e7b47ec8b7b1bb73697525b3f122b97"
+  },
+  "historicalCapture": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-alpha-capture-positive-r1.json",
+    "sha256": "e2b28663177ec79454a3a6fb7d911cea4289317c496fea03c1a8301f085dd662"
+  },
+  "amendments": [
+    {
+      "path": "bend2/graphics/v2game/KnightMesh.bend",
+      "beforeSha256": "a8a5585f8fe82e593514bfbe25fe140a1f05c9ebdbf2a2b778bbb0c2a49c6046",
+      "afterSha256": "db4def8865d00938ee41999a9d47cd9014c8fc755218fcf263cc9bd84901a6e1",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/production-knight-before-plain-throat-r1.bend",
+        "sha256": "a8a5585f8fe82e593514bfbe25fe140a1f05c9ebdbf2a2b778bbb0c2a49c6046"
+      }
+    },
+    {
+      "path": "bend2/toolchain-patches/2035/build-preview.mjs",
+      "beforeSha256": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4",
+      "afterSha256": "2811acb8467471f2fae6571f64fde68863cb4dff4eecb06f04edc9d58b21aac8",
+      "preimage": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/builder-before-plain-throat-r1.mjs",
+        "sha256": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4"
+      }
+    }
+  ],
+  "review": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-independent-review-r1.json",
+    "sha256": "19483da6a86b1f6e80788c41c2f38af07231bf4360530444ef72e937865e47ae"
+  },
+  "build": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-dX3qeU/build.json",
+    "sha256": "7732238d0bff004745ebedd46f096a863ec9e5301b89ee01e5565801894f9ad1"
+  },
+  "terminals": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-emissions-r1/scene/terminal.json",
+      "sha256": "922da38eed4ecd412e7582e6cd362c2b180b414287df04733fa62554a27c9f3d"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-emissions-r1/controller/terminal.json",
+      "sha256": "31ad5ab839681433befcb6078f88b89a47205c27ab1e30380a4eb9fc2da3eef6"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-supervisor-r1/terminal.json",
+      "sha256": "e658749facced181cd776b1d101fc5c5b86f2baf5ea7c0f6e0ae59b87b0d1083"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-preview-build-r1/terminal.json",
+      "sha256": "493e1258b12a50d37118ecd3ba3bf46afc5e0e74c03ae2d17948914a3394d9e3"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-focused-supervisor-r1/terminal.json",
+      "sha256": "901be2e86fd575cfd8f9a36985a5c2cd0a4e44cbd2e074fe4b87c0f22d982c8c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-supervisor-r1-portrait/terminal.json",
+      "sha256": "21db378bc4191fad722286a661e322db7c962d3fb6954ba241785d6d819815fb"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-offline-supervisor-r1/terminal.json",
+      "sha256": "0e950a170e75a0abad0f38f0506548b3087d247349278e8a9738c48d349feae6"
+    }
+  ],
+  "textures": {
+    "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-r1/result.json",
+    "sha256": "89d0cbb04fff1e2347b07f89d02a79521e34b571a7fcc22ca426025f13a75d17"
+  },
+  "focused": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-focused-r1/result.json",
+    "sha256": "ba48108e95e29fa6da618a6aa8af32dde7693f186b08666e22a0b4478f13a011"
+  },
+  "moving": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-r1-portrait/result.json",
+    "sha256": "39a43dd9441f4f1aa1ec5a576ad0e40410bbd0cf3dcebcc3c8359084cee115c6"
+  },
+  "offline": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-offline-supervisor-r1/terminal.json",
+    "sha256": "0e950a170e75a0abad0f38f0506548b3087d247349278e8a9738c48d349feae6"
+  },
+  "artifacts": [
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-r1/0-baseline.png",
+      "sha256": "01d7749d630ebadd01df1f85ec6382eb191412995e879e33438ba04f382a8faf"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-r1/0-candidate.png",
+      "sha256": "e30b6e38cc0cabb3e0b1112a26503ef61169363ccfa59e243745383e0dca82ae"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-r1/1-baseline.png",
+      "sha256": "c6cddf59a2e4374d6ed3b2f9bc101552c1af04a54fbce9589741b395ad972c91"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/knight-sculpted-triangles-20261006/integrated-plain-throat-r1/1-candidate.png",
+      "sha256": "a83f43f65904d144bb97edc44c2f988e89901c2bc228378837aa608517d7a503"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-focused-r1/low-view.png",
+      "sha256": "bba01b32c64190905cd4dbb4d24534df9938979cd77d92b2f884b027b676cd01"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-focused-r1/overhead-view.png",
+      "sha256": "df88696ac8a4733512597cef6ed42cc70fd369e326eadc0275d1c936397e30b2"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-r1-portrait/pose-a.png",
+      "sha256": "eb1b4471ef20bb51c626c0a3073236b2e4c44a40161b8ae9c35ad4dd4fe19bee"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-r1-portrait/pose-b-old-click.png",
+      "sha256": "744f46afc30feea956b5c686b8c15dcdb04949f884300ccf607ca4bf0c0d1b6b"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-offline-r1/offline-initial.png",
+      "sha256": "972761bdadb58f7e0a65a35979e2882df7926711d867deaabfe7579df48fc145"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-offline-r1/online-initial.png",
+      "sha256": "972761bdadb58f7e0a65a35979e2882df7926711d867deaabfe7579df48fc145"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-r1-portrait/observer-binding.json",
+      "sha256": "ebad1571497f73d6b9492c29428fc80fad762d23562cfee5661ddb27dc5a4d57"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-moving-r1-portrait/worker-observer.js",
+      "sha256": "92cafd3afaa29e21f3b7ee56269ab0f22c718438fa806728faefd19a3b33c408"
+    }
+  ],
+  "limits": [
+    "Historical parent capture retained without current-source replay. Original 315 creation inputs retain312 unchanged plus3 explicitly amended inputs; new Knight amendment follows previous Knight postimage. Twelve proof consumers and frozen v2/v3 inputs remain exact.",
+    "Actual current scene/controller/cache/build/browser finite evidence. No proof/kernel/Linux/native CPU/GPU/device/adoption promotion.",
+    "Whole-board material quality, natural motion continuity, stable latency/memory and owner appearance acceptance remain open."
+  ]
+}
