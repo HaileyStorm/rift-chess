@@ -550,8 +550,9 @@ coverage reviews accepted this finite differential. The one sequential timing
 pair is not a performance comparison.
 
 This closes the admitted ordinary compiler differential, preserving the historical
-runner as provenance. The pure interpreter subset below adds original expected-result
-coverage. Runnable JS main/output-display ABI, remaining upstream groups, generic Worker CLI/HTML,
+runner as provenance. The pure interpreter and generated-JS subsets below add
+original expected-result coverage. Remaining IO/FFI behavior, negative compiler-CLI
+verdicts, upstream groups, generic Worker CLI/HTML,
 remote native/cluster/kernel/device/GPU gates and reviewed adoption remain open.
 Do not repeat this unchanged differential after fixture-only Worker edits.
 
@@ -584,8 +585,51 @@ The independent original-expectation and current-hash readback disposition,
 `upstream-interpreter-disposition-2035-20261008-r1.json`, has SHA256
 `57c7f1ac4a44cc53444279aa92984fbfbbc462d564776ce6510aa6957dbfc887`.
 
-This closes only the admitted pure interpreter lane. IO/foreign execution,
-runnable-JS display, negative CLI verdicts, remaining original upstream groups,
+This closes only the admitted pure interpreter lane. The generated-JS subset
+below adds main/display coverage. IO/foreign execution, negative CLI verdicts, remaining original upstream groups,
 native/C, kernel, device, GPU and reviewed adoption requirements remain open.
 The accepted pristine2.0.27 pin is unchanged. Do not repeat this unchanged lane
+after fixture-only Worker or documentation edits.
+
+## Original generated-JS main and display
+
+A separate paired lane starts from the188 verified pure-interpreter originals.
+It reloads and checks unchanged books, then uses original `Comp.js_book` to emit
+the runtime entrypoint and formatter. Every executable is retained unchanged as
+CommonJS and launched in a fresh quiet Bun1.4.2 process without extra arguments
+or preloads. Actual stdout is compared directly with original `#|` expectations
+under upstream whitespace normalization; library-returned objects are not used
+as the output oracle.
+
+Both variants classify188 identical rows and pass all129 admitted main/display
+expectations: parse15, check42, compile9, proof31, show5, comptime11, reg8 and
+import8. The59 exclusions are31 fixtures outside the original root-Base build
+lane,22 parameterized mains and six exact original unprintable-type refusals.
+Unexpected build refusals are failures. Whole-book non-Base foreign/unsafe and
+IO exclusions remain in force. Before any launch, the source-bound initializer
+guard requires the authenticated emitter's exact runtime ending and unique
+Program boundary to have no foreign initializer bytes between them. It neither
+rewrites scripts nor establishes arbitrary-JavaScript sandboxing.
+
+Each original process has concurrent bounded stream capture, an observation
+lease and explicit exited-handle/Job settlement. Both runs have empty stderr,
+no overflow and no signaling or retry. All260 original Popen units settle,
+the final Job closes,1946 source fences remain unchanged and all258 generated
+script hashes match their final readback. Total script text is1711092 bytes per
+lane; no compiler copies were added. Emission `fetch` interception records zero
+calls; generated children have no runtime network monitor. Durations and stream
+limits are not physical-memory or performance acceptance.
+
+`upstream-jsbook-supervisor-2035-r1/terminal.json`, SHA256
+`eda7fa3e051fa41ac19462ea97dd751f54c05fef341dcbb2f9fb0aee32afbece`,
+records the original process settlement and source fences. The comparison SHA256
+is `52d63a86791f80f6f1ff4d7ce8aadfce2fab067a8ebe37d702796f48ff3215b6`.
+Independent source-oracle/current-hash readback is retained in
+`upstream-jsbook-disposition-2035-20261008-r1.json`, SHA256
+`818ef6877743aec2b3c52764e18057f2bf9de52cf1b72ff7c4d83af256ff8bf6`.
+
+This closes only the admitted original pure generated-JS main/display lane.
+IO/FFI, negative compiler-CLI verdicts, remaining upstream groups, generic Worker
+CLI/HTML, native/C, kernel, device, GPU and reviewed adoption remain open.
+The accepted pristine2.0.27 pin is unchanged. Do not repeat the unchanged lane
 after fixture-only Worker or documentation edits.
