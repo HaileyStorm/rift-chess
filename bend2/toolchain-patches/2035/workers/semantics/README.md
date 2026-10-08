@@ -503,3 +503,54 @@ This finite witness covers malformed startup kind and automatic fatal cleanup.
 Wrong-build assets, duplicate/stale handshakes, transport failure, timing metadata,
 general protocol correctness and browser/native-C/device/adoption acceptance
 remain separate.
+
+## Ordinary upstream compiler differential
+
+The retained compiler differential was adapted privately to the current APIs,
+with a97-file source-loader2.0.35 baseline and the corrected98-file Worker
+candidate. It reads untouched upstream fixtures from commit
+`79df8d9c40722ee9507a1e253f283b51025f9d6c`, checks fresh books from declaration0,
+records holes and compares ordinary `js_lib(book)` and C-text emission. It does
+not run the copied CLI, original cluster gate, interpreter or test programs.
+Only compiler/fixture paths are normalized in diagnostics and emitted hashes.
+The obsolete ownership call and removed `book.open` field are not carried forward.
+Both lanes use separate module/process namespaces and the same pinned Bun1.4.2
+and explicit stack setting. No compiler copies or upstream edits were added.
+
+| Original group | Fixtures | Checker returned, each lane | JS emitted, each lane | C emitted, each lane |
+| --- | ---: | ---: | ---: | ---: |
+| parse | 151 | 82 | Not selected | Not selected |
+| check | 246 | 93 | Not selected | Not selected |
+| compile | 125 | 115 | 115 | 115 |
+| proof | 92 | 59 | Not selected | Not selected |
+| show | 8 | 8 | Not selected | Not selected |
+| comptime | 51 | 29 | Not selected | Not selected |
+| reg | 107 | 103 | 102 | 101 |
+| import | 51 | 28 | 28 | 17 |
+
+All831 complete rows match:517 checker calls returned,245 JS emissions and233
+C-text emissions per lane, with zero network calls. The314 common checker
+rejections and14 common emission errors remain recorded as rejections. Two
+returned checks retain one hole each (`axiom_warn` and `hole_todo`); they do not
+establish complete proofs. Five absolute-import fixtures stop at the adapter's
+restriction rather than their original missing-file diagnostic; cycle, diamond
+and canonical-path behavior is not established by those rows. Original `#|`
+expectation hashes are bound, but their runtime outputs were not asserted.
+
+`upstream-differential-supervisor-2035-r1/terminal.json`, SHA256
+`9fd78271bcafa6f76266740030f9ba6f07eded1904ae442b492433238052338b`,
+records both original exits0, exited-handle and Job closure, and1942 unchanged
+input hashes. The comparison SHA256 is
+`2c3c643a700ab16e7905445f9b37cf838a9933b7116c3e5b82488d77f717aff9`.
+The disposition `upstream-differential-disposition-2035-20261008-r1.json`, SHA256
+`bdb06dbd35784e52b1bb88bdb4437c715f54309a6703aa93c34dddebb1ccc03f`,
+also verifies all1604 captured test/import/effect files against their committed
+Git blob identities and SHA256 bytes. Independent source, process and actual
+coverage reviews accepted this finite differential. The one sequential timing
+pair is not a performance comparison.
+
+This closes the admitted ordinary compiler differential, preserving the historical
+runner as provenance. Original expected-result behavior, interpreter and runnable
+JS main/output-display ABI, remaining upstream groups, generic Worker CLI/HTML,
+remote native/cluster/kernel/device/GPU gates and reviewed adoption remain open.
+Do not repeat this unchanged differential after fixture-only Worker edits.
