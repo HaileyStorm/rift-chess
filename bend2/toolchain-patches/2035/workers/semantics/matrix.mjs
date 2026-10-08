@@ -34,14 +34,14 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
 async function until(predicate){const end=performance.now()+5000;while(!predicate()){assert.ok(performance.now()<end,'authentic replies not observed');await new Promise(r=>setTimeout(r,1));}}
 // Instrument actual Workers without replacing their computation or handshake.
-function harness({hold=false,holdReady=false,workerURL=null,transform=null}={}){
+function harness({hold=false,holdReady=false,workerURL=null,transform=null,observe=null,observeJob=null}={}){
  const h={held:[],readyHeld:[],attempts:0,constructionFailures:0,created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
  h.release=()=>{hold=false;return h.held.splice(0);};
  h.drainHeld=()=>h.held.splice(0); // Preserve holding across sequential resumptions.
@@ -50,6 +50,7 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null}={}){
   h.attempts++;let worker;try{worker=new Worker(workerURL??url,options);}catch(error){h.constructionFailures++;throw error;}
   h.created++;const own=new Map();
   return {addEventListener(type,listener){const wrapped=event=>{
+    if(type==='message'&&observe)observe(event.data);
     if(type==='error')h.errors++;
     if(type==='message'&&event.data.kind==='ready'&&holdReady){h.readyHeld.push({listener,event});return;}
     if(type==='message'&&event.data.kind==='result'){
@@ -58,7 +59,7 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null}={}){
     }listener(event);
    };own.set(listener,wrapped);worker.addEventListener(type,wrapped);h.listeners.set(listener,type);},
    removeEventListener(type,listener){h.removed++;worker.removeEventListener(type,own.get(listener));h.listeners.delete(listener);},
-   postMessage(...args){worker.postMessage(...args);},terminate(){h.terminated++;worker.terminate();}};
+   postMessage(...args){if(observeJob)observeJob(args[0]);worker.postMessage(...args);},terminate(){h.terminated++;worker.terminate();}};
  };return h;
 }
 function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
@@ -544,6 +545,69 @@ for(const [label,message,mutate]of [
  }finally{retire(s,h);}
 }
 results.push({case:'packed-framing-reference-replies',transport:'packed',rejections:framingRejections,scope:'Five distinct corruptions of authentic structured helper replies. Positive completed backward alias retained. No general packed-format, incompatible-schema alias, deep traversal or output-range claim.'});
+// Nonfinite values are computed from finite inputs in the real helper, before transport packing.
+{
+ const errors=[],sentJobs=[],h=harness({observe:m=>{if(m.kind==='error')errors.push(m);},observeJob:m=>{if(m.kind==='job')sentJobs.push(m);}}),s=api.createSession({workers:1,transport:'clone',trace:true,workerFactory:h.factory});
+ const fn=build.manifest.functions.find(f=>f.name==='divide_value');assert.ok(fn);const controls=[];
+ try{
+  for(const [numerator,label]of [[1,'positive-infinity'],[0,'not-a-number']]){
+   const owner=s.submit('divide_remote',[numerator,0]);let rejection;
+   await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='nonfinite_output';});
+   const m=errors.at(-1);assert.equal(m.kind,'error');assert.equal(m.invocation,owner.id);assert.equal(m.functionId,fn.id);assert.equal(m.schemaId,fn.id);assert.equal(m.code,'nonfinite_output');
+   assert.equal(errors.length,controls.length+1);const sent=sentJobs.at(-1);
+   const identityKeys=['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'];
+   for(const key of identityKeys)assert.equal(m[key],sent[key],key);assert.equal(m.program,build.manifest.program);assert.deepEqual(sent.args,[numerator,0]);
+   assert.match(m.error,/no silent serial retry/);const trace=s.trace().filter(e=>e.invocation===owner.id);assert.equal(trace.find(e=>e.kind==='dispatch').job,m.job);
+   assert.equal(trace.filter(e=>e.kind==='dispatch'&&e.functionId===fn.id).length,1);
+   assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));noPendingWork(s);assert.equal(s.stats().closed,false);
+   controls.push({label,args:[numerator,0],invocation:owner.id,rejection,originalJobIdentity:Object.fromEntries(identityKeys.map(k=>[k,sent[k]])),authenticError:m,errorEnvelopeSHA256:sha(JSON.stringify(m)),statsAfterError:s.stats(),trace});
+  }
+  assert.equal(errors.length,2);assert.equal(s.stats().remoteJobs,2);assert.equal(s.stats().localCalls,0);assert.equal(s.stats().requiredWitnesses,0);
+  assert.equal(h.created,1);assert.equal(h.terminated,0);assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  const recovery=s.submit('divide_remote',[1,2]);assert.equal(await recovery.promise,.5);noPendingWork(s);
+  const recoveryTrace=s.trace().filter(e=>e.invocation===recovery.id);
+  assert.equal(recoveryTrace.filter(e=>e.kind==='dispatch'&&e.functionId===fn.id).length,1);assert.equal(recoveryTrace.filter(e=>e.kind==='witness').length,1);
+  assert.equal(s.stats().remoteJobs,3);assert.equal(h.created,1);
+  results.push({case:'computed-nonfinite-helper-output',transport:'shared-helper-boundary',executedTransport:'clone',functionId:fn.id,controls,recovery:{args:[1,2],expected:.5,invocation:recovery.id,trace:recoveryTrace},statsBeforeClose:s.stats(),postClose:retire(s,h),scope:'Actual helper division computes infinity/NaN from finite inputs; no payload corruption or local retry. Error rejects its root while same helper/session remains usable.'});
+ }finally{retire(s,h);}
+}
+const charFunction=build.manifest.functions.find(f=>f.name==='char_value');assert.ok(charFunction);
+assert.equal(build.manifest.schemas[charFunction.output].kind,'char');const charControls=[];
+for(const transport of ['clone','packed']){
+ const h=harness(),s=api.createSession({workers:1,transport,trace:true,workerFactory:h.factory});
+ try{
+  const rejected=[];
+  if(transport==='clone'){
+   for(const input of ['', 'AB', '\ud800']){
+    await assert.rejects(s.call('char_remote',[input]),e=>e.code==='input_shape');
+    assert.equal(h.created,0);assert.equal(s.stats().remoteJobs,0);assert.equal(s.stats().closed,false);noPendingWork(s);rejected.push({input,code:'input_shape'});
+   }
+  }
+  const values=['A','😀'];for(const input of values)assert.equal(await s.call('char_remote',[input]),input);
+  noPendingWork(s);assert.equal(s.stats().remoteJobs,2);assert.equal(h.created,1);
+  const trace=s.trace();assert.equal(trace.filter(e=>e.kind==='dispatch'&&e.functionId===charFunction.id).length,2);assert.equal(trace.filter(e=>e.kind==='witness').length,2);
+  charControls.push({transport,rejected,expected:values,statsBeforeClose:s.stats(),trace,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'char-scalar-and-input-shape',functionId:charFunction.id,controls:charControls,scope:'Actual ASCII and supplementary-scalar helper round trips on both transports; shared pre-dispatch empty/multiple-scalar/lone-surrogate input rejection once.'});
+{
+ const h=harness({hold:true}),s=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:h.factory});
+ try{
+  const owner=s.submit('char_remote',['A']);owner.promise.catch(()=>{});await until(()=>h.held.length===1);
+  const first=h.drainHeld()[0],m=first.event.data;assert.equal(m.invocation,owner.id);assert.equal(m.functionId,charFunction.id);assert.equal(m.schemaId,charFunction.id);
+  assert.ok(m.packet instanceof ArrayBuffer);assert.equal(m.packet.byteLength,13);const v=new DataView(m.packet);
+  assert.equal(v.getUint32(0,true),0x32574442);assert.equal(v.getUint32(4,true),1);assert.equal(v.getUint32(8,true),1);assert.equal(v.getUint8(12),65);
+  const bytes=new Uint8Array(14);bytes.set(new Uint8Array(m.packet));bytes[13]=66;new DataView(bytes.buffer).setUint32(8,2,true);
+  const original=saveReply('packed-char-original.bin',m.packet),corrupted=saveReply('packed-char-multiple-scalars.bin',bytes.buffer),changed={...m,packet:bytes.buffer};
+  assert.deepEqual(Object.keys(m).filter(k=>!Object.is(m[k],changed[k])),['packet']);first.listener({data:changed});let rejection;
+  await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='input_shape'&&e.message.includes('invalid packed Char');});
+  const automatic=s.stats(),trace=s.trace();assert.equal(automatic.closed,true);assert.equal(automatic.remoteJobs,1);assert.equal(automatic.localCalls,0);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,key);
+  assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));
+  first.listener(first.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);
+  results.push({case:'packed-char-result-shape',transport:'packed',invocation:owner.id,functionId:charFunction.id,original,corrupted,changedFields:['packet'],rejection,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,delayedOriginalReplyInert:true,postClose:retire(s,h),scope:'Valid UTF-8 AB with consistent length rejects the scalar Char shape; distinct from invalid UTF-8 or genuine computed invalid output.'});
+ }finally{retire(s,h);}
+}
 assert.equal(networkCalls,0);
 const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});

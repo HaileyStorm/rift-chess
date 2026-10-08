@@ -345,3 +345,33 @@ These finite controls do not prove general packed-format correctness,
 incompatible-schema aliases, invalid constructor records, deep traversal,
 oversized accepted output, Char or nonfinite-output handling, performance,
 device behavior or adoption acceptance.
+
+Actual finite inputs `(1,0)` and `(0,0)` now execute `F32.div` inside a real
+`divide_value` helper. Output validation returns authentic `nonfinite_output`
+error envelopes before transport encoding; Infinity and NaN are not transported.
+Every protocol/program/epoch/job/invocation/fork/slot/function/signature field
+matches the original dispatched job. Each invocation rejects without a result,
+required witness or local retry and clears its retained work. The session stays
+open; the same constructed helper subsequently computes `(1,2)` as0.5 with a
+genuine result and witness. This worker-side boundary runs once on clone.
+
+Char identity helpers separately round-trip `'A'` and a supplementary Unicode
+scalar through clone and packed transport. Empty, multiple-scalar and lone-high-
+surrogate inputs reject `input_shape` before helper construction once at shared
+submission validation; valid calls follow in that session. An authentic packed
+`'A'` reply is changed to valid UTF-8 `'AB'` with a consistent byte length. It
+rejects `input_shape` with `invalid packed Char`, publishes no result/witness and
+automatically retires all resources before explicit close. The delayed original
+stays inert; both exact packet files are retained. This exercises scalar shape
+rather than invalid UTF-8 or genuinely computed malformed Char output.
+
+Fresh `worker-output-runtime-r1/receipt.json`, SHA256
+`f8c761f4994b17b51f1e69dcd8d00ff81836de29e99ef10268fe3092f3f419bd`,
+passes33 records with zero network calls. Native
+`worker-output-runtime-supervisor-r1/terminal.json`, SHA256
+`32a1fbf9727bea8f1a36047002478f975045c6548017901b965705f3ba0af48b`,
+records original process/handle and Job closure with unchanged inputs. Compiler
+inventory/lineage, imported Tree fixture and runtime remain unchanged; the owned
+policy fixture and emitted program changed. These controls do not establish all
+arithmetic exceptions, every Unicode boundary, generated malformed Char output,
+general wire/ABI correctness, performance, device behavior or adoption.

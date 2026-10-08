@@ -125,3 +125,15 @@ def tree_value(t: Trees.Tree) -> Trees.Tree:
 
 def tree_remote(t: Trees.Tree) -> Trees.Tree:
   tree_value@(t)
+
+def divide_value(n: F32, d: F32) -> F32:
+  F32.div(n, d)
+
+def divide_remote(n: F32, d: F32) -> F32:
+  divide_value@(n, d)
+
+def char_value(c: Char) -> Char:
+  c
+
+def char_remote(c: Char) -> Char:
+  char_value@(c)
