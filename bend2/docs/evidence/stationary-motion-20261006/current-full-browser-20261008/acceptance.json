@@ -1,0 +1,178 @@
+{
+  "schema": "rift-current-full-browser-composite/1",
+  "createdAt": "2026-10-08",
+  "candidate": {
+    "directory": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-dX3qeU",
+    "version": "4eb4d137c250bfe5161e",
+    "buildSHA256": "7732238d0bff004745ebedd46f096a863ec9e5301b89ee01e5565801894f9ad1",
+    "sourceRevisionAtCreation": "85781354",
+    "dirtyAtCreation": true,
+    "adopted": false
+  },
+  "originalFullRun": {
+    "verdict": "FAIL",
+    "scenarios": 24,
+    "checks": 682,
+    "reason": "Fool-mate terminal helper-event wait timed out; missing seven later checks causes exact-count gate failure. No other scenario failed."
+  },
+  "focusedRun": {
+    "verdict": "PASS",
+    "scenarios": 1,
+    "checks": 19,
+    "scenario": "hotseat-black-mates"
+  },
+  "compositeCoverage": {
+    "scenarios": 24,
+    "checks": 689,
+    "basis": "23 successful scenarios from original full run plus complete19-check focused behavioral terminal/undo rerun; two distinct executions, not a fresh full-run PASS"
+  },
+  "scenarios": [
+    {
+      "name": "desktop-start",
+      "checks": 9,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "corrupt-plate-fallback",
+      "checks": 7,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "startup-response",
+      "checks": 2,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "defaults",
+      "checks": 15,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "selection",
+      "checks": 17,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "hotseat-black-mates",
+      "checks": 19,
+      "origin": "terminal-detail-20261008-r1"
+    },
+    {
+      "name": "hotseat-white-mates",
+      "checks": 15,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "castle-en-passant",
+      "checks": 66,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "promotion",
+      "checks": 32,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "shift",
+      "checks": 22,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "draw-terminals",
+      "checks": 39,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "draw-prompt",
+      "checks": 9,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "draw-actions",
+      "checks": 15,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "bot-white",
+      "checks": 161,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "bot-black",
+      "checks": 140,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "undo",
+      "checks": 19,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "camera",
+      "checks": 11,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "menus",
+      "checks": 18,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "persistence",
+      "checks": 16,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "mobile",
+      "checks": 13,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "import-gesture-guards",
+      "checks": 7,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "touch-import-replan",
+      "checks": 2,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "resize",
+      "checks": 17,
+      "origin": "current-full-browser-20261008-r3"
+    },
+    {
+      "name": "perf",
+      "checks": 18,
+      "origin": "current-full-browser-20261008-r3"
+    }
+  ],
+  "canonicalBeforeSHA256": "91114936f6f9334fef41eda0ada3a68d0b7da29c294ce4f482e6ed396713019e",
+  "canonicalAfterSHA256": "82af069deff592c913fa32829eb35ab29217b060c1f536f1547f59897ba207da",
+  "files": {
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-full-browser-supervisor-20261008-r3/terminal.json": "5ed5099cdf8adc9a919ff0cec8f3fafdadd37e6553c3a39c591f5afa9a4f760f",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-supervisor-20261008-r1/terminal.json": "f6dcdc5b9b0aa81156b12bf488f60d996f31ddee337565b32a8de27ac4f914a6",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-full-browser-20261008-r3/summary.json": "62991db3a1f73fefcbb65b8c58c57c22fa85004ca4b9fa910d48709b57df2cd6",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-20261008-r1/summary.json": "506a1cef032ed40ebc81c2ce3635ace6d591e4c8984b2a75588e5bc902841280",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-full-browser-serving-20261008-r3.json": "c7cebc09a83cca95dab9261f7b94fb9e3aeecc85cb5a66c5564ddd1de8721d17",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-serving-20261008-r1.json": "9a0f06016260c563ad55027819afc1451f1830d630b2b98853395cc52310dc05",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-adaptation-20261008-r1.json": "8ddd460c737428f68ae1cd20cb5a2b6eebdfc412e2a0d9d915f0194ee6fb56f2",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-matrix-20261008-r1.mjs": "a6661635e462b52e6132a8249ea6bed005a3b939f8e39c32dc27fb3a3af4dde5",
+    "bend2/tests/playtest-matrix.mjs": "82af069deff592c913fa32829eb35ab29217b060c1f536f1547f59897ba207da",
+    "bend2/tests/ts-oracle.mjs": "b9eb55d6d1e2c1edd258ece0ee52e22b5a1301e7d8db56a84b24ecd3836676c3",
+    "bend2/tests/fixtures/playtest-records.json": "38cf949fe5aeac69948fa322cdaee6eb814f87329221dfa7ef111006082c3b36",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-full-browser-verification-20261008-r1.json": "006a90510a050e30eb0b2c8c97e01bf096b8b14e957751d999819fff734bfc8f",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/terminal-detail-integration-20261008-r1.json": "928512320f0222c81ed5378284bf7bc136df554d41b90934ea8ee33cf613f8d5",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/matrix-qualified-terminal-detail-20261008-r1.mjs": "0f5cdf28b1af6174b6a69841d31b1e2b7ad9874f28331271fc3db452c14f9a15",
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/matrix-qualified-terminal-detail-20261008-r1.binding.json": "5b7ba6e70425e715a4f4747404e5032e4c2c71c8d9da8c1e231aecb1d1fc2a5e"
+  },
+  "inputFences": [
+    429,
+    432
+  ],
+  "libraryImplementationFiles": 74,
+  "nativeClosure": "Both original children exited; exact native handles and qualified Jobs closed after self-only observation; original full negative preserved. Source postimage was integrated after those executions, never retagged as their original input.",
+  "scope": "Local unchanged exact current candidate package and rendered TypeScript-reference behavior. No fresh full-run PASS, stable performance, physical display/device, human appearance, kernel/native CPU/GUI/PCM/restart/GPU or toolchain adoption claim.",
+  "remaining": "Stable responsiveness, physical-device/owner appearance, Safe/BendTT/kernel, native CPU/GUI/PCM/restart/original GPU and reviewed compiler adoption; full Goal ACTIVE."
+}

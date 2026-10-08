@@ -86,6 +86,23 @@ const summary = { run, url, at: new Date().toISOString(), buildVersion: build.ve
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const instrument = () => {
   window.__frames = []; window.__refinements = []; window.__sounds = []; window.__effects = [];
+  window.__spriteDraws = [];
+  const imageReplies = new WeakMap();
+  for (const name of ['drawImage', 'putImageData']) {
+    const original = CanvasRenderingContext2D.prototype[name];
+    CanvasRenderingContext2D.prototype[name] = function (...args) {
+      const reply = imageReplies.get(name === 'putImageData' ? args[0]?.data?.buffer : args[0]);
+      const value = Reflect.apply(original, this, args);
+      if (reply && this.canvas === document.querySelector('canvas')) {
+        window.__spriteDraws.push({ kind: reply.kind, id: reply.id,
+          revision: Number(reply.presentation?.revision), progress: reply.presentation?.pose.progress,
+          atlasPick: reply.atlasPick, atlasMaskId: reply.atlasMaskId, atlasMaskOffer: reply.atlasMaskOffer,
+          spriteMetrics: reply.spriteMetrics, sceneTimes: reply.sceneTimes });
+        if (window.__spriteDraws.length > 512) window.__spriteDraws.shift();
+      }
+      return value;
+    };
+  }
   window.__fileClicks = []; window.__motionShots = []; window.__audioStarts = 0; window.__opened = [];
   window.__delayedInputs = [];
   const openWindow = window.open;
@@ -105,6 +122,10 @@ const instrument = () => {
       super(...args);
       this.addEventListener('message', event => {
         const m = event.data;
+        if (m.kind === 'frame' || m.kind === 'refinement') {
+          if (m.image) imageReplies.set(m.image, m);
+          if (m.bitmap) imageReplies.set(m.bitmap, m);
+        }
         if (m.kind === 'fault') window.__fault = m.message;
         if (m.kind === 'frame') for (const effect of m.effects || []) {
           window.__effects.push({ id: m.id, kind: effect.$, at: performance.now() });
@@ -206,12 +227,22 @@ async function scenario(name, viewport, body) {
         metrics: state.refined.spriteMetrics };
     },
     async refinedRevision(revision, timeout = 60000) {
-      await page.waitForFunction(revision => window.__fault ||
-        window.__refinements.some(item => item.revision === revision && item.dirty),
-      revision, { timeout });
-      const fault = await page.evaluate(() => window.__fault);
-      if (fault) throw new ScriptError(`Bend terminal sprite refinement fault: ${fault}`);
-      t.check(true, `Detailed sprite frame reaches terminal revision ${revision}`);
+      // A completed motion can reuse an accepted atlas in an ordinary frame.
+      // Require its actual settled canvas draw, independent of helper dispatch.
+      await page.waitForFunction(revision => {
+        const draw = window.__spriteDraws.at(-1);
+        return window.__fault || draw?.revision === revision && draw.progress === 16 &&
+          draw.atlasPick === true && Number.isSafeInteger(draw.atlasMaskId) && draw.atlasMaskId > 0 &&
+          Number.isSafeInteger(draw.atlasMaskOffer) && draw.atlasMaskOffer > 0 &&
+          Number.isFinite(draw.spriteMetrics?.spritesMs);
+      }, revision, { timeout });
+      const state = await page.evaluate(revision => ({ fault: window.__fault,
+        draw: window.__spriteDraws.at(-1),
+        draws: window.__spriteDraws.filter(item => item.revision === revision),
+        refinements: window.__refinements.filter(item => item.revision === revision) }), revision);
+      if (state.fault) throw new ScriptError(`Bend terminal sprite refinement fault: ${state.fault}`);
+      result.terminalSprite = state;
+      t.check(true, `Detailed atlas draw reaches terminal revision ${revision}`, JSON.stringify(state.draw));
     },
     async change(action) {
       const id = await page.evaluate(() => window.__reply?.id || 0);
