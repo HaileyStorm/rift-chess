@@ -46,10 +46,11 @@ def quiet_reminder(+s: S.State) -> S.State:
   +next = S.set_reminded(s, S.reminder_match(S.reminded(s), S.game(s)))
   Bool.pick(S.State, due, S.notice(next, String.append(Bool.pick(String, Model.pos_side(S.pos(s)), "White", "Black"), ": 100 quiet actions. Play on or offer a draw for agreement.")), next)
 
-def command_result.record_refreshed(+s: S.State, +c: Match.Command, refreshed: S.State) -> S.State:
+def command_result.record(+s: S.State, +c: Match.Command, r: Prepared.Ready) -> S.State:
   +previous = S.pos(s)
   commands = List.append(&2, Match.Command, S.journal(s), [c])
   labels = List.append(&2, String, S.history(s), [R.command_label(c)])
+  refreshed = S.refreshed(s, r)
   S.set_previous(S.set_history(S.set_journal(S.clear(S.menu(refreshed, 0)), commands), labels), previous)
 
 def command_result.finish(capture: Bool, +id: U32, +recorded: S.State) -> S.Update:
@@ -66,7 +67,7 @@ def command_prepared(value: Prepared.Reply, +s: S.State, +c: Match.Command) -> S
     case Prepared.Accepted{r}:
       +id = command_action(c)
       +capture = Model.occupied(Model.board_get(Model.pos_board(S.pos(s)), Model.action_to(S.action(id))))
-      recorded = command_result.record_refreshed(s, c, S.refreshed(s, r))
+      recorded = command_result.record(s, c, r)
       command_result.finish(capture, id, recorded)
 
 def command_guard(locked: Bool, +s: S.State, +c: Match.Command) -> S.Update:
