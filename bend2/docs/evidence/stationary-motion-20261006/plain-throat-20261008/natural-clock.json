@@ -1,0 +1,182 @@
+{
+  "schema": "rift-natural-clock-observation/1",
+  "ownerTask": "01a1124e-8f2a-7aa0-891d-6ef073d7aee8",
+  "disposition": "finite-diagnostic-not-performance-acceptance",
+  "retainedBuild": {
+    "buildSHA256": "7732238d0bff004745ebedd46f096a863ec9e5301b89ee01e5565801894f9ad1",
+    "buildVersion": "4eb4d137c250bfe5161e",
+    "sourceRevision": "85781354bc00fa97bcc67a4d3cca7df3b7d51035",
+    "sourceDirty": true
+  },
+  "cohort": {
+    "viewport": {
+      "width": 540,
+      "height": 960
+    },
+    "view": {
+      "yaw": 345,
+      "pitch": 67,
+      "zoom": 115
+    }
+  },
+  "move": "g1-h3",
+  "actualBoardDifference": [
+    6,
+    23
+  ],
+  "natural": {
+    "drawnProgress": [
+      0,
+      16
+    ],
+    "observedIntermediate": false,
+    "completionAfterPointerRequestMs": 1250.0999999046326,
+    "ticks": [
+      {
+        "id": 6,
+        "at": 8095.799999952316,
+        "ms": 17,
+        "revision": 0,
+        "progress": 16
+      },
+      {
+        "id": 7,
+        "at": 8729.299999952316,
+        "ms": 634,
+        "revision": 1,
+        "progress": 0
+      }
+    ],
+    "requestReplyDraw": [
+      {
+        "id": 4,
+        "requestAt": 7924.600000143051,
+        "replyAt": 7959.200000047684,
+        "drawAt": 7961.400000095367,
+        "requestToReplyMs": 34.59999990463257,
+        "replyToCanvasReturnMs": 2.200000047683716,
+        "progress": 16
+      },
+      {
+        "id": 5,
+        "requestAt": 7964.900000095367,
+        "replyAt": 8074,
+        "drawAt": 8076.299999952316,
+        "requestToReplyMs": 109.09999990463257,
+        "replyToCanvasReturnMs": 2.299999952316284,
+        "progress": 16
+      },
+      {
+        "id": 6,
+        "requestAt": 8095.799999952316,
+        "replyAt": 8692.700000047684,
+        "drawAt": 8695.100000143051,
+        "requestToReplyMs": 596.9000000953674,
+        "replyToCanvasReturnMs": 2.4000000953674316,
+        "progress": 0
+      },
+      {
+        "id": 7,
+        "requestAt": 8729.299999952316,
+        "replyAt": 9213.400000095367,
+        "drawAt": 9215,
+        "requestToReplyMs": 484.10000014305115,
+        "replyToCanvasReturnMs": 1.5999999046325684,
+        "progress": 16
+      }
+    ]
+  },
+  "motionReplies": [
+    {
+      "id": 6,
+      "revision": 1,
+      "progress": 0,
+      "mask": 1,
+      "offer": 6,
+      "kind": "frame",
+      "at": 8692.700000047684,
+      "after": 16,
+      "renderMs": 336.2000000476837,
+      "portMs": 258.2999999523163,
+      "sceneTimes": {
+        "underlay": 0,
+        "motionUnderlay": 0,
+        "ground": 0,
+        "sprite": 193.29999995231628,
+        "prepared": 0,
+        "shell": 0,
+        "chrome": 23.59999990463257,
+        "pointer": 205.69999980926514,
+        "compose": 2.5
+      },
+      "hasPixels": true
+    },
+    {
+      "id": 7,
+      "revision": 1,
+      "progress": 16,
+      "mask": 1,
+      "offer": 7,
+      "kind": "frame",
+      "at": 9213.400000095367,
+      "after": 0,
+      "renderMs": 2,
+      "portMs": 478.7000000476837,
+      "sceneTimes": {
+        "underlay": 0,
+        "motionUnderlay": 0,
+        "ground": 0,
+        "sprite": 123.79999995231628,
+        "prepared": 4.299999952316284,
+        "shell": 0,
+        "chrome": 108.29999995231628,
+        "pointer": 36.90000009536743,
+        "compose": 2.5
+      },
+      "hasPixels": true
+    }
+  ],
+  "evidence": {
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/natural-motion-r1/result.json",
+      "sha256": "9f5d8a2ec29b8f54fa242a688ea961091d86d946487365678c0bb5ae11815d8c"
+    },
+    "originalSupervisor": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/natural-motion-supervisor-r2/terminal.json",
+      "sha256": "1654d5a97256f26185aea30279a8b95647f477e32fedce7a736a797fe1c05df1"
+    },
+    "driver": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/natural-motion-r1.mjs",
+      "sha256": "861e26439645b0f4c345124a24ccd9d54c75bad185dd58d83ad0945015ee912b"
+    },
+    "supervisorSource": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-natural-motion-r2.py",
+      "sha256": "68cf688ce1507c5f582f1ef26f5a50d55177f05b94ce7d10a11ed6aec2ab3770"
+    },
+    "currentSourcePreflight": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/natural-motion-supervisor-r2/current-capture.json",
+      "sha256": "be4fe7a64182b78d38bde3c92c2faa8caf32932b8ae9fb9bc002d6fcedb66d54"
+    },
+    "completedImage": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/natural-motion-r1/completed.png",
+      "sha256": "f6820220cdf9864fb277d9deeb21a0bee61e88cde743b644084a0d8bb2c620bd"
+    }
+  },
+  "nativeClosure": {
+    "exitCode": 0,
+    "samePopenExitObserved": true,
+    "checkedExitedHandleClosed": true,
+    "postBindingJobSelfOnly": true,
+    "checkedJobClosed": true
+  },
+  "unchangedFencedInputs": 338,
+  "limits": "One actual Chrome portrait g1-h3 with authenticated original served bundle, natural unmodified Tick scheduling and events. Page-only passive Worker/Canvas observers add overhead; draw means canvas API return, not physical display. Intermediate absence is an explicit finite outcome, not itself a correctness failure. No moving-alpha picking, stable latency/device/performance or owner acceptance claim.",
+  "interpretation": "Only progress0 and16 were drawn in this one observed move. The natural634ms Tick after the first motion frame advanced to completion. Ground/prepared were not rebuilt on the first motion frame; sprite time is nested inside pointer time and must not be added to it. No stable cost attribution or regression follows from one variable-load run.",
+  "nextAction": "Inspect first-transition controller and sprite motion occupancy costs before changing animation time. Preserve exact alpha/picking, frozen laws and accepted detail.",
+  "executedCaptureProvenance": {
+    "path": "bend2/docs/evidence/stationary-motion-20261006/plain-throat-20261008/capture.mjs",
+    "executedSha256": "e5bb65f0ba2c72437a175a2be9891d4257714a3c93a856bed949ec355ce54730",
+    "laterCheckedSha256": "53fc72a098c4d17bd7b55aa3416089d7b9c3f61b31291cbe38a8dd4d236194ae",
+    "note": "The captured preflight executed the earlier repair revision. Later lstat/ENOENT and original claim-hash hardening was separately checked; the historical native fence is not relabeled as current."
+  }
+}

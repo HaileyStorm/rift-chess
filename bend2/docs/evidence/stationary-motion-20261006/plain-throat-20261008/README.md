@@ -79,5 +79,37 @@ previous postimage. Twelve original proof consumers remain exact. Frozen-manifes
 expectations use the existing reviewed amendment resolver; no Laws bytes change.
 The new capture rejects controlled builder drift and accepts the restored bytes;
 the unchanged historical capture continues to reject the new application source.
+After publication, the completed Knight writer claim was released. The capture
+authenticates that exact release receipt when that one claim file is absent;
+all source, payload and other native input checks remain exact. It does not
+recreate the claim or permit arbitrary missing files.
 Early capture-authoring failures are retained separately. No new proof Workers,
 Safe verdict, kernel/Linux execution, native CPU/GPU or adoption is claimed.
+
+## Natural-clock observation
+
+The [separate diagnostic](natural-clock.json) records one portrait540×960
+g1–h3 move with the authenticated original retained bundle and unchanged natural
+Tick scheduling. Passive page observers match each canvas draw to the exact
+incoming pixel buffer or bitmap. No Worker footer, held Tick or substituted
+event is used. The recorded canvas-return time precedes observer snapshot work;
+it is not a physical display timestamp, and the observer still adds overhead.
+
+Only progress0 and16 were drawn; no intermediate stage was observed. Completion
+came1250.1ms after the observed destination pointer request. The two motion-frame
+request-to-reply times were596.9/484.1ms, with controller render336.2/2.0ms and
+port258.3/478.7ms. The first motion frame reused ground/prepared caches and spent
+193.3ms in sprite generation, nested within205.7ms of pointer work. Those nested
+times must not be added. The following natural Tick carried634ms and completed
+the move, changing only board squares6/23. This single variable-load trace is a
+diagnostic finding, not stable performance, moving-alpha picking, constrained
+device, current clean-HEAD build or owner acceptance. The original native child
+exited0; its handle and qualified Job were closed, with all fenced inputs equal.
+That run used the initial released-claim capture repair. The later explicit
+ENOENT/original-claim-hash hardening was checked separately; its source hash does
+not replace the earlier executed capture identity in the native receipt.
+
+The next useful performance investigation is first-transition controller and
+sprite occupancy cost. Extending animation duration alone would not establish
+responsiveness or fix the measured work. The earlier controlled-pose witness
+retains its separate picking/staging authority.

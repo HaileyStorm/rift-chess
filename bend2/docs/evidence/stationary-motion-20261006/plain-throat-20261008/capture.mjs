@@ -61,9 +61,23 @@ for(const [name,sha256]of Object.entries(oldBuild.files).filter(([n])=>n.startsW
 const oldMeta=json({path:path.posix.dirname(parent.build.path)+'/'+metadata,sha256:oldBuild.files[metadata]}),newMeta=json({path:path.posix.dirname(m.build.path)+'/'+metadata,sha256:build.files[metadata]});
 const withoutSelection=x=>Object.fromEntries(Object.entries(x).filter(([k])=>k!=='selected'));assert.deepEqual(withoutSelection(newMeta),withoutSelection(oldMeta));
 for(const name of ['scene','controller'])for(const [key,selectedKey]of [['manifestPath','manifest'],['manifestSha256','manifestSha256'],['outputSha256','outputSha256'],['bindingSha256','bindingSha256']])assert.equal(newMeta.selected[name][key],build.selected[name][selectedKey]);
+// This one host-local claim was released after publication. Authenticate its
+// original release receipt rather than requiring a completed writer to remain.
+function releasedKnightClaim(absolute,sha256){
+ if(absolute!==path.resolve(root,'bend2/graphics/v2game/.working'))return false;
+ try{fs.lstatSync(absolute);return false;}catch(error){if(error.code!=='ENOENT')throw error;}
+ assert.equal(sha256,'478c233d01e806ed488a797478b8f78b39776a24f6308e0e929073352ab8a62a');
+ const r=json({path:'.artifacts/bend2/2035-preview/stationary-motion-20261006/plain-throat-claim-release-r1.json',sha256:'78f3196e439336e925fb219a0889f8da9eb514f60e10a30b43346918a3adad10'});
+ assert.equal(r.passed,true);assert.equal(r.exitCode,0);assert.equal(r.otherClaimsPreserved,true);
+ assert.deepEqual(r.result,{ok:true,released:'rift-plain-throat-integration-20261008',removed:true,sentinel:absolute});
+ const arg=name=>r.argv[r.argv.indexOf(name)+1];
+ assert.ok(r.argv.includes('release'));assert.equal(arg('--workspace'),path.resolve(root));assert.equal(arg('--sentinel'),absolute);
+ for(const name of ['--task-id','--session-id'])assert.equal(arg(name),'01a1124e-8f2a-7aa0-891d-6ef073d7aee8');
+ assert.equal(arg('--human-owner-id'),'hailey');assert.equal(arg('--host-id'),'LAPTOP-IL95NUU7');assert.equal(arg('--workspace-instance-id'),'rift-main-windows');return true;
+}
 function terminal(x){const t=json(x);assert.equal(t.passed,true);assert.equal(t.exitCode,0);assert.deepEqual(t.before,t.after);
  for(const k of ['samePopenExitObserved','checkedExitedHandleClosed','postBindingJobSelfOnly','checkedJobClosed'])assert.equal(t[k],true);
- for(const [absolute,sha256]of Object.entries(t.before)){assert.ok(path.isAbsolute(absolute));assert.equal(fs.realpathSync(absolute),absolute);assert.equal(hash(fs.readFileSync(absolute)),sha256,`Native input changed: ${absolute}`);}return t;
+ for(const [absolute,sha256]of Object.entries(t.before)){assert.ok(path.isAbsolute(absolute));if(releasedKnightClaim(absolute,sha256))continue;assert.equal(fs.realpathSync(absolute),absolute);assert.equal(hash(fs.readFileSync(absolute)),sha256,`Native input changed: ${absolute}`);}return t;
 }
 const terminals=new Map(m.terminals.map(x=>[x.path,terminal(x)]));
 for(const [name,index]of [['scene',0],['controller',1]]){const t=terminals.get(m.terminals[index].path);assert.equal(t.result.manifestSha256,build.selected[name].manifestSha256);assert.equal(t.result.output.sha256,build.selected[name].outputSha256);}
