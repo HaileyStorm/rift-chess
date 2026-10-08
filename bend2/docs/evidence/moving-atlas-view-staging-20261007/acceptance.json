@@ -1,0 +1,358 @@
+{
+  "schema": "rift-controlled-moving-atlas-cohorts/1",
+  "observedUTC": "2026-10-08T03:26:49.398230+00:00",
+  "executionPassed": true,
+  "sourceCommit": "bd22f2099082613bf6380bc4b33af6939f50b245",
+  "sourceUnchanged": true,
+  "cohorts": [
+    {
+      "cohort": "portrait",
+      "config": {
+        "viewport": {
+          "width": 540,
+          "height": 960
+        },
+        "view": {
+          "yaw": 345,
+          "pitch": 67,
+          "zoom": 115
+        }
+      },
+      "planScale": 1,
+      "point": {
+        "x": 301,
+        "y": 344,
+        "floor": 12,
+        "expectedOld": 28,
+        "whiteSupportA": 16579836,
+        "whiteSupportB": 0
+      },
+      "staging": [
+        {
+          "label": "e7-during-e4",
+          "revision": 1,
+          "staged": false,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "e5-during-e4",
+          "revision": 1,
+          "staged": true,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "first-animation-complete",
+          "revision": 1,
+          "staged": true,
+          "moving": false,
+          "progress": 16
+        },
+        {
+          "label": "next-tick-commit",
+          "revision": 2,
+          "staged": false,
+          "moving": true,
+          "progress": 0
+        }
+      ],
+      "boardReadback": {
+        "changedSquares": [
+          36,
+          52
+        ],
+        "square28Before": 1,
+        "square28After": 1
+      },
+      "terminal": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-supervisor-r2-portrait/terminal.json",
+        "sha256": "dd2c85711a63db0ee8e2fd4db75fe5552e9c39c1a03a9449919bed68769ede53",
+        "bytes": 150660
+      },
+      "result": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-portrait/result.json",
+        "sha256": "f0391c20135b8dfd3316facdd68e5c74476cf89e783d2daec7d20a1c80dfc61d",
+        "bytes": 6034296
+      },
+      "observerBinding": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-portrait/observer-binding.json",
+        "sha256": "95befd34421c778053b14bbf4622b139920b7ccb99a61807ee9ec619211ce63d",
+        "bytes": 482
+      },
+      "screenshots": [
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-portrait/pose-a.png",
+          "sha256": "cbce9783a9635748c37ce51e5990965ed3eeb206f406408d7366617618060cdb",
+          "bytes": 413348
+        },
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-portrait/pose-b-old-click.png",
+          "sha256": "38bd79a521b6d7d048d6e9c0ab11f5d33bf20261e9e3962755e8c89337551805",
+          "bytes": 413281
+        }
+      ],
+      "nativeElapsedMs": 11495,
+      "increasingMaskOffersReadback": true
+    },
+    {
+      "cohort": "backLow",
+      "config": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "view": {
+          "yaw": 165,
+          "pitch": 35,
+          "zoom": 75
+        }
+      },
+      "planScale": 1,
+      "point": {
+        "x": 223,
+        "y": 226,
+        "floor": 4,
+        "expectedOld": 28,
+        "whiteSupportA": 16645629,
+        "whiteSupportB": 0
+      },
+      "staging": [
+        {
+          "label": "e7-during-e4",
+          "revision": 1,
+          "staged": false,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "e5-during-e4",
+          "revision": 1,
+          "staged": true,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "first-animation-complete",
+          "revision": 1,
+          "staged": true,
+          "moving": false,
+          "progress": 16
+        },
+        {
+          "label": "next-tick-commit",
+          "revision": 2,
+          "staged": false,
+          "moving": true,
+          "progress": 0
+        }
+      ],
+      "boardReadback": {
+        "changedSquares": [
+          36,
+          52
+        ],
+        "square28Before": 1,
+        "square28After": 1
+      },
+      "terminal": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-supervisor-r2-backLow/terminal.json",
+        "sha256": "e2866364dff628ff486674425e85685738855c9d659454f1f4857266a8ff3eec",
+        "bytes": 154658
+      },
+      "result": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-backLow/result.json",
+        "sha256": "ad0cbefaa7111f15c53d71a96b06377cf4947c5daa8bec7d16857f85dda29705",
+        "bytes": 6142600
+      },
+      "observerBinding": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-backLow/observer-binding.json",
+        "sha256": "95befd34421c778053b14bbf4622b139920b7ccb99a61807ee9ec619211ce63d",
+        "bytes": 482
+      },
+      "screenshots": [
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-backLow/pose-a.png",
+          "sha256": "158445c24eded5e950e19f9e2d1fa50a4f89dae60595ac3bafbdf2601a032da1",
+          "bytes": 807800
+        },
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-backLow/pose-b-old-click.png",
+          "sha256": "6beeaec0ae08078c3983e2789706b86d9d04ea0fdb95b7dccfb1984743cdde5d",
+          "bytes": 807658
+        }
+      ],
+      "nativeElapsedMs": 14534,
+      "increasingMaskOffersReadback": true
+    },
+    {
+      "cohort": "topHigh",
+      "config": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "view": {
+          "yaw": 90,
+          "pitch": 90,
+          "zoom": 130
+        }
+      },
+      "planScale": 1,
+      "point": {
+        "x": 109,
+        "y": 281,
+        "floor": 12,
+        "expectedOld": 28,
+        "whiteSupportA": 16711422,
+        "whiteSupportB": 0
+      },
+      "staging": [
+        {
+          "label": "e7-during-e4",
+          "revision": 1,
+          "staged": false,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "e5-during-e4",
+          "revision": 1,
+          "staged": true,
+          "moving": true,
+          "progress": 8
+        },
+        {
+          "label": "first-animation-complete",
+          "revision": 1,
+          "staged": true,
+          "moving": false,
+          "progress": 16
+        },
+        {
+          "label": "next-tick-commit",
+          "revision": 2,
+          "staged": false,
+          "moving": true,
+          "progress": 0
+        }
+      ],
+      "boardReadback": {
+        "changedSquares": [
+          36,
+          52
+        ],
+        "square28Before": 1,
+        "square28After": 1
+      },
+      "terminal": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-supervisor-r2-topHigh/terminal.json",
+        "sha256": "ae290e1df6ffe3e12c084bed5605d05443300a78830d382d89b96ca6cf843d8e",
+        "bytes": 157958
+      },
+      "result": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-topHigh/result.json",
+        "sha256": "50314de795225e92b7f7ee0e45ba825e2da0dae2609a3e69c9f4db4d8b45327d",
+        "bytes": 6142652
+      },
+      "observerBinding": {
+        "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-topHigh/observer-binding.json",
+        "sha256": "95befd34421c778053b14bbf4622b139920b7ccb99a61807ee9ec619211ce63d",
+        "bytes": 482
+      },
+      "screenshots": [
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-topHigh/pose-a.png",
+          "sha256": "e70155af8d46e9017d5fd543ec66d8d3f0b1cf7c94d66fc5623cd0275623e669",
+          "bytes": 357576
+        },
+        {
+          "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2-topHigh/pose-b-old-click.png",
+          "sha256": "7f1c5e8fd8ef2d23a6833b58ecf97ffccb9962ef7c6ffcd5f14af5133793b65f",
+          "bytes": 357264
+        }
+      ],
+      "nativeElapsedMs": 17108,
+      "increasingMaskOffersReadback": true
+    }
+  ],
+  "inputs": [
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r1.mjs",
+      "sha256": "d547d4aac2ea03ef26e6e6e98c5c14f2ec74daeb04bc8e44e9147a4d8a4b4c2c",
+      "bytes": 20058
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r2.mjs",
+      "sha256": "84cdea4ad36d6db2e51d290a1de95c5015f93e479dac53ae368fe0211cc06763",
+      "bytes": 20209
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-moving-atlas-view-staging-r2.py",
+      "sha256": "d88e56531a10d2e8f4ad2b41fa356dd65d9bb3f9063b09806d713f42ceef4d0c",
+      "bytes": 6528
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepare-moving-atlas-view-staging-r1.py",
+      "sha256": "a2a35e176da1cb346fa747053af52d1edc7c96c6e7ae0c842b27dd5c0996385c",
+      "bytes": 6801
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/repair-moving-atlas-view-staging-r2.py",
+      "sha256": "c2657c862a896d3979f242d5425e5d412b2571765790d795edfe5d284d0c0519",
+      "bytes": 1374
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-MhDSFU/scene.manifest.json",
+      "sha256": "4fbb0917f634927a459fee0c8d5d8dcb6e47cc5e6b28e4a71173fbb6f8e9fb33",
+      "bytes": 56722
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-MhDSFU/scene.js",
+      "sha256": "2e9d01b233fb2e45c8e76ec72344a5bbdd8cc18ef0f994cce5d7ce3fb832f09b",
+      "bytes": 512178
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/controller-cRuykQ/controller.manifest.json",
+      "sha256": "a82601f8ea0055b047b66b9626e6f90f4afab02d25513298ed7daf949f4cf7af",
+      "bytes": 56915
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/controller-cRuykQ/controller.js",
+      "sha256": "b2002a2ac3b522a1e9bacb171dbd5eee3a2061250c657712168190e6da1414ad",
+      "bytes": 704821
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-ZAiFjI/build.json",
+      "sha256": "18a7768fcaf2f85a0d03e8869a2d05f39282112de97b40a5c04257a81b1d2192",
+      "bytes": 33328
+    }
+  ],
+  "sourceSHA256": {
+    "bend2/graphics/v2game/BoardScene.bend": "4ca7329967d5bb33f7dd338c05a3265021801cbec055fc8ac0d5505aa51c903b",
+    "bend2/toolchain-patches/2035/build-preview.mjs": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4",
+    "bend2/platform/browser/worker-v2.ts": "f162c72ab30d804e4c644d9f8a7ecbe05dab444cce4068e9001ba269eabdfa75",
+    "bend2/ApplicationControl.bend": "291424db28d40458c2fa4369670df45e932629a06bfcfa26b664d8dae3c13dfe",
+    "bend2/ui/State.bend": "9a857aa7c78be749f0781d5769c10f7094c1c120ec07b2abd0ba148cb4c52f0f",
+    "bend2/ui/Program.bend": "3fe4ec3ee848e714d8708c975b6039c50474b2a57997ebf7e5f7e46f3a82fef6"
+  },
+  "failedPrefix": {
+    "terminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-supervisor-r1-portrait/terminal.json",
+      "sha256": "17615a2f0e1f0638eed0a7c00967130907331225ce13d05407e0fbffdd81e86c",
+      "bytes": 150637
+    },
+    "result": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/moving-atlas-view-staging-r1-portrait/result.json",
+      "sha256": "fee6498bc966a981e73dd63142e9cc3cfa1d4a16ba2a9d97407254701fd60e02",
+      "bytes": 155178
+    },
+    "repair": "R1 expected view equality omitted namespaced constructor tag. R2 retains exact Camera.View tag; original artifacts preserved."
+  },
+  "limits": "Three controlled local Chrome opening fixtures; append-only readback observer, held/normalized Ticks, one qualifying alpha point per view. No natural-pacing, stable-performance, physical-device, general proof, offline or adoption acceptance.",
+  "memoryReview": {
+    "disposition": "reasoned-skip",
+    "reason": "Transient integration test evidence remains in versioned project records; no new user preference or correction and no expanded source-upload authority. Existing authorized historical memory disposition remains complete."
+  },
+  "reviewRequirement": "Independent exact-byte source/result/document review before publication; separate receipt binds final payload. This execution data does not grant compiler adoption or broader acceptance."
+}
