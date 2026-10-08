@@ -143,6 +143,8 @@ def archive(plan, snapshots, recover_pending=False):
         if not source.exists():
             if not old or old[1:3] != (entry['bytes'], entry['mtimeNs']):
                 raise ValueError(f'Missing source without archive: {source}')
+            if 'sha256' in entry and old[0] != entry['sha256']:
+                raise ValueError(f'Archived source differs from reviewed hash: {source}')
             verify_blob(payload(store, old[0]), old[0], old[1])
             continue
         source, before = checked_source(entry)
@@ -150,6 +152,8 @@ def archive(plan, snapshots, recover_pending=False):
             sha, size = digest(stream)
             if identity(os.fstat(stream.fileno())) != before:
                 raise ValueError('Source changed while hashing')
+        if 'sha256' in entry and sha != entry['sha256']:
+            raise ValueError(f'Source differs from reviewed hash: {source}')
         if old and old[:3] != (sha, size, entry['mtimeNs']):
             raise ValueError('Existing index conflicts with source')
         blob = payload(store, sha)
