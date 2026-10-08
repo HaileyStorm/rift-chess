@@ -34,7 +34,7 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -606,6 +606,63 @@ results.push({case:'char-scalar-and-input-shape',functionId:charFunction.id,cont
   assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));
   first.listener(first.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);
   results.push({case:'packed-char-result-shape',transport:'packed',invocation:owner.id,functionId:charFunction.id,original,corrupted,changedFields:['packet'],rejection,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,delayedOriginalReplyInert:true,postClose:retire(s,h),scope:'Valid UTF-8 AB with consistent length rejects the scalar Char shape; distinct from invalid UTF-8 or genuine computed invalid output.'});
+ }finally{retire(s,h);}
+}
+const resultIdentityKeys=['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'];
+function checkAuthenticResult(m,sent,fn,owner){
+ assert.equal(m.kind,'result');assert.equal(m.invocation,owner);assert.equal(m.functionId,fn.id);assert.equal(m.schemaId,fn.id);assert.equal(m.program,build.manifest.program);
+ for(const key of resultIdentityKeys)assert.equal(m[key],sent[key],key);
+ return Object.fromEntries(resultIdentityKeys.map(k=>[k,m[k]]));
+}
+// Supported depth endpoint: Branch511 -> Tip -> Nat at depth512, without recursion in the check.
+{
+ const shared=tip(4n),callerBranches=[];let input=shared;
+ for(let i=0;i<511;i++){input=branch(input,shared);callerBranches.push(input);}
+ let sent,inputPacket;const h=harness({hold:true,observeJob:m=>{if(m.kind==='job'){sent=m;inputPacket=saveReply('packed-deep-input.bin',m.packet);}}});
+ const s=api.createSession({workers:1,transport:'packed',wire:{maxDepth:512},trace:true,workerFactory:h.factory});
+ try{
+  const owner=s.submit('tree_remote',[input]);owner.promise.catch(()=>{});shared.value=99n;
+  await until(()=>h.held.length===1);const first=h.drainHeld()[0],m=first.event.data,identity=checkAuthenticResult(m,sent,treeFunction,owner.id);
+  const packet=saveReply('packed-deep-result.bin',m.packet);assert.equal(packet.bytes,7179);assert.equal(packet.sha256,inputPacket.sha256);
+  first.listener(first.event);const actual=await owner.promise,leaf=actual.right;assert.equal(leaf.$,tag('../fixture-tree:Tip'));assert.equal(leaf.value,4n);assert.notEqual(leaf,shared);
+  let cursor=actual;const callerSet=new Set(callerBranches);let count=0;
+  while(cursor.$===tag('../fixture-tree:Branch')){assert.ok(!callerSet.has(cursor));assert.equal(cursor.right,leaf);cursor=cursor.left;count++;assert.ok(count<=511);}
+  assert.equal(count,511);assert.equal(cursor,leaf);assert.equal(shared.value,99n);assert.equal(Object.isFrozen(shared),false);
+  assert.ok(callerBranches.every(b=>b.right===shared&&!Object.isFrozen(b)));noSchedulerValues(actual);noPendingWork(s);
+  const trace=s.trace();for(const kind of ['dispatch','result','witness'])assert.equal(trace.filter(e=>e.kind===kind&&e.invocation===owner.id).length,1);
+  assert.equal(trace.find(e=>e.kind==='dispatch').job,m.job);
+  results.push({case:'packed-depth-endpoint',transport:'packed',wireDepthLimit:512,branchLevels:count,deepestNatDepth:512,identity,inputPacket,packet,returnedLeaf:'4',callerLeafAfter:'99',sharedOutputLeaf:true,detachedFromCaller:true,statsBeforeClose:s.stats(),trace,postClose:retire(s,h),scope:'Finite end-to-end traversal at configured maximum512, not arbitrary depth, default-depth acceptance or general stack/memory bounds.'});
+ }finally{retire(s,h);}
+}
+// Genuine String output fits wire validation but exceeds decoded-result retention.
+{
+ const fn=build.manifest.functions.find(f=>f.name==='repeat_value');assert.ok(fn&&fn.eligible);
+ assert.deepEqual(fn.inputs.map(i=>build.manifest.schemas[i].kind),['string','nat']);assert.equal(build.manifest.schemas[fn.output].kind,'string');
+ let sent;const h=harness({hold:true,observeJob:m=>{if(m.kind==='job')sent=m;}}),s=api.createSession({workers:1,transport:'packed',maxRetainedBytes:256,trace:true,workerFactory:h.factory});
+ const controls=[];
+ try{
+  for(const count of [16,256]){
+   const owner=s.submit('repeat_remote',['R',BigInt(count)]);owner.promise.catch(()=>{});await until(()=>h.held.length===1);
+   const first=h.drainHeld()[0],m=first.event.data,identity=checkAuthenticResult(m,sent,fn,owner.id),v=new DataView(m.packet);
+   assert.equal(v.getUint32(0,true),0x32574442);assert.equal(v.getUint32(4,true),1);assert.equal(v.getUint32(8,true),count);assert.equal(m.packet.byteLength,12+count);
+   assert.equal(new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(m.packet,12)),'R'.repeat(count));
+   const packet=saveReply('packed-repeat-'+count+'-result.bin',m.packet),before=s.stats();assert.equal(before.activeInvocations,1);assert.equal(before.remoteJobs,controls.length+1);
+   first.listener(first.event); // Unchanged actual result; this negative has no packet mutation.
+   if(count===16){
+    assert.equal(await owner.promise,'R'.repeat(16));noPendingWork(s);const trace=s.trace().filter(e=>e.invocation===owner.id);
+    for(const kind of ['dispatch','result','witness'])assert.equal(trace.filter(e=>e.kind===kind).length,1);
+    assert.equal(h.created,1);assert.equal(h.terminated,0);controls.push({repeatCount:16,identity,packet,expected:'R'.repeat(16),statsAfterResult:s.stats(),trace});
+   }else{
+    let rejection;await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='retained_budget'&&e.message.includes('completed result budget exceeded');});
+    const automatic=s.stats(),fullTrace=s.trace(),trace=fullTrace.filter(e=>e.invocation===owner.id);assert.equal(automatic.closed,true);assert.equal(automatic.remoteJobs,2);assert.equal(automatic.localCalls,0);
+    for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,key);
+    assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+    assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);
+    first.listener(first.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),fullTrace);
+    controls.push({repeatCount:256,identity,packet,before,rejection,unchangedAuthenticResult:true,expectedPayload:'R'.repeat(256),decodedAccountingBytes:520,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,delayedOriginalReplyInert:true});
+   }
+  }
+  results.push({case:'accepted-output-retention',transport:'packed',maxRetainedBytes:256,functionId:fn.id,controls,postClose:retire(s,h),scope:'Same-session16-character positive then genuine256-character result rejected after valid decoding by completed-result accounting. Packet268bytes differs from decoded accounting520bytes; no physical heap/performance claim.'});
  }finally{retire(s,h);}
 }
 assert.equal(networkCalls,0);

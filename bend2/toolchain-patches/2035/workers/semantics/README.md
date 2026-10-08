@@ -375,3 +375,34 @@ inventory/lineage, imported Tree fixture and runtime remain unchanged; the owned
 policy fixture and emitted program changed. These controls do not establish all
 arithmetic exceptions, every Unicode boundary, generated malformed Char output,
 general wire/ABI correctness, performance, device behavior or adoption.
+
+The packed Tree identity helper now returns a graph with511 Branch levels, every
+right child and the final left endpoint sharing one Tip4. Its Nat field reaches
+depth512, the maximum supported `wire.maxDepth` configuration; the cap remains
+unchanged. Synchronous caller mutation to99 does not change the returned4n.
+Iterative checks verify all511 levels, sharing and caller detachment. The actual
+input and result packets are identical7179-byte payloads. One helper dispatch,
+result and witness complete with no pending retention before close. This is a
+finite endpoint check, not arbitrary-depth or default-depth acceptance or a
+general stack/memory bound.
+
+A separate genuine `String.repeat` helper uses `maxRetainedBytes:256`. It first
+returns16 repetitions successfully in the same session, then produces256
+characters from the small input `'R',256n`. The unchanged authentic packed result
+has268 bytes and valid header/UTF-8; decoded String accounting uses520 bytes.
+The coordinator rejects `retained_budget` with `completed result budget exceeded`
+after decoding, before publishing that invocation's result or witness. No local
+fallback/retry occurs. Helpers, listeners and retained work retire automatically
+before explicit close; the delayed original reply stays inert. Packet length,
+decoded accounting and actual heap usage are distinct; this is no memory or
+performance measurement. Exact input/result packets remain in the run.
+
+Fresh `worker-deep-runtime-r1/receipt.json`, SHA256
+`1d61a45331a28980a20464dd0d4012d311ca9e7c211097fefe6c48ac7e10a5ef`,
+passes35 records with zero network calls. Native
+`worker-deep-runtime-supervisor-r1/terminal.json`, SHA256
+`fa9c9d91a8965898fffc749ed698b1891b3e0945147f13bfa1f798c96e10dbeb`,
+records original process/handle and Job closure with unchanged inputs. Compiler
+inventory/lineage, imported Tree fixture and runtime remain unchanged; the owned
+policy fixture and emitted program changed. General traversal/resource safety,
+browser/device behavior, responsiveness and adoption remain separate.

@@ -137,3 +137,9 @@ def char_value(c: Char) -> Char:
 
 def char_remote(c: Char) -> Char:
   char_value@(c)
+
+def repeat_value(s: String, n: Nat) -> String:
+  String.repeat(s, n)
+
+def repeat_remote(s: String, n: Nat) -> String:
+  repeat_value@(s, n)
