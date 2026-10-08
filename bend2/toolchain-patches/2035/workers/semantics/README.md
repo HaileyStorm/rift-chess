@@ -140,5 +140,8 @@ compiler lineage and original-handle/Job closure through their matching native
 terminals, with 328 unchanged inputs each. The same corrected parser bytes now
 own actual checked/emitted helper execution; no earlier receipt was relabelled.
 See [current preparation and bot handoff](../README.md) for the complementary
-diagnostic and full BotAdapter emission. Preview selection, browser compatibility
-and compiler adoption retain their separate unfinished obligations.
+diagnostic and full BotAdapter emission. The corrected bot is now selected in the reviewed
+[current-source preview](../../../../docs/evidence/worker-parser-preview-20261007/README.md),
+with actual online/offline nested-helper and saved-record/reload evidence.
+Broader browser/device acceptance and compiler adoption remain unfinished;
+none of the historical execution records above is retagged.

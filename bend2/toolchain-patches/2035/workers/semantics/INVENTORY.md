@@ -6,8 +6,10 @@ pointers below are line numbers in `004-web-workers/004-after-001-002.patch`,
 relative to the toolchain-patches directory. Those retained patch bytes describe
 older checks; they are not current execution evidence.
 
-Current witnesses are the matching `diagnostic-osb93j` and the single
-[`semantics/matrix.mjs`](matrix.mjs) described in [README.md](README.md). R5 passed
+Historical witnesses include `diagnostic-osb93j`; corrected current preparation,
+fresh runtime records and selected bot evidence are linked from [README.md](README.md).
+The single
+[`semantics/matrix.mjs`](matrix.mjs) is described in [README.md](README.md). R5 passed
 19 finite records on actual Windows Bun module workers, with both transports,
 zero network calls and original process/Job closure. Earlier receipts remain
 historical. Compiler transformations, frozen proof/native/device contracts and
@@ -15,9 +17,9 @@ production browser evidence retain their own authority.
 
 | Contract and historical pointer | Current independent evidence | Remaining disposition |
 | --- | --- | --- |
-| Parser/metadata: 5051 valid forms; 5055 malformed caps; 5057 computed/partial calls; 5061 rewrite/templates; 5295 bang whitespace; 5355 printer round-trip | Canonical runtime fixture; isolated corpus syntax/reconstruction, typed ordinary controls and four rewrite AST forms | Two canonical omissions reproduced; separate corrected candidate passes. Canonical integration and fresh runtime bindings remain open. |
+| Parser/metadata: 5051 valid forms; 5055 malformed caps; 5057 computed/partial calls; 5061 rewrite/templates; 5295 bang whitespace; 5355 printer round-trip | Canonical runtime fixture; isolated corpus syntax/reconstruction, typed ordinary controls and four rewrite AST forms | Two canonical omissions reproduced; separate corrected candidate passes. Corrected preparation and fresh runtime bindings are complete; broad compatibility and adoption remain open. |
 | Equality/erasure/native spelling: 5301 erased require; 5307 cap omission; 5372 checked equality | Diagnostic ordinary JS/C identity; isolated corpus erased require, checked equality and six native policy/bang byte comparisons | Finite candidate emission/checking only. Native execution and broad compatibility remain separate. |
-| Eligibility/security: 4447 foreign/IO/reachable unsafe rejection and unused unsafe pruning; 5086 unsupported closures; 5266 bit-sensitive F32 | Diagnostic closure/array/intrinsic boundaries; isolated corpus unsafe/foreign reachability, safe pruning and bit-sensitive F32 rejection | Preserve separate runtime-closure obligations and canonical integration. |
+| Eligibility/security: 4447 foreign/IO/reachable unsafe rejection and unused unsafe pruning; 5086 unsupported closures; 5266 bit-sensitive F32 | Diagnostic closure/array/intrinsic boundaries; isolated corpus unsafe/foreign reachability, safe pruning and bit-sensitive F32 rejection | Corrected preparation is integrated. Preserve separate runtime-closure and adoption obligations. |
 | Continuations/ABI: 4369 fields, arguments, matches, closures, arrays, tail/non-tail; 4404 upstream fixtures; 5364 normalization | Diagnostic recursive ADT/Nat, local arrays/closure and real bot emission; R5 compound fork joins | Inspect missing constructor/match resumption, tail/non-tail trampolines, erased captures and value leakage. Keep independent small expected results; avoid copying every old fixture. |
 | Dynamic policy: 5098–5165 require/never; 5314 argument/callee ownership | Matrix scoped arguments, restore after never, remote never, coalesced require, conflicts/branches/permissive warning; concurrent plain/never isolation | Argument and callee both-required ownership is still distinct. Existing argument-scope success does not establish separate witnesses. |
 | Fork/cap scheduling: 4888 reverse source slots; 5167 nested concurrent caps; 5180 frontier expansion | R5 reverses four authentic replies from two forks, preserves 2345, rejects stale/duplicate publication; concurrent inner8/outer2 regions use two helpers within a four-helper pool | Finite boundary now covered. General caps/programs and expansion/task-budget limits remain unproved. No additional duplicate two-root reply runner is justified. |
@@ -44,9 +46,12 @@ each family. Do not rerun both unchanged current runners or historical phases
 to recount covered families. The isolated compiler corpus now covers parser,
 eligibility, equality/erasure and native spelling contracts in 48 controls.
 It exposed two canonical parser omissions, corrected in a separate candidate.
-Corrected preparation now drives fresh compiler and runtime bindings. Selecting
-its newly emitted bot creation binding in the preview is next; broader release,
-proof, native, device and browser gates stay in the adoption set.
+Corrected preparation now drives fresh compiler and runtime bindings. Its newly emitted bot creation binding is selected in the reviewed
+[current preview](../../../../docs/evidence/worker-parser-preview-20261007/README.md);
+actual online/offline helper and persistence witnesses passed. The three
+[controlled moving-atlas cohorts](../../../../docs/evidence/moving-atlas-view-staging-20261007/README.md)
+add view/portrait picking and staged-move ordering evidence. Broader release,
+proof, native, device, performance and browser gates remain in the adoption set.
 
 The stale parent README diagnostic was corrected to `diagnostic-osb93j`; the
 emitter's current fixture hashes reject its previous `diagnostic-6AtJvy` command.
