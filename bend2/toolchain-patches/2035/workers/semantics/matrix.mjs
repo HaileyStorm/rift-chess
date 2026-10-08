@@ -34,7 +34,7 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -44,6 +44,7 @@ async function until(predicate){const end=performance.now()+5000;while(!predicat
 function harness({hold=false,holdReady=false,workerURL=null,transform=null}={}){
  const h={held:[],readyHeld:[],attempts:0,constructionFailures:0,created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
  h.release=()=>{hold=false;return h.held.splice(0);};
+ h.drainHeld=()=>h.held.splice(0); // Preserve holding across sequential resumptions.
  h.releaseReady=()=>{holdReady=false;return h.readyHeld.splice(0);};
  h.factory=(url,options)=>{
   h.attempts++;let worker;try{worker=new Worker(workerURL??url,options);}catch(error){h.constructionFailures++;throw error;}
@@ -228,6 +229,50 @@ for(const transport of ['clone','packed']){
 function noPendingWork(s){
  assert.equal(s.stats().closed,false);
  for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s.stats()[key],0,key);
+}
+function noSchedulerValues(value){
+ const pending=[value];while(pending.length){const x=pending.pop();assert.ok(!(x instanceof Promise));
+  if(x&&typeof x==='object'){assert.notEqual(x.$,'$JMP');assert.equal(Object.getOwnPropertySymbols(x).length,0);pending.push(...Object.values(x));}}
+}
+const continuationControls=[];
+const resumePairTag=tag('ResumePair');
+const continuationCases=[
+ ['resume_fields',[18],{$:resumePairTag,left:19,right:61},2,'clone'],
+ ['resume_fields',[18],{$:resumePairTag,left:19,right:61},2,'packed'],
+ ['resume_match',[18],1961,2,'clone'],
+ ['resume_closure',[18],58,2,'clone'],
+ ['resume_tail',[10000n,7],10008,1,'clone'],
+ ['resume_non_tail',[4n,7],39,4,'clone'],
+];
+for(const [name,args,expected,jobs,transport]of continuationCases){
+ const h=harness({hold:true}),s=api.createSession({workers:2,transport,trace:true,workerFactory:h.factory});
+ try{
+  const originalArgs=[...args],root=s.submit(name,args);let settled=false;
+  root.promise.then(()=>{settled=true;},()=>{settled=true;});
+  const delivered=[];
+  for(let i=0;i<jobs;i++){
+   await until(()=>h.held.length===1);assert.equal(settled,false,'root completed before authentic leaf result');
+   const packets=h.drainHeld();assert.equal(packets.length,1);
+   const {listener,event}=packets[0],m=event.data;
+   assert.equal(m.invocation,root.id);assert.equal(m.functionId,build.manifest.functions.find(f=>f.name==='leaf').id);
+   delivered.push({job:m.job,invocation:m.invocation,functionId:m.functionId,envelopeSHA256:sha(JSON.stringify(m,(_,v)=>typeof v==='bigint'?v.toString():v))});
+   listener(event);
+  }
+  const actual=await root.promise;assert.deepEqual(actual,expected);noSchedulerValues(actual);assert.deepEqual(args,originalArgs);noPendingWork(s);
+  const trace=s.trace().filter(e=>e.invocation===root.id),dispatch=trace.filter(e=>e.kind==='dispatch'),published=trace.filter(e=>e.kind==='result'),witnesses=trace.filter(e=>e.kind==='witness');
+  assert.equal(dispatch.length,jobs);assert.equal(published.length,jobs);assert.equal(witnesses.length,jobs);
+  for(let i=0;i<jobs;i++){assert.equal(dispatch[i].job,delivered[i].job);assert.equal(published[i].job,delivered[i].job);assert.equal(witnesses[i].job,delivered[i].job);}
+  assert.equal(s.stats().remoteJobs,jobs);assert.equal(h.errors,0);
+  continuationControls.push({export:name,args:args.map(x=>typeof x==='bigint'?x.toString()+'n':x),transport,expected,actual,invocation:root.id,authenticLeafResults:delivered,trace,callerInputsUnchanged:true,noSchedulerValues:true,statsAfterResult:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'continuation-resumption',controls:continuationControls,scope:'Independent arithmetic/structured values after authentic leaf replies; constructor output also packed. Scalar closure/trampoline checks once. No whole enclosing call dispatched or general stack/memory bound.'});
+{
+ const h=harness(),s=api.createSession({workers:2,transport:'clone',trace:true,workerFactory:h.factory});
+ try{
+  assert.equal(await s.call('resume_erased',[18]),7);noPendingWork(s);assert.equal(h.created,0);assert.equal(s.stats().remoteJobs,0);assert.equal(s.stats().requiredRegions,0);assert.equal(s.stats().requiredWitnesses,0);
+  results.push({case:'runtime-erased-required-argument',transport:'shared-before-dispatch',expected:7,actual:7,created:h.created,trace:s.trace(),statsAfterResult:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
 }
 // Cancel one root during the authentic shared handshake, before job admission.
 {

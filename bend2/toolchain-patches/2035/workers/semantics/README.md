@@ -282,3 +282,33 @@ original closed failure and source preimage remain retained. R2 uses a distinct
 run identity with the required launch permission. These controls do not prove
 general cancellation/availability, startup timeouts, malformed handshakes,
 browser asset behavior, adaptive performance, device behavior or adoption.
+
+Continuation controls now hold authentic `leaf` results across successive
+resumptions, checking that the enclosing invocation stays pending until delivery.
+`resume_fields(18)` constructs a Data value with fields19/61 after two replies;
+the same structured output is checked with clone and packed transports.
+`resume_match(18)` passes the resumed value to a named match body and returns1961.
+A pure closure captures18 before the first suspension, survives it, then consumes
+two replied values through a nested argument expression and returns58. The
+closure stays local; no required call is placed inside its body.
+
+`resume_tail(10000n,7)` transfers through 10,000 coordinator tail steps before
+one genuine base-case leaf result and returns10008. Four non-tail frames each
+consume a real leaf result and unwind saved additions to return39. Scalar frame
+controls run once on clone. Every dispatch/result/witness is bound to the
+invocation's `leaf` jobs, so dispatching the whole enclosing computation cannot
+satisfy these checks. Returned values contain no Promise, jump marker or symbol;
+caller arguments remain unchanged, and pending work is zero before close.
+The separate erased-argument control returns7 with zero required regions/jobs
+and no helper construction. Compiler-only erasure checking remains distinct.
+
+Fresh `worker-continuation-runtime-r1/receipt.json`, SHA256
+`1b846400406d72afecfece80770f028d45b32035acfbd36bbfd77983d1c714c0`,
+passes28 records with zero network calls. Native
+`worker-continuation-runtime-supervisor-r1/terminal.json`, SHA256
+`c0bba46a3cc07eedc238094842dfed3f83d693909c872fd492db0fb16dcd2215`,
+records original process/handle and Job closure with unchanged inputs. The owned
+policy fixture and emitted program changed; compiler inventory/lineage and the
+imported Tree fixture remain unchanged. These are finite continuation/ABI and
+erasure controls, not general stack/memory bounds, closure or array eligibility,
+erasure completeness, performance, device behavior or adoption acceptance.

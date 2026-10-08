@@ -81,3 +81,41 @@ def conditional_body(on: Bool, n: U32) -> U32:
 
 def conditional_never(on: Bool, n: U32) -> U32:
   conditional_body~(on, n)
+
+type ResumePair is Data:
+  ResumePair{left: U32, right: U32}
+
+def resume_fields(+n: U32) -> ResumePair:
+  ResumePair{leaf@(n), U32.add(40, leaf@(U32.add(n, 2)))}
+
+def resume_match_body(value: ResumePair) -> U32:
+  ResumePair{left, right} = value
+  U32.add(U32.mul(left, 100), right)
+
+def resume_match(n: U32) -> U32:
+  resume_match_body(resume_fields(n))
+
+def resume_capture(n: U32) -> U32 -> U32:
+  x => U32.add(n, x)
+
+def resume_closure(+n: U32) -> U32:
+  f = resume_capture(n)
+  +first = leaf@(U32.add(n, 2))
+  f(U32.add(first, leaf@(n)))
+
+def resume_tail(n: Nat, value: U32) -> U32:
+  match n:
+    case 0n: leaf@(value)
+    case 1n+rest: resume_tail(rest, U32.add(value, 1))
+
+def resume_non_tail(n: Nat, +seed: U32) -> U32:
+  match n:
+    case 0n: seed
+    case 1n+rest:
+      U32.add(leaf@(seed), resume_non_tail(rest, seed))
+
+def resume_drop(-ghost: U32, value: U32) -> U32:
+  value
+
+def resume_erased(n: U32) -> U32:
+  resume_drop(leaf@(n), 7)
