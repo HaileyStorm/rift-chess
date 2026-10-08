@@ -203,6 +203,51 @@ for(const transport of ['clone','packed']){
  }finally{retire(budget,budgetHarness);}
 }
 function postToStats(post){const {created,removed,terminated,errors,...stats}=post;return stats;}
+// Submission guards are shared by both transports. Exercise them once before
+// any helper exists, preserving caller descriptors and a usable session.
+const shapeHarness=harness(),shapes=api.createSession({workers:2,transport:'clone',workerFactory:shapeHarness.factory});
+let getterCalls=0;const read=()=>{getterCalls++;return 4n;},shapeRejections=[];
+async function rejectSnapshot(session,h,name,args,code,label){
+ const originalArgs=Object.getOwnPropertyDescriptors(args);
+ const originalValues=Object.values(originalArgs).filter(d=>'value'in d&&d.value!==null&&typeof d.value==='object').map(d=>[d.value,Object.getOwnPropertyDescriptors(d.value)]);
+ await assert.rejects(session.call(name,args),e=>e.code===code,label);
+ assert.equal(getterCalls,0,label);assert.equal(h.created,0,label);
+ const stats=session.stats();assert.equal(stats.remoteJobs,0,label);assert.equal(stats.closed,false,label);
+ for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(stats[key],0,label+':'+key);
+ assert.deepEqual(Object.getOwnPropertyDescriptors(args),originalArgs,label);
+ for(const [value,descriptors]of originalValues)assert.deepEqual(Object.getOwnPropertyDescriptors(value),descriptors,label);
+ return {case:label,code,getterCalls,workerConstructions:h.created,stats,callerDescriptorsUnchanged:true};
+}
+try{
+ const accessor=tip(4n);Object.defineProperty(accessor,'value',{get:read,enumerable:true,configurable:true});
+ const accessorArgs=[];Object.defineProperty(accessorArgs,'0',{get:read,enumerable:true,configurable:true});
+ const extra=tip(4n);extra.extra=9n;
+ const symbol=tip(4n);symbol[Symbol('extra')]=9n;
+ const hidden=tip(4n);Object.defineProperty(hidden,'value',{value:4n,enumerable:false,writable:true,configurable:true});
+ class ExoticTip{constructor(){Object.assign(this,tip(4n));}}
+ for(const [label,args]of [['constructor-accessor',[accessor]],['argument-accessor',accessorArgs],['extra-string-field',[extra]],['symbol-field',[symbol]],['nonenumerable-field',[hidden]],['exotic-prototype',[new ExoticTip()]]])
+  shapeRejections.push(await rejectSnapshot(shapes,shapeHarness,'snapshot',args,'input_shape',label));
+ for(const name of ['absent_export','toString'])shapeRejections.push(await rejectSnapshot(shapes,shapeHarness,name,accessorArgs,'unknown_export',name));
+ const left=Object.assign(Object.create(null),tip(4n)),tree=branch(left,tip(7n));
+ const descriptors=Object.getOwnPropertyDescriptors(left);
+ assert.equal(await shapes.call('snapshot',[tree]),47n,'valid null-prototype control after shape rejection');
+ assert.deepEqual(Object.getOwnPropertyDescriptors(left),descriptors);assert.equal(Object.getPrototypeOf(left),null);
+ assert.ok(shapes.stats().remoteJobs>0);assert.equal(getterCalls,0);
+ results.push({case:'submission-shape-guards',transport:'shared-before-dispatch',rejections:shapeRejections,validControl:{expected:'47',nullPrototype:true,callerDescriptorsUnchanged:true},stats:shapes.stats()});
+}finally{const post=retire(shapes,shapeHarness);if(results.at(-1)?.case==='submission-shape-guards')results.at(-1).postClose=post;}
+const budgetRejections=[];
+for(const [label,wire]of [['node-budget',{maxNodes:1}],['depth-budget',{maxDepth:1}]]){
+ const h=harness(),s=api.createSession({workers:2,transport:'clone',wire,workerFactory:h.factory});
+ try{
+  const tree=branch(tip(4n),tip(7n));
+  const rejected=await rejectSnapshot(s,h,'snapshot',[tree],'wire_budget',label);
+  // This smaller valid public call also proves a budget rejection leaves its
+  // session usable; the unrestricted Tree control above established 47n.
+  assert.equal(await s.call('text_remote',['R']),'R');assert.ok(s.stats().remoteJobs>0);
+  budgetRejections.push({...rejected,wire,validControl:'R',statsAfterControl:s.stats()});
+ }finally{const post=retire(s,h);if(budgetRejections.at(-1)?.case===label)budgetRejections.at(-1).postClose=post;}
+}
+results.push({case:'submission-node-depth-budgets',transport:'shared-before-dispatch',rejections:budgetRejections});
 const corruptions=[],decoderHarness=harness({transform:(listener,event)=>{
  const m=event.data;assert.ok(m.packet instanceof ArrayBuffer);const original=new DataView(m.packet);
  assert.equal(original.getUint32(0,true),0x32574442);assert.equal(original.getUint32(4,true),1);

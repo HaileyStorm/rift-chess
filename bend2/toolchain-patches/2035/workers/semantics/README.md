@@ -145,3 +145,30 @@ diagnostic and full BotAdapter emission. The corrected bot is now selected in th
 with actual online/offline nested-helper and saved-record/reload evidence.
 Broader browser/device acceptance and compiler adoption remain unfinished;
 none of the historical execution records above is retagged.
+
+The same matrix now adds two shared submission-guard families, once outside the
+clone/packed loop. Actual current Windows Bun run
+`worker-snapshot-runtime-r1/receipt.json`, SHA256
+`412aa58eec4e19b3733e6ffea7e89e4a3b2828d62105a4f7c49dff2e41d32226`,
+passes 21 runtime records with zero network calls. Matching native
+`worker-snapshot-runtime-supervisor-r1/terminal.json`, SHA256
+`efa90d27cde25c1446bb953c741fc66e2cf7bf332a0136b89c1ec73870f70213`,
+binds unchanged inputs and original process/Job closure. These paths are
+relative to the stationary-motion artifact directory used above.
+
+Constructor and argument accessors reject without invoking their getters.
+Extra string fields, symbol fields, non-enumerable fields and class-instance
+constructors reject with `input_shape`; missing and inherited export names
+reject with `unknown_export` before inspecting accessor arguments. Small Tree
+inputs exceed separately restricted node/depth limits with `wire_budget`.
+Every rejection leaves zero helpers, jobs, active invocations and retained work,
+and preserves argument/direct-object descriptors. A null-prototype Tree returns
+the independently expected 47n after shape errors; each budget session then
+completes a smaller real remote call. Existing retirement checks still apply.
+
+These finite guards share a pre-transport boundary, so repeating them for packed
+transport would add no independent evidence. JavaScript Proxies can execute
+reflection traps; this is ordinary getter non-invocation evidence. Recursive
+descriptor preservation, deep traversal and the separate local closure route
+remain outside these added controls. No compiler transformation, Bend fixture,
+browser/proof/device result or adoption claim changes.
