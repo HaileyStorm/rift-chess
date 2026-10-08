@@ -251,3 +251,34 @@ Paths remain relative to the stationary-motion artifact directory. Compiler,
 fixture and emitted program hashes match the preceding reply-identity run.
 These finite strict-enforcement and recovery controls do not prove every budget,
 permissive availability, handshake cancellation, adaptive performance or adoption.
+
+The shared-startup control now holds two genuine `ready` messages, cancels one
+root through its native `AbortSignal`, and preserves the other root waiting on
+the same handshake. Cancellation rejects with `AbortError`/`cancelled`, removes
+the registered signal listener and releases only that root's snapshot. Neither
+root has dispatched a job at that point. Releasing the unchanged ready messages
+lets the surviving root return31; a fresh remote call returns41. The cancelled
+root produces no dispatch/result/witness, and pending work is zero before close.
+
+An actual absent local Worker module separately establishes startup availability
+behavior. In this run, each policy creates two real helpers and observes one
+native startup error. Both helpers and all listeners retire automatically before
+explicit close. Strict policy rejects `required_workers_unavailable` without
+local fallback; permissive policy returns19/29/39 locally and emits one
+deduplicated `require_unfulfilled:workers_unavailable` diagnostic. Repeated
+permissive calls do not reconstruct helpers. An ordinary local call returns41
+in either session. The sessions remain open and unavailable; this does not claim
+recovery to remote availability or serial retry after dispatched work.
+
+Fresh `worker-startup-runtime-r2/receipt.json`, SHA256
+`0bb5fa4ae6ca30b40091cf5805291fc6b6e6bfec7f4c09cdcde69b833a50c04a`,
+passes26 records with zero network calls. Native
+`worker-startup-runtime-supervisor-r2/terminal.json`, SHA256
+`30d7b07d0d14303fbc974d74874f13a39d445c545b8f484c3db5f360e2b19485`,
+records original process/handle and Job closure with unchanged inputs. Compiler,
+fixture and emitted program match the preceding admission run. R1 stopped before
+matrix entry because the wrapper's nested `git` spawn returned `EPERM`; its
+original closed failure and source preimage remain retained. R2 uses a distinct
+run identity with the required launch permission. These controls do not prove
+general cancellation/availability, startup timeouts, malformed handshakes,
+browser asset behavior, adaptive performance, device behavior or adoption.

@@ -41,13 +41,16 @@ const api=await import(pathToFileURL(path.join(output,build.entry)).href),result
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
 async function until(predicate){const end=performance.now()+5000;while(!predicate()){assert.ok(performance.now()<end,'authentic replies not observed');await new Promise(r=>setTimeout(r,1));}}
 // Instrument actual Workers without replacing their computation or handshake.
-function harness({hold=false,workerURL=null,transform=null}={}){
- const h={held:[],created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
+function harness({hold=false,holdReady=false,workerURL=null,transform=null}={}){
+ const h={held:[],readyHeld:[],attempts:0,constructionFailures:0,created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
  h.release=()=>{hold=false;return h.held.splice(0);};
+ h.releaseReady=()=>{holdReady=false;return h.readyHeld.splice(0);};
  h.factory=(url,options)=>{
-  h.created++;const worker=new Worker(workerURL??url,options),own=new Map();
+  h.attempts++;let worker;try{worker=new Worker(workerURL??url,options);}catch(error){h.constructionFailures++;throw error;}
+  h.created++;const own=new Map();
   return {addEventListener(type,listener){const wrapped=event=>{
     if(type==='error')h.errors++;
+    if(type==='message'&&event.data.kind==='ready'&&holdReady){h.readyHeld.push({listener,event});return;}
     if(type==='message'&&event.data.kind==='result'){
      if(hold){h.held.push({listener,event});return;}
      if(transform){transform(listener,event);return;}
@@ -226,6 +229,53 @@ function noPendingWork(s){
  assert.equal(s.stats().closed,false);
  for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s.stats()[key],0,key);
 }
+// Cancel one root during the authentic shared handshake, before job admission.
+{
+ const h=harness({holdReady:true}),s=api.createSession({workers:2,transport:'clone',trace:true,workerFactory:h.factory}),controller=new AbortController();
+ let abortAdds=0,abortRemoves=0;const signal=controller.signal;
+ const add=signal.addEventListener.bind(signal),remove=signal.removeEventListener.bind(signal);
+ signal.addEventListener=(type,...args)=>{if(type==='abort')abortAdds++;return add(type,...args);};
+ signal.removeEventListener=(type,...args)=>{if(type==='abort')abortRemoves++;return remove(type,...args);};
+ try{
+  const cancelled=s.submit('remote_island',[18],{signal});cancelled.promise.catch(()=>{});
+  await until(()=>h.readyHeld.length===2);
+  const survivor=s.submit('remote_island',[30]);survivor.promise.catch(()=>{});
+  const before=s.stats();assert.equal(before.activeInvocations,2);assert.equal(before.remoteJobs,0);assert.equal(before.inFlight,0);assert.equal(before.ready,0);
+  assert.ok(s.trace().some(e=>e.invocation===survivor.id&&e.kind==='region'));
+  controller.abort();let rejectionCode,rejectionName;
+  await assert.rejects(cancelled.promise,e=>{rejectionCode=e.code;rejectionName=e.name;return e.code==='cancelled'&&e.name==='AbortError';});
+  const after=s.stats();assert.equal(after.closed,false);assert.equal(after.activeInvocations,1);assert.equal(after.remoteJobs,0);assert.equal(after.localCalls,0);
+  assert.equal(after.cancelled,1);
+  assert.ok(after.snapshotBytes>0&&after.snapshotBytes<before.snapshotBytes);assert.equal(abortAdds,1);assert.equal(abortRemoves,1);assert.equal(cancelled.cancel(),false);
+  assert.equal(h.created,2);assert.equal(h.terminated,0);assert.equal(h.listeners.size,6);
+  const packets=h.releaseReady(),handshakes=packets.map(p=>({kind:p.event.data.kind,program:p.event.data.program,epoch:p.event.data.epoch,sha256:sha(JSON.stringify(p.event.data))}));
+  for(const {listener,event}of packets)listener(event);
+  assert.equal(await survivor.promise,31);assert.equal(await s.call('remote_island',[40]),41);noPendingWork(s);
+  const cancelledTrace=s.trace().filter(e=>e.invocation===cancelled.id);assert.ok(!cancelledTrace.some(e=>['dispatch','result','witness'].includes(e.kind)));
+  assert.equal(s.stats().remoteJobs,2);assert.equal(s.stats().localCalls,0);
+  results.push({case:'shared-handshake-cancellation',transport:'shared-before-dispatch',executedTransport:'clone',cancelledInvocation:cancelled.id,survivingInvocation:survivor.id,rejectionCode,rejectionName,before,afterCancellation:after,abortAdds,abortRemoves,authenticHandshakes:handshakes,cancelledTrace,survivingResult:31,recoveryResult:41,statsAfterRecovery:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+// Actual unavailable asset failure differs from configured workers:0 and from
+// fatal failure after a dispatched job. Permissive fallback is explicit policy.
+const availability=[];
+const missingAsset=pathToFileURL(path.join(output,'absent-worker-module.mjs'));assert.equal(fs.existsSync(fileURLToPath(missingAsset)),false);
+for(const policy of ['strict','permissive']){
+ const h=harness({workerURL:missingAsset}),s=api.createSession({workers:2,transport:'clone',trace:true,policy,workerFactory:h.factory});
+ try{
+  let rejectionCode=null;const actualResults=[];let attemptsAfterFirst=null;
+  if(policy==='strict')await assert.rejects(s.call('remote_island',[18]),e=>{rejectionCode=e.code;return e.code==='required_workers_unavailable';});
+  else for(const n of [18,28,38]){const actual=await s.call('remote_island',[n]);assert.equal(actual,n+1);actualResults.push(actual);if(attemptsAfterFirst===null)attemptsAfterFirst=h.attempts;assert.equal(h.attempts,attemptsAfterFirst);}
+  noPendingWork(s);const after=s.stats();assert.equal(after.unavailable,true);assert.equal(after.workers,0);assert.equal(after.remoteJobs,0);assert.equal(after.requiredWitnesses,0);
+  assert.ok(h.attempts>0&&h.constructionFailures+h.errors>0);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);
+  assert.ok(!s.trace().some(e=>['dispatch','result','witness'].includes(e.kind)));
+  if(policy==='strict')assert.equal(after.localCalls,0);
+  else{assert.ok(after.localCalls>0);assert.equal(s.diagnostics().filter(x=>x.reason==='require_unfulfilled:workers_unavailable').length,1);}
+  assert.equal(await s.call('plain',[40]),41);noPendingWork(s);
+  availability.push({policy,missingAsset:missingAsset.href,assetAbsent:true,attempts:h.attempts,constructed:h.created,constructionFailures:h.constructionFailures,workerErrors:h.errors,rejectionCode,actualResults,afterUnavailable:after,automaticRetirement:{listeners:h.listeners.size,created:h.created,terminated:h.terminated},ordinaryLocalResult:41,diagnostics:s.diagnostics(),trace:s.trace(),statsAfterLocalControl:s.stats(),postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'actual-asset-availability',transport:'shared-before-dispatch',executedTransport:'clone',controls:availability,scope:'Actual missing module construction/startup failure; strict required rejection versus explicit permissive serial fallback. No missing-browser-asset or post-dispatch retry claim.'});
 const admissionRejections=[];
 for(const [label,limits,code]of [['invocation-count',{maxInvocations:2},'invocation_limit'],['queued-count',{maxQueue:1},'required_queue_budget']]){
  const h=harness({hold:true}),s=api.createSession({workers:1,transport:'clone',trace:true,...limits,workerFactory:h.factory});
