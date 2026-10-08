@@ -634,6 +634,35 @@ function checkAuthenticResult(m,sent,fn,owner){
   results.push({case:'packed-depth-endpoint',transport:'packed',wireDepthLimit:512,branchLevels:count,deepestNatDepth:512,identity,inputPacket,packet,returnedLeaf:'4',callerLeafAfter:'99',sharedOutputLeaf:true,detachedFromCaller:true,statsBeforeClose:s.stats(),trace,postClose:retire(s,h),scope:'Finite end-to-end traversal at configured maximum512, not arbitrary depth, default-depth acceptance or general stack/memory bounds.'});
  }finally{retire(s,h);}
 }
+// Accepted small input grows past the helper's output budget before either transport encodes it.
+{
+ const fn=build.manifest.functions.find(f=>f.name==='repeat_value');assert.ok(fn&&fn.eligible);
+ const messages=[],jobs=[],h=harness({observe:m=>messages.push(m),observeJob:m=>{if(m.kind==='job')jobs.push(m);}});
+ const s=api.createSession({workers:1,transport:'clone',wire:{maxStringUnits:64},maxRetainedBytes:4096,trace:true,workerFactory:h.factory}),controls=[];
+ try{
+  for(const count of [16,256,16]){
+   const before=s.stats(),owner=s.submit('repeat_remote',['R',BigInt(count)]);let rejection=null;
+   if(count===256)await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='wire_budget'&&e.message.endsWith('string budget exceeded');});
+   else assert.equal(await owner.promise,'R'.repeat(count));
+   const sent=jobs.at(-1),received=messages.filter(m=>m.invocation===owner.id),started=received.filter(m=>m.kind==='started'),errors=received.filter(m=>m.kind==='error'),replies=received.filter(m=>m.kind==='result');
+   assert.deepEqual(sent.args,['R',count]);assert.equal(sent.functionId,fn.id);assert.equal(sent.schemaId,fn.id);assert.equal(sent.program,build.manifest.program);assert.equal(sent.invocation,owner.id);
+   assert.equal(started.length,1);assert.equal(errors.length,count===256?1:0);assert.equal(replies.length,count===256?0:1);
+   for(const m of received)for(const key of resultIdentityKeys)assert.equal(m[key],sent[key],key);
+   assert.equal(received[0].kind,'started');assert.equal(received[1].kind,count===256?'error':'result');assert.equal(received.length,2);
+   if(count===256){assert.equal(errors[0].code,'wire_budget');assert.match(errors[0].error,/string budget exceeded$/);}
+   else assert.equal(replies[0].value,'R'.repeat(count));
+   const after=s.stats(),trace=s.trace().filter(e=>e.invocation===owner.id);noPendingWork(s);
+   assert.equal(after.closed,false);assert.equal(after.remoteJobs-before.remoteJobs,1);assert.equal(after.localCalls,0);
+   assert.equal(trace.filter(e=>e.kind==='dispatch'&&e.functionId===fn.id).length,1);assert.equal(trace.filter(e=>e.kind==='started').length,1);
+   for(const kind of ['result','witness'])assert.equal(trace.filter(e=>e.kind===kind).length,count===256?0:1);
+   assert.equal(after.requiredWitnesses-before.requiredWitnesses,count===256?0:1);
+   assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));assert.equal(h.created,1);assert.equal(h.terminated,0);assert.equal(h.errors,0);
+   controls.push({repeatCount:count,invocation:owner.id,identity:Object.fromEntries(resultIdentityKeys.map(k=>[k,sent[k]])),rejection,authenticMessages:received,envelopesSHA256:sha(JSON.stringify(received)),statsAfter:after,trace});
+  }
+  assert.equal(jobs.length,3);assert.equal(s.stats().remoteJobs,3);assert.equal(s.stats().requiredWitnesses,2);
+  results.push({case:'computed-string-output-wire-budget',transport:'shared-helper-boundary',executedTransport:'clone',maxStringUnits:64,maxRetainedBytes:4096,functionId:fn.id,controls,sameConstructedHelper:true,postClose:retire(s,h),scope:'Actual accepted small input grows past trusted helper String measurement before encoding/publication. Error rejects only its invocation; same helper/session successfully serves the next valid call. No heap bound, packed duplicate or general budget acceptance.'});
+ }finally{retire(s,h);}
+}
 // Genuine String output fits wire validation but exceeds decoded-result retention.
 {
  const fn=build.manifest.functions.find(f=>f.name==='repeat_value');assert.ok(fn&&fn.eligible);

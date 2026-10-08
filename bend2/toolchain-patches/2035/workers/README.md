@@ -93,11 +93,13 @@ with the later unused-input postimage explicitly recorded in verification.
 
 Active semantic checks use corrected preparation by default. The isolated
 candidate flag and original source preimages remain historical discriminators.
-`build-preview.mjs` still selects the parent bot and authenticates its original
-preparation, diagnostic and emitter files. They remain unchanged for that named
-compatibility obligation. Selecting the new creation binding requires a separate
-reviewed preview postimage, package and browser/offline evidence. These compiler
-and runtime results do not establish proof, device, native or adoption acceptance.
+`build-preview.mjs` selects the corrected `workers-2035-parser-r1/bot-4BPFvk`
+creation binding and authenticates its current preparation, diagnostic, emitter
+and source-binding files. The reviewed selection, package and browser/offline
+evidence are recorded in [semantics/README.md](semantics/README.md). Original
+parent files and receipts remain historical compatibility evidence. These
+compiler and runtime results do not establish proof, device, native or adoption
+acceptance.
 
 ## Retained parent evidence
 

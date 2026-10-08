@@ -406,3 +406,28 @@ records original process/handle and Job closure with unchanged inputs. Compiler
 inventory/lineage, imported Tree fixture and runtime remain unchanged; the owned
 policy fixture and emitted program changed. General traversal/resource safety,
 browser/device behavior, responsiveness and adoption remain separate.
+
+The existing `repeat_remote` fixture now also checks generated output at the
+shared helper boundary, using clone transport once with `wire.maxStringUnits:64`
+and sufficient retained-result allowance4096. One helper returns16 characters,
+then computes256 from the accepted small input `'R',256n`. Trusted helper output
+measurement rejects `wire_budget` with `string budget exceeded` before encoding
+or publication. Authentic started/error envelopes match all nine job identity
+fields; no result, required witness, local fallback or retry follows. Pending
+retention clears and the session remains open. A final16-character call succeeds
+through the same constructed helper; ordinary close removes its listeners and
+terminates it. This differs from input rejection and fatal coordinator retention
+rejection. Computation can allocate before measurement; no heap or performance
+bound follows, and packing would repeat the same pre-encoding boundary.
+
+Fresh `worker-wire-runtime-r2/receipt.json`, SHA256
+`0f8203af064d22fc4b4d8fa548e7e2c4fd1a214d30b933374e08309bbf7e4634`,
+passes36 records with zero network calls. Native
+`worker-wire-runtime-supervisor-r2/terminal.json`, SHA256
+`bbf4f35e295a59f73987804b0b624f611b140c420e2e221b3862b85ea875340e`,
+records original process/handle and Job closure with unchanged328 input hashes.
+R1 failed a harness assertion that expected an unprefixed error message; its
+closed native run and exact source remain retained. R2 accepts the runtime's
+message prefix without changing the fixture, budgets, compiler or runtime.
+These finite controls do not establish general wire/resource safety, browser or
+device behavior, responsiveness or adoption.
