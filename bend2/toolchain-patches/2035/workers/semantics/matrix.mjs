@@ -220,6 +220,53 @@ for(const transport of ['clone','packed']){
   results.push({case:'string-input-budget',transport,code:'wire_budget',postClose:retire(budget,budgetHarness)});
  }finally{retire(budget,budgetHarness);}
 }
+// Reply identity is checked before clone/packed decoding. Mutate one field in
+// an authentic result once at this shared boundary; do not duplicate a packed
+// decoder test or substitute synthetic computation for the real helpers.
+const identityRejections=[];
+for(const field of ['program','invocation','fork','slot','functionId','schemaId']){
+ const h=harness({hold:true}),s=api.createSession({workers:4,transport:'clone',trace:true,workerFactory:h.factory});
+ try{
+  const owner=s.submit('quad4',[1,2,3,4]);owner.promise.catch(()=>{});
+  await until(()=>h.held.length===4);
+  const other=s.submit('remote_island',[90]);
+  const settled=Promise.allSettled([owner.promise,other.promise]);
+  await until(()=>s.stats().ready>0&&s.stats().queuedBytes>0);
+  const packets=h.release(),first=packets[0],m=first.event.data;
+  assert.equal(packets.length,4);assert.equal(m.invocation,owner.id);
+  assert.equal(new Set(packets.map(p=>p.event.data.fork)).size,2);
+  const replacement={
+   program:(m.program[0]==='0'?'1':'0')+m.program.slice(1),
+   invocation:other.id,
+   fork:packets.find(p=>p.event.data.fork!==m.fork).event.data.fork,
+   slot:m.slot===0?1:0,
+   functionId:build.manifest.exports.plain,
+   schemaId:build.manifest.exports.plain,
+  }[field];
+  assert.notEqual(replacement,m[field]);
+  const changed={...m,[field]:replacement};
+  assert.deepEqual(Object.keys(m).filter(k=>!Object.is(m[k],changed[k])),[field]);
+  const before=s.stats();assert.equal(before.activeInvocations,2);assert.equal(before.remoteJobs,4);
+  assert.ok(before.ready>0&&before.queuedBytes>0,'second invocation lacks queued continuation');
+  first.listener({data:changed});
+  const outcomes=await settled;
+  assert.ok(outcomes.every(x=>x.status==='rejected'&&x.reason.code==='protocol'));
+  assert.equal(s.stats().closed,true);assert.equal(s.stats().remoteJobs,4,'fatal identity mismatch retried work');
+  const trace=s.trace();assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'),'mismatched result published a continuation or witness');
+  // Observe automatic fatal retirement before an explicit close can mask it.
+  const automatic=s.stats();
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,field+':'+key);
+  assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);assert.equal(h.created,4);assert.equal(h.errors,0);
+  const post=retire(s,h);assert.deepEqual(s.stats(),automatic);
+  for(const {listener,event}of packets)listener(event); // Original valid copies remain inert after fatal close.
+  assert.deepEqual(s.stats(),postToStats(post));
+  assert.deepEqual(s.trace(),trace);
+  identityRejections.push({field,original:m[field],replacement,originalEnvelopeSHA256:sha(JSON.stringify(m)),mutatedEnvelopeSHA256:sha(JSON.stringify(changed)),changedFields:[field],ownerInvocation:owner.id,otherInvocation:other.id,actualHeldResults:packets.length,before,automaticFatalRetirement:{stats:automatic,listeners:h.listeners.size,created:h.created,terminated:h.terminated},rejectionCodes:outcomes.map(x=>x.reason.code),publishedResults:0,publishedWitnesses:0,trace,postClose:post,delayedOriginalRepliesInert:true});
+ }finally{retire(s,h);}
+}
+const identityPositive=results.find(x=>x.case==='compound-fork-and-nested-caps'&&x.transport==='clone');
+assert.equal(identityPositive.expected[0],2345);
+results.push({case:'authentic-reply-identity',transport:'shared-envelope-before-decode',executedTransport:'clone',rejections:identityRejections,positiveControl:{case:identityPositive.case,transport:'clone',expected:2345},scope:'One-field build/invocation/fork/slot/function/schema identity mismatches in actual replies; shared validation before transport decoding. No wrong-handshake, malformed packed graph, timeout or general ABI claim.'});
 function postToStats(post){const {created,removed,terminated,errors,...stats}=post;return stats;}
 // Submission guards are shared by both transports. Exercise them once before
 // any helper exists, preserving caller descriptors and a usable session.

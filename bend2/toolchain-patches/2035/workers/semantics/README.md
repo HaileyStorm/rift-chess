@@ -1,6 +1,6 @@
 # Current Worker semantics
 
-This reduced matrix carries six independent families from the historical 004
+This reduced matrix carries distinct contracts selected from the historical 004
 inventory onto the current 2.0.35 candidate. It uses freshly checked/emitted
 source and actual Windows Bun module workers, with clone and packed transport.
 The original diagnostic, compiler, frozen proof inputs and browser package stay
@@ -193,3 +193,32 @@ This adds one expression to the existing fixture and one case within each
 existing dynamic-policy record, preserving the session cleanup controls.
 It proves this finite boundary, with no compiler transformation, general
 nested-policy proof, browser/device result or adoption claim.
+
+The shared reply-identity family changes one field in each authentic helper
+result: program/build, invocation, fork, slot, function or schema identity. Four
+real `quad4` results are held while a second invocation is observably queued.
+The invocation and fork substitutions use other live identities; function/schema
+substitutions use another valid manifest function. The payload, epoch, job, kind
+and every other envelope field stay unchanged. Both promises reject with
+`protocol`, without publishing a result or required-region witness or retrying
+serially. Automatic fatal cleanup retires all helpers/listeners and work before
+the harness calls `close`; replayed original valid replies remain inert.
+
+These predicates precede transport decoding, so they run once on clone transport.
+Existing reversed authentic replies yielding2345 provide the positive control;
+packed UTF-8 corruption retains its separate decoder contract. Fresh actual
+`worker-protocol-runtime-r3/receipt.json`, SHA256
+`c5bd5915df443cdce96c6293b06382de2fde9dfbce4c3e0c5549e6a5292eb978`,
+passes22 records with zero network calls. Native
+`worker-protocol-runtime-supervisor-r3/terminal.json`, SHA256
+`2db6b9f2e819af76066d473aec07e875f58a6181054240a0d1c63cc9e251e47f`,
+records original process/handle and Job closure and unchanged input hashes.
+Paths use the same stationary-motion artifact directory above. The compiler,
+fixture and emitted program remain unchanged.
+
+R1 passed without separately observing automatic cleanup before explicit close.
+R2 added that check but stopped at a premature synchronous queued-work assertion;
+its original closed failure remains retained. R3 waits for the actual queued-work
+predicate before mutation. These are distinct harness revisions, with their
+source preimages and original receipts preserved. They do not establish malformed
+handshake, timeout, transport failure, general ABI/security or adoption acceptance.
