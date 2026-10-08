@@ -1,0 +1,136 @@
+{
+  "schema": "rift-motion-layer-disposition/1",
+  "observedUTC": "2026-10-08T03:05:28.574114+00:00",
+  "disposition": "rejected-production-selection",
+  "reason": "Pixel correctness passed; one actual browser pair demonstrates no end-to-end move improvement and first-move sprite regression. Warmed phase gain does not establish overall benefit. No further unchanged-input benchmark repeated.",
+  "browserResult": {
+    "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-browser-pair-r1/result.json",
+    "sha256": "a2ab29137bce346edf20a8557e00f19b11aabcc9bfe180107b4b640883632fb4"
+  },
+  "nativeTerminal": "f4e846f63273485f9f4a6011bf2868305b6ec1702a016f2b8e15c342bdd4cc35",
+  "restoredSources": {
+    "bend2/graphics/v2game/BoardScene.bend": {
+      "candidate": "85a0ac1e009ae512b72765e545c011640bf929f9c007bf41c87aac27bfc6a137",
+      "restored": "4ca7329967d5bb33f7dd338c05a3265021801cbec055fc8ac0d5505aa51c903b",
+      "candidatePreserved": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-rejected-BoardScene.bend"
+    },
+    "bend2/toolchain-patches/2035/build-preview.mjs": {
+      "candidate": "d6b176df8f8cebbe2d3166241a48fc60a4e2e28aff9a9c723ea2566a49ced400",
+      "restored": "729a491088e700a8394775f80ce57c8db99f7800ede64a539d485821023f65c4",
+      "candidatePreserved": ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-rejected-build-preview.mjs"
+    }
+  },
+  "retention": "All trial sources, packages, failed attempts and exact emitted outputs retained; source restoration does not remove evidence.",
+  "limits": "One fixed-order pair, finite512 graphics; host load confounds causal attribution. No stable-performance, physical-device, offline, proof or adoption acceptance.",
+  "evidence": {
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/MotionLayerClipTrialR7.bend": {
+      "sha256": "58eb2014dde38eb6d62cfdfd34248ed7b9656d23d614af16d0fb0784de582f49",
+      "bytes": 7936
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-clip-discriminator-r2/result.json": {
+      "sha256": "66cef389d833554616fa4a5a96c75964d73de2a4530ddaff26402a6d5350c06f",
+      "bytes": 5649
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-clip-finite-r2/result.json": {
+      "sha256": "f61344bd5ad4b8a9472e9f08b173ef90b99785b807e35a4b8bbb90182e4bea2a",
+      "bytes": 32111
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-emissions-r1/scene/terminal.json": {
+      "sha256": "edd8210d57cba6cad5136c4b999b6694dfb9ca38ad0fb31e7622cf74db35b29e",
+      "bytes": 140901
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-Ud7iGU/scene.manifest.json": {
+      "sha256": "4181bbd3e5fffb33f70257caccb68821893bac7378a7469ae8e3f0ce4d577494",
+      "bytes": 56720
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/scene-Ud7iGU/scene.js": {
+      "sha256": "44074a8263abb10213c8419fdc163013c9e3f70a7cf8b37fa74d3a30eda09064",
+      "bytes": 520413
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-preview-build-r1/terminal.json": {
+      "sha256": "985665dd217c68ae15626ad296d72b9f9badb50bb3c8d429b597db73cfc69496",
+      "bytes": 261052
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/browser-fHX9p7/build.json": {
+      "sha256": "a669b065abb90db95bead3b082f7340d13668a3fb181f12b99aa60f8a7554bf6",
+      "bytes": 33328
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-browser-pair-r1.mjs": {
+      "sha256": "0cd6728c8243d24077214b277b823779452de69fe3ed9fa09f6125bf10d74050",
+      "bytes": 13015
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/run-motion-layer-browser-pair-r1.py": {
+      "sha256": "94e58bd490ad160339b4d92c4016c863a639742ecedd869c933e5ed6c7fa397e",
+      "bytes": 6462
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-browser-pair-supervisor-r1/terminal.json": {
+      "sha256": "f4e846f63273485f9f4a6011bf2868305b6ec1702a016f2b8e15c342bdd4cc35",
+      "bytes": 199485
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-browser-pair-r1/result.json": {
+      "sha256": "a2ab29137bce346edf20a8557e00f19b11aabcc9bfe180107b4b640883632fb4",
+      "bytes": 2709203
+    },
+    ".artifacts/bend2/2035-preview/stationary-motion-20261006/motion-layer-disposition-r1.json": {
+      "sha256": "f9ccecb3e765a4d5913691cfe451e04901bc40bc78ef7874871a9a24e3aa79d9",
+      "bytes": 1792
+    }
+  },
+  "browser": [
+    {
+      "name": "baseline",
+      "packageSHA256": "18a7768fcaf2f85a0d03e8869a2d05f39282112de97b40a5c04257a81b1d2192",
+      "chromeVersion": "154.0.8037.98",
+      "finalPNG": "4ca2d54dd8fc01f71958fcc8d8e3f42ebbcaa869f98f7bcf54471835cbf91218",
+      "actions": 6,
+      "moves": [
+        {
+          "label": "e4",
+          "inputToCanvasMs": 301.1999999284744,
+          "spriteMs": 48.300000071525574,
+          "dispatchElapsedMs": 142.10000002384186,
+          "portMs": 82
+        },
+        {
+          "label": "e5",
+          "inputToCanvasMs": 252.19999992847443,
+          "spriteMs": 20.399999976158142,
+          "dispatchElapsedMs": 130.79999995231628,
+          "portMs": 54
+        }
+      ],
+      "firstPlayableMs": 1764,
+      "firstDetailMs": 3978.3000000715256
+    },
+    {
+      "name": "candidate",
+      "packageSHA256": "a669b065abb90db95bead3b082f7340d13668a3fb181f12b99aa60f8a7554bf6",
+      "chromeVersion": "154.0.8037.98",
+      "finalPNG": "4ca2d54dd8fc01f71958fcc8d8e3f42ebbcaa869f98f7bcf54471835cbf91218",
+      "actions": 6,
+      "moves": [
+        {
+          "label": "e4",
+          "inputToCanvasMs": 349.5,
+          "spriteMs": 54.60000002384186,
+          "dispatchElapsedMs": 174.30000007152557,
+          "portMs": 85.69999992847443
+        },
+        {
+          "label": "e5",
+          "inputToCanvasMs": 259.09999990463257,
+          "spriteMs": 13.099999904632568,
+          "dispatchElapsedMs": 145.19999992847443,
+          "portMs": 38.800000071525574
+        }
+      ],
+      "firstPlayableMs": 4176.299999952316,
+      "firstDetailMs": 8569.699999928474
+    }
+  ],
+  "review": "Independent read-only review verified exact helper port and reasoned rejection. Historical R7 finite receipts remain private finite evidence; browser admission does not repeat that matrix.",
+  "memoryReview": {
+    "disposition": "reasoned-skip",
+    "reason": "Transient trial implementation and loaded one-pair timing; retained in versioned project evidence. No new user preference or correction, no expanded source upload or memory write. The separately authorized prepared-checkpoint import and revision1 readback remain complete."
+  }
+}
