@@ -13,7 +13,8 @@ const compilerOnly=process.argv[3]==='--compiler-only';
 const startupOnly=process.argv[3]==='--startup-boundaries';
 const metadataOnly=process.argv[3]==='--reply-metadata';
 const localBoundaryOnly=process.argv[3]==='--local-boundary';
-const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly;
+const cancelQueuedSiblingOnly=process.argv[3]==='--cancel-queued-sibling';
+const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly||cancelQueuedSiblingOnly;
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
 assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):focusedOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
@@ -121,6 +122,84 @@ if(localBoundaryOnly){
   const post=retire(s,h);for(const key of ['workers','created','removed','terminated','errors'])assert.equal(post[key],0,key);
   assert.equal(h.attempts,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);
   if(record)record.postClose={...post,constructionAttempts:h.attempts,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};
+ }
+}
+if(cancelQueuedSiblingOnly){
+ assert.equal(binding.hashes['web_runtime.js'],'0422e7864b96d9f96474818b490eda2dddf974a1054eb402b692687b5a2e96c2');
+ const h=harness({hold:true}),s=api.createSession({workers:1,transport:'clone',policy:'strict',trace:true,workerFactory:h.factory});
+ let record;
+ function idle(){
+  const stats=s.stats();assert.equal(stats.closed,false);assert.equal(stats.localCalls,0);
+  for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(stats[key],0,key);
+  return stats;
+ }
+ try{
+  const cancelled=s.submit('remote_island',[18]);cancelled.promise.catch(()=>{});
+  await until(()=>h.held.length===1&&s.trace().some(e=>e.kind==='started'&&e.invocation===cancelled.id));
+  const old=h.held[0],originalEnvelope=structuredClone(old.event.data),envelopeSHA256=sha(JSON.stringify(originalEnvelope));
+  assert.equal(originalEnvelope.kind,'result');assert.equal(originalEnvelope.invocation,cancelled.id);assert.equal(originalEnvelope.value,19);
+  const assigned=s.stats();assert.equal(assigned.remoteJobs,1);assert.equal(assigned.inFlight,1);assert.equal(assigned.ready,0);assert.equal(assigned.activeInvocations,1);
+  assert.equal(h.created,1);assert.equal(h.terminated,0);
+  const firstDispatch=s.trace().filter(e=>e.kind==='dispatch'&&e.invocation===cancelled.id);assert.equal(firstDispatch.length,1);
+  assert.equal(firstDispatch[0].job,originalEnvelope.job);
+  let siblingSettled=false;
+  const sibling=s.submit('remote_island',[30]);sibling.promise.then(()=>{siblingSettled=true;},()=>{siblingSettled=true;});
+  await until(()=>s.stats().ready===1);
+  const queued=s.stats(),queuedTrace=s.trace();
+  assert.equal(queued.closed,false);assert.equal(queued.activeInvocations,2);assert.equal(queued.inFlight,1);assert.equal(queued.remoteJobs,1);
+  assert.ok(queued.queuedBytes>0);assert.ok(queued.inFlightBytes>0);assert.equal(siblingSettled,false);
+  assert.ok(!queuedTrace.some(e=>['dispatch','started','result','witness'].includes(e.kind)&&e.invocation===sibling.id));
+  assert.ok(!queuedTrace.some(e=>['result','witness'].includes(e.kind)&&e.invocation===cancelled.id));
+  assert.equal(cancelled.cancel(),true);let rejection;
+  await assert.rejects(cancelled.promise,error=>{rejection={code:error.code,name:error.name,message:error.message};return error.code==='cancelled'&&error.name==='AbortError';});
+  const afterCancellation=s.stats(),cancellationTrace=s.trace();
+  assert.equal(afterCancellation.closed,false);assert.equal(afterCancellation.cancelled,1);assert.equal(afterCancellation.activeInvocations,1);
+  assert.equal(afterCancellation.ready,1);assert.equal(afterCancellation.inFlight,1);assert.equal(afterCancellation.remoteJobs,1);
+  assert.equal(afterCancellation.inFlightBytes,queued.inFlightBytes);assert.equal(afterCancellation.queuedBytes,queued.queuedBytes);
+  assert.ok(afterCancellation.snapshotBytes>0&&afterCancellation.snapshotBytes<queued.snapshotBytes);
+  assert.equal(afterCancellation.requiredWitnesses,0);assert.equal(afterCancellation.completed,0);assert.equal(afterCancellation.localCalls,0);
+  assert.equal(siblingSettled,false);assert.equal(cancelled.cancel(),false);assert.equal(h.created,1);assert.equal(h.terminated,0);
+  assert.ok(!cancellationTrace.some(e=>['dispatch','started','result','witness'].includes(e.kind)&&e.invocation===sibling.id));
+  assert.ok(!cancellationTrace.some(e=>['result','witness'].includes(e.kind)&&e.invocation===cancelled.id));
+  const packets=h.release();assert.equal(packets.length,1);assert.equal(packets[0],old);
+  assert.equal(sha(JSON.stringify(old.event.data)),envelopeSHA256);
+  old.listener(old.event); // Deliver the unchanged real reply to the inactive root.
+  const afterInactiveReply=s.stats(),pumpedTrace=s.trace();
+  assert.equal(afterInactiveReply.ready,0);assert.equal(afterInactiveReply.queuedBytes,0);assert.equal(afterInactiveReply.inFlight,1);
+  assert.equal(afterInactiveReply.remoteJobs,2);assert.equal(afterInactiveReply.ignoredReplies,afterCancellation.ignoredReplies+1);
+  const siblingDispatch=pumpedTrace.filter(e=>e.kind==='dispatch'&&e.invocation===sibling.id);assert.equal(siblingDispatch.length,1);
+  assert.equal(siblingDispatch[0].worker,firstDispatch[0].worker);assert.notEqual(siblingDispatch[0].job,originalEnvelope.job);
+  assert.equal(h.created,1);assert.equal(h.terminated,0);
+  const siblingResult=await sibling.promise;assert.equal(siblingResult,31);
+  const afterSibling=idle();assert.equal(afterSibling.remoteJobs,2);assert.equal(afterSibling.requiredWitnesses,1);assert.equal(afterSibling.completed,1);
+  const recovery=s.submit('remote_island',[40]),recoveryResult=await recovery.promise;assert.equal(recoveryResult,41);
+  const beforeDuplicate=idle();assert.equal(beforeDuplicate.remoteJobs,3);assert.equal(beforeDuplicate.requiredWitnesses,2);assert.equal(beforeDuplicate.completed,2);
+  const traceBeforeDuplicate=s.trace(),diagnosticsBeforeDuplicate=s.diagnostics();
+  const cancelledTrace=traceBeforeDuplicate.filter(e=>e.invocation===cancelled.id),siblingTrace=traceBeforeDuplicate.filter(e=>e.invocation===sibling.id),recoveryTrace=traceBeforeDuplicate.filter(e=>e.invocation===recovery.id);
+  for(const kind of ['dispatch','started'])assert.equal(cancelledTrace.filter(e=>e.kind===kind).length,1);
+  assert.ok(!cancelledTrace.some(e=>e.kind==='result'||e.kind==='witness'));
+  for(const own of [siblingTrace,recoveryTrace])for(const kind of ['dispatch','started','result','witness'])assert.equal(own.filter(e=>e.kind===kind).length,1);
+  assert.equal(recoveryTrace.find(e=>e.kind==='dispatch').worker,firstDispatch[0].worker);
+  assert.equal(h.attempts,1);assert.equal(h.created,1);assert.equal(h.terminated,0);
+  assert.equal(sha(JSON.stringify(old.event.data)),envelopeSHA256);old.listener(old.event);
+  const afterDuplicate=idle();assert.equal(afterDuplicate.ignoredReplies,beforeDuplicate.ignoredReplies+1);
+  assert.deepEqual({...afterDuplicate,ignoredReplies:beforeDuplicate.ignoredReplies},beforeDuplicate);
+  assert.deepEqual(s.trace(),traceBeforeDuplicate);assert.deepEqual(s.diagnostics(),diagnosticsBeforeDuplicate);
+  assert.equal(sha(JSON.stringify(old.event.data)),envelopeSHA256);
+  record={case:'assigned-cancellation-queued-sibling',transport:'clone',policy:'strict',workersRequested:1,runtimeSha256:binding.hashes['web_runtime.js'],
+   cancelledInvocation:cancelled.id,siblingInvocation:sibling.id,recoveryInvocation:recovery.id,rejection,
+   originalEnvelope,envelopeSHA256,assigned,queuedBeforeCancellation:queued,queuedTrace,afterCancellation,cancellationTrace,
+   afterInactiveReply,pumpedTrace,siblingResult,afterSibling,recoveryResult,beforeDuplicate,afterDuplicate,
+   cancelledTrace,siblingTrace,recoveryTrace,samePhysicalHelper:true,duplicateUnchangedReplyInert:true,
+   stats:afterDuplicate,diagnostics:s.diagnostics(),trace:s.trace(),
+   scope:'Finite assigned-root cancellation with an already queued sibling, unchanged inactive reply release/pump, same-helper recovery and duplicate suppression. Clone covers the pre-decode inactive branch; no timing, performance or general cancellation claim.'};
+  results.push(record);
+ }finally{
+  const post=retire(s,h);
+  if(record){
+   assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.errors,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);
+   record.postClose={...post,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};
+  }
  }
 }
 if(!focusedOnly){
@@ -870,7 +949,7 @@ function checkAuthenticResult(m,sent,fn,owner){
 }
 // A genuinely emitted different allowlist produces a different content-bound
 // helper build. Route that unchanged static asset to the original coordinator.
-if(!metadataOnly&&!localBoundaryOnly){
+if(!metadataOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly){
 const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
 assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
 assert.notEqual(otherBuild.manifest.program,build.manifest.program);
@@ -922,7 +1001,7 @@ for(const policy of ['strict','permissive']){
 }
 results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
 }
-if(!startupOnly&&!localBoundaryOnly){
+if(!startupOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly){
 // Computation and correlation stay genuine. Change only untrusted body timing
 // after a successful zero-duration control on the same physical helper.
 const timingControls=[];
@@ -966,8 +1045,9 @@ const receipt={schema:'rift-worker-policy-semantics/2',passed:true,runSelection:
 receipt.runSelection=metadataOnly?'reply-metadata-only':receipt.runSelection;
 if(metadataOnly)receipt.scope='Fresh checked/emitted current98 Worker source and real Windows reply timing metadata controls only. Prior39 and startup2 excluded. No current99 CLI proof, full107 parity, browser/native/kernel/device/performance/adoption acceptance.';
 if(localBoundaryOnly){receipt.runSelection='local-boundary-only';receipt.scope='Fresh checked/emitted current98 Worker source and finite Windows public synchronous local closure boundary only. Prior39, startup2 and metadata1 excluded, not aggregated. No closure transport, general policy/performance, current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
+if(cancelQueuedSiblingOnly){receipt.runSelection='cancel-queued-sibling-only';receipt.scope='Fresh checked/emitted current98 policy fixture and one finite Windows assigned-cancellation/queued-sibling boundary only. Prior39, startup2, timing1 and local1 excluded, not aggregated. No timing, performance, general cancellation, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
 const receiptText=JSON.stringify(receipt,null,2)+'\n';if(focusedOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'focused receipt bound');
-if(localBoundaryOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'local boundary total output bound');
+if(localBoundaryOnly||cancelQueuedSiblingOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'focused total output bound');
 fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }

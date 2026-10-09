@@ -794,3 +794,36 @@ upstream groups, broader CLI compatibility, native/C, kernel, device, GPU and
 reviewed adoption remain open.
 The accepted pristine2.0.27 pin is unchanged. Do not repeat the unchanged lane
 after fixture-only Worker or documentation edits.
+
+## Focused assigned cancellation with a queued sibling
+
+The canonical matrix accepts `--cancel-queued-sibling` after its output directory.
+One fresh policy-fixture CHECK/emission precedes this single clone-transport group.
+Prior39, startup2, timing1 and local1 are excluded; no aggregate run is claimed.
+The compiler, runtime, fixture and balanced production parallelism are unchanged.
+
+One real helper is assigned invocation1 while its genuine result19 is held.
+Invocation2 is then observed queued with no dispatch. Cancelling invocation1
+rejects its public promise but retains the occupied slot and sibling queue;
+the cancelled root publishes no result or required witness. Releasing the unchanged
+authentic reply frees helper0 and dispatches the sibling, which returns31.
+Recovery on that same helper returns41. Re-delivering the original reply changes
+only ignoredReplies. Pending-work accounting is zero before explicit close;
+the one helper terminates and all listeners retire.
+
+`worker-cancel-queued-sibling-runtime-r1/receipt.json`, SHA256
+`c25f5f7d3805098291a7388f708d5f3ac459c16304e6a564fa75f5fe5489b9ce`,
+and `worker-cancel-queued-sibling-supervisor-r1/terminal.json`, SHA256
+`a1ffff99c9e1e53af6d5a0f7d7f0b350322f0081ac9894a2eff38211038b3ce5`,
+remain under the existing stationary-motion evidence directory. Original Popen7632
+and all four recorded child units exit0; its original handle, EOF streams and
+checked self-only Job close, with no signaling, retry or unknown state.
+All337 native input hashes remain stable. Independent source and actual-outcome
+reviews accept this finite boundary. Native/runtime evidence totals470233 bytes,
+below the6MiB plan, with zero recorded fetches.
+
+This covers the inactive-invocation release/pump branch before transport decoding.
+It does not establish cancellation of computation still executing in the helper,
+general cancellation, timing/performance, browser/native application, device,
+kernel/Linux or reviewed compiler adoption. The earlier cohorts retain their
+original scopes and should not be rerun after this focused source change.
