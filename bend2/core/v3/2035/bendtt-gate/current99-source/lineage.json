@@ -1,0 +1,63 @@
+{
+  "schema": "rift-current99-source-extension/1",
+  "baseline": {
+    "commit": "ad988bd2852ca9e289e3f9f5d7a78a9e9284543b",
+    "tree": "8702a4655000ca060fd7925aad4f5c742d6ab3ee"
+  },
+  "evidence": {
+    "packet": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current-source-admission-20261008-r2.json",
+      "sha256": "6d0d257d40cc67de0a16b253fa60b07a5513d4bd69f9c80cdf9938fa8ef3ecd9"
+    },
+    "checkReceipt": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-check-safe-r1/receipt.json",
+      "sha256": "5cea3da972b555f2b91a6fabdb587d047f1bb1777ba42c707a144d0dea3b5a12"
+    },
+    "checkTerminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-proof-supervisor-r2/terminal.json",
+      "sha256": "74d7a3bcb8d27d048cbabd28fee8a630254404cf2a5ec7f7c538be20ccd32fb1"
+    },
+    "checkManifest": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-proof-manifest-r1.json",
+      "sha256": "036588fedcdd5ef9118daae68fa3c7dca920c7b732996371211e69811ef10e81"
+    },
+    "checkSourceReview": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-proof-source-review-r1.json",
+      "sha256": "50b86cae9586f65bab5ca302c42da31e4f3d2b96f8d6cb31aaad6aac1a15a38b"
+    },
+    "checkOutcomeReview": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-check-safe-disposition-r1.json",
+      "sha256": "b11914d96977f1c9d9856e194a0102c9462c307520071251dfd2c2217ba699ef"
+    },
+    "controlsReceipt": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-controls-r1/receipt.json",
+      "sha256": "081ef71c42830cd2477db1d0db14a78e61def9bb395d1ca93ae88b6454224113"
+    },
+    "controlsTerminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-controls-supervisor-r1/terminal.json",
+      "sha256": "e77d6a9a80e00d931bcb29619ebeb989775f265789974e6ed74f23293892b25b"
+    },
+    "controlsManifest": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-controls-manifest-r1.json",
+      "sha256": "b47a8cfff9e2f5571862720af66697919d706e5dfda29e62cdd0ace14228539a"
+    },
+    "controlsSourceReview": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-controls-source-review-r1.json",
+      "sha256": "3e1891fa7d25ee7301713eee1f6c5fcb4792c28eef423b2dd78bca8238b82044"
+    },
+    "controlsOutcomeReview": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/current99-controls-disposition-r1.json",
+      "sha256": "5796838683a7abfc246f00f45baa502b192da4085e7eb4e045b45e1415a9d724"
+    }
+  },
+  "files": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current99-source/admission.mjs",
+      "sha256": "e7d5e1d03d2882761d815d37933fd342226e37d1794ff5da11fb78a1567599d0"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current99-source/README.md",
+      "sha256": "766cf717a596eaec7f9b6667409e24bea284b823bb0a4d0832886edefaa64bc1"
+    }
+  ]
+}
