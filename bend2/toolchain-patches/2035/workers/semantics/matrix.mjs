@@ -12,7 +12,8 @@ const output=path.resolve(root,process.argv[2]);
 const compilerOnly=process.argv[3]==='--compiler-only';
 const startupOnly=process.argv[3]==='--startup-boundaries';
 const metadataOnly=process.argv[3]==='--reply-metadata';
-const focusedOnly=startupOnly||metadataOnly;
+const localBoundaryOnly=process.argv[3]==='--local-boundary';
+const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly;
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
 assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):focusedOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
@@ -35,9 +36,9 @@ if(compilerOnly){
  fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
  console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:corpus.results.length,networkCalls,workerConstructions}));
 }else{
-const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
+const fixture=fileURLToPath(new URL(localBoundaryOnly?'../fixture.bend':'./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote','schema_pair_remote'];
+const exports=localBoundaryOnly?['apply']:['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote','schema_pair_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 if(focusedOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'focused emitted asset bound');
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
@@ -67,6 +68,61 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null,obser
  };return h;
 }
 function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
+if(localBoundaryOnly){
+ assert.equal(sha(fs.readFileSync(fixture)),'d8edeb9dc1cc4182f1c9e8bc1f61b021601ed6ffae7f9c87b84a6f9c1343b48d');
+ assert.deepEqual(Object.keys(build.manifest.exports),['apply']);
+ const fn=build.manifest.functions.find(f=>f.name==='apply');assert.ok(fn);
+ // Unsupported function input rolls the whole wire signature back to null.
+ assert.equal(fn.arity,2);assert.equal(fn.inputs,null);assert.equal(fn.output,null);
+ const h=harness(),s=api.createSession({workers:2,transport:'clone',policy:'strict',trace:true,workerFactory:h.factory});
+ let record;
+ function idle(){
+  const stats=s.stats();assert.equal(stats.closed,false);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes','remoteJobs','requiredWitnesses'])assert.equal(stats[key],0,key);
+  assert.equal(h.attempts,0);assert.equal(h.created,0);assert.equal(h.listeners.size,0);
+  assert.ok(!s.trace().some(e=>['dispatch','started','result','witness'].includes(e.kind)));
+  return stats;
+ }
+ try{
+  let captured=4n,callbackCalls=0,getterCalls=0;const callbackArguments=[];
+  const callback=x=>{assert.equal(typeof x,'bigint');callbackCalls++;callbackArguments.push(x);return x+captured;};
+  const before=idle(),first=s.submit('apply',[callback,3n]);
+  assert.equal(callbackCalls,1);assert.deepEqual(callbackArguments,[3n]);
+  const immediatelyAfterSubmit=idle();assert.equal(immediatelyAfterSubmit.completed-before.completed,1);
+  captured=99n;
+  const firstValue=await first.promise;assert.equal(typeof firstValue,'bigint');assert.equal(firstValue,7n);assert.notEqual(firstValue,102n);
+  const afterFirst=idle();assert.equal(afterFirst.completed,1);assert.ok(s.diagnostics().some(d=>d.reason==='local_boundary'));
+  const malformed=[callback];
+  Object.defineProperty(malformed,'1',{get(){getterCalls++;return 3n;},enumerable:true,configurable:true});assert.equal(malformed.length,2);
+  const beforeNegative=idle(),negative=s.submit('apply',malformed);let rejection;
+  const rejected=assert.rejects(negative.promise,error=>{rejection={code:error.code,message:error.message};return error.code==='input_shape';});
+  assert.equal(getterCalls,0);assert.equal(callbackCalls,1);
+  await rejected;
+  assert.equal(getterCalls,0);assert.equal(callbackCalls,1);
+  const afterNegative=idle();assert.equal(afterNegative.completed,beforeNegative.completed);
+  assert.equal(afterNegative.failed-beforeNegative.failed,1);
+  // Local admission is counted before cloneLocalArgs rejects the accessor.
+  assert.equal(afterNegative.localCalls-beforeNegative.localCalls,1);
+  captured=5n;
+  const recovery=s.submit('apply',[callback,2n]);assert.equal(callbackCalls,2);assert.deepEqual(callbackArguments,[3n,2n]);
+  const recoveryImmediately=idle(),recovered=await recovery.promise;
+  assert.equal(typeof recovered,'bigint');assert.equal(recovered,7n);
+  const afterRecovery=idle();assert.equal(afterRecovery.completed,2);assert.equal(callbackCalls,2);assert.equal(getterCalls,0);
+  record={case:'synchronous-local-closure-boundary',transport:'clone',policy:'strict',workersRequested:2,
+   functionBoundary:{name:fn.name,id:fn.id,arity:fn.arity,inputs:fn.inputs,output:fn.output},
+   controls:[
+    {label:'synchronous-capture-consumption',invocation:first.id,argument:'3',capturedAtSubmission:'4',capturedAfterSubmit:'99',expected:'7',actual:firstValue.toString(),deferredCaptureWouldProduce:'102',callbackCallsImmediately:1,before,immediatelyAfterSubmit,afterResult:afterFirst},
+    {label:'accessor-rejected-without-observation',invocation:negative.id,liveArity:malformed.length,rejection,getterCalls,callbackCallsBefore:1,callbackCallsAfter:1,completedUnchanged:true,localCallsDelta:afterNegative.localCalls-beforeNegative.localCalls,before:beforeNegative,after:afterNegative},
+    {label:'same-session-recovery',invocation:recovery.id,argument:'2',captured:'5',expected:'7',actual:recovered.toString(),callbackCallsImmediately:2,immediatelyAfterSubmit:recoveryImmediately,afterResult:afterRecovery}
+   ],callbackArguments:callbackArguments.map(x=>x.toString()),callbackCalls,getterCalls,stats:afterRecovery,diagnostics:s.diagnostics(),trace:s.trace(),
+   scope:'Finite Windows public synchronous local closure consumption and accessor rejection/recovery only; no closure transport or general policy/performance acceptance.'};
+  results.push(record);
+ }finally{
+  const post=retire(s,h);for(const key of ['workers','created','removed','terminated','errors'])assert.equal(post[key],0,key);
+  assert.equal(h.attempts,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);
+  if(record)record.postClose={...post,constructionAttempts:h.attempts,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};
+ }
+}
 if(!focusedOnly){
 const tag=k=>bend.name_key(book.ctrs[k].k),tip=value=>({$:tag('../fixture-tree:Tip'),value}),branch=(left,right)=>({$:tag('../fixture-tree:Branch'),left,right});
 const faultFile='assigned-helper-fault.mjs';
@@ -814,7 +870,7 @@ function checkAuthenticResult(m,sent,fn,owner){
 }
 // A genuinely emitted different allowlist produces a different content-bound
 // helper build. Route that unchanged static asset to the original coordinator.
-if(!metadataOnly){
+if(!metadataOnly&&!localBoundaryOnly){
 const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
 assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
 assert.notEqual(otherBuild.manifest.program,build.manifest.program);
@@ -866,7 +922,7 @@ for(const policy of ['strict','permissive']){
 }
 results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
 }
-if(!startupOnly){
+if(!startupOnly&&!localBoundaryOnly){
 // Computation and correlation stay genuine. Change only untrusted body timing
 // after a successful zero-duration control on the same physical helper.
 const timingControls=[];
@@ -909,7 +965,9 @@ assert.equal(networkCalls,0);
 const receipt={schema:'rift-worker-policy-semantics/2',passed:true,runSelection:startupOnly?'startup-boundaries-only':'full-runtime',compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts,controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:startupOnly?'Fresh checked/emitted current98 Worker source and real Windows startup build/stale/duplicate handshake boundaries only. Prior39 cases excluded, not rerun or relabeled. No current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.':'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal, non-Nat wire and startup semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
 receipt.runSelection=metadataOnly?'reply-metadata-only':receipt.runSelection;
 if(metadataOnly)receipt.scope='Fresh checked/emitted current98 Worker source and real Windows reply timing metadata controls only. Prior39 and startup2 excluded. No current99 CLI proof, full107 parity, browser/native/kernel/device/performance/adoption acceptance.';
+if(localBoundaryOnly){receipt.runSelection='local-boundary-only';receipt.scope='Fresh checked/emitted current98 Worker source and finite Windows public synchronous local closure boundary only. Prior39, startup2 and metadata1 excluded, not aggregated. No closure transport, general policy/performance, current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
 const receiptText=JSON.stringify(receipt,null,2)+'\n';if(focusedOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'focused receipt bound');
+if(localBoundaryOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'local boundary total output bound');
 fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }

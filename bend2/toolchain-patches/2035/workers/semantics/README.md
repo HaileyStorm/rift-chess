@@ -620,6 +620,45 @@ without a latency benchmark, general timing/adaptive-profitability, heap,
 browser/native application/device or adoption claim. Existing fixture,98-file
 compiler candidate, production parallelism and accepted pin are unchanged.
 
+## Focused synchronous local closure boundary
+
+The canonical matrix accepts `--local-boundary` after its output directory.
+It freshly checks the unchanged `../fixture.bend` and emits only `apply(f,n)`.
+This selects one group with three controls and excludes prior39, startup2 and
+metadata1. It does not establish an aggregate43-family execution.
+
+The function input makes both manifest wire schema fields null, with arity2.
+The public host callback consumes BigInt3 synchronously before `submit()`
+returns, using captured4. Changing that capture to99 afterward leaves the
+original result7, rather than102. A correct-length argument array with an
+accessor at index1 rejects with `input_shape` without invoking the getter or
+callback. Completed accounting stays unchanged; the existing local-admission
+count increments before rejection. The same session then consumes BigInt2
+with captured5 and returns7. Both positive results are asserted as BigInts
+before their decimal receipt representation.
+
+Although two workers were requested under strict policy, all checkpoints
+record zero helper constructions, dispatches, results, remote witnesses and
+pending or retained work. The local-boundary diagnostic is present. Explicit
+retirement closes the session with zero helpers/listeners/held replies.
+
+`worker-local-boundary-runtime-r1/receipt.json`, SHA256
+`a8f6f7064d21261227b3a4d25a62fdc0f1e75faab3568d3fd54e32cd65ee908d`,
+records the three controls and zero intercepted network calls on Windows
+Bun1.4.2. Native `worker-local-boundary-supervisor-r1/terminal.json`, SHA256
+`7a4b44ea701d5cb7bc399390afd3af79f2af96202b5c0a8290ad6c1183c66373`,
+records334 unchanged input fences, original exit0, verified membership,
+drained streams, original handle closure and checked self-only Job closure.
+All five emitted assets retain their hashes. Assets are bounded to4MiB,
+receipt to1MiB and the plan to6MiB; runtime/native evidence totals410361 bytes.
+Paths are relative to the stationary-motion artifact directory above.
+
+This covers finite public synchronous local closure consumption and accessor
+rejection/recovery. It proves no closure transport, general policy, Proxy-trap
+safety, timing or memory bound, current99 CLI proof, browser/native application,
+device or adoption acceptance. The fixture,98-file compiler candidate,
+production parallelism and accepted pin remain unchanged.
+
 ## Ordinary upstream compiler differential
 
 The retained compiler differential was adapted privately to the current APIs,
