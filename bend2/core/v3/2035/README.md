@@ -119,9 +119,22 @@ matched before and after execution. The private current inventory also binds
 66 Git changes through this execution snapshot.
 
 This closes the current candidate's Windows full-CHECK/Safe compatibility gap.
-Its current-compiler mutation count is zero; the original eight negative results
-retain their 97-file compiler scope and require fresh current-compiler rejection
-evidence. Historical and inventory-only consumer admission remains unchanged.
+That invocation ran zero mutations. A separate current99 controls invocation at
+`ad988bd2852ca9e289e3f9f5d7a78a9e9284543b` later ran nine fresh Workers:
+one full-entry positive and all six declared v2 mutations plus the two prepared
+controls. Each negative produced its intended canonical type mismatch using
+the same 99-file compiler and 62-file cone. It emitted no Safe output and reused
+no historical execution. Its receipt SHA-256 is
+`081ef71c42830cd2477db1d0db14a78e61def9bb395d1ca93ae88b6454224113`;
+the accepted disposition is
+`5796838683a7abfc246f00f45baa502b192da4085e7eb4e045b45e1415a9d724`.
+The complete records remain local under the same evidence directory in
+`current99-controls-r1/` and `current99-controls-supervisor-r1/`.
+
+The separately versioned [current99 evidence admission](bendtt-gate/current99-source/README.md)
+authenticates these completed Windows cohorts and permits no new execution.
+Historical receipts and every consumer's exact revision limits remain unchanged;
+this documentation update is outside their admitted snapshots.
 Kernel and Linux-runtime approvals remain null. No Linux kernel verdict, native
 CPU/GUI/PCM/restart, device, GPU/performance, pin amendment or compiler adoption
 is established. This later coverage document is a successor postimage, not part
