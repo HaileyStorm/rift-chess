@@ -78,7 +78,51 @@ with a stack overflow after loading the complete cone. Its immutable failure and
 clean before/after bindings remain in the ignored evidence tree. No mutations
 ran. A separate compiler-free Node compatibility probe imported the exact
 derived TypeScript modules, verified 64 MiB stack readback and source bindings,
-and observed exit with zero fetches. The dedicated Node wrapper repair is now
-at the syntax/source-binding review gate; no repaired CHECK or mutation compiler
-execution is authorized until root's independent review and clean checkpoint.
+and observed exit with zero fetches. That initial repair gate was subsequently passed. The retained Node aggregate
+receipt `58b3ee7d958d55003cebe76895ca0bf58eabd2a647c728f351c3f67f66edda54`
+and six-mutation receipt
+`d38b54c7f7807622b9003d10e7abe34c61cd84cda6157d65accb18c6807e34d1`
+record actual source/type/promise execution on the historical 97-file compiler.
+The later prepared receipt
+`a5ccbfdb0a009501525785ffb94640d573593517b02942ad470c6c977c04f698`
+records nine fresh Workers: the full 62-file CHECK and eight semantic negatives,
+including all six original mutations. Their original bindings remain historical.
 No source-screen result is a kernel proof or pin acceptance.
+
+
+## Current 99-file candidate CHECK and Safe serialization
+
+One separately reviewed private Windows run at clean
+`814a781a2f8ceb14e1d2017ccff0e434b3fdf85d` used the current 99-file CLI/Worker
+candidate consistently: current Bend loaded and checked the book, current Comp
+ran the compiler-owned empty-root namespace guard, and current Safe serialized
+that same checked book. Current Base and the actual loaded paths matched the
+independently derived, unchanged full 62-file frozen cone. It checked
+1,586 definitions with zero holes and 965 owned definitions,
+using the unchanged promise authority. No historical compiler module supplied
+the new verdict.
+
+The exclusive Safe output contains 5,676,608 bytes, has empty OOS,
+and matches the historical serialization. Its SHA-256 is
+`41f91d9c7982ba092288f92352f177ba5dfce78469a5d081fcd0825c0e38666e`. The current receipt is
+`5cea3da972b555f2b91a6fabdb587d047f1bb1777ba42c707a144d0dea3b5a12`; the original-process supervisor terminal is
+`74d7a3bcb8d27d048cbabd28fee8a630254404cf2a5ec7f7c538be20ccd32fb1`. Full records remain local under
+`.artifacts/bend2/2035-preview/stationary-motion-20261006/current99-check-safe-r1/`
+and `current99-proof-supervisor-r2/`.
+
+Parent flags and resource limits are recorded separately from the actual
+64 MiB Worker stack and `--experimental-transform-types` flag. The Worker exited,
+zero fetches were recorded, the original parent handle and streams closed, and
+the checked Job settled to self-only before closure. All 632 source fences
+matched before and after execution. The private current inventory also binds
+316 source inputs, 145 controller inputs, all 99 candidate files and the exact
+66 Git changes through this execution snapshot.
+
+This closes the current candidate's Windows full-CHECK/Safe compatibility gap.
+Its current-compiler mutation count is zero; the original eight negative results
+retain their 97-file compiler scope and require fresh current-compiler rejection
+evidence. Historical and inventory-only consumer admission remains unchanged.
+Kernel and Linux-runtime approvals remain null. No Linux kernel verdict, native
+CPU/GUI/PCM/restart, device, GPU/performance, pin amendment or compiler adoption
+is established. This later coverage document is a successor postimage, not part
+of the execution snapshot above.
