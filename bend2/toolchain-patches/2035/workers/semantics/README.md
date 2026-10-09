@@ -581,6 +581,45 @@ general timing, transport, heap/performance, browser, native application,
 current99 CLI proof, kernel, device or adoption acceptance. Production
 parallelism, accepted compiler pin and frozen inputs remain unchanged.
 
+## Focused result timing metadata
+
+The same canonical matrix accepts `--reply-metadata` after the output directory.
+This selects one new group with two controls and excludes the earlier39 families
+and two startup groups. No aggregate42-family execution is claimed.
+
+Each actual module helper first computes19. The harness correlates all nine
+identity fields with the outgoing job, retains the unchanged original envelope,
+and delivers a copy with only `bodyMs` set to zero. Result19 and its required
+witness publish. The same physical helper then computes29 for a new invocation;
+changing only `bodyMs` to negative1 or numeric NaN rejects with
+`protocol` / `invalid timing`. The coordinator publishes no result or witness
+for that invocation and leaves worker-body, round-trip and movement timing
+counters unchanged. Helpers/listeners and retained accounting retire
+automatically; delayed original replies remain inert and closed submissions
+reject. NaN is explicitly recorded as a number representation in the receipt;
+the four retained original envelopes remain finite JSON.
+Injection follows genuine native reply delivery and precedes the coordinator
+listener. It validates coordinator handling, without proving transport behavior
+for corrupted timing values.
+
+`worker-metadata-runtime-r1/receipt.json`, SHA256
+`3e6149ba29d3be8fb53d7c189e3f080a1348da150a1cd8964d2c8fdbe9b1ffb7`,
+records two zero-duration positives, two protocol negatives and zero intercepted
+network calls on Windows Bun1.4.2. Native
+`worker-metadata-supervisor-r1/terminal.json`, SHA256
+`4b4148b43f7ded3167bfaba623877198ad422701af69418cc3bd07428419a5d6`,
+records333 unchanged input fences, original exit0, verified membership,
+drained streams, original handle closure and self-only Job closure. All five
+emitted assets and four original envelope files retain their hashes. Each
+envelope is bounded below64KiB, assets to4MiB and receipt to1MiB before writing;
+the6MiB plan produced462065 bytes across runtime and native evidence directories.
+Paths are relative to the stationary-motion artifact directory above.
+
+This establishes these finite timing-validation and publication boundaries,
+without a latency benchmark, general timing/adaptive-profitability, heap,
+browser/native application/device or adoption claim. Existing fixture,98-file
+compiler candidate, production parallelism and accepted pin are unchanged.
+
 ## Ordinary upstream compiler differential
 
 The retained compiler differential was adapted privately to the current APIs,

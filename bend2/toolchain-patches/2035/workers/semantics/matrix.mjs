@@ -11,8 +11,10 @@ globalThis.fetch=async()=>{networkCalls++;throw Error('no network in Worker sema
 const output=path.resolve(root,process.argv[2]);
 const compilerOnly=process.argv[3]==='--compiler-only';
 const startupOnly=process.argv[3]==='--startup-boundaries';
+const metadataOnly=process.argv[3]==='--reply-metadata';
+const focusedOnly=startupOnly||metadataOnly;
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
-assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):startupOnly?4:3));
+assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):focusedOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
 assert.equal(fs.realpathSync(path.dirname(output)),path.dirname(output));
 fs.mkdirSync(output); // Exclusive run identity; no overwrite or replay.
@@ -37,7 +39,7 @@ const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
 const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote','schema_pair_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
-if(startupOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'startup emitted asset bound');
+if(focusedOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'focused emitted asset bound');
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[],runtimeArtifacts={},replyArtifacts={};
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
@@ -65,7 +67,7 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null,obser
  };return h;
 }
 function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
-if(!startupOnly){
+if(!focusedOnly){
 const tag=k=>bend.name_key(book.ctrs[k].k),tip=value=>({$:tag('../fixture-tree:Tip'),value}),branch=(left,right)=>({$:tag('../fixture-tree:Branch'),left,right});
 const faultFile='assigned-helper-fault.mjs';
 const faultSource=`import './${Object.keys(build.files).find(n=>n.endsWith('.worker.mjs'))}';\naddEventListener('message',event=>{if(event.data.kind==='job')queueMicrotask(()=>{throw Error('intentional assigned-helper failure');});});\n`;
@@ -812,6 +814,7 @@ function checkAuthenticResult(m,sent,fn,owner){
 }
 // A genuinely emitted different allowlist produces a different content-bound
 // helper build. Route that unchanged static asset to the original coordinator.
+if(!metadataOnly){
 const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
 assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
 assert.notEqual(otherBuild.manifest.program,build.manifest.program);
@@ -862,9 +865,51 @@ for(const policy of ['strict','permissive']){
  }finally{retire(s,h);}
 }
 results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
+}
+if(!startupOnly){
+// Computation and correlation stay genuine. Change only untrusted body timing
+// after a successful zero-duration control on the same physical helper.
+const timingControls=[];
+for(const [label,invalid,representation]of [['negative-duration',-1,'-1'],['nonfinite-duration',NaN,'NaN']]){
+ const jobs=[],h=harness({hold:true,observeJob:m=>{if(m.kind==='job')jobs.push(m);}}),s=api.createSession({workers:1,transport:'clone',trace:true,workerFactory:h.factory});
+ function authentic(packet,owner,expected){
+  const m=packet.event.data,job=jobs.find(j=>j.invocation===owner.id);assert.ok(job);assert.equal(m.kind,'result');assert.equal(m.value,expected);
+  for(const k of ['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'])assert.equal(m[k],job[k],k);
+  assert.ok(Number.isFinite(m.bodyMs)&&m.bodyMs>=0);return m;
+ }
+ function save(name,m){const bytes=JSON.stringify(m,null,2)+'\n';assert.ok(Buffer.byteLength(bytes)<65536);fs.writeFileSync(path.join(output,name),bytes,{flag:'wx'});replyArtifacts[name]=sha(bytes);return {path:name,sha256:sha(bytes)};}
+ try{
+  const valid=s.submit('remote_island',[18]);valid.promise.catch(()=>{});await until(()=>h.held.length===1);
+  const first=h.drainHeld()[0],original=authentic(first,valid,19),positiveEnvelope=save(label+'-positive-original.json',original),positiveSHA=sha(JSON.stringify(original));
+  const zero={...original,bodyMs:0};assert.deepEqual({...zero,bodyMs:original.bodyMs},original);
+  first.listener({data:zero});assert.equal(await valid.promise,19);
+  const positive=s.stats(),positiveTrace=s.trace().filter(e=>e.invocation===valid.id);
+  assert.equal(positive.remoteJobs,1);assert.equal(positive.requiredWitnesses,1);assert.equal(positive.completed,1);assert.equal(positive.workerBodyMs,0);assert.equal(positive.closed,false);assert.equal(h.created,1);
+  for(const k of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(positive[k],0,k);
+  assert.equal(positiveTrace.filter(e=>e.kind==='result').length,1);assert.equal(positiveTrace.filter(e=>e.kind==='witness').length,1);assert.equal(sha(JSON.stringify(original)),positiveSHA);
+  const owner=s.submit('remote_island',[28]);owner.promise.catch(()=>{});await until(()=>h.held.length===1);
+  const packet=h.drainHeld()[0],m=authentic(packet,owner,29),negativeEnvelope=save(label+'-negative-original.json',m),envelopeSHA=sha(JSON.stringify(m));
+  const changed={...m,bodyMs:invalid};assert.deepEqual(Object.keys(m).filter(k=>!Object.is(m[k],changed[k])),['bodyMs']);assert.deepEqual({...changed,bodyMs:m.bodyMs},m);
+  const before=s.stats();assert.equal(before.activeInvocations,1);assert.equal(before.inFlight,1);assert.equal(before.remoteJobs,2);
+  packet.listener({data:changed});let rejection;await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='protocol'&&e.message.includes('invalid timing');});
+  const automatic=s.stats(),trace=s.trace(),ownerTrace=trace.filter(e=>e.invocation===owner.id);
+  assert.equal(automatic.closed,true);assert.equal(automatic.unavailable,false);assert.equal(automatic.remoteJobs,2);assert.equal(automatic.localCalls,0);
+  for(const k of ['workerBodyMs','roundTripMs','movementSamples','requiredWitnesses','completed'])assert.equal(automatic[k],before[k],k+' unchanged after invalid timing');
+  for(const k of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[k],0,k);
+  assert.ok(!ownerTrace.some(e=>e.kind==='result'||e.kind==='witness'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+  packet.listener(packet.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);assert.equal(sha(JSON.stringify(m)),envelopeSHA);
+  await assert.rejects(s.call('remote_island',[40]),e=>e.code==='closed');
+  timingControls.push({label,positiveControl:{invocation:valid.id,expected:19,deliveredBodyMs:0,originalEnvelope:positiveEnvelope,stats:positive,trace:positiveTrace},invocation:owner.id,computedValueBeforeCorruption:29,originalEnvelope:negativeEnvelope,changedFields:['bodyMs'],invalidTiming:{type:'number',representation},before,rejection,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace:ownerTrace,timingCountersUnchanged:true,samePhysicalHelper:true,delayedOriginalReplyInert:true,closedSubmissionRejected:true,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'authentic-result-timing-metadata',transport:'shared-result-before-publication',executedTransport:'clone',controls:timingControls,scope:'Finite zero-duration acceptance then negative/nonfinite body timing rejection on the same actual helper, with genuine computed values and correlated envelopes. NaN is recorded as an explicit number representation, never silently serialized as null. No general timing, adaptive-profitability, performance or resource acceptance.'});
+}
 assert.equal(networkCalls,0);
 const receipt={schema:'rift-worker-policy-semantics/2',passed:true,runSelection:startupOnly?'startup-boundaries-only':'full-runtime',compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts,controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:startupOnly?'Fresh checked/emitted current98 Worker source and real Windows startup build/stale/duplicate handshake boundaries only. Prior39 cases excluded, not rerun or relabeled. No current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.':'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal, non-Nat wire and startup semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
-const receiptText=JSON.stringify(receipt,null,2)+'\n';if(startupOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'startup receipt bound');
+receipt.runSelection=metadataOnly?'reply-metadata-only':receipt.runSelection;
+if(metadataOnly)receipt.scope='Fresh checked/emitted current98 Worker source and real Windows reply timing metadata controls only. Prior39 and startup2 excluded. No current99 CLI proof, full107 parity, browser/native/kernel/device/performance/adoption acceptance.';
+const receiptText=JSON.stringify(receipt,null,2)+'\n';if(focusedOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'focused receipt bound');
 fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }
