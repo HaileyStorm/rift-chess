@@ -535,10 +535,51 @@ or adoption acceptance. Existing shared-fatal and clone controls remain retained
 no duplicate transport family or separate runner was added.
 No compiler, runtime, fixture, frozen input or production parallelism changed.
 
-This finite witness covers malformed startup kind and automatic fatal cleanup.
-Wrong-build assets, duplicate/stale handshakes, transport failure, timing metadata,
-general protocol correctness and browser/native-C/device/adoption acceptance
-remain separate.
+The malformed-kind witness retains its original startup scope. The focused
+qualification below adds real wrong-build assets and authentic stale/duplicate
+readiness. Transport failure, timing metadata, general protocol correctness and
+browser/native-C/device/adoption acceptance remain separate.
+
+## Focused Worker startup boundaries
+
+The canonical matrix accepts `--startup-boundaries` after the output directory.
+This selects only two new groups; the earlier39-family run retains its original
+receipt and source identity. No fresh aggregate41-family run is claimed.
+
+One group emits an unchanged five-file static asset set for a different export
+allowlist and points real module Workers at its Worker entrypoint. Each actual
+helper receives the original coordinator's hello and reports its own different
+program identity. Both pending roots reject `worker protocol/build mismatch`.
+The other group holds genuine ready replies, changes only the epoch in one copy,
+and verifies that the stale message changes only ignored-reply accounting. The
+first unchanged current ready is accepted while the second helper remains held;
+redelivering that first ready rejects both roots with `duplicate handshake`.
+Delayed original readies leave retired stats and trace unchanged.
+
+Both groups pass under strict and permissive policy before any remote dispatch.
+All eight created helpers retire automatically, all listeners and retained
+accounting clear, and no local fallback, result or required witness is published.
+Closed sessions reject further submission. These shared startup boundaries run
+once with clone delivery; repeating them with packed results adds no distinct
+wire-decoding evidence.
+
+`worker-startup-runtime-r1/receipt.json`, SHA256
+`8f0044b42fbdc7b3b60c3ae614a1c2e1d5a8e499c2edc25069b6cf60116da41f`,
+records two groups/four policy controls and zero intercepted network calls on
+actual Windows Bun1.4.2 Workers. Native
+`worker-startup-supervisor-r1/terminal.json`, SHA256
+`eef4e937570fecfc3dba8405ec12fce699a2ea63f5e308ab5fd5ec43a1c60a9d`,
+records333 unchanged source fences, original exit0, Job membership, drained
+streams, original handle closure and self-only Job closure. Paths are relative
+to the stationary-motion artifact directory above. The98-file candidate and
+existing fixture are unchanged. Each emitted asset set is bounded to4MiB and
+the focused receipt to1MiB before writing; the10MiB plan produced545844 bytes
+across runtime and native evidence directories.
+
+This closes these finite asset/handshake contracts only. It establishes no
+general timing, transport, heap/performance, browser, native application,
+current99 CLI proof, kernel, device or adoption acceptance. Production
+parallelism, accepted compiler pin and frozen inputs remain unchanged.
 
 ## Ordinary upstream compiler differential
 

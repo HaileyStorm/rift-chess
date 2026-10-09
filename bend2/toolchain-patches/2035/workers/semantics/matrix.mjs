@@ -10,8 +10,9 @@ let networkCalls=0;
 globalThis.fetch=async()=>{networkCalls++;throw Error('no network in Worker semantics');};
 const output=path.resolve(root,process.argv[2]);
 const compilerOnly=process.argv[3]==='--compiler-only';
+const startupOnly=process.argv[3]==='--startup-boundaries';
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
-assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):3));
+assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):startupOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
 assert.equal(fs.realpathSync(path.dirname(output)),path.dirname(output));
 fs.mkdirSync(output); // Exclusive run identity; no overwrite or replay.
@@ -36,8 +37,9 @@ const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
 const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote','schema_pair_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
+if(startupOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'startup emitted asset bound');
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
-const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
+const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[],runtimeArtifacts={},replyArtifacts={};
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
 async function until(predicate){const end=performance.now()+5000;while(!predicate()){assert.ok(performance.now()<end,'authentic replies not observed');await new Promise(r=>setTimeout(r,1));}}
 // Instrument actual Workers without replacing their computation or handshake.
@@ -63,10 +65,12 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null,obser
  };return h;
 }
 function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
+if(!startupOnly){
 const tag=k=>bend.name_key(book.ctrs[k].k),tip=value=>({$:tag('../fixture-tree:Tip'),value}),branch=(left,right)=>({$:tag('../fixture-tree:Branch'),left,right});
 const faultFile='assigned-helper-fault.mjs';
 const faultSource=`import './${Object.keys(build.files).find(n=>n.endsWith('.worker.mjs'))}';\naddEventListener('message',event=>{if(event.data.kind==='job')queueMicrotask(()=>{throw Error('intentional assigned-helper failure');});});\n`;
 fs.writeFileSync(path.join(output,faultFile),faultSource,{flag:'wx'});
+runtimeArtifacts[faultFile]=sha(faultSource);
 for(const transport of ['clone','packed']){
  const s=api.createSession({workers:3,transport,trace:true});
  try{
@@ -527,7 +531,6 @@ function checkTreeReply(m,invocation){
  for(const [at,value]of [[8,1],[17,1],[34,0]])assert.equal(v.getUint8(at),value,'packed tree flag '+at);
  assert.equal(v.getBigUint64(26,true),4n);
 }
-const replyArtifacts={};
 function saveReply(name,packet){
  const bytes=new Uint8Array(packet);fs.writeFileSync(path.join(output,name),bytes,{flag:'wx'});
  const hash=sha(bytes);replyArtifacts[name]=hash;return {file:name,sha256:hash,bytes:bytes.length};
@@ -806,9 +809,63 @@ function checkAuthenticResult(m,sent,fn,owner){
   results.push({case:'assigned-job-timeout',transport:'shared-lifecycle-before-decode',executedTransport:'clone',taskTimeoutMs,positiveControl:{expected:19,stats:positive},invocation:owner.id,authenticEnvelopeSHA256:envelopeSHA256,identity:Object.fromEntries(['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'].map(k=>[k,m[k]])),before,rejectionCode,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace:ownerTrace,unchangedAuthenticResult:true,delayedOriginalReplyInert:true,closedSubmissionRejected:true,postClose:retire(s,h),scope:'Timer-triggered rejection while authentic completed helper reply is withheld; same-helper positive control. No exact latency, nonterminating-body, hard execution-time, heap or general resource guarantee.'});
  }finally{retire(s,h);}
 }
+}
+// A genuinely emitted different allowlist produces a different content-bound
+// helper build. Route that unchanged static asset to the original coordinator.
+const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
+assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
+assert.notEqual(otherBuild.manifest.program,build.manifest.program);
+const otherDirectory=path.join(output,'wrong-build');fs.mkdirSync(otherDirectory);
+for(const [name,bytes]of Object.entries(otherBuild.files)){fs.writeFileSync(path.join(otherDirectory,name),bytes,{flag:'wx'});runtimeArtifacts['wrong-build/'+name]=sha(bytes);}
+const otherWorker=Object.keys(otherBuild.files).filter(n=>n.endsWith('.worker.mjs'));assert.equal(otherWorker.length,1);
+const wrongBuildControls=[];
+for(const policy of ['strict','permissive']){
+ const received=[],hello=[],h=harness({workerURL:pathToFileURL(path.join(otherDirectory,otherWorker[0])),observe:m=>received.push(m),observeJob:m=>hello.push(m)});
+ const s=api.createSession({workers:2,transport:'clone',trace:true,policy,workerFactory:h.factory});
+ try{
+  const first=s.submit('remote_island',[18]),sibling=s.submit('remote_island',[30]);first.promise.catch(()=>{});sibling.promise.catch(()=>{});
+  const settled=await Promise.allSettled([first.promise,sibling.promise]);
+  const rejections=settled.map((r,i)=>{assert.equal(r.status,'rejected');assert.equal(r.reason.code,'protocol');assert.match(r.reason.message,/worker protocol\/build mismatch/);return {invocation:[first.id,sibling.id][i],code:r.reason.code,message:r.reason.message};});
+  assert.ok(received.length>0);assert.ok(received.every(m=>m.kind==='fatal'&&m.program===otherBuild.manifest.program));
+  assert.equal(hello.length,2);assert.ok(hello.every(m=>m.kind==='hello'&&m.program===build.manifest.program));
+  const automatic=s.stats(),trace=s.trace();assert.equal(automatic.closed,true);assert.equal(automatic.unavailable,false);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes','remoteJobs','localCalls','requiredWitnesses'])assert.equal(automatic[key],0,key);
+  assert.equal(h.created,2);assert.equal(h.terminated,2);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+  assert.ok(!trace.some(e=>['dispatch','result','witness'].includes(e.kind)));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  await assert.rejects(s.call('remote_island',[40]),e=>e.code==='closed');
+  wrongBuildControls.push({policy,expectedProgram:build.manifest.program,actualWorkerProgram:otherBuild.manifest.program,unchangedStaticAsset:true,hello,received,rejections,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,closedSubmissionRejected:true,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'actual-wrong-build-worker-asset',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:wrongBuildControls,otherBuild:{program:otherBuild.manifest.program,entry:otherBuild.entry,files:Object.keys(otherBuild.files).map(n=>'wrong-build/'+n)},scope:'Real unchanged helper from a separately emitted allowlist rejects both awaiting roots under strict and permissive policy before dispatch or fallback. No altered envelope or missing asset substitution.'});
+const readyIdentityControls=[];
+for(const policy of ['strict','permissive']){
+ const h=harness({holdReady:true}),s=api.createSession({workers:2,transport:'clone',trace:true,policy,workerFactory:h.factory});
+ try{
+  const first=s.submit('remote_island',[18]);first.promise.catch(()=>{});await until(()=>h.readyHeld.length===2);
+  const sibling=s.submit('remote_island',[30]);sibling.promise.catch(()=>{});await until(()=>s.stats().activeInvocations===2);
+  const packets=h.releaseReady(),originals=packets.map(p=>JSON.stringify(p.event.data)),authentic=packets[0].event.data;
+  assert.ok(packets.every(p=>p.event.data.kind==='ready'&&p.event.data.program===build.manifest.program));
+  const before=s.stats(),stale={...authentic,epoch:authentic.epoch-1};assert.deepEqual({...stale,epoch:authentic.epoch},authentic);
+  packets[0].listener({data:stale});const afterStale=s.stats();assert.deepEqual(afterStale,{...before,ignoredReplies:before.ignoredReplies+1});assert.equal(afterStale.closed,false);
+  packets[0].listener(packets[0].event);const afterFirstReady=s.stats();assert.equal(afterFirstReady.activeInvocations,2);assert.equal(afterFirstReady.remoteJobs,0);assert.equal(afterFirstReady.closed,false);
+  // The second helper is still held: the shared warmup cannot dispatch a job.
+  packets[0].listener(packets[0].event);
+  const settled=await Promise.allSettled([first.promise,sibling.promise]);
+  const rejections=settled.map((r,i)=>{assert.equal(r.status,'rejected');assert.equal(r.reason.code,'protocol');assert.match(r.reason.message,/duplicate handshake/);return {invocation:[first.id,sibling.id][i],code:r.reason.code,message:r.reason.message};});
+  const automatic=s.stats(),trace=s.trace();assert.equal(automatic.closed,true);assert.equal(automatic.unavailable,false);
+  for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes','remoteJobs','localCalls','requiredWitnesses'])assert.equal(automatic[key],0,key);
+  assert.equal(h.created,2);assert.equal(h.terminated,2);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+  assert.ok(!trace.some(e=>['dispatch','result','witness'].includes(e.kind)));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+  for(const p of packets)p.listener(p.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);assert.deepEqual(packets.map(p=>JSON.stringify(p.event.data)),originals);
+  await assert.rejects(s.call('remote_island',[40]),e=>e.code==='closed');
+  readyIdentityControls.push({policy,authentic,stale,changedStaleFields:['epoch'],before,afterStale,afterFirstReady,rejections,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},trace,unchangedAuthenticReplies:true,delayedOriginalReadiesInert:true,closedSubmissionRejected:true,postClose:retire(s,h)});
+ }finally{retire(s,h);}
+}
+results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
 assert.equal(networkCalls,0);
-const receipt={schema:'rift-worker-policy-semantics/2',passed:true,compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts:{[faultFile]:sha(faultSource)},controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal and non-Nat wire semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
-fs.writeFileSync(path.join(output,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+const receipt={schema:'rift-worker-policy-semantics/2',passed:true,runSelection:startupOnly?'startup-boundaries-only':'full-runtime',compiler:binding.hashes,compilerLineage:binding.lineage??null,fixture:{path:path.relative(root,fixture).split(path.sep).join('/'),sha256:sha(fs.readFileSync(fixture))},importedFixtureSha256:sha(fs.readFileSync(path.join(root,'bend2/toolchain-patches/2035/workers/fixture-tree.bend'))),runnerSha256:sha(fs.readFileSync(fileURLToPath(import.meta.url))),engine:{bun:process.versions.bun,executableSha256:sha(fs.readFileSync(process.execPath))},program:build.manifest.program,files:Object.fromEntries(Object.entries(build.files).map(([n,b])=>[n,sha(b)])),runtimeArtifacts,controlledReplyArtifacts:replyArtifacts,networkCalls,results,scope:startupOnly?'Fresh checked/emitted current98 Worker source and real Windows startup build/stale/duplicate handshake boundaries only. Prior39 cases excluded, not rerun or relabeled. No current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.':'Fresh checked/emitted candidate source and real Windows module-Worker policy/reply, submission snapshot, disposal/fatal, non-Nat wire and startup semantics only. Intentional fault and reply corruption are controlled negative witnesses. No full107 parity, browser/native/kernel/device/adoption acceptance.'};
+const receiptText=JSON.stringify(receipt,null,2)+'\n';if(startupOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'startup receipt bound');
+fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }
 } catch(error) {
