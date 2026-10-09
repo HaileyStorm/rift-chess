@@ -58,10 +58,52 @@ under `.artifacts/bend2/2035-preview/stationary-motion-20261006/`.
 Diagnostic dispatch must use the local wrapper with telemetry disabled, denied
 source-network fetches, exact source/argv/output bindings and original process
 settlement. Only the reviewed local check and Worker emission/HTML commands are
-in scope. Copied installer, login, publishing, package, native build/run and kernel
+in scope, together with the two stdout-only IO fixtures qualified below. Copied
+installer, login, publishing, package, native build/run and kernel
 commands remain unadmitted. This candidate does not move the toolchain pin or
 prove native, kernel, device, GPU, performance or adoption acceptance.
 
 The unexecuted R1 source tree and initial materialization failure remain private
 review provenance. R2 carries the repaired publication helper and removes the
 obsolete Base rewrite; it uses a new derived path and never overwrites R1.
+
+## Original stdout-only IO
+
+Two unchanged upstream fixtures at commit
+`79df8d9c40722ee9507a1e253f283b51025f9d6c` now execute through both the current
+99-file CLI's `io_run` path under Bun1.4.2 and its unmodified `js_book` output
+under Node. `tests/compile/closure_cps.bend` prints exactly `55\n`, exercising
+capturing CPS closures. `tests/import/respelled_first.bend` prints exactly
+`14\n`, loading one module through two original path spellings. Their original
+`#|` expectations are independent stdout oracles; all four fixture/dependency
+files match their committed blobs and preserve their original paths.
+
+Before either execution route, an emission-only unit checks the loaded source
+closure, a filled nullary IO main, zero holes and the exact emitted foreign
+initializer. Only canonical `effs/print.js` is admitted, with its two constructor
+ID relocations. Additional foreign initializers are rejected. The qualified
+local wrapper and its retained legacy preload remain in use; this does not
+establish pristine unwrapped CLI execution.
+
+All four runtime records match exact stdout bytes, empty stderr and exit0.
+Fetch-denial counters record zero calls with telemetry disabled. Five original
+Popen units, including emission/admission, close their streams and handles;
+the zero-limit Windows Job returns to self-only and closes. All126 source/runtime
+fences and both emitted-script hashes remain unchanged. The run adds no compiler
+copy and does not repeat the pure interpreter or generated-JS campaigns.
+
+The private disposition `upstream-print-io-disposition-r1.json` has SHA256
+`947bbc8fe12b3df927b04c0ad1f58f597d7cf7ae7dfb35f10b05e4ee8ea5f509`.
+Its original terminal `upstream-print-io-supervisor-r1/terminal.json` has SHA256
+`b888848564b5ff95ac034708bc11e8f7d9ad88b8d71a87da462565ea77aa78b1`;
+the emission/admission receipt has SHA256
+`5a80e9ca6f80e2dfb2c9e989cca12449ef901a138267f82d32e8a26d9d65e75c`.
+These files remain under the private artifact directory named above. A budget
+helper timeout and an inherited-manifest preparation mistake occurred before IO
+dispatch; their original failures are retained, and the completed budget/census
+were reused after repair.
+
+This covers two print-only IO fixtures through two execution routes. It does
+not establish general IO/FFI, network isolation, file/process/device effects,
+native CPU, kernel, GPU, performance or reviewed adoption. Those requirements
+remain open, and the accepted pristine2.0.27 pin is unchanged.

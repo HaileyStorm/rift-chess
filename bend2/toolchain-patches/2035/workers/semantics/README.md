@@ -624,9 +624,10 @@ The independent original-expectation and current-hash readback disposition,
 
 This closes only the admitted pure interpreter lane. The generated-JS subset
 below adds main/display coverage. The [current CLI qualification](../cli/README.md)
-adds eleven original negative verdict oracles. IO/foreign execution, remaining
-original upstream groups, native/C, kernel, device, GPU and reviewed adoption
-requirements remain open.
+adds eleven original negative verdict oracles and a separate two-fixture
+stdout-only IO qualification through current CLI `io_run` and generated
+`js_book`. Broader IO/foreign execution, remaining original upstream groups,
+native/C, kernel, device, GPU and reviewed adoption requirements remain open.
 The accepted pristine2.0.27 pin is unchanged. Do not repeat this unchanged lane
 after fixture-only Worker or documentation edits.
 
