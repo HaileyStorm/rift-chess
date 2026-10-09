@@ -67,6 +67,53 @@ The unexecuted R1 source tree and initial materialization failure remain private
 review provenance. R2 carries the repaired publication helper and removes the
 obsolete Base rewrite; it uses a new derived path and never overwrites R1.
 
+## Private wrapper option candidate
+
+`wrapper-candidate.mjs` authenticates the frozen local wrapper at SHA256
+`74971c35a350a1e107fd96723c44c25e1ecb7f3da747e447e66de8085788ca30`.
+It constructs an exclusive private wrapper with two reversible replacements:
+the relocated file's root traversal and argument normalization. Split `-o`
+operands normalize first; option tokens and split `--web-library` values retain
+their bytes, then other positional `.bend`/`.html` paths normalize as before.
+The map applies before `isRun`. Pin/runtime guards, `--run` dispatch, preload,
+script-path handling, timeout, environment and exit behavior remain unchanged.
+The original wrapper is preserved byte-for-byte, and occupied targets refuse
+materialization. No `-o=` or `--output=` support is added.
+
+The materialized candidate has SHA256
+`d691f384bca08ada7fa8dc7d233d00e6b253345a2af6e3be11a5c4faf9cbd327`.
+Three actual Windows emissions use the same retained HTML page and the unchanged
+99-file CLI resource tree: an absolute equals-form library, a page-relative
+equals form, and a page-relative split form. Invocation cwd differs from the
+page directory. The library path is resolved by the CLI against that page;
+the same relative path does not exist against invocation cwd.
+
+Original child argv records preserve each library value, normalize the page
+and output paths, and retain the existing exact authenticated current-main
+preload replacement. All three published packages contain identical five
+Worker files and program identity
+`763cead9417a9591c7217eb365f31b10d40e21b4e17f6567bf8c2410401c6edc`,
+matching the independently bound, fully closed portable-emission prefix.
+Each package totals79253 bytes. Source-network denial records zero fetch calls;
+the three original Popen units observe exit0, EOF, membership and handle closure.
+All133 source fences match before/after; the Job reaches self-only and closes.
+
+Private `worker-cli-wrapper-supervisor-r1/terminal.json`, SHA256
+`d488db1ab18ffe5241b412d5dba0d16eb08812d6fe10e56419150b611654b90f`,
+records338081 bytes of native/package evidence against a6MiB plan. It is under
+the stationary-motion artifact directory above. This adds finite guarded
+`--run` HTML-option evidence, without repeating the browser, broad compiler,
+proof or native-application gates. General wrapper compatibility remains open.
+
+The candidate remains unadopted. Canonical wrapper replacement requires both
+the chained tooling amendment and a reviewed successor for prepared-v3's nested
+emission binding. The existing amendment mechanism resolves semantic-v2's
+wrapper hash but does not resolve that separate prepared binding. Preserve
+both frozen manifests and their verifier; neither a hash refresh nor bypassing
+the comparison establishes acceptance. The canonical wrapper, frozen
+configuration and accepted2.0.27 pin remain unchanged. The earlier equals-form
+failure and absolute split-form receipts remain their original evidence.
+
 ## Original stdout-only IO
 
 Two unchanged upstream fixtures at commit
