@@ -143,3 +143,12 @@ def repeat_value(s: String, n: Nat) -> String:
 
 def repeat_remote(s: String, n: Nat) -> String:
   repeat_value@(s, n)
+
+type SchemaPair is Data:
+  SchemaPair{tree: Trees.Tree, pair: ResumePair}
+
+def schema_pair_value() -> SchemaPair:
+  SchemaPair{Trees.Tip{4n}, ResumePair{19, 61}}
+
+def schema_pair_remote() -> SchemaPair:
+  schema_pair_value@()

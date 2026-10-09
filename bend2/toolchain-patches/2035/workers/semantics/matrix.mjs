@@ -34,7 +34,7 @@ if(compilerOnly){
 }else{
 const fixture=fileURLToPath(new URL('./policies.bend',import.meta.url));
 const book=bend.book_nil();await bend.book_load(book,fixture,'',new Map());bend.book_valid(book,0);
-const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote'];
+const exports=['plain','never_root','restored','argument_scope','both_required','remote_island','nested_require','conflict','conflict_remote','conditional_never','snapshot','float_remote','text_remote','quad4','nested_caps','resume_fields','resume_match','resume_closure','resume_tail','resume_non_tail','resume_erased','tree_remote','divide_remote','char_remote','repeat_remote','schema_pair_remote'];
 const build=comp.js_worker_lib(book,exports,{mode:'required-only',policy:'strict'});
 for(const [file,bytes]of Object.entries(build.files))fs.writeFileSync(path.join(output,file),bytes,{flag:'wx'});
 const api=await import(pathToFileURL(path.join(output,build.entry)).href),results=[];
@@ -575,6 +575,57 @@ for(const [label,message,mutate]of [
  }finally{retire(s,h);}
 }
 results.push({case:'packed-framing-reference-replies',transport:'packed',rejections:framingRejections,scope:'Five distinct corruptions of authentic structured helper replies. Positive completed backward alias retained. No general packed-format, incompatible-schema alias, deep traversal or output-range claim.'});
+// A completed object index is valid only under its original ADT schema.
+{
+ const fn=build.manifest.functions.find(f=>f.name==='schema_pair_value');assert.ok(fn);assert.equal(fn.eligible,true);assert.deepEqual(fn.inputs,[]);
+ const outer=build.manifest.schemas[fn.output];assert.equal(outer.kind,'adt');
+ const outerOrdinal=outer.arms.findIndex(a=>a.tag===tag('SchemaPair'));assert.ok(outerOrdinal>=0);
+ const arm=outer.arms[outerOrdinal];assert.deepEqual(arm.fields.map(f=>f.name),['tree','pair']);
+ const treeId=arm.fields[0].schema,pairId=arm.fields[1].schema;assert.equal(treeId,treeFunction.output);assert.notEqual(treeId,pairId);
+ const pairSchema=build.manifest.schemas[pairId];assert.equal(pairSchema.kind,'adt');
+ const pairOrdinal=pairSchema.arms.findIndex(a=>a.tag===tag('ResumePair'));assert.ok(pairOrdinal>=0);
+ assert.deepEqual(pairSchema.arms[pairOrdinal].fields.map(f=>f.name),['left','right']);
+ for(const f of pairSchema.arms[pairOrdinal].fields)assert.equal(build.manifest.schemas[f.schema].kind,'u32');
+ function checkAliasPacket(packet){
+  assert.ok(packet instanceof ArrayBuffer);assert.equal(packet.byteLength,51);const v=new DataView(packet);
+  for(const [at,value]of [[0,0x32574442],[4,1],[9,0],[13,outerOrdinal],[18,1],[22,tipOrdinal],[35,2],[39,pairOrdinal],[43,19],[47,61]])assert.equal(v.getUint32(at,true),value,'schema-pair offset '+at);
+  for(const at of [8,17,34])assert.equal(v.getUint8(at),1);
+  assert.equal(v.getBigUint64(26,true),4n);assert.equal(47+4,packet.byteLength,'complete original consumption');
+ }
+ const controls=[];
+ for(const negative of [false,true]){
+  const sent=[],h=harness({hold:true,observeJob:m=>{if(m.kind==='job')sent.push(m);}}),s=api.createSession({workers:1,transport:'packed',trace:true,workerFactory:h.factory});
+  try{
+   const owner=s.submit('schema_pair_remote',[]);owner.promise.catch(()=>{});await until(()=>h.held.length===1);
+   const first=h.drainHeld()[0],m=first.event.data;assert.equal(sent.length,1);assert.equal(m.kind,'result');
+   assert.equal(m.invocation,owner.id);assert.equal(m.functionId,fn.id);assert.equal(m.schemaId,fn.id);assert.equal(m.program,build.manifest.program);
+   const keys=['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'];for(const key of keys)assert.equal(m[key],sent[0][key],key);
+   checkAliasPacket(m.packet);const label=negative?'negative':'positive',original=saveReply('packed-schema-alias-'+label+'-original.bin',m.packet),before=s.stats();
+   assert.equal(before.activeInvocations,1);assert.equal(before.remoteJobs,1);assert.equal(before.requiredWitnesses,0);assert.equal(before.localCalls,0);
+   if(!negative){
+    first.listener(first.event);const actual=await owner.promise;assert.deepEqual(actual,{$:tag('SchemaPair'),tree:tip(4n),pair:{$:tag('ResumePair'),left:19,right:61}});
+    noSchedulerValues(actual);noPendingWork(s);const trace=s.trace();
+    for(const kind of ['dispatch','result','witness'])assert.equal(trace.filter(e=>e.kind===kind&&e.invocation===owner.id).length,1);
+    controls.push({label,original,expectedLeaf:'4',expectedPair:[19,61],invocation:owner.id,stats:s.stats(),trace,postClose:retire(s,h)});
+   }else{
+    // Replace complete final record17 with reference5 to completed Tip1.
+    const packet=m.packet.slice(0,39),v=new DataView(packet);v.setUint8(34,0);v.setUint32(35,1,true);
+    assert.equal(packet.byteLength,39);assert.equal(34+1+4,packet.byteLength,'complete repaired consumption');
+    assert.ok(Buffer.from(packet,0,34).equals(Buffer.from(m.packet,0,34)));assert.equal(v.getUint8(34),0);assert.equal(v.getUint32(35,true),1);
+    const corrupted=saveReply('packed-schema-alias-corrupt.bin',packet);assert.notEqual(original.sha256,corrupted.sha256);
+    const changed={...m,packet};assert.deepEqual(Object.keys(m).filter(k=>!Object.is(m[k],changed[k])),['packet']);
+    first.listener({data:changed});let rejection;await assert.rejects(owner.promise,e=>{rejection={code:e.code,message:e.message};return e.code==='protocol'&&e.message.includes('invalid packed graph reference');});
+    const automatic=s.stats(),trace=s.trace();assert.equal(automatic.closed,true);assert.equal(automatic.remoteJobs,1);assert.equal(automatic.localCalls,0);assert.equal(automatic.requiredWitnesses,0);
+    for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(automatic[key],0,key);
+    assert.ok(!trace.some(e=>e.kind==='result'||e.kind==='witness'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+    assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);
+    first.listener(first.event);assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);const postClose=retire(s,h);assert.deepEqual(s.stats(),automatic);
+    controls.push({label,original,corrupted,changedFields:['packet'],invocation:owner.id,identity:Object.fromEntries(keys.map(k=>[k,m[k]])),treeSchemaId:treeId,pairSchemaId:pairId,targetObjectIndex:1,targetCompletedBeforeReference:true,before,rejection,trace,automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size},delayedOriginalReplyInert:true,postClose});
+   }
+  }finally{retire(s,h);}
+ }
+ results.push({case:'packed-incompatible-schema-alias',transport:'packed',controls,scope:'Authentic heterogeneous ADT positive and fresh-session completed backward reference under a distinct expected schema. Payload-only corruption; no clone repetition or general codec proof.'});
+}
 // Nonfinite values are computed from finite inputs in the real helper, before transport packing.
 {
  const errors=[],sentJobs=[],h=harness({observe:m=>{if(m.kind==='error')errors.push(m);},observeJob:m=>{if(m.kind==='job')sentJobs.push(m);}}),s=api.createSession({workers:1,transport:'clone',trace:true,workerFactory:h.factory});

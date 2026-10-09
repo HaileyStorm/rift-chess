@@ -497,6 +497,42 @@ input hashes. The runner's Bun selection and actual executable hash are bound.
 Compiler lineage, fixture and all emitted files match the previous37-record
 run. Two pre-execution review findings were repaired before the single run:
 the closed-submission failed-counter expectation and an inherited Bun override.
+
+## Completed packed reference under an incompatible schema
+
+One packed control distinguishes schema compatibility from the retained dangling
+and active-reference controls. A real required helper returns a heterogeneous
+`SchemaPair`: `Tip{4n}` and `ResumePair{19,61}`. The positive reply returns that
+complete value and publishes one required witness. A fresh session holds the
+same authentic 51-byte reply. Its manifest assigns the Tree and ResumePair
+different schemas (2 and 6); the packet records completed Tip object1 before the
+final ResumePair record.
+
+The negative preserves the first34 bytes and every envelope field. It replaces
+the final17-byte record with a5-byte reference to completed object1, producing a
+complete39-byte packet. Both constructor layouts, ordinals, values and exact
+consumption are checked against the actual manifest and original bytes. The
+coordinator rejects with `protocol` / `invalid packed graph reference`, retires
+the helper and listeners, and clears pending accounting before explicit close.
+No result, required witness or local fallback is published. Delivering the
+unchanged original afterward leaves stats and trace unchanged.
+
+Fresh `worker-schema-alias-runtime-r2/receipt.json`, SHA256
+`5304acf3b1df2429f277810597754f411b6341b2b35ac766e197ef62d33b7da1`,
+passes39 records with zero network calls on actual Windows Bun1.4.2. Native
+`worker-schema-alias-runtime-supervisor-r2/terminal.json`, SHA256
+`7467fe2d3378e9d035e8ab2a714cbf3539540684e42bb72201b598f36f4c844e`,
+binds344 unchanged inputs, original exit0, Job membership, bounded drained
+streams, original handle closure and self-only Job closure. Paths are relative
+to the stationary-motion artifact directory above. Original and altered binary
+packets are retained and hashed. The fixture and export addition require fresh
+emitted program identity; compiler and runtime bytes remain unchanged. R1 was
+never executed; its timeout metadata was corrected in the fresh R2 preparation.
+
+This covers one completed reference under a different expected ADT schema.
+It does not establish general codec, heap/resource, browser/device, performance,
+or adoption acceptance. Existing shared-fatal and clone controls remain retained;
+no duplicate transport family or separate runner was added.
 No compiler, runtime, fixture, frozen input or production parallelism changed.
 
 This finite witness covers malformed startup kind and automatic fatal cleanup.
