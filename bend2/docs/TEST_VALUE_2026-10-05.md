@@ -90,3 +90,23 @@ fixed-host build and the candidate fixed-host build. Their114.4s and34.1s totals
 are unpaired observations, not a measured compiler speedup. The independent
 45-command accepted-build import trace also completed in29.921s. Earlier import
 and candidate volume-control timeouts remain retained failures.
+
+The standalone `browser-port-offscreen.ts` check no longer runs an unconditional
+128-frame all-white timing loop. That loop had no timing acceptance threshold;
+its transfer/error/resize failures overlapped the retained patterned cases.
+The percentile/sample helpers and timing-only Worker fields were removed too.
+The three exact-RGBA bitmap-transfer, reusable-surface resize and forced raw-buffer
+fallback cases remain, including bitmap alias checks. All capability/viewport,
+unknown-measurement and rolling-p90 assertions remain unchanged.
+
+The bounded October 9 audit found no aggregate caller for this manual command.
+This removes 64 net lines and shortens that command, without changing the selected
+full-browser run. Historical timing receipts remain readable. Production bitmap
+staging, telemetry, compiler and runtime parallelism are unchanged.
+
+Validation compared the complete retained frame, assertion, telemetry and cleanup
+blocks byte for byte and parsed the reduced TypeScript script successfully. No
+Chrome rerun or timing improvement is claimed: browser execution was deferred
+during the host capacity and reboot-readiness hold. The next actual run remains
+`node bend2/tools/bend.mjs --run bend2/tests/browser-port-offscreen.ts`; it must
+report the same three exact outcomes and pass all retained telemetry assertions.
