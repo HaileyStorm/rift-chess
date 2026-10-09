@@ -551,8 +551,9 @@ pair is not a performance comparison.
 
 This closes the admitted ordinary compiler differential, preserving the historical
 runner as provenance. The pure interpreter and generated-JS subsets below add
-original expected-result coverage. Remaining IO/FFI behavior, negative compiler-CLI
-verdicts, upstream groups, generic Worker CLI/HTML,
+original expected-result coverage. The [current CLI qualification](../cli/README.md)
+adds eleven negative verdict oracles and finite portable/static HTML/Chrome
+coverage. Remaining IO/FFI behavior, upstream groups, broader CLI compatibility,
 remote native/cluster/kernel/device/GPU gates and reviewed adoption remain open.
 Do not repeat this unchanged differential after fixture-only Worker edits.
 
@@ -586,8 +587,10 @@ The independent original-expectation and current-hash readback disposition,
 `57c7f1ac4a44cc53444279aa92984fbfbbc462d564776ce6510aa6957dbfc887`.
 
 This closes only the admitted pure interpreter lane. The generated-JS subset
-below adds main/display coverage. IO/foreign execution, negative CLI verdicts, remaining original upstream groups,
-native/C, kernel, device, GPU and reviewed adoption requirements remain open.
+below adds main/display coverage. The [current CLI qualification](../cli/README.md)
+adds eleven original negative verdict oracles. IO/foreign execution, remaining
+original upstream groups, native/C, kernel, device, GPU and reviewed adoption
+requirements remain open.
 The accepted pristine2.0.27 pin is unchanged. Do not repeat this unchanged lane
 after fixture-only Worker or documentation edits.
 
@@ -629,7 +632,9 @@ Independent source-oracle/current-hash readback is retained in
 `818ef6877743aec2b3c52764e18057f2bf9de52cf1b72ff7c4d83af256ff8bf6`.
 
 This closes only the admitted original pure generated-JS main/display lane.
-IO/FFI, negative compiler-CLI verdicts, remaining upstream groups, generic Worker
-CLI/HTML, native/C, kernel, device, GPU and reviewed adoption remain open.
+The [current CLI qualification](../cli/README.md) adds eleven original negative
+verdict oracles and finite portable/static HTML/Chrome coverage. IO/FFI, remaining
+upstream groups, broader CLI compatibility, native/C, kernel, device, GPU and
+reviewed adoption remain open.
 The accepted pristine2.0.27 pin is unchanged. Do not repeat the unchanged lane
 after fixture-only Worker or documentation edits.
