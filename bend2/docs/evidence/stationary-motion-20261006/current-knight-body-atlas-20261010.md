@@ -3,9 +3,10 @@
 The private body chart remains unselected. Its default-view comparison gives
 the ivory knight more visible shading and the navy knight blue/brass variation,
 but texture distortion and baked-feature registration remain unresolved.
-The selected-pixel reference below has passed. Broader material/view review and
-cost screening remain required before considering integration. This is a
-subjective authoring experiment.
+The selected-pixel reference below has passed. The current cost screen found
+additional generation cost; broader material/view review and a cheaper sampling
+path remain open before considering integration. This is a subjective authoring
+experiment.
 
 All 278 current face positions, normals, centers, bands, marks and ordering
 remain exact. The chart covers 216 body triangles on both row signs; 24 mane,
@@ -191,7 +192,67 @@ bytes, not an upper bound or performance result.
 The receipts use `body-atlas-reference-20261010-r3` and its supervisor prefix
 under the retained private stationary-motion directory. The collected artifact
 census was 11,719,194,826 bytes / 10.914 GiB against 12 GiB, with a 2 MiB metadata
-allowance. A current cost screen can now proceed. The candidate remains private
+allowance. At that checkpoint, a current cost screen could proceed. The candidate remains private
 and unselected. This establishes finite selected final-pixel/source
 correspondence, not observed internal winning-quarter identity, consumed UVs,
 all-view appearance, picking, browser/device performance or compiler adoption.
+
+## Current two-arm function-cost diagnostic: HOLD
+
+One private diagnostic reused the closed current prototype and scene. It
+hydrated the original Texture64 atlas once, without posing pieces or generating
+ground, a board, PNGs or another compilation. Twelve untimed calls checked
+current/disabled complete RGBA against the retained native before sprites,
+candidate RGBA against the retained after sprites, whole-mask equality and
+transparent RGB. The timed arms were canonical current `Current.texture`
+against the body-chart candidate, both with the same 278-face geometry.
+Historical 118-face and old global-chart costs were not comparison inputs.
+
+Four fixed cases covered world yaw 345 and 90, pitch 67, both sides. Eight pairs
+per case alternated AB/BA order, rotated cases cyclically and retained every
+pair, including the potentially cold first pair. Only the synchronous exported
+function invocation was timed. Full return RGBA/mask comparisons and hashing
+occurred afterward; all 64 timed returns matched their prechecks. Those
+prechecks affect JIT state, and validation allocations can affect later GC.
+
+| Case | Current median ms | Candidate median ms | Median paired delta ms | Median paired ratio |
+| --- | --- | --- | --- | --- |
+| Default ivory | 8.097 | 11.976 | +4.130 | 1.464 |
+| Default navy | 8.726 | 12.204 | +3.843 | 1.386 |
+| Positive edge ivory | 7.828 | 10.198 | +2.226 | 1.259 |
+| Positive edge navy | 6.573 | 9.133 | +2.710 | 1.405 |
+
+All four cases crossed the predeclared advisory conjunction: median paired
+delta above 2 ms and median paired ratio above 1.25. These flags do not affect
+behavioral `ok:true`. The navy edge BA subset did not cross the flag: delta
+0.813 ms, ratio 1.151. Order variation and the small finite sample prevent a
+claim of stable regression in every ordering.
+
+Computed ivory-plus-navy invocation sums had medians 16.184 to 23.658 ms at
+default and 14.587 to 19.820 ms at the positive edge. Their median paired deltas
+were +7.101 and +4.991 ms. These are arithmetic sums of separate function calls,
+not measured pose/frame calls. The browser caches posed pieces by view, so
+these generation costs apply to boot/view invalidation. The 33.3 ms whole-frame
+reference is context, not a sprite acceptance threshold.
+
+The original diagnostic exited 0 with verified membership, closed streams and
+handle, self-only Job closure and unknown false. All 349 supervisor fences
+remained identical. The driver verified 332 inputs, stdout was 94 bytes, stderr
+was empty and fetch calls were zero. The sole result was 23,420 bytes, below
+32 KiB. Observed peak Job commit was 285,081,600 bytes, not an upper bound.
+
+| Private cost evidence | SHA256 |
+| --- | --- |
+| Driver | `4ac6f07cf6a96d8c06afacf1e18bd0b553b46fe96dcbb4212942bd326622c9b7` |
+| Generation | `33ad0b0ccf8ccb3572083a0f8895813c910153740be5c7b2618d3e80f910a732` |
+| Result | `9b15898e44b54a1c7cdf679c762b175baccf372c5c141970afa7c228870daffa` |
+| Original terminal | `f528bcea7a38fd4a8fb64ec1a77f44bc9db791fdebe984ec5c680f9bfe675be6` |
+
+The receipts use `body-atlas-cost-20261010-r1` and its supervisor prefix under
+the same private directory. Root keeps the candidate on HOLD, private and
+unselected, because of the extra generation cost and unresolved material
+registration. This is a reviewed tradeoff, not automatic rejection from an
+advisory flag. A cheaper source-supported sampling path is the next opportunity;
+no unchanged timing replay is required. These finite measurements establish
+neither browser latency, cold startup, steady heap, device/native application
+behavior, all-view material quality nor compiler adoption.
