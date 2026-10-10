@@ -1,4 +1,4 @@
-// Real Chrome install/cache/offline gate for a manifest-bound v2-preview build.
+// Real Chrome install/cache/offline gate for a manifest-bound preview build.
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -14,8 +14,17 @@ assert.equal(served.status, 200);
 assert.deepEqual(Buffer.from(await served.arrayBuffer()), localBuild,
   'Served trial build differs from local bytes');
 const build = JSON.parse(localBuild.toString('utf8'));
-assert.equal(build.v2Preview, true);
-const asset = build.preparedGround.asset;
+assert.ok(['rift-bend-browser/2', 'rift-bend-browser/2035-preview-1'].includes(build.schema),
+  'Unsupported offline preview schema');
+let asset;
+if (build.schema === 'rift-bend-browser/2') {
+  assert.equal(build.v2Preview, true);
+  asset = build.preparedGround.asset;
+} else {
+  assert.equal(build.candidate, '79df8d9c40722ee9507a1e253f283b51025f9d6c');
+  assert.equal(build.adopted, false);
+  asset = build.preparedGround.assetFile;
+}
 assert.equal(build.files[asset], build.preparedGround.assetSha256);
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });

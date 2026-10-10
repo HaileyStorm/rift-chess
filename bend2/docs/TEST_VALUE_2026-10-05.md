@@ -110,3 +110,26 @@ Chrome rerun or timing improvement is claimed: browser execution was deferred
 during the host capacity and reboot-readiness hold. The next actual run remains
 `node bend2/tools/bend.mjs --run bend2/tests/browser-port-offscreen.ts`; it must
 report the same three exact outcomes and pass all retained telemetry assertions.
+
+The canonical `browser-ground-first-offline.mjs` now admits the two exact live
+preview manifest schemas. The accepted `/2` producer retains its `v2Preview`
+check and `preparedGround.asset`; `/2035-preview-1` requires the exact unadopted
+2.0.35 candidate and selects `preparedGround.assetFile`. Unknown schemas are
+rejected. This consolidates the current route into the existing browser command,
+while preserving the accepted-build compatibility route.
+
+All served-manifest equality, installed-cache byte/hash, prepared-ground-hit,
+online/offline PNG equality and offline e2–e4 assertions are unchanged. The
+historical private adapter and original result remain retained: their original
+package passed those checks, with 7,347,974 cached asset bytes and identical
+initial PNGs. The preserved canonical preimage is
+`.artifacts/bend2/2035-preview/stationary-motion-20261006/offline-gate-canonical-preimage-20261010-r1.mjs`;
+the old orchestration's literal-transformation check remains historical and must
+not be weakened or rerun as current acceptance.
+
+Validation parses the consolidated runner, checks both schema routes and rejects
+invalid schema/candidate/adoption metadata, and compares the entire retained
+browser body to both prior sources. It does not execute Chrome or prove today's
+package offline. The next applicable actual run uses the canonical command with
+`BEND_GROUND_CANDIDATE_URL` and `BEND_GROUND_CANDIDATE_DIR` set to one exact
+served package; it replaces the private adaptation for fresh executions.
