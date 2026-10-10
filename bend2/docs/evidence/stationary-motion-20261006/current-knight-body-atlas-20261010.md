@@ -57,3 +57,44 @@ geometry, atlas, selected scene/package, frozen controls and accepted compiler
 pin remain unchanged. The prior mane-only and global body UV comparisons retain
 their separate closed results and rejection; this angular chart does not revise
 those historical outcomes.
+
+## Maximum side-angle comparison
+
+The material variation also survives one maximum positive side-angle check.
+Root and an independent reviewer viewed both native sprite pairs. Face/body
+variation remains stronger than the flat baseline, while neck bands and
+eye/mouth registration remain imperfect. The candidate stays private and
+unselected. An independent sampling reference is the next check; a bounded
+cost screen is justified if that reference passes.
+
+This uses world yaw 90, pitch 67, zoom 115, with the packaged initial position,
+theme 0 and progress 16. Current `presentation_camera` maps world yaw to
+`sin(worldYaw) * 30 degrees` and caps presentation pitch at 40 degrees. Thus the
+nominal presented pose is +30/40 degrees. World yaw 165 would only produce
+about +7.76 degrees, rather than reveal the backside. The unused yaw-165
+preparation is retained under `body-atlas-opposing-20261010-r1-`. The fresh edge
+preparation also corrected the unexecuted `fenceErrors` check from `[]` to the
+actual `{}` before dispatch. No original attempt was replayed or overwritten.
+
+The edge renderer reused the closed compiled prototype listed above. It changed
+only the frame's world yaw, rendered four 64-pixel sprite PNGs and produced no
+board or ground. Both sides passed disabled/current complete RGBA equality,
+candidate complete alpha equality and unchanged public picking data before PNG
+publication. Ivory changed 443 color pixels and navy 442. Four PNGs plus the
+result total 20,833 bytes; fetch calls were zero.
+
+The original renderer exited 0 with verified membership, output EOF, closed
+handle and self-only Job closure, with unknown false. All 364 fences remained
+identical. Observed peak Job commit was 265,314,304 bytes. Private evidence prefix:
+`body-atlas-edge-20261010-r1-`.
+
+| Evidence | SHA256 |
+| --- | --- |
+| Renderer source | `947596c94d158c446d59a10bfeb9f0d4e4687bac238689d46c9634ec71543acb` |
+| Renderer result | `edd351fa70faef9a9a1f07161eea1917d1064ef39db149afea7b30e0965389a2` |
+| Original renderer terminal | `8f7a5eb312ad53cc7fed07167a3c096d8e236c5839be891badd80d0697d0cc4c` |
+
+The positive row component persists throughout the presentation yaw range;
+this check establishes no backside or arbitrary-camera appearance. It adds no
+browser, independent color correspondence, timing, device, production or
+compiler-adoption acceptance.
