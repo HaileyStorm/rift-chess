@@ -9,11 +9,54 @@ export type PreparedPickFile = {
 
 export class Ports {
   private audio: AudioContext | null = null;
+  private audioReady: Promise<AudioContext | null> | null = null;
   private pickerGeneration = 0;
   constructor(private keys: string[], private deliver: (event: unknown) => void, private maxFileBytes: number) {}
   unlock(): void {
-    this.audio ??= new AudioContext();
-    if (this.audio.state === 'suspended') void this.audio.resume();
+    if (this.audio) {
+      if (this.audio.state === 'suspended') void this.audio.resume().catch(() => {});
+      return;
+    }
+    if (this.audioReady) return;
+    // Try silent media playback to prime the device outside the input handler.
+    // A foreground fallback settles readiness even if play() never settles.
+    const primer = new Audio();
+    primer.loop = true;
+    primer.src = 'data:audio/wav;base64,UklGRgQCAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YeABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    let resolve!: (audio: AudioContext | null) => void;
+    const ready = new Promise<AudioContext | null>(done => { resolve = done; });
+    this.audioReady = ready;
+    let settled = false;
+    const retire = (): void => {
+      clearTimeout(timer);
+      window.removeEventListener('pagehide', cancel);
+      try { primer.pause(); } catch {}
+      try { primer.removeAttribute('src'); } catch {}
+      try { primer.load(); } catch {}
+    };
+    const cancel = (): void => {
+      if (settled) return;
+      settled = true;
+      retire();
+      if (this.audioReady === ready) this.audioReady = null;
+      resolve(null);
+    };
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      let audio: AudioContext | null = null;
+      try {
+        audio = this.audio ??= new AudioContext();
+        if (audio.state === 'suspended') void audio.resume().catch(() => {});
+      } catch {} finally { retire(); }
+      if (!audio && this.audioReady === ready) this.audioReady = null;
+      resolve(audio);
+    };
+    const timer = setTimeout(finish, 1000);
+    window.addEventListener('pagehide', cancel, { once: true });
+    // Rejection and synchronous failure use the deferred fallback, preserving
+    // input dispatch; they must not construct a context in the gesture handler.
+    try { void primer.play().then(finish, () => {}); } catch {}
   }
   read(slot: number): { text: string; ok: boolean } {
     try { return { text: localStorage.getItem(this.keys[slot]) ?? '', ok: true }; }
@@ -67,12 +110,13 @@ export class Ports {
           return;
         }
         case 'Sound': {
-          if (!this.audio || this.audio.state !== 'running') return;
+          const audio = this.audioReady ? await this.audioReady : this.audio;
+          if (!audio || audio.state !== 'running') return;
           const pcm = new Float32Array(effect.samples);
-          const buffer = this.audio.createBuffer(1, pcm.length, effect.rate);
+          const buffer = audio.createBuffer(1, pcm.length, effect.rate);
           buffer.copyToChannel(pcm, 0);
-          const source = this.audio.createBufferSource(); source.buffer = buffer;
-          source.connect(this.audio.destination); source.onended = () => source.disconnect(); source.start(); return;
+          const source = audio.createBufferSource(); source.buffer = buffer;
+          source.connect(audio.destination); source.onended = () => source.disconnect(); source.start(); return;
         }
         case 'OpenUrl': {
           const url = new URL(effect.url);

@@ -23,7 +23,7 @@ const ports = {
   'host.ts': { sha256: '813e50136a467a35542a8c39061f4d45f13138f4777eda9874c967df655334b5',
     counts: { QualityProbe: 1, Tick: 1, Activate: 1, PickFile: 1, PointerDown: 1,
       PointerMove: 1, PointerUp: 2, Wheel: 1, KeyInput: 1, Resize: 1 } },
-  'ports.ts': { sha256: '60c995ceb06ac7fce3d1df7911ea63ae0e76ce811f72fd9925b09d8cbdbb2a22',
+  'ports.ts': { sha256: '9c13b291476f33a1c2f832fbe73538ea1018fe0d69a1db66ae7918f49dae7244',
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
