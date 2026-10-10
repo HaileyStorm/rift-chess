@@ -3,8 +3,9 @@
 The private body chart remains unselected. Its default-view comparison gives
 the ivory knight more visible shading and the navy knight blue/brass variation,
 but texture distortion and baked-feature registration remain unresolved.
-Broader views, independent sampling checks and cost screening are required
-before considering integration. This is a subjective authoring experiment.
+The selected-pixel reference below has passed. Broader material/view review and
+cost screening remain required before considering integration. This is a
+subjective authoring experiment.
 
 All 278 current face positions, normals, centers, bands, marks and ordering
 remain exact. The chart covers 216 body triangles on both row signs; 24 mane,
@@ -64,8 +65,8 @@ The material variation also survives one maximum positive side-angle check.
 Root and an independent reviewer viewed both native sprite pairs. Face/body
 variation remains stronger than the flat baseline, while neck bands and
 eye/mouth registration remain imperfect. The candidate stays private and
-unselected. An independent sampling reference is the next check; a bounded
-cost screen is justified if that reference passes.
+unselected. At this checkpoint, an independent sampling reference was the next
+check, with a bounded cost screen conditional on its result.
 
 This uses world yaw 90, pitch 67, zoom 115, with the packaged initial position,
 theme 0 and progress 16. Current `presentation_camera` maps world yaw to
@@ -126,7 +127,7 @@ The original process, output streams, handle and self-only Job closed; 39 source
 fences remained equal, unknown was false, network calls were zero. The result
 was 56,956 bytes; observed peak Job commit was 105,279,488 bytes, not a bound or
 performance claim. The candidate remains private and unselected; the cost screen
-stays held while the body/crown correspondence gate remains unmet.
+was held at this checkpoint while the body/crown gate remained unmet.
 
 Unexecuted R1 preparation remains retained. Before dispatch, review removed its
 unsafe projected vertex-bbox exclusion in additive R2, and bound the supervisor's
@@ -144,3 +145,53 @@ using `body-atlas-reference-20261010-r2` and its supervisor prefix. A fresh
 artifact census passed at 11,718,795,375 bytes / 10.914 GiB against 12 GiB; this
 reference and its final metadata use the reserved 2 MiB allowance. No browser,
 device, picking, visual material, production or compiler adoption claim is added.
+
+## Additive numerical reference: selected-pixel gate passed
+
+R3 refines the reference's arithmetic while preserving R2's original negative
+result and the four-raster acceptance gate. Singleton basic operations now use
+the bound host's exact JavaScript operation followed by F32 rounding; genuine
+nonsingleton operands retain outward adjacent-F32 bounds. The independent
+barycentric calculation represents projected F32 vertices and authored UVs as
+exact BigInt dyadics, divides exact signed-area rationals, then rounds once to
+F32 with nearest-ties-even. It still requires agreement with the source plane
+on UV domain, source-cell indices and eight-bit filter fractions. Exact depth
+ties retain original face order. Host trigonometry and literal conversion remain
+explicit assumptions, rather than a certified cross-host numerical proof.
+
+The same four sealed sprite PNGs were read without importing the prototype,
+compiling or rendering again. Fixed row-major category selection preceded
+decoding their colors. Each raster qualified body, crown, alpha fallback,
+marker, mane, brass/ear and partial silhouette. All 28 category records,
+representing 24 distinct view/side pixels, matched exact final RGBA; brass/ear
+and silhouette share a selected location. The required body/crown coverage in
+every raster passed. Outside-UV and projected-degenerate categories remained
+unavailable. Qualification counts are not all-pixel color comparisons.
+
+| World yaw | Sides | Selected body (x,y) | Selected crown (x,y) |
+| --- | --- | --- | --- |
+| 345 | Ivory and navy | (40,16) | (26,14) |
+| 90 | Ivory and navy | (22,20) | (29,19) |
+
+Source correspondence again confirmed 278 faces, 216 body charts, 62 flat charts,
+117 shared authored vertices at F32 and 8,192 source atlas pixels. The original
+reference exited 0 with verified membership, closed output streams and handle,
+and self-only Job closure; unknown was false. All 41 fences remained identical,
+stdout was 94 bytes, stderr was empty and network calls were zero. The sole
+result was 99,140 bytes, below 128 KiB. Observed peak Job commit was 104,566,784
+bytes, not an upper bound or performance result.
+
+| Private R3 evidence | SHA256 |
+| --- | --- |
+| Reference source | `f0da55b36e0efeaac9e643a0922e991570bf4742ff31491b4a0399a013d55bb8` |
+| Generation | `ea3c99747bcb9eaa5fedf026141e3aeed6088cb67d001948ae2ac3b36d7b4fdf` |
+| Result | `643c16adcf9563d0b51956e166df7100c865fb8d8cb8a330ce41bd52b7cb9458` |
+| Original terminal | `278632b5f43dc2c61a645661b05c93845e36af067a09733d9d93df0df56b6b25` |
+
+The receipts use `body-atlas-reference-20261010-r3` and its supervisor prefix
+under the retained private stationary-motion directory. The collected artifact
+census was 11,719,194,826 bytes / 10.914 GiB against 12 GiB, with a 2 MiB metadata
+allowance. A current cost screen can now proceed. The candidate remains private
+and unselected. This establishes finite selected final-pixel/source
+correspondence, not observed internal winning-quarter identity, consumed UVs,
+all-view appearance, picking, browser/device performance or compiler adoption.
