@@ -105,7 +105,7 @@ def contact_shadow_is_bounded() -> Bool:
   +center = board_center(square,camera)
   +width = BoardScene.sprite_width(512,camera)
   +background: Image = Pix{Color.rgb(180,190,200)}
-  +image = BoardScene.sprite_contact_shadow(9n,512,width,center,background)
+  +image = BoardScene.sprite_contact_shadow(9n,512,width,1,center,background)
   +base = Ortho.pixel(F32.add(BoardScene.point_y(center),F32.mul(width,0.17)))
   +foot = Pixel.sample_xy(9n,center_x(square,camera),base,image)
   +outside = Pixel.sample_xy(9n,U32.add(center_x(square,camera),48),base,image)

@@ -1410,15 +1410,20 @@ def sprite_ground_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
     case False{}: camera_ground_point(size, camera, source, square, amount)
 
 # A low, translucent footprint sits behind the existing alpha-cut artwork.
-# Its dimensions follow the same screen-facing sprite width and base shift,
-# leaving the source atlas and the fast motion silhouettes untouched.
+# Atlas pieces retain their screen-facing base shift. The sculpted knight
+# uses its ground-plane pivot; artwork and picking use the same mesh frame.
+def sprite_contact_base(kind: U32, width: F32, y: F32) -> F32:
+  match kind:
+    case 2: y
+    case _: F32.add(y, F32.mul(width, 0.17))
+
 def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
-  +center: Quad.Point, image: Image) -> Image:
+  kind: U32, +center: Quad.Point, image: Image) -> Image:
   match center:
     case Quad.Point{+x,+y}:
       +radius = F32.mul(width, 0.18)
       +half_height = F32.mul(width, 0.045)
-      +base = F32.add(y, F32.mul(width, 0.17))
+      +base = sprite_contact_base(kind, width, y)
       Rounded.draw(depth,size,
         Shapes.Pos{Ortho.pixel(F32.sub(x,radius))},
         Shapes.Pos{Ortho.pixel(F32.sub(base,half_height))},
@@ -1440,7 +1445,7 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
       +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),size,camera,
         source,square,amount)
-      +contact = sprite_contact_shadow(depth,size,width,contact_center,image)
+      +contact = sprite_contact_shadow(depth,size,width,Model.piece_type(code),contact_center,image)
       PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
         clip, contact)
@@ -1794,12 +1799,12 @@ def load_sprite_pages(responses: List<&2,PieceAssets.AssetResponse>) ->
 # Same-view move dirty bounds use the retained color pose alpha support.
 # Compute each changed texture support once, then retain every live/contact
 # stage and only the real captured piece's fading stages.
-def sprite_motion_contact_box(+size: U32,+width: F32,center: Quad.Point) -> Rect.Box:
+def sprite_motion_contact_box(+size: U32,+width: F32,kind: U32,center: Quad.Point) -> Rect.Box:
   match center:
     case Quad.Point{+x,+y}:
       +radius = F32.mul(width,0.18)
       +half_height = F32.mul(width,0.045)
-      +base = F32.add(y,F32.mul(width,0.17))
+      +base = sprite_contact_base(kind,width,y)
       Rect.intersect(Rect.screen(size),Rect.Box{
         Ortho.pixel(F32.sub(x,radius)),Ortho.pixel(F32.sub(base,half_height)),
         Ortho.pixel(F32.add(x,radius)),Ortho.pixel(F32.add(base,half_height))})
@@ -1856,7 +1861,7 @@ def sprite_motion_current_box(+size: U32,+camera: Camera.Basis,+from: U32,
   +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),
     size,camera,from,square,amount)
   Rect.union(sprite_motion_artwork(size,source,SpritePlacement.piece_matrix(size,camera,center,kind)),
-    sprite_motion_contact_box(size,SpritePlacement.width(size,camera),contact_center))
+    sprite_motion_contact_box(size,SpritePlacement.width(size,camera),kind,contact_center))
 
 def sprite_motion_dead_box(+size: U32,+camera: Camera.Basis,+square: U32,
   kind: U32,age: U32,source: MotionSupport) -> Rect.Box:
