@@ -98,3 +98,49 @@ The positive row component persists throughout the presentation yaw range;
 this check establishes no backside or arbitrary-camera appearance. It adds no
 browser, independent color correspondence, timing, device, production or
 compiler-adoption acceptance.
+
+## Independent selected-pixel reference: incomplete qualification
+
+One offline reference read the four sealed native sprite PNGs and original RGA
+payloads; it did not import the prototype, recompile or render again. It confirmed
+all 278 original geometry/normal/center/band/mark/order fields, 216 body charts,
+62 flat charts, 117 shared authored vertices at F32 and all 8,192 source atlas
+pixels. Vertex correspondence checks the declared authored chart, not recovered
+UVs or the renderer's actual consumed UV.
+
+The reference selected categories before decoding the native PNG colors. Its
+outward arithmetic intervals required stable containment, painter order, marks,
+ancestor clipping, affine UV and integer filtering decisions. Trigonometric and
+literal semantics remain conditional on the bound same-host JavaScript emitter;
+this is not a certified cross-host numerical proof.
+
+Fourteen selected category records, representing ten distinct view/side pixels,
+matched exact final RGBA. They covered mane, brass/ear and partial silhouette in
+both views, with one marker location in the positive-angle view. No body, crown,
+alpha fallback, outside-UV or projected-degenerate category qualified. The
+required body/crown coverage in every raster therefore failed: result `ok:false`,
+`source-only-useful-final-pixel-qualification-insufficient`, original exit 1.
+This provides limited independent correspondence, not acceptance of body color.
+
+The original process, output streams, handle and self-only Job closed; 39 source
+fences remained equal, unknown was false, network calls were zero. The result
+was 56,956 bytes; observed peak Job commit was 105,279,488 bytes, not a bound or
+performance claim. The candidate remains private and unselected; the cost screen
+stays held while the body/crown correspondence gate remains unmet.
+
+Unexecuted R1 preparation remains retained. Before dispatch, review removed its
+unsafe projected vertex-bbox exclusion in additive R2, and bound the supervisor's
+actual Python runtime. No failed native run was retried or overwritten.
+
+| Private evidence | SHA256 |
+| --- | --- |
+| R2 reference source | `0cb75733abc432355865c61734fd5c33869a0e3a1f1b67422a52bfb064f1c0ed` |
+| R2 generation | `2808ce2de3535808b478c9a30fa0cb781638d2946aac749da347736f69d87001` |
+| R2 result | `51b85805793942dfd527bc3ad96ced75fec3e92c8e2fbb69c739a627aa8d722e` |
+| Original R2 terminal | `8de167eb4e280c111563748e6e9b5b4a3788b49322c709b200dcdab4fb6969f2` |
+
+These receipts live under the existing private stationary-motion directory,
+using `body-atlas-reference-20261010-r2` and its supervisor prefix. A fresh
+artifact census passed at 11,718,795,375 bytes / 10.914 GiB against 12 GiB; this
+reference and its final metadata use the reserved 2 MiB allowance. No browser,
+device, picking, visual material, production or compiler adoption claim is added.
