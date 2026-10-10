@@ -1,0 +1,124 @@
+{
+  "schema": "rift-prepared-qualification-evidence/1",
+  "files": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/prepared-qualification/admission.mjs",
+      "sha256": "a0fa83cd66a5d9ac211efae0f785ce598506e1d2233b30d494b1638417d3f961"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/prepared-qualification/README.md",
+      "sha256": "6bd6e93dce6245e6b96321672bfd89edfe051dd463f49bbeb06bcc4cc899f92d"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current99-source/lineage.json",
+      "sha256": "f4da232cb92a9005b29ed2652fe42cbff0ebdcb26765e0700657e3ba6b5bbcdd"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current99-source/admission.mjs",
+      "sha256": "e7d5e1d03d2882761d815d37933fd342226e37d1794ff5da11fb78a1567599d0"
+    },
+    {
+      "path": "bend2/core/v3/2035/bendtt-gate/current99-source/README.md",
+      "sha256": "766cf717a596eaec7f9b6667409e24bea284b823bb0a4d0832886edefaa64bc1"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/emit-prepared-current99-r1.mjs",
+      "sha256": "e55a1f1845df397b0ce69f4ed378bb67802e2801907d37aa2d61a5c391003b3a"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-diff-r1.mjs",
+      "sha256": "f69c46bb509f14c2f10cca5579563af705c65f6311a060194dcf8e4c7e2bd4c0"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/PreparedV3ProbeR1.bend",
+      "sha256": "d0c738cbe1a20562b32c054ca1f660ca226e08a054eeba032b6e7555d58f1147"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/indexed-shared-scene-helper-r1.mjs",
+      "sha256": "81641e8fd4ef1b9bb053eb281fd77095604d997df7d8b93c1ca261ffa36cbcef"
+    },
+    {
+      "path": "bend2/toolchain-patches/004-web-workers/rebase-2032/selected-module.mjs",
+      "sha256": "1508c2620714fd0f96b531400510f1cf997671ec1a0dbc074a35484c24fc84c7"
+    },
+    {
+      "path": "bend2/toolchain-patches/2032/tag-identity/preload-root.mjs",
+      "sha256": "8fbf6eb7be20273edc02706cbadd8182d79fa020b91075da6dc652e76158c733"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/worker-cli-wrapper-execution-manifest-r1.json",
+      "sha256": "f079064a5673addec9bfda980c999bfc30f9dbb06d4d10bff95a65a270dd0c14"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-v3-accepted27-emission-r1/prepared-match.js",
+      "sha256": "cd854476f06baf98a3a08f69cca9fb3c8b52bb84ebf8a7f254572647faed00a5"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-v3-accepted27-emission-r1/result.json",
+      "sha256": "ccadd6dba04f5ac9e87aeee0e8fb4edb85f507b06d1303399c510898aa966d7c"
+    },
+    {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-v3-diff-r1/result.json",
+      "sha256": "9bc70c32044c8f55f8f3e7ca29f05072f8245b28a12cc1878df958d5ca0917af"
+    },
+    {
+      "path": "bend2/docs/evidence/prepared-match-20261007/differential.mjs",
+      "sha256": "90f08cb752a2898a8c2bdf9b8a866cd7f887d1a9276a2136054eb31394cb3f0a"
+    }
+  ],
+  "creation": {
+    "manifest": {
+      "path": "bend2/laws/semantic-prepared-v3.json",
+      "sha256": "1c614f4df66e694a5395ee1b00cc23a1c59c7cf2ad99d6e4c36e3427d1939fa6"
+    },
+    "parent": {
+      "path": "bend2/laws/semantic-v2.json",
+      "sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+    },
+    "publication": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-v3-publication-r2.json",
+      "sha256": "da6a5bbca81db0daf6640813887b3a3df3c4c638eba485c014b4b7de8d499a32"
+    },
+    "steps": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-v3-publication-r2.steps.json",
+      "sha256": "06f0540409064f12dbda442abef5b01fcb772b87b1e3f192e49e9ad4112c7b65"
+    }
+  },
+  "qualification": {
+    "sourceReview": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-source-review-r1.json",
+      "sha256": "c660941f3e2c3fe52bb03d3f55dd76d66052b22c4a313908e8fc224ba9874698"
+    },
+    "emissionTerminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-emission-supervisor-r1/terminal.json",
+      "sha256": "6d0c63ab4414240a83ebb80a69e1acde14a891d7e7ee3ad87ad4aa0b84883c79"
+    },
+    "emissionManifest": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-emission-r1/manifest.json",
+      "sha256": "c21318bf005a0c6ded426cf7752c812b6b81d425c4d15ffdbd7a28fa71519a1a"
+    },
+    "module": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-emission-r1/prepared-match.js",
+      "sha256": "5ebc6146c192d40f8c7a71cac9ace6ee16c4dfde5bbb452ec204a71aa4973885"
+    },
+    "finiteTerminal": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-finite-supervisor-r1/terminal.json",
+      "sha256": "d811a4128b12c35fa3197a6aec12cf47263386bad353fccfe8f876b9f5df5018"
+    },
+    "finiteResult": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-diff-r1/result.json",
+      "sha256": "18b1bf254cc5b0f3fdcc51bafcd12f494e94c8defda9e5cb6e8fc1ace7eb63e1"
+    },
+    "disposition": {
+      "path": ".artifacts/bend2/2035-preview/stationary-motion-20261006/prepared-current99-disposition-r1.json",
+      "sha256": "f7f60a23785b2ff00b5058d548c0b568ecb9003ab0e73e2cbc0562e36b38da05"
+    }
+  },
+  "limits": {
+    "individualInputBytes": 16777216,
+    "aggregateReadBytes": 33554432,
+    "sourceBytes": 65536
+  }
+}
