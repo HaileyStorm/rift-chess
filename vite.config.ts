@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 export default defineConfig({
   base: './',
   build: {
@@ -10,5 +10,7 @@ export default defineConfig({
     },
   },
   server: { port: 5173, strictPort: true },
-  test: { exclude: [...configDefaults.exclude, '.artifacts/**', 'bend2/**'] },
+  // Vitest remains a dormant dependency in the immutable semantic-v2 package inputs.
+  // Unit/integration discovery is retired; acceptance uses actual E2E and proofs.
+  test: { include: [] },
 });

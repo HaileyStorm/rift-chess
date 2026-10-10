@@ -1,6 +1,6 @@
 # Reproducing a release
 
-Development was verified with Node 24.12.0/npm 11.19.1 on Windows 11 x64. Run `npm ci`, `npm test`, then `npm run build`. The browser bundle is `dist/`; `node scripts/headless.mjs` consumes bounded UTF-8 NDJSON using its built `api.js` entry.
+Development was verified with Node 24.12.0/npm 11.19.1 on Windows 11 x64. Run `npm ci`, then `npm run build`. Validate the resulting application through the relevant real E2E journey in [VALIDATION.md](VALIDATION.md); unit/integration suites and root pytest execution are retired. The browser bundle is `dist/`; `node scripts/headless.mjs` consumes bounded UTF-8 NDJSON using its built `api.js` entry.
 
 Run `node scripts/package-electron.mjs` after a successful build (or `npm run package` to build first). It requires the installed Windows Electron runtime and refuses existing versioned output paths. Preserve or relocate your own previous output before rebuilding; never overwrite a released artifact. The resulting portable ZIP includes the runtime and a narrowly allowlisted application archive. The executable is unsigned and retains Electron's stock PE metadata.
 

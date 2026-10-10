@@ -1,5 +1,11 @@
 # Active test consolidation: October 5
 
+Historical audit, superseded for execution by the owner's October 10 direction:
+zero active unit/integration tests and minimal real E2E, with formal proofs intact.
+Commands and selection conclusions below record the earlier work; they do not
+activate a current campaign. See [current policy](../../docs/VALIDATION.md) and
+[revised acceptance plan](REVIEW_2026-10-05.md#test-and-gate-reduction).
+
 Scope: duplicate selected-cache and browser receipt tests. Frozen laws, production
 verifiers, compatibility consumers and historical receipts remain authoritative
 for their named obligations. This cleanup does not adopt any compiler candidate.

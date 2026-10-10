@@ -51,12 +51,14 @@ Requires a current Node.js development environment.
 npm ci
 npm run dev       # local Vite development server
 npm run build     # type-check, build, and prepare the static offline cache
-npm test          # Vitest suite
 npm run desktop   # build, then launch Electron locally
 npm run package   # create the Windows x64 ZIP
 ```
 
 The pure engine powers the browser, Electron, the local worker, and the newline-delimited JSON headless API. See [API.md](docs/API.md) for the checked command boundary and record formats.
+
+Validation uses real E2E journeys and the Bend experiment's formal proofs; active
+unit/integration suites are retired. See [VALIDATION.md](docs/VALIDATION.md).
 
 ## Credits and license
 

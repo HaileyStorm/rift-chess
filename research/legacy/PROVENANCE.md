@@ -8,6 +8,6 @@ Interpret `result_draw_maxplies` as simulation truncation. Its inclusion in the 
 
 The unrestricted rule configuration simultaneously changes occupancy permission, king anchoring and whether transport consumes movement rights. It is not a clean isolated test of passenger count. These agents are shallow heuristic screens; their values and result frequencies are not human ratings or statistical estimates of long-term enjoyment.
 
-The original generator is retained unchanged at `reference/sliding_chess_sim.py`. The original runners and test file are retained under `reference/legacy/`. The active copy at `tests/test_legacy_generator.py` corrects one invalid inherited invariant: a pawn can legally ride onto its **own** back rank, but must promote on the opposite back rank. Targeted final tests cover that case for both colors.
+The original generator is retained unchanged at `reference/sliding_chess_sim.py`. The original runners and test file are retained under `reference/legacy/` as historical inputs. The now-retired `tests/test_legacy_generator.py` corrected one invalid inherited invariant: a pawn can legally ride onto its **own** back rank, but must promote on the opposite back rank. Its historical results remain evidence of those executions, not an active test obligation. Root pytest execution is retired.
 
 Use `rift_core.py` for final draw policy and canonical repetition, not the legacy forced-100 game loop. The new runner, records and receipts live separately in `research/fresh/`.

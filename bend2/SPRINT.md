@@ -40,12 +40,17 @@ both stand; BendTT/kernel, actual mutations and full Worker acceptance remain
 open. No frozen Law, approval gate or toolchain pin changes in this review.
 
 Critical path: reconcile exact retained requests and establish one supported
-successor; prune redundant active tests/gates without weakening frozen proof or
-independent behavior; inspect the retained 2.0.32 package once as historical
+successor; use **zero active unit/integration tests** and a small actual E2E
+workload without weakening frozen proofs; inspect the retained 2.0.32 package once as historical
 diagnostic, then evaluate 2.0.35 source/ABI and prove a target-version game
 first frame; carry one current-visual source through caches/bundle/package and
 browser/offline checks; finish substantive proof/Worker/native adoption
 obligations before amendment.
+October 10 steering retires routine compiler/phase/supervisor campaigns and
+scenario/check-count targets. Historical counts below describe their original
+executions only. The unexecuted current99 24/689 browser draft is retired;
+replace it with essential real user journeys, not renamed permutations. See
+the review's revised test policy and [validation policy](../docs/VALIDATION.md).
 Linux reported an active route on October 5, but the old stopped aggregate/native
 attempts still need exact terminal/admission reconciliation. Make bounded Windows
 performance and visual progress on the accepted baseline using the plan's
