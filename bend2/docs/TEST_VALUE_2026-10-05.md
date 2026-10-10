@@ -133,3 +133,26 @@ browser body to both prior sources. It does not execute Chrome or prove today's
 package offline. The next applicable actual run uses the canonical command with
 `BEND_GROUND_CANDIDATE_URL` and `BEND_GROUND_CANDIDATE_DIR` set to one exact
 served package; it replaces the private adaptation for fresh executions.
+
+
+The October 10 audit retires `tests/nonmove-refresh.ts`. It calls the removed
+`refreshed_same_position` API and passes a raw Match to `State.refreshed`, which
+now consumes the certified Ready carrier. Its demand that Move/Undo use the
+former full-refresh path conflicts with the current successor-ID implementation.
+The old timings have no acceptance threshold. No active caller or frozen
+manifest requires this runner; shared `tests/program.ts` remains in use.
+
+The retained canonical-match evidence checks arbitrary Ready outcome/admission,
+all six commands and forged stale IDs. Its integrated UI differential covers
+complete Move, Undo, offer/reply, agreement, both-side resignation and terminal
+rejection packets; the four terminal UI controls check visible legal-list
+clearing. These are historical behavioral witnesses, not fresh current99
+controller acceptance. The 78-case controller workload does not cover every
+nonmove combination and is not presented as a replacement for those witnesses.
+
+The exact 125-line predecessor remains in ignored private evidence at
+`.artifacts/bend2/2035-preview/stationary-motion-20261006/retired-nonmove-refresh-original-20261010-r1.ts`,
+SHA256 `5b4839ae2baf000422b318b677c14bf766a9118ca2fa6a32257c77fb8bb459c6`.
+Validation checks the removed API, callers/frozen membership, preserved original
+bytes and retained witness hashes. No compiler or browser rerun is warranted
+solely by retiring this obsolete runner; no runtime speedup is claimed.
