@@ -861,3 +861,38 @@ after their shared handshake. Existing cohorts are excluded and retain their
 original receipts. This is finite public scheduling and cleanup evidence;
 general scheduling, timing/performance, browser/native application, Linux/device
 and reviewed compiler adoption remain open. No aggregate matrix run is claimed.
+
+## Focused native send failure
+
+`--post-message-failure` selects one strict packed session with one real helper
+after a fresh unchanged-policy-fixture CHECK/emission. A genuine positive call
+returns19. The harness then detaches the next genuine12-byte outgoing packet
+immediately before calling the unchanged native `Worker.postMessage`. The native
+call throws `DataCloneError` (code25); its identical exception is rethrown to the
+unchanged scheduler, which rejects the invocation with `transport_failed`.
+
+The failed job has one dispatch and no started/result/witness publication or
+local retry. Before explicit close, automatic fatal cleanup retires the helper
+and all listeners, with zero pending work or retained-byte accounting. The
+positive completion/witness remains; its delayed original reply is inert. A
+subsequent submission rejects `closed`, increasing failed from1 to2 without a
+new dispatch. The exclusive bounded `native-post-message-control.json` preserves
+the genuine identity, original packet bytes/hash, detachment, native outcome and
+public state before the assertion requiring a native throw. A native non-throw
+would leave that artifact and fail honestly.
+
+Private `worker-send-failure-runtime-r1/receipt.json`, SHA256
+`7243290e2d39d9d914f91f6029e80213a70da32b0173eb98cc4a2c521e604e6c`,
+and `worker-send-failure-supervisor-r1/terminal.json`, SHA256
+`5178d214276f822c313d9046e611ba135a7d5f2f79baf14f785f3e49f172b2e0`,
+are retained in the stationary-motion artifact directory. Original membership,
+exit0, settled handle/EOF/self-only Job closure and unknownfalse are verified;
+four wrapper children also exit0. All345 input fences and98 compiler files remain
+exact, with zero fetches. Output totals160622 bytes, below6MiB. Observed peak
+Job commit376037376 bytes is not a memory bound.
+
+This detects a stranded assigned job after a synchronous native send failure.
+It deliberately violates outgoing-buffer ownership; no production defect is
+asserted. Existing cohorts remain excluded. This finite Windows witness does
+not establish general transport reliability, timing/performance, browser/native
+application, current99 compatibility, Linux/device or reviewed adoption.

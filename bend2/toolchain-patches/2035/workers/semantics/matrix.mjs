@@ -15,7 +15,8 @@ const metadataOnly=process.argv[3]==='--reply-metadata';
 const localBoundaryOnly=process.argv[3]==='--local-boundary';
 const cancelQueuedSiblingOnly=process.argv[3]==='--cancel-queued-sibling';
 const frontierBudgetsOnly=process.argv[3]==='--frontier-budgets';
-const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly;
+const postMessageFailureOnly=process.argv[3]==='--post-message-failure';
+const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly||postMessageFailureOnly;
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
 assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):focusedOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
@@ -48,7 +49,7 @@ const api=await import(pathToFileURL(path.join(output,build.entry)).href),result
 function clean(session){session.close();const s=session.stats();assert.equal(s.closed,true);for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(s[key],0,key);return s;}
 async function until(predicate){const end=performance.now()+5000;while(!predicate()){assert.ok(performance.now()<end,'authentic replies not observed');await new Promise(r=>setTimeout(r,1));}}
 // Instrument actual Workers without replacing their computation or handshake.
-function harness({hold=false,holdReady=false,workerURL=null,transform=null,observe=null,observeJob=null}={}){
+function harness({hold=false,holdReady=false,workerURL=null,transform=null,observe=null,observeJob=null,observePost=null}={}){
  const h={held:[],readyHeld:[],attempts:0,constructionFailures:0,created:0,removed:0,terminated:0,errors:0,listeners:new Map()};
  h.release=()=>{hold=false;return h.held.splice(0);};
  h.drainHeld=()=>h.held.splice(0); // Preserve holding across sequential resumptions.
@@ -66,7 +67,12 @@ function harness({hold=false,holdReady=false,workerURL=null,transform=null,obser
     }listener(event);
    };own.set(listener,wrapped);worker.addEventListener(type,wrapped);h.listeners.set(listener,type);},
    removeEventListener(type,listener){h.removed++;worker.removeEventListener(type,own.get(listener));h.listeners.delete(listener);},
-   postMessage(...args){if(observeJob)observeJob(args[0]);worker.postMessage(...args);},terminate(){h.terminated++;worker.terminate();}};
+   postMessage(...args){
+    if(observeJob)observeJob(args[0],args[1]);
+    if(!observePost){worker.postMessage(...args);return;}
+    try{worker.postMessage(...args);}catch(error){try{observePost({kind:'throw',message:args[0],error});}finally{throw error;}}
+    observePost({kind:'return',message:args[0]});
+   },terminate(){h.terminated++;worker.terminate();}};
  };return h;
 }
 function retire(session,h){const post=clean(session);assert.equal(h.listeners.size,0);assert.equal(h.terminated,h.created);return {...post,created:h.created,removed:h.removed,terminated:h.terminated,errors:h.errors};}
@@ -309,6 +315,68 @@ if(frontierBudgetsOnly){
    const post=retire(s,h);
    if(record){assert.equal(h.created,4);assert.equal(h.terminated,4);assert.equal(h.errors,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);record.postClose={...post,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};}
   }
+ }
+}
+if(postMessageFailureOnly){
+ assert.equal(binding.hashes['web_runtime.js'],'0422e7864b96d9f96474818b490eda2dddf974a1054eb402b692687b5a2e96c2');
+ assert.equal(sha(fs.readFileSync(fixture)),'f72021378bbbcf94a789bfb933f5eb7324d9f10c07fdee4c4238a93a44143a30');
+ const identityKeys=['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'];
+ const identity=m=>Object.fromEntries(identityKeys.map(key=>[key,m[key]]));
+ const jobs=[];let armed=false,detachment=null,nativeOutcome=null;
+ const h=harness({hold:true,observeJob:(m,transfer)=>{
+  if(m.kind!=='job')return;
+  assert.ok(m.packet instanceof ArrayBuffer);assert.equal(transfer.length,1);assert.equal(transfer[0],m.packet);
+  const packetBytes=Array.from(new Uint8Array(m.packet)),packetSHA256=sha(new Uint8Array(m.packet));
+  jobs.push({identity:identity(m),placement:structuredClone(m.placement),packetBytes,packetSHA256});
+  if(!armed)return;
+  assert.equal(detachment,null);assert.ok(m.packet.byteLength>0);
+  const originalBytes=m.packet.byteLength,transferred=structuredClone(m.packet,{transfer:[m.packet]});
+  assert.equal(transferred.byteLength,originalBytes);assert.equal(sha(new Uint8Array(transferred)),packetSHA256);assert.equal(m.packet.byteLength,0);
+  detachment={identity:identity(m),originalBytes,packetBytes,packetSHA256,detachedBytes:m.packet.byteLength,transferredBytes:transferred.byteLength};
+ },observePost:outcome=>{
+  if(!armed||outcome.message.kind!=='job')return;
+  if(outcome.kind==='throw'){
+   const error=outcome.error,code=error?.code;
+   nativeOutcome={threw:true,identity:identity(outcome.message),exception:{name:String(error?.name??'Error').slice(0,80),message:String(error?.message??error).slice(0,512),code:typeof code==='string'?code.slice(0,80):typeof code==='number'&&Number.isFinite(code)?code:null}};
+  }else nativeOutcome={threw:false,identity:identity(outcome.message)};
+ }});
+ const s=api.createSession({workers:1,transport:'packed',policy:'strict',trace:true,workerFactory:h.factory});let record;
+ const zeroRetained=stats=>{for(const key of ['workers','inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(stats[key],0,key);};
+ try{
+  const positive=s.submit('remote_island',[18]);positive.promise.catch(()=>{});await until(()=>h.held.length===1);
+  const original=h.held[0],positiveEnvelope=identity(original.event.data),positivePacketSHA256=sha(new Uint8Array(original.event.data.packet));
+  for(const key of identityKeys)assert.equal(positiveEnvelope[key],jobs[0].identity[key],key);
+  const packets=h.release();assert.equal(packets.length,1);assert.equal(packets[0],original);original.listener(original.event);
+  const positiveValue=await positive.promise;assert.equal(positiveValue,19);
+  const positiveStats=s.stats(),positiveTrace=s.trace();assert.equal(positiveStats.closed,false);assert.equal(positiveStats.completed,1);assert.equal(positiveStats.remoteJobs,1);assert.equal(positiveStats.requiredWitnesses,1);assert.equal(positiveStats.localCalls,0);
+  for(const key of ['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'])assert.equal(positiveStats[key],0,key);
+  for(const kind of ['dispatch','started','result','witness']){const own=positiveTrace.filter(e=>e.kind===kind&&e.invocation===positive.id);assert.equal(own.length,1);assert.equal(own[0].job,positiveEnvelope.job);}
+  assert.equal(h.created,1);assert.equal(h.terminated,0);armed=true;
+  let negativeSettled=false,rejection=null;
+  const negative=s.submit('remote_island',[28]);negative.promise.then(()=>{negativeSettled=true;},error=>{negativeSettled=true;rejection={name:error.name,code:error.code,message:String(error.message).slice(0,600)};});
+  await until(()=>nativeOutcome!==null||negativeSettled);
+  const boundaryStats=s.stats(),controlArtifact='native-post-message-control.json';
+  const controlText=JSON.stringify({schema:'rift-native-post-message-control/1',invocation:negative.id,jobs,detachment,nativeOutcome,rejection,negativeSettled,publicStatsAfterSend:boundaryStats,trace:s.trace(),diagnostics:s.diagnostics()},null,2)+'\n';
+  assert.ok(Buffer.byteLength(controlText)<=64*2**10,'native send control artifact bound');
+  fs.writeFileSync(path.join(output,controlArtifact),controlText,{flag:'wx'});replyArtifacts[controlArtifact]=sha(controlText);
+  assert.ok(nativeOutcome?.threw===true,JSON.stringify({reason:'native postMessage synchronous throw not observed; control stopped',nativeOutcome,detachment,rejection}));
+  await assert.rejects(negative.promise,error=>error.code==='transport_failed');
+  assert.equal(rejection.code,'transport_failed');assert.equal(detachment.identity.invocation,negative.id);assert.deepEqual(nativeOutcome.identity,detachment.identity);assert.equal(jobs.length,2);
+  const automatic=s.stats(),trace=s.trace(),negativeTrace=trace.filter(e=>e.invocation===negative.id),diagnostics=s.diagnostics();
+  assert.equal(automatic.closed,true);assert.equal(automatic.unavailable,false);zeroRetained(automatic);
+  assert.equal(automatic.completed,1);assert.equal(automatic.failed,1);assert.equal(automatic.remoteJobs,2);assert.equal(automatic.requiredWitnesses,1);assert.equal(automatic.localCalls,0);assert.equal(automatic.localForks,0);
+  const attempted=negativeTrace.filter(e=>e.kind==='dispatch');assert.equal(attempted.length,1);assert.equal(attempted[0].job,detachment.identity.job);assert.equal(attempted[0].functionId,detachment.identity.functionId);
+  assert.ok(!negativeTrace.some(e=>['started','result','witness'].includes(e.kind)));assert.ok(!diagnostics.some(d=>d.reason.startsWith('require_unfulfilled:')));
+  assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.listeners.size,0);assert.equal(h.errors,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);
+  assert.equal(sha(new Uint8Array(original.event.data.packet)),positivePacketSHA256);original.listener(original.event);
+  assert.deepEqual(s.stats(),automatic);assert.deepEqual(s.trace(),trace);assert.deepEqual(s.diagnostics(),diagnostics);assert.equal(sha(new Uint8Array(original.event.data.packet)),positivePacketSHA256);
+  await assert.rejects(s.call('remote_island',[40]),error=>error.code==='closed');const afterClosedSubmission=s.stats();zeroRetained(afterClosedSubmission);
+  record={case:'native-post-message-failure',transport:'packed',policy:'strict',workersRequested:1,
+   positiveControl:{invocation:positive.id,expected:19,actual:positiveValue,envelope:positiveEnvelope,packetSHA256:positivePacketSHA256,stats:positiveStats,trace:positiveTrace},
+   invocation:negative.id,jobs,detachment,nativeOutcome,rejection,controlArtifact:{file:controlArtifact,sha256:replyArtifacts[controlArtifact]},automaticFatalRetirement:{stats:automatic,created:h.created,terminated:h.terminated,listeners:h.listeners.size,errors:h.errors},negativeTrace,diagnostics,trace,afterClosedSubmission,
+   scope:'One actual synchronous native Worker.postMessage exception after deliberately detaching its genuine outgoing packed transfer buffer. No fabricated throw, helper-body change, retry, general transport, performance or adoption acceptance.'};results.push(record);
+ }finally{
+  const post=retire(s,h);if(record)record.postClose={...post,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};
  }
 }
 if(!focusedOnly){
@@ -1058,7 +1126,7 @@ function checkAuthenticResult(m,sent,fn,owner){
 }
 // A genuinely emitted different allowlist produces a different content-bound
 // helper build. Route that unchanged static asset to the original coordinator.
-if(!metadataOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly){
+if(!metadataOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly&&!postMessageFailureOnly){
 const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
 assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
 assert.notEqual(otherBuild.manifest.program,build.manifest.program);
@@ -1110,7 +1178,7 @@ for(const policy of ['strict','permissive']){
 }
 results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
 }
-if(!startupOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly){
+if(!startupOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly&&!postMessageFailureOnly){
 // Computation and correlation stay genuine. Change only untrusted body timing
 // after a successful zero-duration control on the same physical helper.
 const timingControls=[];
@@ -1156,8 +1224,9 @@ if(metadataOnly)receipt.scope='Fresh checked/emitted current98 Worker source and
 if(localBoundaryOnly){receipt.runSelection='local-boundary-only';receipt.scope='Fresh checked/emitted current98 Worker source and finite Windows public synchronous local closure boundary only. Prior39, startup2 and metadata1 excluded, not aggregated. No closure transport, general policy/performance, current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
 if(cancelQueuedSiblingOnly){receipt.runSelection='cancel-queued-sibling-only';receipt.scope='Fresh checked/emitted current98 policy fixture and one finite Windows assigned-cancellation/queued-sibling boundary only. Prior39, startup2, timing1 and local1 excluded, not aggregated. No timing, performance, general cancellation, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
 if(frontierBudgetsOnly){receipt.runSelection='frontier-budgets-only';receipt.scope='Fresh checked/emitted unchanged current98 policy fixture and exactly three finite Windows quad4 expansion/job-budget records. Prior39, startup2, timing1, local1 and cancellation1 excluded, not aggregated. Either sibling may win the constrained post-ready reservation. No hidden waiter count, timing, performance, general scheduling, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,3);}
+if(postMessageFailureOnly){receipt.runSelection='post-message-failure-only';receipt.scope='Fresh checked/emitted unchanged current98 policy fixture and one controlled native packed Worker.postMessage failure record. All prior cohorts excluded, not aggregated. Deliberate outgoing-buffer detachment must provoke the actual native synchronous exception; no fabricated exception or general transport, timing/performance, browser/native application, Linux/device or adoption acceptance.';assert.equal(results.length,1);}
 const receiptText=JSON.stringify(receipt,null,2)+'\n';if(focusedOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'focused receipt bound');
-if(localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'focused total output bound');
+if(localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly||postMessageFailureOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'focused total output bound');
 fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }
