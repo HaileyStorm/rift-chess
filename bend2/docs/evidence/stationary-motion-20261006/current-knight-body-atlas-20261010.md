@@ -256,3 +256,95 @@ advisory flag. A cheaper source-supported sampling path is the next opportunity;
 no unchanged timing replay is required. These finite measurements establish
 neither browser latency, cold startup, steady heap, device/native application
 behavior, all-view material quality nor compiler adoption.
+
+## Private opaque-alpha sampler: finite parity PASS, selection HOLD
+
+An additive private candidate specializes the bilinear filter only when all
+four sampled red-channel alpha values are 255. It keeps the original F32 axis,
+Gather calls, integer weights, clipping, independent coverage and original
+filter for every other alpha combination. A filled Boolean conditional selects
+one filter before executing it. For opaque inputs, cancelling the common 255
+factor preserves the rounded channel result and alpha 255. The original 278
+face lines, 216 body charts, 62 flat charts, marks and geometry are unchanged;
+canonical sampling source, accepted toolchain and Laws were not edited.
+
+One reviewed private compile validated the whole book and emitted six exports,
+including two direct filter controls. It exited 0 with original handle/EOF and
+self-only Job closure, unknown false and all 380 fences unchanged. The prototype
+was 609,150 bytes; observed peak Job commit was 596,660,224 bytes, not an upper
+bound. No production selection or compiler adoption followed.
+
+Parity R1 was never executed: review found a stale Bun runtime reference in a
+Node driver. R2 exited 1 before producing a result, with closed original unit
+and 405 unchanged fences. Its exception was not recorded; the external Node
+read through a repository-only helper is a source-derived explanation, not an
+observed error. R3 recorded admission-stage `bounded input exceeded`, zero
+render/filter calls, closed original unit and 409 unchanged fences. Its error
+did not identify a path. A read-only input audit found that the existing
+7,347,974-byte registered ground JSON exceeded the generic 4 MiB cap. R4 gives
+only that exact hash- and size-bound asset an 8 MiB allowance and adds a relative
+path to bound failures. Other limits and source boundaries remain unchanged.
+All original failures and unexecuted inputs remain separate provenance.
+
+R4 passed four fixed view/side comparisons with 16 render calls: complete
+baseline/current/disabled RGBA equality, new/old body-candidate RGBA equality,
+whole-mask equality and zero RGB outside transparent pixels. Ten direct
+controls made 20 filter calls, covering five opaque and five fallback inputs,
+each single nonopaque alpha position, coverage values around 128, zero alpha,
+maximum channels and fraction endpoints/clamping. Independent integer
+expectations and the original filter agreed. The original execution exited 0,
+with verified membership, settled handle/EOF, self-only Job closure, unknown
+false and 413 unchanged fences. Its result was 8,275 bytes; stdout was 94 bytes,
+stderr empty and network calls zero. Observed peak Job commit was 261,816,320
+bytes, not an upper bound.
+
+Only after that closed parity result, one new diagnostic compared current flat
+rendering with the opaque candidate using the same four cases. Twelve untimed
+prechecks and all 64 timed returns in 32 alternating pairs matched complete
+RGBA and masks. Function calls alone were timed; validation ran after the ending
+clock, but its allocations and the prechecks can affect later GC/JIT state.
+
+| Case | Current median ms | Opaque candidate median ms | Median paired delta ms | Median paired ratio | Advisory flag |
+| --- | --- | --- | --- | --- | --- |
+| Default ivory | 7.485 | 9.754 | +2.157 | 1.231 | No |
+| Default navy | 7.640 | 10.319 | +3.002 | 1.398 | Yes |
+| Positive edge ivory | 5.730 | 8.088 | +2.052 | 1.382 | Yes |
+| Positive edge navy | 6.041 | 8.595 | +2.308 | 1.381 | Yes |
+
+The unchanged advisory conjunction is paired median delta above 2 ms and paired
+median ratio above 1.25; flags do not affect behavioral `ok:true`. Order subsets
+vary: default ivory AB does not cross the flag while BA does; edge navy AB does
+not cross it while BA does. This small finite sample does not establish a
+stable regression in every ordering. The earlier unoptimized body run is
+historical and was not a timed arm here, so its separate timings cannot establish
+a causal speedup from this specialization.
+
+The original cost execution exited 0 with verified membership, settled handle
+and EOF, self-only Job closure and unknown false. All 437 supervisor fences
+remained unchanged; the driver checked 364 inputs. Its sole result was 24,031
+bytes, stdout 94 bytes, stderr empty and network calls zero. Observed peak Job
+commit was 293,675,008 bytes, not an upper bound.
+
+| Private opaque evidence | SHA256 |
+| --- | --- |
+| Candidate | `5b148ac82baa1f64978b4ed4c9dc2699058a40aab77067b13a2f1cf834e2663a` |
+| Preparation generation | `dc332b2075cb68c55634ddd48d4bbd9bde85e17459bc8579a64c898988d2f53d` |
+| Compile result | `49a5d28cfbf9d56ec75924a38a5e875912b8807b5d81fe1b1139aeab1d9c69fb` |
+| Compile terminal | `5fbb4d2f9334ae27a757bc4d7b0be70daf5a0b48ddedd3d3ebfaf978fb8edce1` |
+| Parity R4 driver | `129c25c7d2d3cb462a8b69d7c13eda25b39fb324061745e581c62ddb4b43f647` |
+| Parity R4 generation | `5d1e20723744d77b1688051955af009140f08641eb4f02524b7cdccdc965b9d0` |
+| Parity R4 result | `a4f1abe389c62d2ae0761b0d6cd73bd0fa2eaa6455aa91447d0a2dce01ad697d` |
+| Parity R4 terminal | `3cda5e6549f4de09cd254139fa5f6fb53b039a8074ac883ea9afdd06cc591a26` |
+| Cost R3 driver | `4ad6f84031915a5dd31dfcc719b724b4f777e13f617666034b960bc1cb7f3946` |
+| Cost R3 generation | `0fb4d35b2543c6f4f5f27269e241d711798126a2505f55612288d9c793ff0d1e` |
+| Cost R3 result | `8c93c3066f7644d18ee1eae9c33746bece144448318e4a3a234d9ebff5b4d7ba` |
+| Cost R3 terminal | `d7ac8b8dd6ac9c65aab8da0178da6a49f61f03c5328a79002e1c5d1b9a3da04d` |
+
+Receipts retain the `body-atlas-opaque-20261010-r1`,
+`body-atlas-opaque-parity-20261010-r4` and
+`body-atlas-opaque-cost-20261010-r3` prefixes under the private stationary-motion
+directory. Root keeps the candidate private and unselected because of the
+remaining extra cost and unresolved material registration. These results are
+finite local JavaScript evidence, not browser/device latency, steady heap,
+all-view appearance, native application, exhaustive filter proof or compiler
+adoption acceptance. No unchanged timing replay is required.
