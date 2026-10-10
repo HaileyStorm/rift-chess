@@ -348,3 +348,74 @@ remaining extra cost and unresolved material registration. These results are
 finite local JavaScript evidence, not browser/device latency, steady heap,
 all-view appearance, native application, exhaustive filter proof or compiler
 adoption acceptance. No unchanged timing replay is required.
+
+## One neck and mouth registration trial
+
+The additive private registration candidate changes only the opaque parent's
+BodyChart UV constants and header. A manually authored neck ribbon avoids the
+source's base-adjacent rows; local mouth support uses existing authored pixels.
+All278 geometry faces, marks, material code, opaque specialization, fallback and
+filter-control definitions remain exact. There are216 body charts/62 flat faces,
+67 changed shared vertices and142 affected faces. Upper/crown and eye-marked
+cohorts remain unchanged;11 adjacent head faces are explicitly affected by the
+mouth-support vertices. The exact inverse recovers the parent bytes.
+
+Independent source review accepted32 original input fences and three losslessly
+compressed failed-preparation preimages. Preparation totals384343 bytes,
+below512KiB. Area counts107 positive/96 negative/13 near-zero remain unchanged.
+Neighbor-alpha checks and approximate world-axis marker mapping do not prove
+interior sampling, projected F32 registration, injectivity or physical lighting.
+The narrow ribbon may smear baked relief; mouth support may alter neighboring
+head detail. Appearance remains subject to actual rendered review.
+
+One actual whole-book check and six-export selected JS emission passed. Its
+384 supervisor fences and45 loaded-source hashes remained stable; fetch0,
+original exit0/membership/settled handle/EOF/self-only Job closed and unknownfalse.
+The two output files total668959 bytes. Observed peak Job commit643362816 bytes
+is a measurement, not a bound. Current geometry, atlas, application, pristine
+compiler and production selection remain unchanged.
+
+| Private registration evidence | SHA256 |
+| --- | --- |
+| Candidate | `bcadebce3c1e7bc1571c1617981b684c832a81d1b9d7bf2e983f35308e5b2add` |
+| Generation | `127b63077da2f11f43843f622884dd32d7d8799d712659616dd9367c33cd7a50` |
+| Compile result | `a96dc3c79560fe88740a2e5730e5d0a165070c2e0ff6ea9e380e6cc1c36f92f7` |
+| Compile terminal | `c397e9052a75e191c5fa27a1fa65a98513f3d52a12bc5c734470b43e120c256d` |
+
+These receipts use `body-atlas-registration-20261010-r1` in the existing private
+stationary-motion directory. Compile acceptance does not establish registration,
+visual benefit, cost improvement, browser/device performance or adoption.
+
+The corrected two-view renderer then passed once at world yaw345 and90,
+pitch67/zoom115, for ivory and navy. All four native64 sprite cases preserve
+complete baseline/current RGBA, candidate and parent masks, transparent-zero
+RGB and the public picking payloads. Each parent render also matches its retained
+original body receipt. The registration changes362/364 default-view and283/286
+positive-edge pixels against that parent. All404 supervisor fences remain exact;
+fetch0, original exit0/membership/settled handle/EOF/self-only Job closed and
+unknownfalse. Eight PNGs plus the result total39217 bytes, below the2MiB cap.
+Observed Job peak284504064 bytes is not a memory bound.
+
+Root and independent visual review retain a private HOLD. Default ivory neck
+detail is modestly less fragmented than the textured parent, but mouth alignment
+is not convincingly improved. Stretched painted highlights and dark neck bands
+remain conspicuous, especially on navy and at the positive edge. This finite
+gain does not justify another cost or browser run. The parent's independently
+checked selected final-pixel samples do not validate these changed registration UVs.
+The candidate remains unselected; no performance or production acceptance follows.
+
+The initial render materializer was rejected before execution because band0 also
+included eight flat-shaded ear faces. The additive corrected materializer uses
+the exact216 chart indices and preserves all62 flat faces. The rejected original
+and its hash remain retained; no failed input was overwritten or executed.
+
+| Private rendered registration evidence | SHA256 |
+| --- | --- |
+| Render result | `d4c3957a511469cc817e915fd1e3dbbdd9a69b0409d41e33b6e785ceeac2ffd7` |
+| Original render terminal | `859bf8f77c5d625375bc91e7aff9a89e9657df1d32f8c61575f271e595111e22` |
+
+These are finite private JavaScript sprite and visual records. They do not prove
+physical lighting, board/browser behavior, exhaustive registration, device
+performance or compiler adoption. The unadopted engineering trial warrants a
+reasoned memory skip; its source and evidence remain in this versioned record
+and the private checkpoint rather than a new durable user decision.

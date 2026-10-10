@@ -14,7 +14,8 @@ const startupOnly=process.argv[3]==='--startup-boundaries';
 const metadataOnly=process.argv[3]==='--reply-metadata';
 const localBoundaryOnly=process.argv[3]==='--local-boundary';
 const cancelQueuedSiblingOnly=process.argv[3]==='--cancel-queued-sibling';
-const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly||cancelQueuedSiblingOnly;
+const frontierBudgetsOnly=process.argv[3]==='--frontier-budgets';
+const focusedOnly=startupOnly||metadataOnly||localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly;
 const saturationCandidate=process.argv[4]==='--saturation-candidate';
 assert.ok(process.argv[2]&&process.argv.length===(compilerOnly?(saturationCandidate?5:4):focusedOnly?4:3));
 assert.ok(output.startsWith(path.join(root,'.artifacts/bend2/2035-preview/stationary-motion-20261006')+path.sep));
@@ -199,6 +200,114 @@ if(cancelQueuedSiblingOnly){
   if(record){
    assert.equal(h.created,1);assert.equal(h.terminated,1);assert.equal(h.errors,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);
    record.postClose={...post,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};
+  }
+ }
+}
+if(frontierBudgetsOnly){
+ assert.equal(binding.hashes['web_runtime.js'],'0422e7864b96d9f96474818b490eda2dddf974a1054eb402b692687b5a2e96c2');
+ assert.equal(sha(fs.readFileSync(fixture)),'f72021378bbbcf94a789bfb933f5eb7324d9f10c07fdee4c4238a93a44143a30');
+ const functions=Object.fromEntries(['leaf','pair','quad_body'].map(name=>{
+  const fn=build.manifest.functions.find(f=>f.name===name);assert.ok(fn);assert.equal(fn.eligible,true);return [name,fn];
+ }));
+ assert.equal(functions.leaf.hasFork,false);assert.equal(functions.pair.hasFork,true);assert.equal(functions.quad_body.hasFork,true);
+ const identityKeys=['protocol','program','epoch','job','invocation','fork','slot','functionId','schemaId'];
+ const retainedKeys=['inFlight','ready','activeInvocations','snapshotBytes','completedBytes','queuedBytes','inFlightBytes'];
+ for(const control of [
+  {label:'expansion-disabled',maxExpansions:0,maxJobs:4,jobs:2,forks:1,functionName:'pair'},
+  {label:'one-expansion',maxExpansions:1,maxJobs:4,jobs:4,forks:2,functionName:'leaf'},
+  {label:'shared-post-ready-job-budget',maxExpansions:1,maxJobs:2,jobs:2,forks:1,functionName:'leaf'}
+ ]){
+  const outgoing=[],incoming=[];
+  const h=harness({hold:true,holdReady:true,observeJob:m=>outgoing.push(structuredClone(m)),observe:m=>incoming.push(structuredClone(m))});
+  const s=api.createSession({workers:4,transport:'clone',policy:'strict',trace:true,maxExpansions:control.maxExpansions,maxJobs:control.maxJobs,maxQueue:4,workerFactory:h.factory});
+  let record,settled=false;
+  function idle(){const stats=s.stats();assert.equal(stats.closed,false);assert.equal(stats.unavailable,false);for(const key of retainedKeys)assert.equal(stats[key],0,key);return stats;}
+  try{
+   const handle=s.submit('quad4',[1,2,3,4]);handle.promise.then(()=>{settled=true;},()=>{settled=true;});
+   await until(()=>h.readyHeld.length===4);
+   const beforeReady=s.stats(),beforeReadyTrace=s.trace(),beforeReadyDiagnostics=s.diagnostics();
+   assert.equal(settled,false);assert.equal(beforeReady.activeInvocations,1);assert.equal(beforeReady.expandedForks,control.maxExpansions);
+   for(const key of ['remoteJobs','remoteForks','inFlight','ready','completed','requiredWitnesses','localCalls'])assert.equal(beforeReady[key],0,key);
+   assert.equal(beforeReady.requiredRegions,1);assert.equal(h.created,4);assert.equal(h.terminated,0);assert.equal(h.errors,0);
+   assert.ok(!beforeReadyTrace.some(e=>['dispatch','started','result','witness'].includes(e.kind)));
+   assert.equal(beforeReadyDiagnostics.length,0);
+   const hellos=outgoing.filter(m=>m.kind==='hello'),readies=h.releaseReady();assert.equal(hellos.length,4);assert.equal(readies.length,4);
+   const readyEnvelopes=readies.map(p=>structuredClone(p.event.data));
+   for(let i=0;i<readies.length;i++){
+    const ready=readyEnvelopes[i];assert.equal(ready.kind,'ready');assert.equal(ready.program,build.manifest.program);
+    assert.ok(hellos.some(hello=>hello.protocol===ready.protocol&&hello.program===ready.program&&hello.epoch===ready.epoch));
+    readies[i].listener(readies[i].event);assert.deepEqual(readies[i].event.data,ready);
+   }
+   assert.equal(settled,false);
+   await until(()=>h.held.length===control.jobs&&(control.maxJobs!==2||s.diagnostics().some(d=>d.reason==='queue_budget')));
+   const heldStats=s.stats(),heldTrace=s.trace(),heldDiagnostics=s.diagnostics(),jobs=outgoing.filter(m=>m.kind==='job');
+   assert.equal(settled,false);assert.equal(heldStats.closed,false);assert.equal(heldStats.activeInvocations,1);assert.equal(heldStats.completed,0);assert.equal(heldStats.requiredWitnesses,0);
+   assert.equal(heldStats.remoteJobs,control.jobs);assert.equal(heldStats.remoteForks,control.forks);assert.equal(heldStats.expandedForks,control.maxExpansions);
+   assert.equal(heldStats.inFlight,control.jobs);assert.equal(heldStats.ready,0);assert.equal(heldStats.queuedBytes,0);
+   assert.ok(heldStats.inFlightBytes>0);assert.ok(heldStats.snapshotBytes>0);assert.equal(jobs.length,control.jobs);
+   assert.ok(control.jobs<=control.maxJobs);assert.ok(heldStats.maxInFlight<=4);assert.ok(heldStats.maxReady<=4);
+   assert.equal(heldStats.localForks,control.maxJobs===2?1:0);assert.equal(heldStats.localCalls,control.maxJobs===2?2:0);
+   assert.equal(heldDiagnostics.filter(d=>d.reason==='queue_budget').length,control.maxJobs===2?1:0);assert.equal(heldDiagnostics.length,control.maxJobs===2?1:0);
+   assert.ok(!heldTrace.some(e=>e.kind==='result'||e.kind==='witness'));
+   const target=functions[control.functionName];assert.ok(jobs.every(m=>m.functionId===target.id&&m.invocation===handle.id));
+   assert.equal(new Set(jobs.map(m=>m.job)).size,control.jobs);assert.equal(new Set(jobs.map(m=>m.fork)).size,control.forks);
+   for(const fork of new Set(jobs.map(m=>m.fork)))assert.deepEqual(jobs.filter(m=>m.fork===fork).map(m=>m.slot).sort(),[0,1]);
+   const sortedArgs=jobs.map(m=>m.args).sort((a,b)=>a[0]-b[0]);let winningSibling=null;
+   if(control.functionName==='pair')assert.deepEqual(sortedArgs,[[1,2],[3,4]]);
+   else if(control.maxJobs===4)assert.deepEqual(sortedArgs,[[1],[2],[3],[4]]);
+   else{
+    assert.ok(JSON.stringify(sortedArgs)==='[[1],[2]]'||JSON.stringify(sortedArgs)==='[[3],[4]]');
+    winningSibling=sortedArgs[0][0]===1?'left':'right';
+   }
+   const packets=h.release(),authenticResults=packets.map(p=>({envelope:structuredClone(p.event.data),sha256:sha(JSON.stringify(p.event.data))}));
+   for(const original of authenticResults){
+    const m=original.envelope,job=jobs.find(j=>j.job===m.job);assert.ok(job);assert.equal(m.kind,'result');
+    for(const key of identityKeys)assert.equal(m[key],job[key],key);
+    const expected=control.functionName==='pair'?(job.args[0]===1?23:45):job.args[0]+1;assert.equal(m.value,expected);
+    const started=incoming.filter(e=>e.kind==='started'&&e.job===m.job);assert.equal(started.length,1);
+    for(const key of identityKeys)assert.equal(started[0][key],job[key],key);
+   }
+   const delivery=[];
+   for(const p of packets.reverse()){
+    const original=authenticResults.find(r=>r.envelope.job===p.event.data.job);assert.equal(sha(JSON.stringify(p.event.data)),original.sha256);
+    p.listener(p.event);assert.equal(sha(JSON.stringify(p.event.data)),original.sha256);delivery.push(p.event.data.job);
+   }
+   const actual=await handle.promise;assert.equal(actual,2345);assert.equal(settled,true);
+   const afterResult=idle(),rootTrace=s.trace().filter(e=>e.invocation===handle.id),regions=rootTrace.filter(e=>e.kind==='region');
+   assert.equal(afterResult.completed,1);assert.equal(afterResult.remoteJobs,control.jobs);assert.equal(afterResult.expandedForks,control.maxExpansions);
+   assert.equal(afterResult.requiredRegions,1);assert.equal(afterResult.requiredWitnesses,1);assert.equal(regions.length,1);assert.equal(regions[0].cap,4);
+   for(const kind of ['dispatch','started','result']){
+    const events=rootTrace.filter(e=>e.kind===kind);assert.equal(events.length,control.jobs);
+    assert.deepEqual(events.map(e=>e.job).sort((a,b)=>a-b),jobs.map(e=>e.job).sort((a,b)=>a-b));
+   }
+   const dispatch=rootTrace.filter(e=>e.kind==='dispatch'),witness=rootTrace.filter(e=>e.kind==='witness');assert.equal(witness.length,1);
+   const helpers=[...new Set(dispatch.map(e=>e.worker))];assert.equal(helpers.length,control.jobs);assert.ok(helpers.length<=regions[0].cap);
+   for(const job of jobs){
+    const d=dispatch.find(e=>e.job===job.job);assert.equal(d.functionId,job.functionId);assert.deepEqual(d.regions,[regions[0].region]);
+    for(const kind of ['started','result'])assert.equal(rootTrace.find(e=>e.kind===kind&&e.job===job.job).worker,d.worker);
+   }
+   const witnessDispatch=dispatch.find(e=>e.job===witness[0].job);assert.ok(witnessDispatch);
+   assert.equal(witness[0].region,regions[0].region);assert.equal(witness[0].worker,witnessDispatch.worker);assert.equal(witness[0].functionId,witnessDispatch.functionId);
+   assert.ok(!rootTrace.some(e=>e.kind==='required_whole_call'));assert.ok(!s.diagnostics().some(d=>d.reason.startsWith('require_unfulfilled:')));
+   const recovery=s.submit('remote_island',[40]),recoveryResult=await recovery.promise;assert.equal(recoveryResult,41);
+   const afterRecovery=idle(),recoveryTrace=s.trace().filter(e=>e.invocation===recovery.id),recoveryJobs=outgoing.filter(m=>m.kind==='job'&&m.invocation===recovery.id);
+   assert.equal(afterRecovery.completed,2);assert.equal(afterRecovery.remoteJobs,control.jobs+1);assert.equal(afterRecovery.requiredWitnesses,2);
+   assert.equal(afterRecovery.expandedForks,control.maxExpansions);assert.equal(recoveryJobs.length,1);
+   for(const kind of ['dispatch','started','result','witness']){const own=recoveryTrace.filter(e=>e.kind===kind);assert.equal(own.length,1);assert.equal(own[0].job,recoveryJobs[0].job);}
+   const recoveryReplies=incoming.filter(m=>m.kind==='result'&&m.invocation===recovery.id);assert.equal(recoveryReplies.length,1);assert.equal(recoveryReplies[0].value,41);
+   for(const key of identityKeys)assert.equal(recoveryReplies[0][key],recoveryJobs[0][key],key);
+   assert.equal(h.created,4);assert.equal(h.terminated,0);assert.equal(h.errors,0);
+   record={case:'bounded-frontier-expansion',control:control.label,transport:'clone',policy:'strict',workersRequested:4,
+    limits:{maxExpansions:control.maxExpansions,maxJobs:control.maxJobs,maxQueue:4},invocation:handle.id,expected:2345,actual,
+    functions,hellos,readyEnvelopes,beforeReady,beforeReadyTrace,beforeReadyDiagnostics,heldStats,heldTrace,heldDiagnostics,
+    jobs,authenticResults,reverseDelivery:delivery,winningSibling,afterResult,rootTrace,regionHelpers:{region:regions[0].region,cap:regions[0].cap,helpers},
+    sharedPostReadyReservation:control.maxJobs===2?{observedJobs:2,observedForks:1,observedLocalForks:1,observedLocalCalls:2,budgetDiagnosticAfterReady:true,hiddenWaiterCountMeasured:false}:null,
+    recovery:{invocation:recovery.id,expected:41,actual:recoveryResult,jobs:recoveryJobs,replies:recoveryReplies,trace:recoveryTrace},
+    stats:afterRecovery,diagnostics:s.diagnostics(),trace:s.trace(),scope:'Finite quad4 expansion/job bounds and shared post-handshake reservation with either sibling eligible; no performance, general scheduling or adoption claim.'};
+   results.push(record);
+  }finally{
+   const post=retire(s,h);
+   if(record){assert.equal(h.created,4);assert.equal(h.terminated,4);assert.equal(h.errors,0);assert.equal(h.held.length,0);assert.equal(h.readyHeld.length,0);record.postClose={...post,listeners:h.listeners.size,held:h.held.length,readyHeld:h.readyHeld.length};}
   }
  }
 }
@@ -949,7 +1058,7 @@ function checkAuthenticResult(m,sent,fn,owner){
 }
 // A genuinely emitted different allowlist produces a different content-bound
 // helper build. Route that unchanged static asset to the original coordinator.
-if(!metadataOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly){
+if(!metadataOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly){
 const otherBuild=comp.js_worker_lib(book,['plain'],{mode:'required-only',policy:'strict'});
 assert.ok(Object.values(otherBuild.files).reduce((n,b)=>n+Buffer.byteLength(b),0)<=4*2**20,'wrong-build emitted asset bound');
 assert.notEqual(otherBuild.manifest.program,build.manifest.program);
@@ -1001,7 +1110,7 @@ for(const policy of ['strict','permissive']){
 }
 results.push({case:'authentic-stale-and-duplicate-ready',transport:'shared-startup-before-dispatch',executedTransport:'clone',controls:readyIdentityControls,scope:'An old-epoch copy of a genuine held ready is inert; the first current ready is accepted, then its unchanged duplicate rejects both roots before the held second helper allows dispatch. Automatic retirement and delayed-original inertness under both policies. No general handshake/timing acceptance.'});
 }
-if(!startupOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly){
+if(!startupOnly&&!localBoundaryOnly&&!cancelQueuedSiblingOnly&&!frontierBudgetsOnly){
 // Computation and correlation stay genuine. Change only untrusted body timing
 // after a successful zero-duration control on the same physical helper.
 const timingControls=[];
@@ -1046,8 +1155,9 @@ receipt.runSelection=metadataOnly?'reply-metadata-only':receipt.runSelection;
 if(metadataOnly)receipt.scope='Fresh checked/emitted current98 Worker source and real Windows reply timing metadata controls only. Prior39 and startup2 excluded. No current99 CLI proof, full107 parity, browser/native/kernel/device/performance/adoption acceptance.';
 if(localBoundaryOnly){receipt.runSelection='local-boundary-only';receipt.scope='Fresh checked/emitted current98 Worker source and finite Windows public synchronous local closure boundary only. Prior39, startup2 and metadata1 excluded, not aggregated. No closure transport, general policy/performance, current99 CLI proof, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
 if(cancelQueuedSiblingOnly){receipt.runSelection='cancel-queued-sibling-only';receipt.scope='Fresh checked/emitted current98 policy fixture and one finite Windows assigned-cancellation/queued-sibling boundary only. Prior39, startup2, timing1 and local1 excluded, not aggregated. No timing, performance, general cancellation, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,1);}
+if(frontierBudgetsOnly){receipt.runSelection='frontier-budgets-only';receipt.scope='Fresh checked/emitted unchanged current98 policy fixture and exactly three finite Windows quad4 expansion/job-budget records. Prior39, startup2, timing1, local1 and cancellation1 excluded, not aggregated. Either sibling may win the constrained post-ready reservation. No hidden waiter count, timing, performance, general scheduling, full107 parity, browser/native/kernel/device/adoption acceptance.';assert.equal(results.length,3);}
 const receiptText=JSON.stringify(receipt,null,2)+'\n';if(focusedOnly)assert.ok(Buffer.byteLength(receiptText)<=2**20,'focused receipt bound');
-if(localBoundaryOnly||cancelQueuedSiblingOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'focused total output bound');
+if(localBoundaryOnly||cancelQueuedSiblingOnly||frontierBudgetsOnly)assert.ok(Object.values(build.files).reduce((n,b)=>n+Buffer.byteLength(b),0)+Buffer.byteLength(receiptText)<=6*2**20,'focused total output bound');
 fs.writeFileSync(path.join(output,'receipt.json'),receiptText,{flag:'wx'});
 console.log(JSON.stringify({passed:true,output,receiptSha256:sha(fs.readFileSync(path.join(output,'receipt.json'))),cases:results.length,networkCalls}));
 }

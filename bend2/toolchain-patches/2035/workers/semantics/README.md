@@ -827,3 +827,37 @@ It does not establish cancellation of computation still executing in the helper,
 general cancellation, timing/performance, browser/native application, device,
 kernel/Linux or reviewed compiler adoption. The earlier cohorts retain their
 original scopes and should not be rerun after this focused source change.
+
+## Focused shared frontier budgets
+
+`--frontier-budgets` selects three fresh clone-transport sessions after one
+policy-fixture CHECK/emission. Expansion/job limits `0/4`, `1/4` and `1/2`
+produce respectively two pair jobs, four leaf jobs and two leaf jobs. Each
+session holds four genuine ready envelopes before any job publication, then
+holds authentic results while the root remains pending. Reversing reply delivery
+preserves the independently expected arithmetic result2345.
+
+The constrained session dispatches one sibling frontier after readiness;
+the other computes locally. The actual winner is left, with one expansion,
+one remote fork, two jobs, one local fork, two local calls and one new
+`queue_budget` diagnostic. Hidden waiter identities/counts are not measured.
+Recovery returns41 in each open session. Pending work and retained-byte
+accounting reach zero; explicit close retires all twelve real helpers and
+their listeners. Compiler/runtime/fixture and production parallelism are unchanged.
+
+`worker-frontier-budgets-runtime-r3/receipt.json`, SHA256
+`01779892e889323171c6e1ec937e7a135c8467616bd0064048ef798a3d792885`,
+and `worker-frontier-budgets-supervisor-r3/terminal.json`, SHA256
+`bcafe6e8f3876479dfa76eb59e3c8a1abdbe71d00d03a5badbbaa5eb5d4b1e34`,
+are retained in the stationary-motion artifact directory. Original Popen39404
+exits0 with membership, settled handle, EOF and checked self-only Job closure;
+unknownfalse, zero fetches and341 stable input fences. Runtime evidence totals
+216090 bytes, below6MiB. Two source-only rejected supervisor preparations remain
+provenance: a Job-variable collision and inherited stale output names were fixed
+before dispatch. Independent source and actual-outcome reviews accepted R3.
+
+These controls detect sibling frontiers oversubscribing one invocation budget
+after their shared handshake. Existing cohorts are excluded and retain their
+original receipts. This is finite public scheduling and cleanup evidence;
+general scheduling, timing/performance, browser/native application, Linux/device
+and reviewed compiler adoption remain open. No aggregate matrix run is claimed.
