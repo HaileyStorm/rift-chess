@@ -168,9 +168,14 @@ function scheduleBot(job: any): void {
     });
 }
 
-function applyReadyBot(packet: any): any {
+// A diagnostic accompanies only the frame that applies a completed bot choice.
+// It records the actual route; it never authorizes or changes a Bend transition.
+type BotExecution = { route: 'worker' | 'serial-fallback'; generation: number;
+  fromRevision: number; toRevision: number; choiceId: number | null };
+
+function applyReadyBot(packet: any): { packet: any; execution?: BotExecution } {
   const job = api.bot_job(packet.session);
-  if (!job.eligible || !job.canApply) return packet;
+  if (!job.eligible || !job.canApply) return { packet };
   const work = botWork.get(job.revision);
   if (work?.kind === 'failed') throw new Error(`Bend bot worker failed: ${work.message}`);
   if (work?.kind === 'ready') {
@@ -178,16 +183,18 @@ function applyReadyBot(packet: any): any {
     const next = api.bot_apply_at(job.revision, work.id, packet.session);
     if (next.presentation.revision === job.revision)
       throw new Error('Bend rejected the bot worker choice for a ready revision');
-    return next;
+    return { packet: next, execution: { route: 'worker', generation: botGeneration,
+      fromRevision: job.revision, toRevision: next.presentation.revision, choiceId: work.id } };
   }
   if (work?.kind === 'unavailable' || botUnavailable) {
     botWork.delete(job.revision);
     const next = api.bot_fallback_at(job.revision, packet.session);
     if (next.presentation.revision === job.revision)
       throw new Error('Bend serial bot fallback rejected a ready revision');
-    return next;
+    return { packet: next, execution: { route: 'serial-fallback', generation: botGeneration,
+      fromRevision: job.revision, toRevision: next.presentation.revision, choiceId: null } };
   }
-  return packet;
+  return { packet };
 }
 
 function disposeBot(): void {
@@ -565,7 +572,7 @@ async function ensureFont(): Promise<void> {
   await fontLoad;
 }
 async function emit(packet: any, elapsed: number, id: number,
-  kind: 'frame' | 'refinement' = 'frame'): Promise<void> {
+  kind: 'frame' | 'refinement' = 'frame', botExecution: BotExecution | null = null): Promise<void> {
   const portStart = performance.now();
   session = packet.session;
   await Promise.all([ensurePlate(packet), ensureFont()]);
@@ -610,7 +617,7 @@ async function emit(packet: any, elapsed: number, id: number,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
-    treeMs, traversalMs, sceneTimes, spriteMetrics,
+    treeMs, traversalMs, sceneTimes, spriteMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
 }
 async function handleMessage(request: any): Promise<void> {
@@ -672,11 +679,12 @@ async function handleMessage(request: any): Promise<void> {
         cameraReleased = dispatched.cameraReleased === true;
       }
     }
-    packet = applyReadyBot(packet);
+    const appliedBot = applyReadyBot(packet);
+    packet = appliedBot.packet;
     const orbiting = api.orbiting(packet.session) === true;
     cameraOrbiting = orbiting;
     observeBotJob(api.bot_job(packet.session));
-    await emit(packet, performance.now() - start, request.id);
+    await emit(packet, performance.now() - start, request.id, 'frame', appliedBot.execution);
     latestPacket = packet;
     lastHostId = request.id;
     scheduleSprite(packet, cameraReleased);
