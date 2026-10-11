@@ -4,7 +4,6 @@ import ../Camera.bend as Camera
 import ../../lib/graphics/Quad.bend as Quad
 import ../../lib/graphics/v2/Transform2D.bend as Transform
 import ./PieceSprites.bend as PieceSprites
-import ./KnightMesh.bend as KnightMesh
 
 def board_pitch(+size: U32, camera: Camera.Basis) -> F32:
   match camera:
@@ -39,9 +38,7 @@ def square_matrix(+size: U32, +basis: Camera.Basis, square: U32) -> Transform.Ma
 
 def piece_matrix(+size: U32, +basis: Camera.Basis, center: Quad.Point,
   kind: U32) -> Transform.Matrix:
-  match kind:
-    case 2: KnightMesh.frame(board_pitch(size, basis), center)
-    case _: matrix(width(size, basis), height(size, basis), center)
+  matrix(width(size, basis), height(size, basis), center)
 
 def piece_square_matrix(+size: U32, +basis: Camera.Basis, square: U32,
   kind: U32) -> Transform.Matrix:

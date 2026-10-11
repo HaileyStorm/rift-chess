@@ -114,7 +114,6 @@ function installSpriteHelper(scope: Scope): void {
   let plates: any = null, plateTheme: number | null = null, underlay: any = null;
   let sharedPlate: { theme: number; value: any } | null = null;
   let pieces: any = null;
-  let posedPieces: any = null, poseFrame: any = null;
   let encodedPose: PackedPose | null = null;
   let settledGround: any = null, groundFrame: any = null;
   let encodedGround: PackedGround | null = null;
@@ -220,8 +219,6 @@ function installSpriteHelper(scope: Scope): void {
     }
     if (missingPieces) {
       pieces = nextPieces;
-      posedPieces = null;
-      poseFrame = null;
       encodedPose = null;
     }
   }
@@ -301,23 +298,17 @@ function installSpriteHelper(scope: Scope): void {
         metrics.groundMs = now() - groundAt;
       }
       const spriteAt = now();
-      if (!posedPieces || !poseFrame || !board.sprite_same_view(poseFrame, request.frame)) {
-        const nextPose = board.sprite_pose_pieces(request.frame, pieces);
-        const nextEncoded = encodePose(nextPose);
-        posedPieces = nextPose;
-        encodedPose = nextEncoded;
-        poseFrame = request.frame;
-      }
-      const image = board.fast_sprite_pieces512(request.frame, posedPieces, settledGround);
+      if (!encodedPose) encodedPose = encodePose(pieces);
+      const image = board.fast_sprite_pieces512(request.frame, pieces, settledGround);
       metrics.spritesMs = now() - spriteAt;
 
-      // Every image carries its own pose masks; discarded replies cannot retain
-      // alpha from a camera that differs from the displayed knight.
+      // Static atlas alpha is shared by drawing and picking. Each image keeps
+      // its own presentation/frame identity even when the texture data is reused.
       const imagePackAt = now();
       const packedImage = encodeGround(image);
       metrics.imagePackMs = now() - imagePackAt;
       const pickAt = now();
-      const pickData = board.sprite_pick_data(posedPieces);
+      const pickData = board.sprite_pick_data(pieces);
       metrics.pickDataMs = now() - pickAt;
       if (!encodedPose) throw new Error('Missing complete Bend sprite pose');
       const pose = request.needPose === false ? null : transferPose(encodedPose);

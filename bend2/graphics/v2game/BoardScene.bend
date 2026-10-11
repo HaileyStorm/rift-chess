@@ -29,7 +29,6 @@ import ./PieceAssets.bend as PieceAssets
 import ./SpritePlacement.bend as SpritePlacement
 import ./SpriteMotion.bend as SpriteMotion
 import ./AtlasPickData.bend as AtlasPickData
-import ./KnightMesh.bend as KnightMesh
 
 type Corners is Data:
   Corners{p00: Quad.Point, p10: Quad.Point, p11: Quad.Point, p01: Quad.Point}
@@ -1549,14 +1548,6 @@ def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
 def sprite_piece_side(code: U32) -> PieceSprites.Side:
   SpritePlacement.piece_side(code)
 
-def sprite_pose_textures(textures: KnightMesh.Textures, pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
-  match textures:
-    case KnightMesh.Textures{ivory,navy}:
-      PieceSprites.with_knights(pieces, ivory, navy)
-
-def sprite_pose_pieces(frame: Scene.Frame, pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
-  sprite_pose_textures(KnightMesh.textures(6n,64,Camera.basis(Scene.frame_view(frame))),pieces)
-
 def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
   AtlasPickData.from_pieces(pieces)
 
@@ -1589,13 +1580,9 @@ def sprite_ground_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
     case True{}: projected_square(size, camera, square)
     case False{}: camera_ground_point(size, camera, source, square, amount)
 
-# A low, translucent footprint sits behind the existing alpha-cut artwork.
-# Atlas pieces retain their screen-facing base shift. The sculpted knight
-# uses its ground-plane pivot; artwork and picking use the same mesh frame.
+# All atlas pieces share the same low contact baseline and placement.
 def sprite_contact_base(kind: U32, width: F32, y: F32) -> F32:
-  match kind:
-    case 2: y
-    case _: F32.add(y, F32.mul(width, 0.17))
+  F32.add(y, F32.mul(width, 0.17))
 
 def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
   kind: U32, +center: Quad.Point, image: Image) -> Image:

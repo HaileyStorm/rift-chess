@@ -86,7 +86,7 @@ let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-  previewPose: 0, previewSupport: 0, previewPaint: 0,
+  previewSupport: 0, previewPaint: 0,
   prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
 
 async function ensureBotSession(): Promise<any> {
@@ -432,7 +432,7 @@ function render(packet: any): any {
     const at = performance.now(); const result = fn(); sceneTimes[key] = performance.now() - at; return result;
   };
   sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-    previewPose: 0, previewSupport: 0, previewPaint: 0,
+    previewSupport: 0, previewPaint: 0,
     prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   sceneReuse = { staticFeedback: false, menuBackground: false };
   if (request.background) {
@@ -486,8 +486,7 @@ function render(packet: any): any {
       pruneAtlasMasks();
       if (atlasMasks.size < MAX_ATLAS_MASKS) {
         if (spriteTaskId >= Number.MAX_SAFE_INTEGER) throw new Error('Atlas mask identity exhausted');
-        const pieces = timed('previewPose', () => scene.sprite_same_view(spritePose!.frame, frame)
-          ? spritePose!.pieces : scene.sprite_pose_pieces(frame, spritePose!.pieces));
+        const pieces = spritePose.pieces;
         const maskId = ++spriteTaskId;
         atlasMasks.set(maskId, { frame, pieces: scene.sprite_pick_data(pieces),
           raster: 256, retired: false, firstOffer: 0, lastOffer: 0 });

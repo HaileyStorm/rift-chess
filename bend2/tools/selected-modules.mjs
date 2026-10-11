@@ -26,7 +26,7 @@ export const moduleSpecs = Object.freeze({
       'fast_sprite_pieces512', 'fast_feedback_on_pieces512',
       'fast_sprite_motion512', 'sprite_motion_dirty512',
       'sprite_motion_matches', 'sprite_motion_transition_equal', 'sprite_motion_complete',
-      'sprite_pick_data', 'sprite_pose_pieces', 'sprite_supports',
+      'sprite_pick_data', 'sprite_supports',
       'sprite_preview_same_artwork', 'sprite_same_view', 'sprite_has_view',
       'fast_sprite_feedback_static512', 'sprite_same_placement',
       'sprite_same_ground',
