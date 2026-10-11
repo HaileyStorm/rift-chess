@@ -1352,15 +1352,39 @@ def top_material_at(table: TopMaterials, +index: U32, +span: U32) -> TopMaterial
         _ => top_material_at(left,U32.mod(index,half),half),
         _ => top_material_at(right,U32.mod(index,half),half))(0)
 
-def top_region_case(inner: Bool, up: Bool, right: Bool, down: Bool,
-  left: Bool, material: TopMaterial) -> SpatialFast.Region:
-  match inner up right down left material:
-    case True{} _ _ _ _ TopMaterial{top,u,r,d,l}: SpatialFast.Fill{top}
-    case False{} True{} _ _ _ TopMaterial{t,up,r,d,l}: SpatialFast.Fill{up}
-    case False{} False{} True{} _ _ TopMaterial{t,u,right,d,l}: SpatialFast.Fill{right}
-    case False{} False{} False{} True{} _ TopMaterial{t,u,r,down,l}: SpatialFast.Fill{down}
-    case False{} False{} False{} False{} True{} TopMaterial{t,u,r,d,left}: SpatialFast.Fill{left}
-    case False{} False{} False{} False{} False{} _: SpatialFast.Split{}
+# Select a material only after classification has found a whole face.
+# Split regions never traverse the table; interior regions skip edge predicates.
+def top_region_color(material: TopMaterial, face: U32) -> SpatialFast.Region:
+  match material face:
+    case TopMaterial{top,u,r,d,l} 0: SpatialFast.Fill{top}
+    case TopMaterial{t,up,r,d,l} 1: SpatialFast.Fill{up}
+    case TopMaterial{t,u,right,d,l} 2: SpatialFast.Fill{right}
+    case TopMaterial{t,u,r,down,l} 3: SpatialFast.Fill{down}
+    case TopMaterial{t,u,r,d,left} _: SpatialFast.Fill{left}
+
+def top_region_case(up: Bool, right: Bool, down: Bool, left: Bool,
+  index: U32, table: TopMaterials) -> SpatialFast.Region:
+  match up right down left:
+    case True{} _ _ _: top_region_color(top_material_at(table,index,64),1)
+    case False{} True{} _ _: top_region_color(top_material_at(table,index,64),2)
+    case False{} False{} True{} _: top_region_color(top_material_at(table,index,64),3)
+    case False{} False{} False{} True{}: top_region_color(top_material_at(table,index,64),4)
+    case False{} False{} False{} False{}: SpatialFast.Split{}
+
+def top_region_inner(inner: Bool, +lf: F32, +hf: F32, +lr: F32, +hr: F32,
+  index: U32, table: TopMaterials) -> SpatialFast.Region:
+  match inner:
+    case True{}: top_region_color(top_material_at(table,index,64),0)
+    case False{}:
+      +up = Bool.and(F32.is_le(hr,0.05),
+        Bool.and(F32.is_le(hr,lf),F32.is_le(hr,F32.sub(1.0,hf))))
+      +right = Bool.and(F32.is_le(F32.sub(1.0,lf),0.05),
+        Bool.and(F32.is_le(F32.sub(1.0,lf),lr),F32.is_le(F32.sub(1.0,lf),F32.sub(1.0,hr))))
+      +down = Bool.and(F32.is_le(F32.sub(1.0,lr),0.05),
+        Bool.and(F32.is_le(F32.sub(1.0,lr),lf),F32.is_le(F32.sub(1.0,lr),F32.sub(1.0,hf))))
+      +left = Bool.and(F32.is_le(hf,0.05),
+        Bool.and(F32.is_le(hf,lr),F32.is_le(hf,F32.sub(1.0,hr))))
+      top_region_case(up,right,down,left,index,table)
 
 def top_region(region: SpatialFast.Region, value: SpatialFast.Bounds,
   table: TopMaterials) -> SpatialFast.Region:
@@ -1376,16 +1400,8 @@ def top_region(region: SpatialFast.Region, value: SpatialFast.Bounds,
       +hr = F32.sub(max_r,row)
       +inner = Bool.and(Bool.and(F32.is_ge(lf,0.05),F32.is_le(hf,0.95)),
         Bool.and(F32.is_ge(lr,0.05),F32.is_le(hr,0.95)))
-      +up = Bool.and(F32.is_le(hr,0.05),
-        Bool.and(F32.is_le(hr,lf),F32.is_le(hr,F32.sub(1.0,hf))))
-      +right = Bool.and(F32.is_le(F32.sub(1.0,lf),0.05),
-        Bool.and(F32.is_le(F32.sub(1.0,lf),lr),F32.is_le(F32.sub(1.0,lf),F32.sub(1.0,hr))))
-      +down = Bool.and(F32.is_le(F32.sub(1.0,lr),0.05),
-        Bool.and(F32.is_le(F32.sub(1.0,lr),lf),F32.is_le(F32.sub(1.0,lr),F32.sub(1.0,hf))))
-      +left = Bool.and(F32.is_le(hf,0.05),
-        Bool.and(F32.is_le(hf,lr),F32.is_le(hf,F32.sub(1.0,hr))))
       +index = U32.add(F32.to_u32(file),U32.mul(F32.to_u32(row),8))
-      top_region_case(inner,up,right,down,left,top_material_at(table,index,64))
+      top_region_inner(inner,lf,hf,lr,hr,index,table)
 
 def top_classify(+inverse: SpatialFast.Inverse, +mask: Board.Mask,
   +colors: SpatialBoard.Palette, table: TopMaterials,
