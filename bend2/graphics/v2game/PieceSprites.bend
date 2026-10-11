@@ -59,6 +59,51 @@ type Pieces is Data:
     navy_bishop: Sample.Texture, navy_rook: Sample.Texture,
     navy_queen: Sample.Texture, navy_king: Sample.Texture}
 
+# Retained alpha support belongs to the exact immutable Pieces used to prepare
+# it. This record holds only boxes; replacing a pose texture requires new support.
+type Supports is Data:
+  Supports{ivory_pawn: Rect.Box, ivory_knight: Rect.Box,
+    ivory_bishop: Rect.Box, ivory_rook: Rect.Box,
+    ivory_queen: Rect.Box, ivory_king: Rect.Box,
+    navy_pawn: Rect.Box, navy_knight: Rect.Box,
+    navy_bishop: Rect.Box, navy_rook: Rect.Box,
+    navy_queen: Rect.Box, navy_king: Rect.Box}
+
+def support_prepare(pieces: Pieces) -> Supports:
+  match pieces:
+    case Pieces{ip, ik, ib, ir, iq, ix, np, nk, nb, nr, nq, nx}:
+      Supports{Bounds.bounds(ip), Bounds.bounds(ik), Bounds.bounds(ib),
+        Bounds.bounds(ir), Bounds.bounds(iq), Bounds.bounds(ix),
+        Bounds.bounds(np), Bounds.bounds(nk), Bounds.bounds(nb),
+        Bounds.bounds(nr), Bounds.bounds(nq), Bounds.bounds(nx)}
+
+def support_ivory(supports: Supports, kind: PieceKind) -> Rect.Box:
+  match supports:
+    case Supports{ip, ik, ib, ir, iq, ix, np, nk, nb, nr, nq, nx}:
+      match kind:
+        case Pawn{}: ip
+        case Knight{}: ik
+        case Bishop{}: ib
+        case Rook{}: ir
+        case Queen{}: iq
+        case King{}: ix
+
+def support_navy(supports: Supports, kind: PieceKind) -> Rect.Box:
+  match supports:
+    case Supports{ip, ik, ib, ir, iq, ix, np, nk, nb, nr, nq, nx}:
+      match kind:
+        case Pawn{}: np
+        case Knight{}: nk
+        case Bishop{}: nb
+        case Rook{}: nr
+        case Queen{}: nq
+        case King{}: nx
+
+def support_texture(supports: Supports, side: Side, kind: PieceKind) -> Rect.Box:
+  match side:
+    case Ivory{}: support_ivory(supports, kind)
+    case Navy{}: support_navy(supports, kind)
+
 def sprite_view(+depth: Nat, +size: U32, +pixels: Image,
   +left: U32, +top: U32, +span: U32) -> ImageView.View:
   ImageView.narrow(ImageView.View{depth, size, 0, 0, pixels}, left, top, span)
@@ -212,3 +257,32 @@ def draw_axis_aligned(+target_depth: Nat,+target_size: U32,+pieces: Pieces,
   +source = texture(pieces,side,kind)
   draw_axis_visible(Bool.and(U32.is_ne(opacity,0),Bool.not(Rect.is_empty(clip))),
     target_depth,target_size,source,matrix,opacity,clip,target)
+
+def draw_axis_supported_case(valid: Bool,+target_depth: Nat,+target_size: U32,
+  +source: Sample.Texture,+matrix: Transform.Matrix,+bounds: Rect.Box,
+  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  match valid:
+    case False{}: RgbaAffine.draw(target_depth,target_size,
+      RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,clip,target)
+    case True{}: draw_axis_bounds(Rect.is_empty(bounds),target_depth,target_size,
+      source,matrix,bounds,opacity,clip,target)
+
+def draw_axis_supported_visible(visible: Bool,+target_depth: Nat,+target_size: U32,
+  +source: Sample.Texture,+matrix: Transform.Matrix,bounds: Rect.Box,
+  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  match visible:
+    case False{}: target
+    case True{}: draw_axis_supported_case(
+      Bool.and(axis_valid(matrix),source_valid(source)),target_depth,target_size,
+      source,matrix,bounds,opacity,clip,target)
+
+# Uses the same linear sampler, support margins, coverage and fallback as the
+# settled draw path, with the actual mask scan moved to support_prepare.
+def draw_axis_supported(+target_depth: Nat,+target_size: U32,pieces: Pieces,
+  +side: Side,+kind: PieceKind,+matrix: Transform.Matrix,+opacity: U32,
+  +clip: Rect.Box,supports: Supports,target: Image) -> Image:
+  +source = texture(pieces,side,kind)
+  +bounds = support_texture(supports,side,kind)
+  draw_axis_supported_visible(
+    Bool.and(U32.is_ne(opacity,0),Bool.not(Rect.is_empty(clip))),
+    target_depth,target_size,source,matrix,bounds,opacity,clip,target)

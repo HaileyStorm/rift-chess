@@ -1395,6 +1395,21 @@ def sprite_pose_pieces(frame: Scene.Frame, pieces: PieceSprites.Pieces) -> Piece
 def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
   AtlasPickData.from_pieces(pieces)
 
+def sprite_supports(pieces: PieceSprites.Pieces) -> PieceSprites.Supports:
+  PieceSprites.support_prepare(pieces)
+
+# Prepared supports belong to these exact immutable textures. Settled callers
+# retain their original drawing path; preview callers prepare the boxes once.
+def sprite_draw(+depth: Nat, +size: U32, +pieces: PieceSprites.Pieces,
+  +side: PieceSprites.Side, +kind: PieceSprites.PieceKind,
+  +matrix: Transform.Matrix, +opacity: U32, +clip: Rect.Box,
+  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  match supports:
+    case None{}: PieceSprites.draw_axis_aligned(depth,size,pieces,side,kind,
+      matrix,opacity,clip,image)
+    case Some{bounds}: PieceSprites.draw_axis_supported(depth,size,pieces,side,kind,
+      matrix,opacity,clip,bounds,image)
+
 # Completed atlas frames and picking share the destination's exact F32 center;
 # lerp(source, destination, 1) can retain source-dependent rounding.
 def sprite_center_at(complete: Bool, +size: U32, +camera: Camera.Basis,
@@ -1432,7 +1447,8 @@ def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
         U32.max(1,Ortho.pixel(F32.mul(width,0.025))), 727076, 48, image)
 
 def sprite_piece_at(show: Bool, +square: U32, +code: U32,
-  +context: Context, +pieces: PieceSprites.Pieces, clip: Rect.Box, image: Image) -> Image:
+  +context: Context, +pieces: PieceSprites.Pieces, clip: Rect.Box,
+  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
@@ -1446,15 +1462,16 @@ def sprite_piece_at(show: Bool, +square: U32, +code: U32,
       +contact_center = sprite_ground_center_at(U32.is_eq(amount,16),size,camera,
         source,square,amount)
       +contact = sprite_contact_shadow(depth,size,width,Model.piece_type(code),contact_center,image)
-      PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
+      sprite_draw(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix, 255,
-        clip, contact)
+        clip, supports, contact)
 
 def sprite_opacity(+age: U32) -> U32:
   SpriteMotion.opacity(age)
 
 def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
-  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box,
+  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, +oldBoard,
@@ -1463,30 +1480,36 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
       +center = SpriteMotion.dying_center(size, camera, square, age)
       +code = Model.board_get(oldBoard, square)
       +matrix = SpritePlacement.piece_matrix(size, camera, center, Model.piece_type(code))
-      PieceSprites.draw_axis_aligned(depth, size, pieces, sprite_piece_side(code),
+      sprite_draw(depth, size, pieces, sprite_piece_side(code),
         sprite_piece_kind(Model.piece_type(code)), matrix,
-        sprite_opacity(age), clip, image)
+        sprite_opacity(age), clip, supports, image)
 
 def fast_sprite_piece_layer(+square: U32, +context: Context,
-  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box,
+  +supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
   match context:
     case Context{depth, size, frame, camera, +board, oldBoard,
         previous, +holes, action, theme}:
       +present = Model.present(holes, square)
       +dead = fast_sprite_dying_at(
         Bool.and(present, dying_visible(square, context)), square,
-        context, pieces, clip, image)
+        context, pieces, clip, supports, image)
       sprite_piece_at(Bool.and(present,
         Model.occupied(Model.board_get(board, square))), square,
-        Model.board_get(board, square), context, pieces, clip, dead)
+        Model.board_get(board, square), context, pieces, clip, supports, dead)
 
-def fast_sprite_piece_layers(order: List<&2, U32>, +context: Context,
-  +pieces: PieceSprites.Pieces, +clip: Rect.Box, image: Image) -> Image:
+def fast_sprite_piece_layers.supported(order: List<&2, U32>, +context: Context,
+  +pieces: PieceSprites.Pieces, +clip: Rect.Box,
+  +supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
   match order:
     case Nil{}: image
     case +square <> rest:
-      fast_sprite_piece_layers(rest, context, pieces, clip,
-        fast_sprite_piece_layer(square, context, pieces, clip, image))
+      fast_sprite_piece_layers.supported(rest, context, pieces, clip, supports,
+        fast_sprite_piece_layer(square, context, pieces, clip, supports, image))
+
+def fast_sprite_piece_layers(order: List<&2, U32>, context: Context,
+  pieces: PieceSprites.Pieces, clip: Rect.Box, image: Image) -> Image:
+  fast_sprite_piece_layers.supported(order,context,pieces,clip,None{},image)
 
 # Occupancy-only stage. `ground` must contain the board/background but no old
 # piece pixels. The caller may retain this result until occupancy, camera or
@@ -1658,15 +1681,18 @@ def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
 
 # Authored orbit artwork uses the same depth-8 raster as its preview picker.
 # The caller supplies textures prepared for this exact displayed camera view.
-def fast_sprite_camera256_for_512(+frame: Scene.Frame,
-  pieces: PieceSprites.Pieces, underlay128: Image) -> Image:
+def fast_sprite_camera_pieces256_for_512(+frame: Scene.Frame,
+  pieces: PieceSprites.Pieces, supports: PieceSprites.Supports,
+  underlay128: Image) -> Image:
   +small_ground = fast_ground(7n,128,underlay128,frame)
   +ground = nearest2(7n,small_ground)
   +context = context_for(8n,256,frame)
   +camera = Camera.basis(Scene.frame_view(frame))
-  +artwork = fast_sprite_piece_layers(Camera.depth_order(camera),context,
-    pieces,Rect.screen(256),ground)
-  fast_camera_feedback(context,artwork)
+  fast_sprite_piece_layers.supported(Camera.depth_order(camera),context,
+    pieces,Rect.screen(256),Some{supports},ground)
+
+def fast_sprite_camera_feedback256(frame: Scene.Frame, artwork: Image) -> Image:
+  fast_camera_feedback(context_for(8n,256,frame),artwork)
 
 def fast_camera512(frame: Scene.Frame, underlay128: Image) -> Image:
   nearest2(8n,fast_camera256_for_512(frame,underlay128))
@@ -1981,6 +2007,14 @@ def sprite_motion_transition_equal(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
     Bool.and(sprite_position_equal(Scene.frame_previous(a),Scene.frame_previous(b)),
       Bool.and(U32.is_eq(Scene.frame_lastAction(a),Scene.frame_lastAction(b)),
         U32.is_eq(Scene.frame_theme(a),Scene.frame_theme(b)))))
+
+# The artwork includes capture fade/hop progress and the derived victim square.
+# Previous en-passant fields can alter that victim despite equal board pixels.
+def sprite_preview_same_artwork(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
+  Bool.and(sprite_motion_transition_equal(a,b),
+    Bool.and(U32.is_eq(progress(a),progress(b)),
+      U32.is_eq(captured_square(Model.decode(Scene.frame_lastAction(a)),Scene.frame_previous(a)),
+        captured_square(Model.decode(Scene.frame_lastAction(b)),Scene.frame_previous(b)))))
 
 def sprite_motion_complete(frame: Scene.Frame) -> Bool:
   U32.is_eq(progress(frame),16)

@@ -51,7 +51,8 @@ let spritePose: { pieces: any; frame: any; theme: number } | null = null;
 let spriteGround: { image: any; frame: any; theme: number; id: number } | null = null;
 let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
 // Preview ownership never replaces the helper's settled pose/ground/layer.
-let spritePreview: { frame: any; pieces: any; theme: number; maskId: number } | null = null;
+let spritePreview: { frame: any; pieces: any; supports: any; theme: number; maskId: number;
+  artwork: { frame: any; image: any; underlay: any } | null } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
@@ -80,7 +81,8 @@ let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-  previewPose: 0, prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
+  previewPose: 0, previewSupport: 0, previewPaint: 0,
+  prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
 
 async function ensureBotSession(): Promise<any> {
   if (botSession) return botSession;
@@ -405,7 +407,8 @@ function render(packet: any): any {
     const at = performance.now(); const result = fn(); sceneTimes[key] = performance.now() - at; return result;
   };
   sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-    previewPose: 0, prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
+    previewPose: 0, previewSupport: 0, previewPaint: 0,
+    prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
     motionUnderlay = timed('motionUnderlay', () => scene.underlay128_asset(request.theme, plates));
@@ -461,7 +464,8 @@ function render(packet: any): any {
         const maskId = ++spriteTaskId;
         atlasMasks.set(maskId, { frame, pieces: scene.sprite_pick_data(pieces),
           raster: 256, retired: false, firstOffer: 0, lastOffer: 0 });
-        preview = spritePreview = { frame, pieces, theme: request.theme, maskId };
+        const supports = timed('previewSupport', () => scene.sprite_supports(pieces));
+        preview = spritePreview = { frame, pieces, supports, theme: request.theme, maskId, artwork: null };
       }
     }
   } else spritePreview = null;
@@ -518,7 +522,15 @@ function render(packet: any): any {
       const artwork = scene.fast_feedback_on_pieces512(frame, occupancy);
       return boardSize === 512 ? artwork : scene.nearest2(9n, artwork);
     }
-    if (preview) return scene.fast_sprite_camera256_for_512(frame, preview.pieces, motionUnderlay);
+    if (preview) {
+      if (!preview.artwork || preview.artwork.underlay !== motionUnderlay ||
+          !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
+        const image = timed('previewPaint', () => scene.fast_sprite_camera_pieces256_for_512(
+          frame, preview!.pieces, preview!.supports, motionUnderlay));
+        preview.artwork = { frame, image, underlay: motionUnderlay };
+      }
+      return scene.fast_sprite_camera_feedback256(frame, preview.artwork.image);
+    }
     return request.motion ? scene.fast_camera256_for_512(frame, motionUnderlay)
       : scene[`fast_pointer${suffix}`](frame, prepared);
   });
