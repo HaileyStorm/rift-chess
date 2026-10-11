@@ -1,5 +1,5 @@
 # Sculpted Knight: tapered throat, closed components and shared color/mask coverage.
-# Material IDs: 0 body, 1 brass, 2 dark mane/eye/nostril/mouth.
+# Material IDs: 0 body, 1 brass pedestal, 2 gold mane; facial marks stay dark.
 import Base
 import ../Camera.bend as Camera
 import ../../lib/graphics/Quad.bend as Quad
@@ -382,6 +382,8 @@ def ink(band: U32, +normal: Vertex, style: PieceArt.Material) -> U32:
     case 0 PieceArt.Material{body, shade, glint, shadow}:
       body_ink(normal, body, glint, shadow)
     case 1 PieceArt.Material{body, shade, glint, shadow}:
+      body_ink(normal, 11499576, 16244390, 6173718)
+    case 2 PieceArt.Material{body, shade, glint, shadow}:
       body_ink(normal, 11499576, 16244390, 6173718)
     case _ _: 463386
 
