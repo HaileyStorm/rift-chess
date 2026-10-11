@@ -30,7 +30,7 @@ const ports = {
   'worker-v2.ts': { sha256: '3700f5424289cf16d560e04568544f85bcf01cc1fc2e7fe03763265ce083824a',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     bareCounts: { Con: 2, Nil: 1, Pix: 1, Qua: 1, Some: 1 } },
-  'sprite-helper.ts': { sha256: 'beabd134cf291ea3272979d3ffc1b3342d1e0d34767811d20ccacaa13277f0e6',
+  'sprite-helper.ts': { sha256: '9651cecf9313b82f8a52d6ea82e6b8ce515c9bdfeff32c8352ca384f5a9d706e',
     counts: { Ready: 2, Frame: 1, ObservatoryPlates: 1 },
     bareCounts: { Con: 2, Nil: 2, Pix: 3, Qua: 3, Some: 1 } },
   'pose-port.ts': { sha256: '043b91470a69f96a7294354d5e2ad5079a5785a52dcb53b91b08bd08037b7d3b',
@@ -105,8 +105,6 @@ export function transformBrowserTags2035(relative, input) {
       allowed: [assetsResponse, piecesResponse], count: 1 });
   }
   if (name === 'sprite-helper.ts') {
-    contents = replace(contents, 'loadAssets?: (requests: any[]) => Promise<any[]>;',
-      `loadAssets?: (requests: any[], responseTag?: '${assetsResponse}' | '${piecesResponse}') => Promise<any[]>;`, 1);
     contents = replace(contents, 'missingPieces ? fetchAssets(spriteRequests) : Promise.resolve([]),',
       `missingPieces ? fetchAssets(spriteRequests, '${piecesResponse}') : Promise.resolve([]),`, 1);
     assert.equal(occurrences(contents, 'plateRequests.length ? fetchAssets(plateRequests) : Promise.resolve([]),'), 1);

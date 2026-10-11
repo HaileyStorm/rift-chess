@@ -98,29 +98,15 @@ type Scope = {
   postMessage(message: any, transfer?: Transferable[]): void;
 };
 
-type RuntimeOptions = {
-  scene?: Record<string, (...args: any[]) => any>;
-  loadAssets?: (requests: any[]) => Promise<any[]>;
-  now?: () => number;
-  source?: string;
-  loadPrepared?: () => Promise<any | null>;
-  hashPlate?: (ready: any) => Promise<string>;
-  preparedFrame?: any;
-  preparedPlateSha256?: string;
-};
-
-/** Install the worker protocol. The injected seams are used by the bounded
- * Node-worker test; production supplies only its real worker global. */
-export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}): void {
-  const board = options.scene ?? scene;
-  const fetchAssets = options.loadAssets ?? loadAssetRequests;
-  const now = options.now ?? (() => performance.now());
-  const source = options.source ?? SOURCE;
-  const preparedFrame = options.preparedFrame ?? configuredFrame();
-  const preparedPlateSha256 = options.preparedPlateSha256 ?? PREPARED_PLATE_SHA;
+function installSpriteHelper(scope: Scope): void {
+  const board = scene;
+  const fetchAssets = loadAssetRequests;
+  const now = () => performance.now();
+  const source = SOURCE;
+  const preparedFrame = configuredFrame();
+  const preparedPlateSha256 = PREPARED_PLATE_SHA;
   const preparedEnabled = Boolean(preparedFrame && /^[0-9a-f]{64}$/.test(preparedPlateSha256) &&
-    (options.loadPrepared || PREPARED_PATH));
-  const hashPlate = options.hashPlate ?? digestPlate;
+    PREPARED_PATH);
 
   let generation = -1;
   let generationIds = new Set<number>();
@@ -137,8 +123,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   // Bend plates are immutable. A newly supplied/decoded plate has a new
   // identity, while orbiting away and back may reuse this same Ready object.
   const plateHashes = new WeakMap<object, Promise<string | null>>();
-  const prepared = () => preparedLoad ??= (options.loadPrepared
-    ? options.loadPrepared() : loadPreparedGround(scope)).catch(() => null);
+  const prepared = () => preparedLoad ??= loadPreparedGround(scope).catch(() => null);
 
   function readyPlate(theme: number, value: any): any | null {
     const ready = theme === 0 ? value?.astral : value?.stone;
@@ -150,7 +135,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
   function readyDigest(ready: object): Promise<string | null> {
     let result = plateHashes.get(ready);
     if (!result) {
-      result = hashPlate(ready).catch(() => null);
+      result = digestPlate(ready).catch(() => null);
       plateHashes.set(ready, result);
     }
     return result;

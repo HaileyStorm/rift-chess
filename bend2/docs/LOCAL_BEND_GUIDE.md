@@ -490,9 +490,14 @@ quadtree on every pointer move. The 128px-ground/256px-silhouette motion path
 measured about 57 ms p90 pixel preparation and 126 ms p90 end-to-end reply in
 one local Chrome run; detailed helper refinement was roughly 2–3.5 seconds
 under loaded conditions. These timings support the scheduling choice, not a
-GPU or production responsiveness claim. Source and test paths are
-`platform/browser/sprite-helper.ts`, `ApplicationControl.refine`, and
-`tests/sprite-helper-node.mjs`.
+GPU or production responsiveness claim. Current source paths are
+`platform/browser/sprite-helper.ts` and `ApplicationControl.refine`. The obsolete
+synthetic Node runner and its injected runtime seams were retired on October 11,
+2026. Its exact original bytes remain in
+`docs/evidence/stationary-motion-20261006/sprite-helper-node.retired.mjs.txt` as
+historical provenance, outside the routine run list. See
+`docs/evidence/stationary-motion-20261006/HELPER_TEST_RETIREMENT_2026-10-11.md`
+for the disposition and retained real browser evidence.
 
 ### Idioms
 
