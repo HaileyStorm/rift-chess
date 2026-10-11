@@ -40,6 +40,7 @@ let bitmapSurface = new BitmapSurface(false);
 let underlay: any, motionUnderlay: any, motionBackdrop: any, ground: any, prepared: any, chrome: any, retained: any;
 let spritePrepared: { frame: any; layer: any; boardSize: number; image: any } | null = null;
 let sceneReuse = { staticFeedback: false, menuBackground: false };
+let assetTimes = { plateTransport: 0, plateDecode: 0, fontTransport: 0, fontDecode: 0 };
 let menuBackground: { depth: any; size: number; data: any; plan: any;
   fonts: any; board: any; base: any; image: any } | null = null;
 // Bend requests invalidate these caches even when the current artwork/orbit
@@ -598,16 +599,24 @@ async function ensurePlate(packet: any): Promise<void> {
   const requests = values(scene.asset_ids(packet.render.theme));
   const key = requests.map(request => `${request.path}:${request.max_bytes}`).join('|');
   if (plates && key === assetKey) return;
+  const transportStart = performance.now();
   const responses = await loadAssetRequests(requests);
+  assetTimes.plateTransport = performance.now() - transportStart;
+  const decodeStart = performance.now();
   plates = scene.load_plates(list(responses));
+  assetTimes.plateDecode = performance.now() - decodeStart;
   assetKey = key;
 }
 async function ensureFont(): Promise<void> {
   if (fonts) return;
   if (!fontLoad) fontLoad = (async () => {
+    const transportStart = performance.now();
     const response = await loadFontPack(menu.font_path(), menu.font_byte_cap());
+    assetTimes.fontTransport = performance.now() - transportStart;
     if (!response.ok) throw new Error('Bend font asset unavailable');
+    const decodeStart = performance.now();
     const decoded = menu.load_font(response.bytes, response.used);
+    assetTimes.fontDecode = performance.now() - decodeStart;
     if (decoded?.$ !== 'Some') throw new Error('Bend rejected its source-bound font pack');
     fonts = decoded.value;
   })();
@@ -617,6 +626,7 @@ async function emit(packet: any, elapsed: number, id: number,
   kind: 'frame' | 'refinement' = 'frame', botExecution: BotExecution | null = null): Promise<void> {
   const portStart = performance.now();
   session = packet.session;
+  assetTimes = { plateTransport: 0, plateDecode: 0, fontTransport: 0, fontDecode: 0 };
   await Promise.all([ensurePlate(packet), ensureFont()]);
   const transfers: Transferable[] = [];
   const pixelStart = performance.now();
@@ -659,7 +669,7 @@ async function emit(packet: any, elapsed: number, id: number,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
-    treeMs, traversalMs, sceneTimes, sceneReuse, spriteMetrics, botExecution,
+    treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
 }
 async function handleMessage(request: any): Promise<void> {
