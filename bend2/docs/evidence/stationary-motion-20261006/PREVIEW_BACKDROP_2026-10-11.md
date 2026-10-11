@@ -15,8 +15,9 @@ detail 3105.4/2460.4 ms (base/candidate). One uncontrolled pair establishes no
 stable or causal performance gain. Page heap excludes Worker/native/GPU memory.
 
 The package reused retained emissions through an exact comment-only Match lineage.
-The canonical frozen tag boundary is unchanged; the private candidate successor
-binds the two changed ports. Canonical 2.0.35 binding/adoption remains pending.
+The maintained candidate tag adapter now binds the two changed ports with
+unchanged constructor mappings/counts. Its code matches the private adapter used
+for this journey. Semantic freezes exclude this adapter; compiler adoption remains pending.
 This is not full-resolution repaint, new alpha compositing or owner WOW acceptance.
 The original failed build hash fence and failed LF/CRLF preparation are retained.
 
