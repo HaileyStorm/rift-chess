@@ -63,29 +63,31 @@ def finish(empty: Bool, coverage: U32, +total: U32,
         weighted(total,Color.green(a),Color.green(b),Color.green(c),Color.green(d),wa,wb,wc,wd),
         weighted(total,Color.blue(a),Color.blue(b),Color.blue(c),Color.blue(d),wa,wb,wc,wd)),coverage}
 
-def mix_weights(a: Texel,b: Texel,c: Texel,d: Texel,
-  wa: U32,wb: U32,wc: U32,wd: U32) -> Texel:
-  match a b c d:
-    case Texel{ac,aa} Texel{bc,ba} Texel{cc,ca} Texel{dc,da}:
-      +aw = U32.mul(wa,aa)
-      +bw = U32.mul(wb,ba)
-      +cw = U32.mul(wc,ca)
-      +dw = U32.mul(wd,da)
-      +total = sum4(aw,bw,cw,dw)
-      +coverage = U32.div(U32.add(total,32768),65536)
-      finish(U32.is_zero(coverage),coverage,total,ac,bc,cc,dc,aw,bw,cw,dw)
-
-def mix(a: Texel,b: Texel,c: Texel,d: Texel,fx: U32,fy: U32) -> Texel:
+# Both Texel callers and gathered samples use the same scalar calculation.
+# Gathered values avoid four Texels that would immediately be unpacked.
+def mix_channels(ac: U32,bc: U32,cc: U32,dc: U32,
+  aa: U32,ba: U32,ca: U32,da: U32,fx: U32,fy: U32) -> Texel:
   +x = U32.min(fx,255)
   +y = U32.min(fy,255)
   +ix = U32.sub(256,x)
   +iy = U32.sub(256,y)
-  mix_weights(a,b,c,d,U32.mul(ix,iy),U32.mul(x,iy),U32.mul(ix,y),U32.mul(x,y))
+  +aw = U32.mul(U32.mul(ix,iy),aa)
+  +bw = U32.mul(U32.mul(x,iy),ba)
+  +cw = U32.mul(U32.mul(ix,y),ca)
+  +dw = U32.mul(U32.mul(x,y),da)
+  +total = sum4(aw,bw,cw,dw)
+  +coverage = U32.div(U32.add(total,32768),65536)
+  finish(U32.is_zero(coverage),coverage,total,ac,bc,cc,dc,aw,bw,cw,dw)
+
+def mix(a: Texel,b: Texel,c: Texel,d: Texel,fx: U32,fy: U32) -> Texel:
+  match a b c d:
+    case Texel{ac,aa} Texel{bc,ba} Texel{cc,ca} Texel{dc,da}:
+      mix_channels(ac,bc,cc,dc,aa,ba,ca,da,fx,fy)
 
 def mix_gather(colors: Gather.Four,mask: Gather.Four,fx: U32,fy: U32) -> Texel:
   match colors mask:
     case Gather.Four{a,b,c,d} Gather.Four{aa,bb,cc,dd}:
-      mix(Texel{a,Color.red(aa)},Texel{b,Color.red(bb)},Texel{c,Color.red(cc)},Texel{d,Color.red(dd)},fx,fy)
+      mix_channels(a,b,c,d,Color.red(aa),Color.red(bb),Color.red(cc),Color.red(dd),fx,fy)
 
 # Four adjacent samples share their source prefix, instead of four independent
 # root-to-leaf walks. This is exact integer sampling, not an approximation.
