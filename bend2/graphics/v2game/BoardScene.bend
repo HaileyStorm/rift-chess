@@ -1774,6 +1774,37 @@ def sprite_position_equal(a: Model.Position,b: Model.Position) -> Bool:
     case Model.Pos{ab,ah,_,_,_,_,_,_} Model.Pos{bb,bh,_,_,_,_,_,_}:
       Bool.and(U32.is_eq(ah,bh),sprite_board_equal(ab,bb))
 
+# Conservative exact input key for static feedback. Lists keep their order;
+# hovered is the only omitted Frame field and belongs to the pointer pass.
+# Caller additionally binds the immutable occupancy image and board tier.
+def sprite_feedback_position_equal(a: Model.Position,b: Model.Position) -> Bool:
+  match a b:
+    case Model.Pos{ab,ah,as,ar,ae,ap,aq,af}
+      Model.Pos{bb,bh,bs,br,be,bp,bq,bf}:
+      Bool.and(sprite_board_equal(ab,bb),
+        Bool.and(U32.is_eq(ah,bh),
+          Bool.and(Bool.not(Bool.xor(as,bs)),
+            Bool.and(U32.is_eq(ar,br),
+              Bool.and(U32.is_eq(ae,be),
+                Bool.and(U32.is_eq(ap,bp),
+                  Bool.and(Nat.is_eq(aq,bq),Nat.is_eq(af,bf))))))))
+
+def sprite_same_static_feedback(a: Scene.Frame,b: Scene.Frame) -> Bool:
+  match a b:
+    case Scene.Frame{ap,apr,as,_,at,ati,att,aa,ag,ath,av,ash,ac}
+      Scene.Frame{bp,bpr,bs,_,bt,bti,btt,ba,bg,bth,bv,bsh,bc}:
+      Bool.and(sprite_feedback_position_equal(ap,bp),
+        Bool.and(sprite_feedback_position_equal(apr,bpr),
+          Bool.and(U32.is_eq(as,bs),
+            Bool.and(sprite_board_equal(at,bt),
+              Bool.and(U32.is_eq(ati,bti),
+                Bool.and(sprite_board_equal(att,btt),
+                  Bool.and(U32.is_eq(aa,ba),
+                    Bool.and(U32.is_eq(ag,bg),
+                      Bool.and(U32.is_eq(ath,bth),
+                        Bool.and(sprite_view_equal(av,bv),
+                          Bool.and(sprite_board_equal(ash,bsh),U32.is_eq(ac,bc))))))))))))
+
 def sprite_same_placement(+a: Scene.Frame,+b: Scene.Frame) -> Bool:
   Bool.and(sprite_position_equal(Scene.frame_position(a),Scene.frame_position(b)),
     sprite_view_equal(Scene.frame_view(a),Scene.frame_view(b)))

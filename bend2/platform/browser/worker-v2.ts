@@ -38,6 +38,10 @@ const pixelPort = new PixelPort();
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
 let underlay: any, motionUnderlay: any, motionBackdrop: any, ground: any, prepared: any, chrome: any, retained: any;
+let spritePrepared: { frame: any; layer: any; boardSize: number; image: any } | null = null;
+let sceneReuse = { staticFeedback: false, menuBackground: false };
+let menuBackground: { depth: any; size: number; data: any; plan: any;
+  fonts: any; board: any; base: any; image: any } | null = null;
 // Bend requests invalidate these caches even when the current artwork/orbit
 // path does not consume them. Preserve that work until the cache is needed.
 let groundInvalidated = true, preparedInvalidated = true;
@@ -231,6 +235,8 @@ function disposeSprite(): void {
   spriteLayer = spriteFrame = null;
   spritePose = spriteGround = spriteMotion = null;
   spritePreview = null;
+  spritePrepared = null;
+  menuBackground = null;
   spriteAtlasMaskId = preparedAtlasMaskId = renderedAtlasMaskId = null;
   atlasMasks.clear();
   atlasMaskPressure = false;
@@ -427,6 +433,7 @@ function render(packet: any): any {
   sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
     previewPose: 0, previewSupport: 0, previewPaint: 0,
     prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
+  sceneReuse = { staticFeedback: false, menuBackground: false };
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
     [motionUnderlay, motionBackdrop] = timed('motionUnderlay', () => [
@@ -500,11 +507,21 @@ function render(packet: any): any {
     if (preparedInvalidated || spriteCompleted || !prepared) {
       preparedAtlas = Boolean(spriteSettled);
       preparedAtlasMaskId = preparedAtlas ? spriteAtlasMaskId : null;
-      prepared = timed('prepared', () =>
-        spriteSettled ? (boardSize === 512
-          ? scene.fast_sprite_feedback_static512(frame, spriteLayer)
-          : scene.nearest2(9n, scene.fast_sprite_feedback_static512(frame, spriteLayer)))
-          : scene[`fast_prepare${suffix}`](frame, ground));
+      prepared = timed('prepared', () => {
+        if (!spriteSettled) {
+          spritePrepared = null;
+          return scene[`fast_prepare${suffix}`](frame, ground);
+        }
+        if (spritePrepared && spritePrepared.layer === spriteLayer && spritePrepared.boardSize === boardSize &&
+            scene.sprite_same_static_feedback(spritePrepared.frame, frame)) {
+          sceneReuse.staticFeedback = true;
+          return spritePrepared.image;
+        }
+        const feedback = scene.fast_sprite_feedback_static512(frame, spriteLayer);
+        const image = boardSize === 512 ? feedback : scene.nearest2(9n, feedback);
+        spritePrepared = { frame, layer: spriteLayer, boardSize, image };
+        return image;
+      });
       preparedInvalidated = false;
     }
     if (!prepared) throw new Error('Missing Bend prepared scene');
@@ -559,9 +576,21 @@ function render(packet: any): any {
   renderedAtlasMaskId = renderedAtlas
     ? (preview ? preview.maskId : spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
   pruneAtlasMasks();
-  retained = timed('compose', () => playing
-    ? menu.compose(request.depth, plan, board, chrome)
-    : menu.render_on_base(request.depth, request.size, data, plan, fonts, board, menuBase));
+  retained = timed('compose', () => {
+    if (playing) {
+      menuBackground = null;
+      return menu.compose(request.depth, plan, board, chrome);
+    }
+    if (!menuBackground || menuBackground.depth !== request.depth || menuBackground.size !== request.size ||
+        menuBackground.fonts !== fonts || menuBackground.board !== board || menuBackground.base !== menuBase ||
+        !menu.same_background(menuBackground.data, menuBackground.plan, data, plan)) {
+      menuBackground = { depth: request.depth, size: request.size, data, plan,
+        fonts, board, base: menuBase,
+        image: menu.background_chrome(request.depth, request.size, data, plan, fonts, board, menuBase) };
+    }
+    else sceneReuse.menuBackground = true;
+    return menu.foreground_chrome(request.depth, request.size, data, plan, fonts, menuBackground.image);
+  });
   return retained;
 }
 async function ensurePlate(packet: any): Promise<void> {
@@ -630,7 +659,7 @@ async function emit(packet: any, elapsed: number, id: number,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
-    treeMs, traversalMs, sceneTimes, spriteMetrics, botExecution,
+    treeMs, traversalMs, sceneTimes, sceneReuse, spriteMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
 }
 async function handleMessage(request: any): Promise<void> {
@@ -670,6 +699,7 @@ async function handleMessage(request: any): Promise<void> {
       disposeBot();
       disposeSprite();
       ground = prepared = null;
+      menuBackground = null;
       groundInvalidated = preparedInvalidated = true;
       bitmapSurface = new BitmapSurface(request.imageBitmap === true);
       packet = api.boot_reads(request.saved.text, request.prefs.text, request.saved.ok, request.prefs.ok, request.width, request.height);

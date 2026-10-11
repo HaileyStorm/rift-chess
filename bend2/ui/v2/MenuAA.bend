@@ -270,7 +270,7 @@ def scrim(+depth: Nat,+size: U32,+plan: Plan.Plan,image: Image) -> Image:
   Blend.fill(depth,size,0,0,Plan.plan_width(plan),Plan.plan_height(plan),
     397591,187,image)
 
-def modal(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
+def modal_on_scrim(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
   +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
   +mobile = Plan.plan_mobile(plan)
   +r = modal_box(mobile,menu)
@@ -279,8 +279,7 @@ def modal(+depth: Nat,+size: U32,+menu: U32,+theme: U32,
   +y = U32.div(Plan.rect_y(r),scale)
   +w = U32.div(Plan.rect_width(r),scale)
   +h = U32.div(Plan.rect_height(r),scale)
-  +dim = scrim(depth,size,plan,image)
-  +shadow = panel(depth,size,U32.add(x,5),U32.add(y,8),w,h,22,bg(theme),bg(theme),dim)
+  +shadow = panel(depth,size,U32.add(x,5),U32.add(y,8),w,h,22,bg(theme),bg(theme),image)
   +card = panel(depth,size,x,y,w,h,18,raised(theme),line(theme),shadow)
   +accent_rule = rule(depth,size,U32.add(x,28),U32.add(y,78),U32.sub(w,56),accent(theme),176,card)
   +heading = paint_heading(depth,size,title(menu),U32.add(x,28),U32.add(y,22),ink(theme),fonts,accent_rule)
@@ -304,21 +303,6 @@ def camera_panel(+depth: Nat,+size: U32,+theme: U32,
   +orbit = paint_label(depth,size,"Drag to orbit",792,446,
     muted(theme),fonts,divider)
   paint_label(depth,size,"Wheel to zoom",792,466,muted(theme),fonts,orbit)
-
-def camera_panel_for(mobile: Bool,+depth: Nat,+size: U32,+menu: U32,
-  +theme: U32,+plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
-  match mobile:
-    case True{}: modal(depth,size,menu,theme,plan,fonts,image)
-    case False{}: camera_panel(depth,size,theme,fonts,image)
-
-def panel_for(+menu: U32,+depth: Nat,+size: U32,+theme: U32,
-  +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
-  match menu:
-    case 0: image
-    case 3: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
-    case 7: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
-    case 11: camera_panel_for(Plan.plan_mobile(plan),depth,size,menu,theme,plan,fonts,image)
-    case _: modal(depth,size,menu,theme,plan,fonts,image)
 
 def action_label(+id: U32,+original: String) -> String:
   match id:
@@ -509,16 +493,62 @@ def chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
 def compose(+depth: Nat,+plan: Plan.Plan,board_image: Image,prepared: Image) -> Image:
   embed(depth,plan,board_image,prepared)
 
-# Menus reuse only the immutable shell admitted by same_base. Paint current
-# text, board, panel/scrim and controls in their original order on every call.
-def render_on_base(+depth: Nat,+size: U32,+data: Data.Presentation,
+# The scrim is independent of controls. Keep these layers separate so the host
+# may retain an unchanged immutable background without reblending the board.
+def background_scrim(+menu: U32,+mobile: Bool,+depth: Nat,+size: U32,
+  +plan: Plan.Plan,image: Image) -> Image:
+  match menu mobile:
+    case 0 _: image
+    case 3 _: image
+    case 7 _: image
+    case 11 False{}: image
+    case _ _: scrim(depth,size,plan,image)
+
+def background_chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
   +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image,base_image: Image) -> Image:
-  +theme = Data.theme(data)
-  +menu = Data.menu(data)
   +dynamic = dynamic_chrome(depth,size,data,plan,fonts,base_image)
   +board = compose(depth,plan,board_image,dynamic)
-  +panel = panel_for(menu,depth,size,theme,plan,fonts,board)
-  paint_controls(depth,size,theme,menu,fonts,Plan.plan_controls(plan),panel)
+  background_scrim(Data.menu(data),Plan.plan_mobile(plan),depth,size,plan,board)
+
+def background_camera(mobile: Bool,+depth: Nat,+size: U32,+menu: U32,+theme: U32,
+  +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
+  match mobile:
+    case True{}: modal_on_scrim(depth,size,menu,theme,plan,fonts,image)
+    case False{}: camera_panel(depth,size,theme,fonts,image)
+
+def background_panel(+menu: U32,+depth: Nat,+size: U32,+theme: U32,
+  +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
+  match menu:
+    case 0: image
+    case 3: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
+    case 7: context_bar(depth,size,menu,theme,Plan.plan_mobile(plan),fonts,image)
+    case 11: background_camera(Plan.plan_mobile(plan),depth,size,menu,theme,plan,fonts,image)
+    case _: modal_on_scrim(depth,size,menu,theme,plan,fonts,image)
+
+def foreground_chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
+  +plan: Plan.Plan,+fonts: FontPack.Book,background: Image) -> Image:
+  +panel = background_panel(Data.menu(data),depth,size,Data.theme(data),plan,fonts,background)
+  paint_controls(depth,size,Data.theme(data),Data.menu(data),fonts,Plan.plan_controls(plan),panel)
+
+# Caller additionally binds depth/size, font identity, base and board Images.
+# Every dynamic text/branch input is checked here; control labels and states
+# deliberately belong only to foreground_chrome and are repainted each time.
+def same_background(+old: Data.Presentation,+old_plan: Plan.Plan,
+  +current: Data.Presentation,+current_plan: Plan.Plan) -> Bool:
+  Bool.and(same_base(old,old_plan,current,current_plan),
+    Bool.and(U32.is_eq(Data.menu(old),Data.menu(current)),
+      Bool.and(String.eq(Data.status(old),Data.status(current)),
+        Bool.and(String.eq(Data.selection(old),Data.selection(current)),
+          Bool.and(String.eq(Data.context(old),Data.context(current)),
+            Bool.and(same_bool(no_history(Data.history(old)),no_history(Data.history(current))),
+              same_bool(has_destinations(old_plan),has_destinations(current_plan))))))))
+
+# Preserve the original dynamic text, board, scrim, panel and control order.
+# Browser callers may retain the background admitted by same_background.
+def render_on_base(+depth: Nat,+size: U32,+data: Data.Presentation,
+  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image,base_image: Image) -> Image:
+  +background = background_chrome(depth,size,data,plan,fonts,board_image,base_image)
+  foreground_chrome(depth,size,data,plan,fonts,background)
 
 # Convenience facade for native callers, screenshots and diagnostics.
 def render(+depth: Nat,+size: U32,+data: Data.Presentation,
