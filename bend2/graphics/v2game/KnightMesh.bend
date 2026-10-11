@@ -534,14 +534,57 @@ def clipped(faces: List<&2, Painted>, +x: F32, +y: F32, +size: F32) -> List<&2, 
     case Nil{}: Nil{}
     case face <> rest: clip_face(face, x, y, size, clipped(rest, x, y, size))
 
+# Preserve Quad.outside's exact edge arithmetic and order, but defer each
+# remaining pure edge until the preceding edge did not reject the region.
+# Passing edges rather than booleans avoids eager evaluation of rejected work.
+
+def outside_after_cd(rejected: Bool, da: Quad.Edge,
+  x: F32, y: F32, size: F32) -> Bool:
+  match rejected:
+    case True{}: True{}
+    case False{}: F32.is_lt(Quad.edge.high(da,x,y,size),0.0)
+
+def outside_after_bc(rejected: Bool, cd: Quad.Edge, da: Quad.Edge,
+  +x: F32, +y: F32, +size: F32) -> Bool:
+  match rejected:
+    case True{}: True{}
+    case False{}: outside_after_cd(F32.is_lt(Quad.edge.high(cd,x,y,size),0.0),
+      da,x,y,size)
+
+def outside_after_ab(rejected: Bool, bc: Quad.Edge, cd: Quad.Edge,
+  da: Quad.Edge, +x: F32, +y: F32, +size: F32) -> Bool:
+  match rejected:
+    case True{}: True{}
+    case False{}: outside_after_bc(F32.is_lt(Quad.edge.high(bc,x,y,size),0.0),
+      cd,da,x,y,size)
+
+def outside(quad: Quad.Shape, +x: F32, +y: F32, +size: F32) -> Bool:
+  match quad:
+    case Quad.Shape{ab,bc,cd,da,area}:
+      outside_after_ab(F32.is_lt(Quad.edge.high(ab,x,y,size),0.0),
+        bc,cd,da,x,y,size)
+
+# Only sampled_tree descendants call this filter. Their immutable areas were
+# already admitted by the original root clipped operation; do not check again.
+def clip_child(+face: Painted, +x: F32, +y: F32, +size: F32,
+  rest: List<&2, Painted>) -> List<&2, Painted>:
+  match face:
+    case Painted{quad,color,depth}: clip_case(outside(quad,x,y,size),face,rest)
+
+def clipped_children(faces: List<&2, Painted>, +x: F32, +y: F32,
+  +size: F32) -> List<&2, Painted>:
+  match faces:
+    case Nil{}: Nil{}
+    case face <> rest: clip_child(face,x,y,size,clipped_children(rest,x,y,size))
+
 def four_face(+quad: Quad.Shape, +color: Surface, +x: F32, +y: F32,
   prior: FourSamples) -> FourSamples:
   match prior:
     case FourSamples{a, b, c, d}:
-      aa bb cc dd = selected(Bool.not(Quad.outside(quad, F32.add(x, 0.25), F32.add(y, 0.25), 0.0)), color, a)
-        selected(Bool.not(Quad.outside(quad, F32.add(x, 0.75), F32.add(y, 0.25), 0.0)), color, b)
-        selected(Bool.not(Quad.outside(quad, F32.add(x, 0.25), F32.add(y, 0.75), 0.0)), color, c)
-        selected(Bool.not(Quad.outside(quad, F32.add(x, 0.75), F32.add(y, 0.75), 0.0)), color, d)
+      aa bb cc dd = selected(Bool.not(outside(quad, F32.add(x, 0.25), F32.add(y, 0.25), 0.0)), color, a)
+        selected(Bool.not(outside(quad, F32.add(x, 0.75), F32.add(y, 0.25), 0.0)), color, b)
+        selected(Bool.not(outside(quad, F32.add(x, 0.25), F32.add(y, 0.75), 0.0)), color, c)
+        selected(Bool.not(outside(quad, F32.add(x, 0.75), F32.add(y, 0.75), 0.0)), color, d)
       FourSamples{aa, bb, cc, dd}
 
 def sampled(faces: List<&2, Painted>, +x: F32, +y: F32,
@@ -609,11 +652,11 @@ def sampled_tree(+depth: Nat, +size: U32, +x: F32, +y: F32,
     case 1n+rest face <> tail:
       +half = U32.div(size, 2)
       +delta = U32.to_f32(half)
-      a b c d = sampled_tree(rest, half, x, y, clipped(faces, x, y, delta))
-        sampled_tree(rest, half, F32.add(x, delta), y, clipped(faces, F32.add(x, delta), y, delta))
-        sampled_tree(rest, half, x, F32.add(y, delta), clipped(faces, x, F32.add(y, delta), delta))
+      a b c d = sampled_tree(rest, half, x, y, clipped_children(faces, x, y, delta))
+        sampled_tree(rest, half, F32.add(x, delta), y, clipped_children(faces, F32.add(x, delta), y, delta))
+        sampled_tree(rest, half, x, F32.add(y, delta), clipped_children(faces, x, F32.add(y, delta), delta))
         sampled_tree(rest, half, F32.add(x, delta), F32.add(y, delta),
-          clipped(faces, F32.add(x, delta), F32.add(y, delta), delta))
+          clipped_children(faces, F32.add(x, delta), F32.add(y, delta), delta))
       joined(a, b, c, d)
 
 def sampled_result(+depth: Nat, +size: U32, channels: Channels) -> Textures:
