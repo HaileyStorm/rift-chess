@@ -524,10 +524,25 @@ def four_leaf(samples: FourSamples, +x: F32, +y: F32) -> Channels:
         sample_add(finish_sample(b,F32.add(x,0.75),F32.add(y,0.25)),
         sample_add(finish_sample(a,F32.add(x,0.25),F32.add(y,0.25)),SampleSum{0,0,0,0,0,0,0})))))
 
+# Uniform channel regions retain one Pix instead of four identical leaves.
+# Color, quarter-sample coverage, geometry and channel extent are unchanged.
+def compact_case(same: Bool, color: U32,
+  a: Image, b: Image, c: Image, d: Image) -> Image:
+  match same:
+    case True{}: Pix{color}
+    case False{}: Qua{a,b,c,d}
+
+def compact(+a: Image, +b: Image, +c: Image, +d: Image) -> Image:
+  match a b c d:
+    case Pix{+ca} Pix{cb} Pix{cc} Pix{cd}:
+      compact_case(Bool.and(Bool.and(U32.is_eq(ca,cb),U32.is_eq(ca,cc)),
+        U32.is_eq(ca,cd)),ca,a,b,c,d)
+    case _ _ _ _: Qua{a,b,c,d}
+
 def joined(a: Channels, b: Channels, c: Channels, d: Channels) -> Channels:
   match a b c d:
     case Channels{ia,na,ma} Channels{ib,nb,mb} Channels{ic,nc,mc} Channels{id,nd,md}:
-      Channels{Qua{ia,ib,ic,id},Qua{na,nb,nc,nd},Qua{ma,mb,mc,md}}
+      Channels{compact(ia,ib,ic,id),compact(na,nb,nc,nd),compact(ma,mb,mc,md)}
 
 def sampled_tree(+depth: Nat, +size: U32, +x: F32, +y: F32,
   +faces: List<&2, Painted>) -> Channels:
