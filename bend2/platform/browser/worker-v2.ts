@@ -50,19 +50,21 @@ let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
 let spritePose: { pieces: any; frame: any; theme: number } | null = null;
 let spriteGround: { image: any; frame: any; theme: number; id: number } | null = null;
 let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
+// Preview ownership never replaces the helper's settled pose/ground/layer.
+let spritePreview: { frame: any; pieces: any; theme: number; maskId: number } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
 const MAX_ATLAS_MASKS = 8;
 let atlasMaskOffer = 0, atlasMaskPressure = false;
 const atlasMasks = new Map<number, {
-  frame: any; pieces: any; retired: boolean; firstOffer: number; lastOffer: number;
+  frame: any; pieces: any; raster: 256 | 512; retired: boolean; firstOffer: number; lastOffer: number;
 }>();
 
 function pruneAtlasMasks(): void {
   for (const [id, mask] of atlasMasks) {
     if (mask.retired && id !== spriteAtlasMaskId && id !== preparedAtlasMaskId &&
-        id !== renderedAtlasMaskId) atlasMasks.delete(id);
+        id !== renderedAtlasMaskId && id !== spritePreview?.maskId) atlasMasks.delete(id);
   }
 }
 let spritePlateTheme: number | null = null;
@@ -78,7 +80,7 @@ let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-  prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
+  previewPose: 0, prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
 
 async function ensureBotSession(): Promise<any> {
   if (botSession) return botSession;
@@ -208,6 +210,7 @@ function disposeSprite(): void {
   spriteHello = false;
   spriteLayer = spriteFrame = null;
   spritePose = spriteGround = spriteMotion = null;
+  spritePreview = null;
   spriteAtlasMaskId = preparedAtlasMaskId = renderedAtlasMaskId = null;
   atlasMasks.clear();
   atlasMaskPressure = false;
@@ -281,7 +284,7 @@ function ensureSpriteHelper(): void {
       const layer = decodeGround(message.image);
       const imageUnpackMs = performance.now() - imageUnpackAt;
       atlasMasks.set(pending.id, { frame: pending.frame, pieces: message.pickData,
-        retired: false, firstOffer: 0, lastOffer: 0 });
+        raster: 512, retired: false, firstOffer: 0, lastOffer: 0 });
       atlasMaskPressure = false;
       spriteAtlasMaskId = pending.id;
       spriteLayer = layer;
@@ -402,7 +405,7 @@ function render(packet: any): any {
     const at = performance.now(); const result = fn(); sceneTimes[key] = performance.now() - at; return result;
   };
   sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-    prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
+    previewPose: 0, prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
     motionUnderlay = timed('motionUnderlay', () => scene.underlay128_asset(request.theme, plates));
@@ -443,9 +446,28 @@ function render(packet: any): any {
   const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
+  let preview: typeof spritePreview = null;
+  // Retain artwork through release while the settled helper is still pending.
+  // Before this theme's authored textures arrive, keep the existing proxy path.
+  if (!spriteMoving && !spriteSettled && spritePose && spritePose.theme === request.theme) {
+    if (spritePreview && spritePreview.theme === request.theme && scene.sprite_same_view(spritePreview.frame, frame)) {
+      preview = spritePreview;
+    } else {
+      pruneAtlasMasks();
+      if (atlasMasks.size < MAX_ATLAS_MASKS) {
+        if (spriteTaskId >= Number.MAX_SAFE_INTEGER) throw new Error('Atlas mask identity exhausted');
+        const pieces = timed('previewPose', () => scene.sprite_same_view(spritePose!.frame, frame)
+          ? spritePose!.pieces : scene.sprite_pose_pieces(frame, spritePose!.pieces));
+        const maskId = ++spriteTaskId;
+        atlasMasks.set(maskId, { frame, pieces: scene.sprite_pick_data(pieces),
+          raster: 256, retired: false, firstOffer: 0, lastOffer: 0 });
+        preview = spritePreview = { frame, pieces, theme: request.theme, maskId };
+      }
+    }
+  } else spritePreview = null;
   // Orbit preserves Bend's original cache keys. Never rebuild a deferred cache
   // at an intermediate orbit view and clear the invalidation for that old key.
-  if (!request.motion && !spriteMoving) {
+  if (!request.motion && !spriteMoving && !preview) {
     if (!spriteSettled && (groundInvalidated || !ground)) {
       ground = timed('ground', () => scene[`fast_ground${suffix}`](frame, underlay));
       groundInvalidated = false;
@@ -486,8 +508,8 @@ function render(packet: any): any {
         menuControls));
   }
   if (!request.frame) throw new Error('Missing Bend frame request');
-  // Eligible piece motion retains depth-9 artwork. Other motion keeps the
-  // depth-8 preview, interpreted in the aligned 512px/1024px board slot.
+  // Piece motion retains depth-9 artwork. Camera previews keep authored pieces
+  // at depth eight with their own matching alpha masks and raster identity.
   const board = timed('pointer', () => {
     if (spriteMoving) {
       // The exact same-view ground is independent of occupancy and pointer
@@ -496,13 +518,14 @@ function render(packet: any): any {
       const artwork = scene.fast_feedback_on_pieces512(frame, occupancy);
       return boardSize === 512 ? artwork : scene.nearest2(9n, artwork);
     }
+    if (preview) return scene.fast_sprite_camera256_for_512(frame, preview.pieces, motionUnderlay);
     return request.motion ? scene.fast_camera256_for_512(frame, motionUnderlay)
       : scene[`fast_pointer${suffix}`](frame, prepared);
   });
-  renderedAtlas = !request.motion && (spriteMoving
-    ? spriteAtlasMaskId !== null : !packet.snapshot.moving && preparedAtlas);
+  renderedAtlas = Boolean(preview) || (!request.motion && (spriteMoving
+    ? spriteAtlasMaskId !== null : !packet.snapshot.moving && preparedAtlas));
   renderedAtlasMaskId = renderedAtlas
-    ? (spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
+    ? (preview ? preview.maskId : spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
   pruneAtlasMasks();
   retained = timed('compose', () => playing
     ? menu.compose(request.depth, plan, board, chrome)
@@ -626,7 +649,9 @@ async function handleMessage(request: any): Promise<void> {
         if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
             !scene.sprite_has_view(mask.frame, request.presentation.view))
           throw new Error('Displayed atlas frame lost its matching pose alpha data');
-        const dispatched = api.dispatch_at_web_atlas_meta(list(request.events), request.presentation, mask.pieces, session);
+        const dispatch = mask.raster === 256
+          ? api.dispatch_at_web_atlas_preview_meta : api.dispatch_at_web_atlas_meta;
+        const dispatched = dispatch(list(request.events), request.presentation, mask.pieces, session);
         packet = dispatched.packet;
         cameraReleased = dispatched.cameraReleased === true;
       } else {

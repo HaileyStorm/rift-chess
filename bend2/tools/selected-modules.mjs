@@ -11,7 +11,7 @@ export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const cacheDir = path.join(root, '.artifacts/bend2/v2-preview/selected-js');
 export const moduleSpecs = Object.freeze({
   controller: Object.freeze({ entry: 'bend2/ApplicationControl.bend',
-    exports: ['boot_reads', 'dispatch_at', 'dispatch_at_web', 'dispatch_at_web_atlas', 'dispatch_at_web_meta', 'dispatch_at_web_atlas_meta', 'refine', 'orbiting', 'bot_job',
+    exports: ['boot_reads', 'dispatch_at', 'dispatch_at_web', 'dispatch_at_web_atlas', 'dispatch_at_web_meta', 'dispatch_at_web_atlas_meta', 'dispatch_at_web_atlas_preview_meta', 'refine', 'orbiting', 'bot_job',
       'bot_apply_at', 'bot_fallback_at', 'storage_key', 'max_file_bytes', 'audio_samples'] }),
   scene: Object.freeze({ entry: 'bend2/graphics/v2game/BoardScene.bend',
     exports: ['asset_ids', 'load_plates', 'sprite_asset_ids', 'load_sprite_pages',
@@ -21,7 +21,7 @@ export const moduleSpecs = Object.freeze({
       'fast_ground512', 'fast_ground1024', 'settled_ground512',
       'fast_prepare512', 'fast_prepare1024',
       'fast_pointer512', 'fast_pointer1024',
-      'fast_camera256_for_512', 'fast_camera512', 'fast_camera1024',
+      'fast_camera256_for_512', 'fast_sprite_camera256_for_512', 'fast_camera512', 'fast_camera1024',
       'fast_sprite_pieces512', 'fast_feedback_on_pieces512',
       'fast_sprite_motion512', 'sprite_motion_dirty512',
       'sprite_motion_matches', 'sprite_motion_transition_equal', 'sprite_motion_complete',

@@ -1656,6 +1656,18 @@ def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
   +pieces = camera_piece_layers(Camera.depth_order(camera),context,ground)
   fast_camera_feedback(context,pieces)
 
+# Authored orbit artwork uses the same depth-8 raster as its preview picker.
+# The caller supplies textures prepared for this exact displayed camera view.
+def fast_sprite_camera256_for_512(+frame: Scene.Frame,
+  pieces: PieceSprites.Pieces, underlay128: Image) -> Image:
+  +small_ground = fast_ground(7n,128,underlay128,frame)
+  +ground = nearest2(7n,small_ground)
+  +context = context_for(8n,256,frame)
+  +camera = Camera.basis(Scene.frame_view(frame))
+  +artwork = fast_sprite_piece_layers(Camera.depth_order(camera),context,
+    pieces,Rect.screen(256),ground)
+  fast_camera_feedback(context,artwork)
+
 def fast_camera512(frame: Scene.Frame, underlay128: Image) -> Image:
   nearest2(8n,fast_camera256_for_512(frame,underlay128))
 
