@@ -52,7 +52,7 @@ let spriteGround: { image: any; frame: any; theme: number; id: number } | null =
 let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
 // Preview ownership never replaces the helper's settled pose/ground/layer.
 let spritePreview: { frame: any; pieces: any; supports: any; theme: number; maskId: number;
-  artwork: { frame: any; image: any; underlay: any; backdrop: any } | null } | null = null;
+  artwork: { frame: any; image: any; backdrop: any } | null } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
@@ -542,13 +542,11 @@ function render(packet: any): any {
       return boardSize === 512 ? artwork : scene.nearest2(9n, artwork);
     }
     if (preview) {
-      if (!preview.artwork || preview.artwork.underlay !== motionUnderlay ||
-          preview.artwork.backdrop !== motionBackdrop ||
+      if (!preview.artwork || preview.artwork.backdrop !== motionBackdrop ||
           !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
-        const image = timed('previewPaint', () => replaceRetainedBackground(
-          scene.fast_sprite_camera_pieces256_for_512(frame, preview!.pieces, preview!.supports, motionUnderlay),
-          motionUnderlay, motionBackdrop));
-        preview.artwork = { frame, image, underlay: motionUnderlay, backdrop: motionBackdrop };
+        const image = timed('previewPaint', () =>
+          scene.fast_sprite_camera_pieces256_for_512(frame, preview!.pieces, preview!.supports, motionBackdrop));
+        preview.artwork = { frame, image, backdrop: motionBackdrop };
       }
       return scene.fast_sprite_camera_feedback256(frame, preview.artwork.image);
     }

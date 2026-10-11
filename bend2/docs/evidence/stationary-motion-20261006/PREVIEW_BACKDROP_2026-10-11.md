@@ -1,5 +1,9 @@
 # Sharper backdrop during orbit
 
+This records the original backdrop-only stage. The authored preview path is now
+superseded by [matching256px ground](ORBIT_GROUND256_2026-10-11.md); identity
+background substitution remains in the proxy path. The original receipt is retained.
+
 The browser preview now substitutes its cached 256-pixel underlay only where
 the unchanged low-depth painter retained the original background by identity.
 Painted pieces, board, shadows and original blended edge colors stay intact.

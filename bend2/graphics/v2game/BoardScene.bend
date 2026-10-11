@@ -1812,9 +1812,8 @@ def nearest2(remaining: Nat, image: Image) -> Image:
 def fast_camera_direct512(frame: Scene.Frame, underlay512: Image) -> Image:
   fast_camera(9n, 512, frame, underlay512)
 
-# Retained 128px camera renderer. The browser's active motion path below
-# combines 128px ground with 256px pieces and scales the compact tree to its
-# board slot.
+# Retained 128px camera renderer. The proxy path below combines 128px ground
+# with 256px glyphs; authored orbit artwork uses depth eight throughout.
 def fast_camera128(frame: Scene.Frame, underlay128: Image) -> Image:
   fast_camera(7n, 128, frame, underlay128)
 
@@ -1837,9 +1836,8 @@ def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
 # The caller supplies textures prepared for this exact displayed camera view.
 def fast_sprite_camera_pieces256_for_512(+frame: Scene.Frame,
   pieces: PieceSprites.Pieces, supports: PieceSprites.Supports,
-  underlay128: Image) -> Image:
-  +small_ground = fast_ground(7n,128,underlay128,frame)
-  +ground = nearest2(7n,small_ground)
+  underlay256: Image) -> Image:
+  +ground = fast_ground(8n,256,underlay256,frame)
   +context = context_for(8n,256,frame)
   +camera = Camera.basis(Scene.frame_view(frame))
   fast_sprite_piece_layers.supported(Camera.depth_order(camera),context,
