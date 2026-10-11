@@ -1,5 +1,11 @@
 # Isolated 2.0.35 Web Worker carry-forward
 
+The October 10 validation policy retires the synthetic diagnostic, compiler
+corpus and semantic matrix from active acceptance. Use minimal real application
+E2E for changed behavior and preserve formal proofs. The recorded runs below
+are historical source-bound evidence, not commands or case counts to reproduce.
+See [validation policy](../../../../docs/VALIDATION.md).
+
 This candidate carries the accepted 004 generator coordinator, scheduler, and
 static module-worker target onto pristine Bend 2.0.35 commit
 `79df8d9c40722ee9507a1e253f283b51025f9d6c`. It does not
@@ -44,23 +50,20 @@ library's helpers. This local route preserves nested `require`/`never` policy:
 strict unfulfilled requests reject; permissive requests report the local
 fallback. It does not invoke a whole-root host wrapper to bypass enforcement.
 
-## Commands
+## Retained creation tooling
 
-The existing 2.0.35 Windows source-loader tree must already be materialized by
-its owner. Run from the repository root:
+`prepare-current.mjs`, `diagnostic-current.mjs` and `emit-bot-current.mjs`
+remain original creation and provenance dependencies. The selected bot build
+authenticates its existing source-bound diagnostic receipt; this does not
+require another diagnostic run after an unrelated application change.
+Do not manufacture a new passing receipt or bypass those runtime identity
+guards. Changed compiler or bot inputs need their existing reviewed successor
+route and evidence for the actual changed obligation.
 
-```powershell
-node bend2/toolchain-patches/2035/workers/prepare-current.mjs --materialize
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/diagnostic-current.mjs
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/emit-bot-current.mjs --diagnostic diagnostic-ngbaji
-```
-
-The diagnostic writes a fresh directory and prints its name. Supply that exact
-name to `emit-bot.mjs`; the emitter rejects stale compiler/fixture bindings.
-Both compiler entry points set `BEND_NO_TELEMETRY=1` and deny source-network
-fetches. Each bot emission creates five static runtime files and a build-only
-`source-binding.json`, with source, compiler, loader, emitter, diagnostic, and
-artifact hashes. No shared preview output is written.
+Both original compiler entry points set `BEND_NO_TELEMETRY=1` and deny
+source-network fetches. A bot emission creates five static runtime files and
+a build-only `source-binding.json`, with source, compiler, loader, emitter,
+diagnostic and artifact hashes. No shared preview output is written.
 
 ## Corrected candidate evidence
 
@@ -91,7 +94,7 @@ remain retained. That emitter guard was not executed in the earlier compiler,
 matrix or diagnostic stages; those native fences remain original evidence,
 with the later unused-input postimage explicitly recorded in verification.
 
-Active semantic checks use corrected preparation by default. The isolated
+The recorded semantic runs used corrected preparation by default. The isolated
 candidate flag and original source preimages remain historical discriminators.
 `build-preview.mjs` selects the corrected `workers-2035-parser-r1/bot-4BPFvk`
 creation binding and authenticates its current preparation, diagnostic, emitter
@@ -157,19 +160,21 @@ checks, and Chrome online/cold-offline bot turns. The
 receipts. Proof, full upstream regression equivalence, native execution, GPU
 performance and adoption remain separate gates.
 
-The complementary [current semantics matrix](semantics/README.md) uses one
+The complementary [historical semantics record](semantics/README.md) used one
 checked fixture and real clone/packed helpers for dynamic policy, concurrent
 reply identity, submission snapshots, disposal/fatal errors, F32/String wire
 boundaries and compound forks/nested caps. Its [inventory audit](semantics/INVENTORY.md)
 keeps the remaining compiler/security/scheduler/hosting contracts explicit.
-Select the runner owning the changed boundary; do not rerun unchanged historical
-phases or both current runners simply to recount covered cases.
+These retained tools are outside routine validation. Reuse compatible evidence
+and select actual application E2E or formal proof for a changed obligation;
+do not replay a synthetic boundary matrix or recount covered cases.
 
 Earlier diagnostic/emission directories are retained as failed or superseded
 evidence. In particular, the initial test used the wrong `maxWorkers` option,
 expected a rejection despite actual helper execution, and left a helper open
-until the bounded wrapper timed out. Current tests use `workers` and close every
-session in `finally`. The first bot emission also preserved a Base-closure
+until the bounded wrapper timed out. The corrected historical runner used
+`workers` and closed every session in `finally`. The first bot emission also
+preserved a Base-closure
 binding mismatch before the binding was corrected to distinguish compiler Base
 from project sources. No earlier bundle is implicitly current.
 

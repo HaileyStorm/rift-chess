@@ -1,4 +1,13 @@
-# Current Worker semantics
+# Historical Worker semantics evidence
+
+The October 10 [validation policy](../../../../../docs/VALIDATION.md) retires
+this synthetic matrix and compiler corpus from active acceptance. They are
+unit/integration evidence even when they use real Windows module Workers.
+The chronological records below preserve their original sources, receipts,
+failures and limits. They do not authorize fresh runs or establish a required
+case count. Use minimal real application E2E for changed runtime behavior and
+keep formal proofs intact. Retain original creation tooling and proof/provenance
+dependencies without making them routine commands.
 
 This reduced matrix carries distinct contracts selected from the historical 004
 inventory onto the current 2.0.35 candidate. It uses freshly checked/emitted
@@ -40,12 +49,9 @@ Each invocation's region helper sets stay within that cap, with both permitted
 helpers witnessed. This is a finite nested-cap and compound-fork control, not a
 proof for every program or scheduling pattern.
 
-Run through the pinned wrapper with a fresh output path below the existing
-owned stationary-motion evidence tree:
-
-```powershell
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/workers/semantics/matrix.mjs .artifacts/bend2/2035-preview/stationary-motion-20261006/worker-policy-NEW
-```
+The original `matrix.mjs` executions used the pinned wrapper and exclusive
+outputs below the owned stationary-motion evidence tree. That runner is now
+retained provenance, outside routine validation.
 
 Historical R5's qualified Windows supervisor ran that matrix in 2.473s.
 The nineteen family/transport records passed, with zero network calls. Result:
