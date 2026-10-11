@@ -18,8 +18,14 @@ type Face is Data:
   Face{a: Vertex, b: Vertex, c: Vertex, d: Vertex,
     normal: Vertex, center: Vertex, band: U32, marks: List<&2, Mark>}
 
+type Colors is Data:
+  Colors{ivory: U32, navy: U32}
+
 type Surface is Data:
-  Surface{color: U32, marks: List<&2, Quad.Shape>}
+  Surface{colors: Colors, marks: List<&2, Quad.Shape>}
+
+type Textures is Data:
+  Textures{ivory: Sample.Texture, navy: Sample.Texture}
 
 type Painted is Data:
   Painted{quad: Quad.Shape, color: Surface, depth: F32}
@@ -344,9 +350,10 @@ def projected_marks(marks: List<&2, Mark>, +camera: Camera.Basis, +size: U32) ->
     case Nil{}: Nil{}
     case mark <> rest:
       match mark:
-        case Mark{a, b, +c}:
+        case Mark{a, b, c}:
+          +pc = project(c,size,camera)
           Quad.make(project(a,size,camera),project(b,size,camera),
-            project(c,size,camera),project(c,size,camera)) <> projected_marks(rest,camera,size)
+            pc,pc) <> projected_marks(rest,camera,size)
 
 # A fixed frontal key light keeps the broad visible side readable.
 # Signed diffuse shades side planes; the polished highlight favors lit bevels.
@@ -379,37 +386,44 @@ def ink(band: U32, +normal: Vertex, style: PieceArt.Material) -> U32:
     case _ _: 463386
 
 # Marks affect the color of the winning quarter; occupancy stays shared.
-def marked_at(marks: List<&2, Quad.Shape>, color: U32, +x: F32, +y: F32) -> U32:
+def marked_at(marks: List<&2, Quad.Shape>, colors: Colors, +x: F32, +y: F32) -> Colors:
   match marks:
-    case Nil{}: color
+    case Nil{}: colors
     case mark <> rest:
-      Bool.pick(U32, Quad.outside(mark,x,y,0.0),
-        marked_at(rest,color,x,y), 463386)
+      Bool.pick(Colors, Quad.outside(mark,x,y,0.0),
+        marked_at(rest,colors,x,y), Colors{463386,463386})
 
-def surface_at(surface: Surface, x: F32, y: F32) -> U32:
+def surface_at(surface: Surface, x: F32, y: F32) -> Colors:
   match surface:
-    case Surface{color,marks}: marked_at(marks,color,x,y)
+    case Surface{colors,marks}: marked_at(marks,colors,x,y)
 
-def finish_sample(sample: Maybe<&2, Surface>, x: F32, y: F32) -> Maybe<&2, U32>:
+def finish_sample(sample: Maybe<&2, Surface>, x: F32, y: F32) -> Maybe<&2, Colors>:
   match sample:
     case None{}: None{}
     case Some{surface}: Some{surface_at(surface,x,y)}
 
+def solid_material(kind: U32, +code: U32) -> PieceArt.Material:
+  Bool.pick(PieceArt.Material, U32.is_ge(code, 8),
+    PieceArt.Material{2443106, 4877436, 9154232, 529704},
+    PieceArt.Material{15453600, 10125663, 16773581, 7689275})
+
 def prepare_case(visible: Bool, face: Face, +camera: Camera.Basis,
-  +size: U32, style: PieceArt.Material) -> Maybe<Painted>:
+  +size: U32) -> Maybe<Painted>:
   match visible face:
     case False{} _: None{}
-    case True{} Face{a, b, c, d, normal, middle, band, marks}:
+    case True{} Face{a, b, c, d, +normal, middle, +band, marks}:
       Some{Painted{Quad.make(project(a, size, camera), project(b, size, camera),
         project(c, size, camera), project(d, size, camera)),
-        Surface{ink(band, normal, style), projected_marks(marks, camera, size)}, view_dot(middle, camera)}}
+        Surface{Colors{ink(band,normal,solid_material(2,2)),
+          ink(band,normal,solid_material(2,10))},
+          projected_marks(marks, camera, size)}, view_dot(middle, camera)}}
 
 def prepare(+face: Face, +camera: Camera.Basis,
-  size: U32, style: PieceArt.Material) -> Maybe<Painted>:
+  size: U32) -> Maybe<Painted>:
   match face:
     case Face{a, b, c, d, normal, middle, band, marks}:
       prepare_case(F32.is_gt(view_dot(normal, camera), 0.00001), face,
-        camera, size, style)
+        camera, size)
 
 def prepared_next(next: Maybe<Painted>, rest: List<&2, Painted>) -> List<&2, Painted>:
   match next:
@@ -417,24 +431,20 @@ def prepared_next(next: Maybe<Painted>, rest: List<&2, Painted>) -> List<&2, Pai
     case Some{face}: face <> rest
 
 def prepared(mesh: List<&2, Face>, +camera: Camera.Basis,
-  +size: U32, +style: PieceArt.Material) -> List<&2, Painted>:
+  +size: U32) -> List<&2, Painted>:
   match mesh:
     case Nil{}: Nil{}
     case face <> rest:
-      prepared_next(prepare(face, camera, size, style), prepared(rest, camera, size, style))
+      prepared_next(prepare(face, camera, size), prepared(rest, camera, size))
 
 def painted_le(a: Painted, b: Painted) -> Bool:
   match a b:
     case Painted{q1, c1, +d1} Painted{q2, c2, +d2}:
       F32.is_le(d1, d2)
 
-def solid_material(kind: U32, +code: U32) -> PieceArt.Material:
-  Bool.pick(PieceArt.Material, U32.is_ge(code, 8),
-    PieceArt.Material{2443106, 4877436, 9154232, 529704},
-    PieceArt.Material{15453600, 10125663, 16773581, 7689275})
 
 type Channels is Data:
-  Channels{colors: Image, mask: Image}
+  Channels{ivory: Image, navy: Image, mask: Image}
 
 # Quarter-sample compositor: choose a face at each sample before blending.
 # Centroid painter order is retained; this is not a geometric depth buffer.
@@ -442,7 +452,8 @@ type FourSamples is Data:
   FourSamples{a: Maybe<&2, Surface>, b: Maybe<&2, Surface>, c: Maybe<&2, Surface>, d: Maybe<&2, Surface>}
 
 type SampleSum is Data:
-  SampleSum{red: U32, green: U32, blue: U32, count: U32}
+  SampleSum{ivory_red: U32, ivory_green: U32, ivory_blue: U32,
+    navy_red: U32, navy_green: U32, navy_blue: U32, count: U32}
 
 def selected(covered: Bool, color: Surface, prior: Maybe<&2, Surface>) -> Maybe<&2, Surface>:
   match covered:
@@ -484,21 +495,25 @@ def sampled(faces: List<&2, Painted>, +x: F32, +y: F32,
     case Painted{quad, color, depth} <> rest:
       sampled(rest, x, y, four_face(quad, color, x, y, prior))
 
-def sample_add(sample: Maybe<&2, U32>, total: SampleSum) -> SampleSum:
+def sample_add(sample: Maybe<&2, Colors>, total: SampleSum) -> SampleSum:
   match sample total:
     case None{} _: total
-    case Some{+color} SampleSum{red, green, blue, count}:
-      SampleSum{U32.add(red, Color.red(color)), U32.add(green, Color.green(color)),
-        U32.add(blue, Color.blue(color)), U32.add(count, 1)}
+    case Some{Colors{+ivory,+navy}} SampleSum{ir,ig,ib,nr,ng,nb,count}:
+      SampleSum{U32.add(ir,Color.red(ivory)),U32.add(ig,Color.green(ivory)),
+        U32.add(ib,Color.blue(ivory)),U32.add(nr,Color.red(navy)),
+        U32.add(ng,Color.green(navy)),U32.add(nb,Color.blue(navy)),U32.add(count,1)}
+
+def average_color(red: U32, green: U32, blue: U32, +count: U32) -> U32:
+  Color.rgb(U32.div(U32.add(red,U32.div(count,2)),count),
+    U32.div(U32.add(green,U32.div(count,2)),count),
+    U32.div(U32.add(blue,U32.div(count,2)),count))
 
 def sum_leaf(total: SampleSum) -> Channels:
   match total:
-    case SampleSum{red, green, blue, 0}: Channels{Pix{0}, Pix{0}}
-    case SampleSum{red, green, blue, +count}:
+    case SampleSum{ir,ig,ib,nr,ng,nb,0}: Channels{Pix{0},Pix{0},Pix{0}}
+    case SampleSum{ir,ig,ib,nr,ng,nb,+count}:
       +alpha = U32.div(U32.mul(count, 255), 4)
-      Channels{Pix{Color.rgb(U32.div(U32.add(red, U32.div(count, 2)), count),
-        U32.div(U32.add(green, U32.div(count, 2)), count),
-        U32.div(U32.add(blue, U32.div(count, 2)), count))},
+      Channels{Pix{average_color(ir,ig,ib,count)},Pix{average_color(nr,ng,nb,count)},
         Pix{Color.rgb(alpha, alpha, alpha)}}
 
 def four_leaf(samples: FourSamples, +x: F32, +y: F32) -> Channels:
@@ -507,17 +522,17 @@ def four_leaf(samples: FourSamples, +x: F32, +y: F32) -> Channels:
       sum_leaf(sample_add(finish_sample(d,F32.add(x,0.75),F32.add(y,0.75)),
         sample_add(finish_sample(c,F32.add(x,0.25),F32.add(y,0.75)),
         sample_add(finish_sample(b,F32.add(x,0.75),F32.add(y,0.25)),
-        sample_add(finish_sample(a,F32.add(x,0.25),F32.add(y,0.25)),SampleSum{0,0,0,0})))))
+        sample_add(finish_sample(a,F32.add(x,0.25),F32.add(y,0.25)),SampleSum{0,0,0,0,0,0,0})))))
 
 def joined(a: Channels, b: Channels, c: Channels, d: Channels) -> Channels:
   match a b c d:
-    case Channels{ca, ma} Channels{cb, mb} Channels{cc, mc} Channels{cd, md}:
-      Channels{Qua{ca, cb, cc, cd}, Qua{ma, mb, mc, md}}
+    case Channels{ia,na,ma} Channels{ib,nb,mb} Channels{ic,nc,mc} Channels{id,nd,md}:
+      Channels{Qua{ia,ib,ic,id},Qua{na,nb,nc,nd},Qua{ma,mb,mc,md}}
 
 def sampled_tree(+depth: Nat, +size: U32, +x: F32, +y: F32,
   +faces: List<&2, Painted>) -> Channels:
   match depth faces:
-    case _ Nil{}: Channels{Pix{0}, Pix{0}}
+    case _ Nil{}: Channels{Pix{0},Pix{0},Pix{0}}
     case 0n face <> tail:
       four_leaf(sampled(face <> tail, x, y, FourSamples{None{}, None{}, None{}, None{}}),x,y)
     case 1n+rest face <> tail:
@@ -530,9 +545,10 @@ def sampled_tree(+depth: Nat, +size: U32, +x: F32, +y: F32,
           clipped(faces, F32.add(x, delta), F32.add(y, delta), delta))
       joined(a, b, c, d)
 
-def sampled_result(+depth: Nat, +size: U32, channels: Channels) -> Sample.Texture:
+def sampled_result(+depth: Nat, +size: U32, channels: Channels) -> Textures:
   match channels:
-    case Channels{colors, mask}: Sample.Texture{depth, size, colors, mask}
+    case Channels{ivory,navy,+mask}:
+      Textures{Sample.Texture{depth,size,ivory,mask},Sample.Texture{depth,size,navy,mask}}
 
 # Keep the horse profile readable alongside the upright atlas pieces. This is
 # a continuous artwork pose; board placement still uses the actual camera.
@@ -545,8 +561,10 @@ def presentation_camera(camera: Camera.Basis) -> Camera.Basis:
         F32.min(sinPitch, 0.6427876096865394),
         F32.max(cosPitch, 0.766044443118978), scale, cx, cy}
 
-def texture(+depth: Nat, +size: U32, camera: Camera.Basis, code: U32) -> Sample.Texture:
-  +faces = prepared(knight_mesh(), presentation_camera(camera), size, solid_material(2, code))
+# Both materials share projection, painter order, quarter-sample coverage and
+# alpha. Only their original colors are accumulated separately.
+def textures(+depth: Nat, +size: U32, camera: Camera.Basis) -> Textures:
+  +faces = prepared(knight_mesh(), presentation_camera(camera), size)
   sampled_result(depth, size,
     sampled_tree(depth, size, 0.0, 0.0,
       clipped(List.sort(~Painted, ~painted_le, faces), 0.0, 0.0, U32.to_f32(size))))

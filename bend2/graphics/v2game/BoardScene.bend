@@ -1386,11 +1386,13 @@ def sprite_piece_kind(kind: U32) -> PieceSprites.PieceKind:
 def sprite_piece_side(code: U32) -> PieceSprites.Side:
   SpritePlacement.piece_side(code)
 
+def sprite_pose_textures(textures: KnightMesh.Textures, pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
+  match textures:
+    case KnightMesh.Textures{ivory,navy}:
+      PieceSprites.with_knights(pieces, ivory, navy)
+
 def sprite_pose_pieces(frame: Scene.Frame, pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
-  +basis = Camera.basis(Scene.frame_view(frame))
-  ivory navy = KnightMesh.texture(6n, 64, basis, 2)
-    KnightMesh.texture(6n, 64, basis, 10)
-  PieceSprites.with_knights(pieces, ivory, navy)
+  sprite_pose_textures(KnightMesh.textures(6n,64,Camera.basis(Scene.frame_view(frame))),pieces)
 
 def sprite_pick_data(pieces: PieceSprites.Pieces) -> PieceSprites.Pieces:
   AtlasPickData.from_pieces(pieces)
