@@ -6,7 +6,7 @@ import Controller from '../../ApplicationControl.bend';
 import BoardScene from '../../graphics/v2game/BoardScene.bend';
 // @ts-ignore A separate Bend native-resolution menu/raster book.
 import MenuAA from '../../ui/v2/MenuAA.bend';
-import { PixelPort, extentForOutput } from './image-port';
+import { PixelPort, extentForOutput, replaceRetainedBackground } from './image-port';
 import { BitmapSurface } from './bitmap-surface';
 import { loadAssetRequests, loadFontPack } from './asset-port';
 import { decodePose, decodeGround } from './pose-port';
@@ -37,7 +37,7 @@ const pixelPort = new PixelPort();
 // Raw transfer is the measured default. The optional ImageBitmap surface is
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
-let underlay: any, motionUnderlay: any, ground: any, prepared: any, chrome: any, retained: any;
+let underlay: any, motionUnderlay: any, motionBackdrop: any, ground: any, prepared: any, chrome: any, retained: any;
 // Bend requests invalidate these caches even when the current artwork/orbit
 // path does not consume them. Preserve that work until the cache is needed.
 let groundInvalidated = true, preparedInvalidated = true;
@@ -52,7 +52,7 @@ let spriteGround: { image: any; frame: any; theme: number; id: number } | null =
 let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
 // Preview ownership never replaces the helper's settled pose/ground/layer.
 let spritePreview: { frame: any; pieces: any; supports: any; theme: number; maskId: number;
-  artwork: { frame: any; image: any; underlay: any } | null } | null = null;
+  artwork: { frame: any; image: any; underlay: any; backdrop: any } | null } | null = null;
 let preparedAtlas = false, renderedAtlas = false;
 let spriteAtlasMaskId: number | null = null;
 let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | null = null;
@@ -429,9 +429,10 @@ function render(packet: any): any {
     prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
-    motionUnderlay = timed('motionUnderlay', () => scene.underlay128_asset(request.theme, plates));
+    [motionUnderlay, motionBackdrop] = timed('motionUnderlay', () => [
+      scene.underlay128_asset(request.theme, plates), scene.underlay256_asset(request.theme, plates)]);
   }
-  if (!underlay || !motionUnderlay) throw new Error('Missing Bend underlay');
+  if (!underlay || !motionUnderlay || !motionBackdrop) throw new Error('Missing Bend underlay');
   if (request.background || request.ground) {
     groundInvalidated = true;
     preparedInvalidated = true;
@@ -542,14 +543,17 @@ function render(packet: any): any {
     }
     if (preview) {
       if (!preview.artwork || preview.artwork.underlay !== motionUnderlay ||
+          preview.artwork.backdrop !== motionBackdrop ||
           !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
-        const image = timed('previewPaint', () => scene.fast_sprite_camera_pieces256_for_512(
-          frame, preview!.pieces, preview!.supports, motionUnderlay));
-        preview.artwork = { frame, image, underlay: motionUnderlay };
+        const image = timed('previewPaint', () => replaceRetainedBackground(
+          scene.fast_sprite_camera_pieces256_for_512(frame, preview!.pieces, preview!.supports, motionUnderlay),
+          motionUnderlay, motionBackdrop));
+        preview.artwork = { frame, image, underlay: motionUnderlay, backdrop: motionBackdrop };
       }
       return scene.fast_sprite_camera_feedback256(frame, preview.artwork.image);
     }
-    return request.motion ? scene.fast_camera256_for_512(frame, motionUnderlay)
+    return request.motion ? replaceRetainedBackground(
+      scene.fast_camera256_for_512(frame, motionUnderlay), motionUnderlay, motionBackdrop)
       : scene[`fast_pointer${suffix}`](frame, prepared);
   });
   renderedAtlas = Boolean(preview) || (!request.motion && (spriteMoving

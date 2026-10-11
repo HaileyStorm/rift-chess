@@ -3,6 +3,24 @@ export type Image = Readonly<{ $: 'Pix'; color: number }> | Readonly<{
   $: 'Qua'; tl: Image; tr: Image; bl: Image; br: Image;
 }>;
 
+/** Replace only regions an immutable painter retained from its original base.
+ * Newly painted leaves stay intact even when their color equals that base.
+ * All three trees describe the same extent; the replacement may be deeper. */
+export function replaceRetainedBackground(image: Image, base: Image, replacement: Image): Image {
+  if (base === replacement) return image;
+  if (image === base) return replacement;
+  if ('color' in image) return image;
+  const old = 'tl' in base ? base : { tl: base, tr: base, bl: base, br: base };
+  const next = 'tl' in replacement ? replacement
+    : { tl: replacement, tr: replacement, bl: replacement, br: replacement };
+  const tl = replaceRetainedBackground(image.tl, old.tl, next.tl);
+  const tr = replaceRetainedBackground(image.tr, old.tr, next.tr);
+  const bl = replaceRetainedBackground(image.bl, old.bl, next.bl);
+  const br = replaceRetainedBackground(image.br, old.br, next.br);
+  return tl === image.tl && tr === image.tr && bl === image.bl && br === image.br
+    ? image : { $: image.$, tl, tr, bl, br };
+}
+
 /** Bend images are square power-of-two trees even when the presented window is
  * rectangular. The window's larger edge determines the tree extent. */
 export function extentForOutput(width: number, height: number): number {
