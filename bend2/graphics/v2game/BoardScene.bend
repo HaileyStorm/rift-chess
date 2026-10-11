@@ -315,16 +315,30 @@ def extrusion(+size: U32, +basis: Camera.Basis) -> F32:
   F32.mul(F32.mul(U32.to_f32(Camera.extrusion(basis)), 5.0),
     physical_scale(size))
 
+# Broad stone bevels use the projected outward normal and an upper-left key.
+# Opposite edges retain distinct light/shadow as the court rotates.
 def seam_inset(+point: Quad.Point, +center: Quad.Point) -> Quad.Point:
-  Quad.Point{F32.lerp(point_x(point), point_x(center), 0.05),
-    F32.lerp(point_y(point), point_y(center), 0.05)}
+  Quad.Point{F32.lerp(point_x(point), point_x(center), 0.10),
+    F32.lerp(point_y(point), point_y(center), 0.10)}
+
+def bevel_ink(+a: Quad.Point, +b: Quad.Point, style: RaisedFacet.Surface) -> U32:
+  match style:
+    case RaisedFacet.Surface{+top,side,+edge,+shadow,+glint}:
+      +dx = F32.sub(point_x(b),point_x(a))
+      +dy = F32.sub(point_y(b),point_y(a))
+      +span = F32.max(0.00001,F32.add(F32.abs(dx),F32.abs(dy)))
+      +light = F32.div(F32.sub(F32.mul(dx,0.8),F32.mul(dy,0.6)),span)
+      +weight = F32.to_u32(F32.mul(F32.clamp(F32.add(0.5,F32.mul(light,0.5)),0.0,1.0),255.0))
+      +lit = Color.over(edge,Color.over(glint,top,128),64)
+      +shade = Color.over(shadow,top,156)
+      Color.over(lit,shade,weight)
 
 def tile.with_corners(+depth: Nat, +size: U32,
-  corners: Corners, style: RaisedFacet.Surface,
+  corners: Corners, +style: RaisedFacet.Surface,
   image: Image) -> Image:
   match corners style:
     case Corners{+p00, +p10, +p11, +p01}
-      RaisedFacet.Surface{top,side,+edge,shadow,glint}:
+      RaisedFacet.Surface{top,side,edge,shadow,glint}:
       +face = Facet.draw(depth,size,Quad.make(p00,p10,p11,p01),top,255,image)
       +center: Quad.Point = Quad.Point{F32.mul(F32.add(point_x(p00),point_x(p11)),0.5),
         F32.mul(F32.add(point_y(p00),point_y(p11)),0.5)}
@@ -332,10 +346,10 @@ def tile.with_corners(+depth: Nat, +size: U32,
       +q10 = seam_inset(p10,center)
       +q11 = seam_inset(p11,center)
       +q01 = seam_inset(p01,center)
-      +up = Facet.draw(depth,size,Quad.make(p00,p10,q10,q00),edge,175,face)
-      +right = Facet.draw(depth,size,Quad.make(p10,p11,q11,q10),edge,175,up)
-      +down = Facet.draw(depth,size,Quad.make(p11,p01,q01,q11),edge,175,right)
-      Facet.draw(depth,size,Quad.make(p01,p00,q00,q01),edge,175,down)
+      +up = Facet.draw(depth,size,Quad.make(p00,p10,q10,q00),bevel_ink(p00,p10,style),255,face)
+      +right = Facet.draw(depth,size,Quad.make(p10,p11,q11,q10),bevel_ink(p10,p11,style),255,up)
+      +down = Facet.draw(depth,size,Quad.make(p11,p01,q01,q11),bevel_ink(p11,p01,style),255,right)
+      Facet.draw(depth,size,Quad.make(p01,p00,q00,q01),bevel_ink(p01,p00,style),255,down)
 
 def center_point(+a: Quad.Point, +b: Quad.Point) -> Quad.Point:
   Quad.Point{F32.mul(F32.add(point_x(a), point_x(b)), 0.5),
