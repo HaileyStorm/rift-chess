@@ -229,7 +229,7 @@ function ensureSpriteHelper(): void {
   helper.addEventListener('message', event => {
     if (helper !== spriteHelper) return;
     const message = event.data;
-    if (message?.protocol !== 1 || message.source !== __BEND_SPRITE_SOURCE__) {
+    if (message?.protocol !== 2 || message.source !== __BEND_SPRITE_SOURCE__) {
       spriteFault('source/protocol binding mismatch'); return;
     }
     if (message.kind === 'hello') {
@@ -243,7 +243,7 @@ function ensureSpriteHelper(): void {
         message.theme !== pending.theme) return;
     spritePending = null;
     if (message.kind === 'error') { spriteFault(String(message.message)); return; }
-    if (message.kind !== 'result' || !['Pix', 'Qua'].includes(message.image?.$)) {
+    if (message.kind !== 'result' || message.image?.protocol !== 1) {
       spriteFault('invalid image result'); return;
     }
     messageQueue = messageQueue.then(async () => {
@@ -277,11 +277,14 @@ function ensureSpriteHelper(): void {
           !Number.isSafeInteger(message.groundId) || message.groundId < 1 ||
           settled.id !== message.groundId || !scene.sprite_same_ground(settled.frame, pending.frame))
         throw new Error('Sprite refinement lacks its exact compatible pose or ground');
+      const imageUnpackAt = performance.now();
+      const layer = decodeGround(message.image);
+      const imageUnpackMs = performance.now() - imageUnpackAt;
       atlasMasks.set(pending.id, { frame: pending.frame, pieces: message.pickData,
         retired: false, firstOffer: 0, lastOffer: 0 });
       atlasMaskPressure = false;
       spriteAtlasMaskId = pending.id;
-      spriteLayer = message.image;
+      spriteLayer = layer;
       spriteFrame = pending.frame;
       spriteTheme = pending.theme;
       spritePose = pose;
@@ -289,7 +292,7 @@ function ensureSpriteHelper(): void {
       spriteMotion = null;
       const received = performance.now();
       const epoch = performance.timeOrigin + received;
-      spriteMetrics = { ...message.metrics,
+      spriteMetrics = { ...message.metrics, imageUnpackMs,
         // These spans include structured cloning/scheduling and the serialized
         // receiver callback respectively; neither is a pure transfer metric.
         dispatchToStartMs: message.metrics.startedEpochMs - pending.epoch,
@@ -323,7 +326,7 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   const usablePlate = plates?.$ === 'ObservatoryPlates' && selected?.$ === 'Ready' &&
     selected.depth === 9 && ['Pix', 'Qua'].includes(selected.pixels?.$);
   const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
-  spriteHelper!.postMessage({ kind: 'job', protocol: 1, source: __BEND_SPRITE_SOURCE__,
+  spriteHelper!.postMessage({ kind: 'job', protocol: 2, source: __BEND_SPRITE_SOURCE__,
     needPickData: true,
     needPose: !spritePose || spritePose.theme !== theme || !scene.sprite_same_view(spritePose.frame, frame),
     needGround: !spriteGround || spriteGround.theme !== theme || !scene.sprite_same_ground(spriteGround.frame, frame),
@@ -650,7 +653,7 @@ async function handleMessage(request: any): Promise<void> {
 // but serialize here too: asset awaits and async render work must not let an
 // older request overwrite a newer Bend session or retained image cache.
 self.addEventListener('message', event => {
-  const request = event.data;
+  const request = (event as MessageEvent).data;
   messageQueue = messageQueue.then(() => handleMessage(request));
 });
 self.postMessage({ kind: 'ready', keys: [api.storage_key(0), api.storage_key(1), api.storage_key(2)], maxFileBytes: api.max_file_bytes() });

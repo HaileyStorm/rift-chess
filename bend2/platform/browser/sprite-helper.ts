@@ -13,7 +13,7 @@ declare const __BEND_PREPARED_GROUND_SHA__: string;
 declare const __BEND_PREPARED_PLATE_SHA__: string;
 declare const __BEND_PREPARED_FRAME_JSON__: string;
 
-const PROTOCOL = 1;
+const PROTOCOL = 2;
 const SOURCE = typeof __BEND_SPRITE_SOURCE__ === 'string'
   ? __BEND_SPRITE_SOURCE__ : 'unbound-development-build';
 const PREPARED_PATH = typeof __BEND_PREPARED_GROUND_PATH__ === 'string'
@@ -86,7 +86,7 @@ type SpriteJob = {
 type Timings = {
   fetchMs: number; decodeMs: number; underlayMs: number;
   groundMs: number; groundCacheHit: number; preparedGroundHit: number;
-  spritesMs: number; pickDataMs: number; workerMs: number;
+  spritesMs: number; imagePackMs: number; pickDataMs: number; workerMs: number;
   startedEpochMs: number; sendEpochMs: number;
 };
 
@@ -261,7 +261,7 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
     generationIds.add(request.id);
 
     const metrics: Timings = { fetchMs: 0, decodeMs: 0, underlayMs: 0,
-      groundMs: 0, groundCacheHit: 0, preparedGroundHit: 0, spritesMs: 0, pickDataMs: 0, workerMs: 0,
+      groundMs: 0, groundCacheHit: 0, preparedGroundHit: 0, spritesMs: 0, imagePackMs: 0, pickDataMs: 0, workerMs: 0,
       startedEpochMs: performance.timeOrigin + started, sendEpochMs: 0 };
     try {
       const eligible = preparedEnabled && board.sprite_same_ground(preparedFrame, request.frame);
@@ -326,6 +326,9 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
 
       // Every image carries its own pose masks; discarded replies cannot retain
       // alpha from a camera that differs from the displayed knight.
+      const imagePackAt = now();
+      const packedImage = encodeGround(image);
+      metrics.imagePackMs = now() - imagePackAt;
       const pickAt = now();
       const pickData = board.sprite_pick_data(posedPieces);
       metrics.pickDataMs = now() - pickAt;
@@ -335,14 +338,14 @@ export function installSpriteHelper(scope: Scope, options: RuntimeOptions = {}):
       if (sendGround && !encodedGround) encodedGround = encodeGround(settledGround);
       const ground = !sendGround ? null :
         { ...encodedGround!, tokens: encodedGround!.tokens.slice() };
-      const transfers: Transferable[] = [];
+      const transfers: Transferable[] = [packedImage.tokens.buffer];
       if (pose) transfers.push(pose.tokens.buffer);
       if (ground) transfers.push(ground.tokens.buffer);
       metrics.workerMs = now() - started;
       metrics.sendEpochMs = performance.timeOrigin + now();
       scope.postMessage({ kind: 'result', protocol: PROTOCOL,
         id: request.id, generation: request.generation, source,
-        theme: request.theme, image, pickData, pose, ground, groundId, metrics }, transfers);
+        theme: request.theme, image: packedImage, pickData, pose, ground, groundId, metrics }, transfers);
     } catch (cause) {
       error(request, cause instanceof Error ? cause.message : String(cause));
     }

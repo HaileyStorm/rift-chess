@@ -16,8 +16,9 @@ function requireValue(ok: unknown, message: string): asserts ok {
   if (!ok) throw new Error(`Bend pose transport: ${message}`);
 }
 function exactFields(value: any, fields: readonly string[]): void {
-  requireValue(value && typeof value === 'object' &&
-    Object.keys(value).sort().join('|') === [...fields].sort().join('|'), 'unexpected fields');
+  const keys = value && typeof value === 'object' ? Object.keys(value) : null;
+  requireValue(keys && keys.length === fields.length &&
+    keys.every(key => fields.includes(key)), 'unexpected fields');
 }
 
 export function encodePose(pieces: any): PackedPose {
