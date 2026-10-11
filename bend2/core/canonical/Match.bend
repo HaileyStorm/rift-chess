@@ -1,5 +1,6 @@
 # Canonical Match carrier. Every Ready binds its IDs to the frozen v2 state.
-# Proof fields erase at runtime; only the trusted controller constructs Ready.
+# Reflexivity certificates emit null; computed proof arguments may still run.
+# Only the trusted controller constructs Ready.
 import Base
 import ../Model.bend as P
 import ../MatchSpec.bend as T
