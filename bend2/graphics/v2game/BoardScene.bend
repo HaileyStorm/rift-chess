@@ -1802,22 +1802,11 @@ def fast_camera(+depth: Nat, +size: U32, +frame: Scene.Frame,
   underlay: Image) -> Image:
   fast_camera.preview(context_for(depth, size, frame), underlay)
 
-def nearest2(+remaining: Nat, image: Image) -> Image:
-  match remaining image:
-    case 0n Pix{+color}:
-      +pixel_a = {Pix{color} : Image}
-      +pixel_b = {Pix{color} : Image}
-      +pixel_c = {Pix{color} : Image}
-      +pixel_d = {Pix{color} : Image}
-      Qua{pixel_a, pixel_b, pixel_c, pixel_d}
-    case 0n Qua{tl, tr, bl, br}: Qua{tl, tr, bl, br}
-    case 1n+rest Pix{+color}: Pix{color}
-    case 1n+rest Qua{tl, tr, bl, br}:
-      +top_left = nearest2(rest, tl)
-      +top_right = nearest2(rest, tr)
-      +bottom_left = nearest2(rest, bl)
-      +bottom_right = nearest2(rest, br)
-      Qua{top_left, top_right, bottom_left, bottom_right}
+# Image stores color partitions, not a fixed pixel extent. Interpreting the
+# same valid depth-bounded tree at 2x extent gives exact nearest enlargement.
+# Keep the existing API for browser/native callers; no traversal or leaf copies.
+def nearest2(remaining: Nat, image: Image) -> Image:
+  image
 
 # Exact 512 orbit raster with connected glyphs and board-clipped contacts.
 def fast_camera_direct512(frame: Scene.Frame, underlay512: Image) -> Image:
