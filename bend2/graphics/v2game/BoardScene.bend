@@ -462,7 +462,7 @@ def rim_color(theme: U32) -> U32:
   palette_edge(palette(theme))
 
 # Settled board uses full topology-aware faces and lips. The low-latency orbit
-# path keeps flat tile tops but adds only camera-facing exposed wall facets.
+# path classifies matching top/bevel colors and adds exposed wall facets.
 def cutout_wall_edges(+file: U32, +rank: U32, +holes: U32,
   corners: Corners, +depth: Nat, +size: U32, +drop: F32,
   +style: RaisedFacet.Surface, image: Image) -> Image:
@@ -485,8 +485,8 @@ def cutout_walls(+square: U32, +depth: Nat, +size: U32,
   cutout_wall_edges(Model.file_of(square),Model.rank_of(square),holes,
     corners,depth,size,extrusion(size,camera),surface(square,theme),image)
 
-# The compact orbit image paints camera-facing exposed walls over its flat
-# top pass, clipping wall pixels against the identical affine presence mask.
+# The compact orbit image paints camera-facing exposed walls over its material
+# pass, clipping wall pixels against the identical affine presence mask.
 def motion_wall_edge(show: Bool, +depth: Nat, +size: U32,
   +a: Quad.Point, +b: Quad.Point, +drop: F32,
   +inverse: SpatialFast.Inverse, +mask: Board.Mask,
@@ -1309,12 +1309,145 @@ def render512(+frame: Scene.Frame) -> Image:
 def render1024(+frame: Scene.Frame) -> Image:
   render_on(10n, 1024, underlay1024_theme(Scene.frame_theme(frame)), frame)
 
+# The orbit tier classifies the same stone face/bevel material in affine
+# board coordinates. Only material boundaries split; whole regions stay Pix.
+# Surface colors are prepared once per tile in a six-level immutable table.
+type TopMaterial is Data:
+  TopMaterial{top: U32, up: U32, right: U32, down: U32, left: U32}
+
+type TopMaterials is Data:
+  TopLeaf{material: TopMaterial}
+  TopBranch{left: TopMaterials, right: TopMaterials}
+
+def top_material.with_corners(corners: Corners,
+  +style: RaisedFacet.Surface) -> TopMaterial:
+  match corners style:
+    case Corners{+a,+b,+c,+d} RaisedFacet.Surface{top,side,edge,shadow,glint}:
+      TopMaterial{top,bevel_ink(a,b,style),bevel_ink(b,c,style),
+        bevel_ink(c,d,style),bevel_ink(d,a,style)}
+
+def top_material(+square: U32, +size: U32, +camera: Camera.Basis,
+  theme: U32) -> TopMaterial:
+  top_material.with_corners(
+    square_corners(size,camera,Model.file_of(square),Model.rank_of(square)),
+    surface(square,theme))
+
+def top_materials(depth: Nat, +first: U32, +span: U32,
+  +size: U32, +camera: Camera.Basis, +theme: U32) -> TopMaterials:
+  match depth:
+    case 0n:
+      +square = Model.sq(U32.mod(first,8),U32.sub(7,U32.div(first,8)))
+      TopLeaf{top_material(square,size,camera,theme)}
+    case 1n++rest:
+      +half = U32.div(span,2)
+      TopBranch{top_materials(rest,first,half,size,camera,theme),
+        top_materials(rest,U32.add(first,half),half,size,camera,theme)}
+
+def top_material_at(table: TopMaterials, +index: U32, +span: U32) -> TopMaterial:
+  match table:
+    case TopLeaf{material}: material
+    case TopBranch{left,right}:
+      +half = U32.div(span,2)
+      Bool.pick(U32 -> TopMaterial,U32.is_lt(index,half),
+        _ => top_material_at(left,U32.mod(index,half),half),
+        _ => top_material_at(right,U32.mod(index,half),half))(0)
+
+def top_region_case(inner: Bool, up: Bool, right: Bool, down: Bool,
+  left: Bool, material: TopMaterial) -> SpatialFast.Region:
+  match inner up right down left material:
+    case True{} _ _ _ _ TopMaterial{top,u,r,d,l}: SpatialFast.Fill{top}
+    case False{} True{} _ _ _ TopMaterial{t,up,r,d,l}: SpatialFast.Fill{up}
+    case False{} False{} True{} _ _ TopMaterial{t,u,right,d,l}: SpatialFast.Fill{right}
+    case False{} False{} False{} True{} _ TopMaterial{t,u,r,down,l}: SpatialFast.Fill{down}
+    case False{} False{} False{} False{} True{} TopMaterial{t,u,r,d,left}: SpatialFast.Fill{left}
+    case False{} False{} False{} False{} False{} _: SpatialFast.Split{}
+
+def top_region(region: SpatialFast.Region, value: SpatialFast.Bounds,
+  table: TopMaterials) -> SpatialFast.Region:
+  match region value:
+    case SpatialFast.Skip{} _: SpatialFast.Skip{}
+    case SpatialFast.Split{} _: SpatialFast.Split{}
+    case SpatialFast.Fill{color} SpatialFast.Bounds{+min_f,+max_f,+min_r,+max_r}:
+      +file = F32.floor(min_f)
+      +row = F32.floor(min_r)
+      +lf = F32.sub(min_f,file)
+      +hf = F32.sub(max_f,file)
+      +lr = F32.sub(min_r,row)
+      +hr = F32.sub(max_r,row)
+      +inner = Bool.and(Bool.and(F32.is_ge(lf,0.05),F32.is_le(hf,0.95)),
+        Bool.and(F32.is_ge(lr,0.05),F32.is_le(hr,0.95)))
+      +up = Bool.and(F32.is_le(hr,0.05),
+        Bool.and(F32.is_le(hr,lf),F32.is_le(hr,F32.sub(1.0,hf))))
+      +right = Bool.and(F32.is_le(F32.sub(1.0,lf),0.05),
+        Bool.and(F32.is_le(F32.sub(1.0,lf),lr),F32.is_le(F32.sub(1.0,lf),F32.sub(1.0,hr))))
+      +down = Bool.and(F32.is_le(F32.sub(1.0,lr),0.05),
+        Bool.and(F32.is_le(F32.sub(1.0,lr),lf),F32.is_le(F32.sub(1.0,lr),F32.sub(1.0,hf))))
+      +left = Bool.and(F32.is_le(hf,0.05),
+        Bool.and(F32.is_le(hf,lr),F32.is_le(hf,F32.sub(1.0,hr))))
+      +index = U32.add(F32.to_u32(file),U32.mul(F32.to_u32(row),8))
+      top_region_case(inner,up,right,down,left,top_material_at(table,index,64))
+
+def top_classify(+inverse: SpatialFast.Inverse, +mask: Board.Mask,
+  +colors: SpatialBoard.Palette, table: TopMaterials,
+  x: U32, y: U32, size: U32) -> SpatialFast.Region:
+  +bounds = SpatialFast.bounds(inverse,x,y,size)
+  top_region(SpatialFast.from_bounds(bounds,mask,colors),bounds,table)
+
+def top_tree(+depth: Nat, +size: U32, region: SpatialFast.Region,
+  +x: U32, +y: U32, +a: SpatialFast.Inverse, +mask: Board.Mask,
+  +palette: SpatialBoard.Palette, +table: TopMaterials, image: Image) -> Image:
+  match depth region:
+    case 0n SpatialFast.Skip{}: image
+    case 0n SpatialFast.Fill{color}: Pix{color}
+    case 0n SpatialFast.Split{}: image
+    case 1n+rest SpatialFast.Skip{}: image
+    case 1n+rest SpatialFast.Fill{color}: Pix{color}
+    case 1n+rest SpatialFast.Split{}:
+      match image:
+        case Pix{+background}:
+          +half = U32.div(size, 2)
+          +xx = U32.add(x, half)
+          +yy = U32.add(y, half)
+          tl tr bl br = top_tree(rest, half, top_classify(a, mask, palette, table, x, y, half), x, y, a, mask, palette, table, Pix{background})
+            top_tree(rest, half, top_classify(a, mask, palette, table, xx, y, half), xx, y, a, mask, palette, table, Pix{background})
+            top_tree(rest, half, top_classify(a, mask, palette, table, x, yy, half), x, yy, a, mask, palette, table, Pix{background})
+            top_tree(rest, half, top_classify(a, mask, palette, table, xx, yy, half), xx, yy, a, mask, palette, table, Pix{background})
+          Qua{tl, tr, bl, br}
+        case Qua{old_tl, old_tr, old_bl, old_br}:
+          +half = U32.div(size, 2)
+          +xx = U32.add(x, half)
+          +yy = U32.add(y, half)
+          tl tr bl br = top_tree(rest, half, top_classify(a, mask, palette, table, x, y, half), x, y, a, mask, palette, table, old_tl)
+            top_tree(rest, half, top_classify(a, mask, palette, table, xx, y, half), xx, y, a, mask, palette, table, old_tr)
+            top_tree(rest, half, top_classify(a, mask, palette, table, x, yy, half), x, yy, a, mask, palette, table, old_bl)
+            top_tree(rest, half, top_classify(a, mask, palette, table, xx, yy, half), xx, yy, a, mask, palette, table, old_br)
+          Qua{tl, tr, bl, br}
+
+def top_draw_case(valid: Bool, +depth: Nat, +size: U32,
+  +affine: SpatialFast.Affine, +mask: Board.Mask, +theme: U32,
+  camera: Camera.Basis, image: Image) -> Image:
+  match valid:
+    case False{}: image
+    case True{}:
+      +inverse = SpatialFast.invert(affine)
+      +colors = palette(theme)
+      +table = top_materials(6n,0,64,size,camera,theme)
+      top_tree(depth,size,top_classify(inverse,mask,colors,table,0,0,size),
+        0,0,inverse,mask,colors,table,image)
+
+def top_draw(+depth: Nat, +size: U32, +camera: Camera.Basis,
+  holes: U32, theme: U32, image: Image) -> Image:
+  +affine = fast_affine(size,camera)
+  +mask = presence_mask(holes)
+  top_draw_case(Bool.and(Bool.not(Board.empty_mask(mask)),F32.is_ne(SpatialFast.det(affine),0.0)),
+    depth,size,affine,mask,theme,camera,image)
+
 def fast_ground.context(base: Image, +context: Context) -> Image:
   match context:
     case Context{depth, +size, frame, +camera, board, oldBoard,
         previous, +holes, action, +theme}:
-      +tops = SpatialFast.draw(depth, size, fast_affine(size, camera),
-        presence_mask(holes), palette(theme), base)
+      +framed = board_rail(depth,size,camera,theme,base)
+      +tops = top_draw(depth,size,camera,holes,theme,framed)
       motion_wall_tiles(Camera.depth_order(camera),context,holes,
         SpatialFast.invert(fast_affine(size,camera)),presence_mask(holes),tops)
 
