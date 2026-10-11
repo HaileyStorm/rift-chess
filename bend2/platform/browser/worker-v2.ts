@@ -90,10 +90,16 @@ async function ensureBotSession(): Promise<any> {
   if (botUnavailable) throw new Error(botUnavailable);
   const generation = botGeneration;
   botInit = (async () => {
-    let candidate: any;
+    let library: any;
     try {
       const entry = new URL('./worker-libs/bot/index.mjs', import.meta.url);
-      const library = await import(entry.href);
+      library = await import(entry.href);
+    } catch (error) {
+      if (generation === botGeneration) botUnavailable = String(error);
+      throw error;
+    }
+    let candidate: any;
+    try {
       candidate = library.createSession({ workers: 2, transport: 'clone' });
       await candidate.warmup();
       if (generation !== botGeneration) {
@@ -104,7 +110,12 @@ async function ensureBotSession(): Promise<any> {
       return candidate;
     } catch (error) {
       try { candidate?.close(); } catch { /* failed initialization already owns no live session */ }
-      if (generation === botGeneration) botUnavailable = String(error);
+      if (generation === botGeneration) {
+        // Only genuine Worker unavailability permits a serial startup fallback.
+        // The scheduler's fatal protocol/build errors must reach the host fault.
+        if ((error as any)?.code === 'workers_unavailable') botUnavailable = String(error);
+        else botFatal = String(error);
+      }
       throw error;
     }
   })();
@@ -148,7 +159,7 @@ function scheduleBot(job: any): void {
       botWork.set(job.revision, { kind: 'ready', id });
     }, (error: unknown) => {
       if (generation !== botGeneration) return;
-      if (!botSession) {
+      if (botUnavailable) {
         const message = botUnavailable ?? String(error);
         botUnavailable = message;
         botWork.set(job.revision, { kind: 'unavailable', message });
@@ -164,7 +175,7 @@ function scheduleBot(job: any): void {
       botSession = null;
       botInit = null;
       botGeneration++;
-      try { failedSession.close(); } catch { /* a failed session is no longer reusable */ }
+      try { failedSession?.close(); } catch { /* a failed session is no longer reusable */ }
     });
 }
 
@@ -650,7 +661,7 @@ async function handleMessage(request: any): Promise<void> {
       self.postMessage({ kind: 'disposed', id: request.id });
       return;
     }
-    if (botFatal) throw new Error(`Bend bot worker failed: ${botFatal}`);
+    if (botFatal && request.kind !== 'boot') throw new Error(`Bend bot worker failed: ${botFatal}`);
     let packet: any;
     let cameraReleased = false;
     if (request.kind === 'boot') {
