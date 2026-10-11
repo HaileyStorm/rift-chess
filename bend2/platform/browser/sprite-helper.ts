@@ -5,7 +5,7 @@
 // @ts-ignore Compiled by the pinned Bend loader.
 import BoardScene from '../../graphics/v2game/BoardScene.bend';
 import { boundedBytes, loadAssetRequests } from './asset-port';
-import { encodePose, transferPose, encodeGround, type PackedPose, type PackedGround } from './pose-port';
+import { encodePose, transferPose, encodeGround, decodeGroundFile, type PackedPose, type PackedGround } from './pose-port';
 
 declare const __BEND_SPRITE_SOURCE__: string;
 declare const __BEND_PREPARED_GROUND_PATH__: string;
@@ -50,15 +50,17 @@ function configuredFrame(): any | null {
 }
 
 async function loadPreparedGround(scope: Scope): Promise<any | null> {
-  if (!/^\.\/assets\/ground-initial-[0-9a-f]{12}\.json$/.test(PREPARED_PATH) ||
+  if (!/^\.\/assets\/ground-initial-[0-9a-f]{12}\.(?:json|bgp)$/.test(PREPARED_PATH) ||
       !/^[0-9a-f]{64}$/.test(PREPARED_SHA) || !scope.location?.href) return null;
   try {
     const url = new URL(PREPARED_PATH, scope.location.href);
     if (url.origin !== new URL(scope.location.href).origin) return null;
     const response = await fetch(url);
     if (!response.ok || response.redirected || response.url !== url.href) return null;
-    const bytes = await boundedBytes(response, 8_000_000);
+    const binary = PREPARED_PATH.endsWith('.bgp');
+    const bytes = await boundedBytes(response, binary ? 16 + 699050 * 4 : 8_000_000);
     if (await digest(bytes) !== PREPARED_SHA) return null;
+    if (binary) return decodeGroundFile(bytes);
     const image = JSON.parse(new TextDecoder().decode(bytes));
     return image?.$ === 'Pix' || image?.$ === 'Qua' ? image : null;
   } catch { return null; }

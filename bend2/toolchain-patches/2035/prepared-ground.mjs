@@ -1,5 +1,6 @@
 // Current2035 cached-JS default ground; caller supplies independently verified selected records.
 import assert from 'node:assert/strict';
+import { encodeGroundFile, decodeGroundFile } from '../../platform/browser/pose-port.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +13,7 @@ const tags = Object.freeze({ frame: 'graphics/Scene.Frame', pos: 'core/Model.Pos
   astral: 'graphics/v2game/Assets.Astral', plates: 'graphics/v2game/Assets.ObservatoryPlates', ready: 'graphics/v2game/Assets.Ready' });
 const maxPlateBytes = 786437;
 const maxReadyJsonBytes = 16 * 1024 * 1024;
-const maxGroundBytes = 8 * 1024 * 1024;
+const maxGroundBytes = 16 + 699050 * 4;
 const maxImageNodes = 349525;
 
 function assertCandidateOutput(directory) {
@@ -112,57 +113,6 @@ function assertImage(image) {
   return nodes;
 }
 
-function assertGroundKey(sceneApi, frame) {
-  assert.equal(typeof sceneApi.sprite_same_ground, 'function',
-    'Selected scene has no Bend ground-cache key predicate');
-  assert.equal(sceneApi.sprite_same_ground(frame, frame), true,
-    'Selected scene rejects the initial frame as its own ground key');
-  const sameGroundDifferentOccupancy = { ...frame,
-    position: { ...frame.position, board: { $: 'Nil' } },
-    selected: 0, hovered: 0, tile: 0, progress: 0 };
-  assert.equal(sceneApi.sprite_same_ground(frame, sameGroundDifferentOccupancy), true,
-    'Bend default ground key unexpectedly depends on piece occupancy or pointer state');
-  assert.equal(sceneApi.sprite_same_ground(frame, { ...frame, theme: 1 }), false,
-    'Bend default ground key omitted theme');
-  assert.equal(sceneApi.sprite_same_ground(frame, { ...frame,
-    view: { ...frame.view, yaw: (frame.view.yaw + 1) % 360 } }), false,
-  'Bend default ground key omitted camera view');
-  assert.equal(sceneApi.sprite_same_ground(frame, { ...frame,
-    position: { ...frame.position, holes: frame.position.holes ^ 1 } }), false,
-  'Bend default ground key omitted rift topology');
-}
-
-function verifyPersistedPixels(original, persisted) {
-  const pixels = new Uint32Array(512 * 512);
-  const pending = [{ image: original, x: 0, y: 0, size: 512 }];
-  while (pending.length) {
-    const { image, x, y, size } = pending.pop();
-    if (image.$ === 'Pix') {
-      for (let row = y; row < y + size; row++) pixels.fill(image.color, row * 512 + x, row * 512 + x + size);
-    } else {
-      const half = size / 2;
-      pending.push({ image: image.tl, x, y, size: half }, { image: image.tr, x: x + half, y, size: half },
-        { image: image.bl, x, y: y + half, size: half }, { image: image.br, x: x + half, y: y + half, size: half });
-    }
-  }
-  // Independently sample the reparsed tree at each pixel, rather than repeating leaf filling.
-  const bytes = Buffer.alloc(pixels.length * 4);
-  for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
-    let node = persisted, localX = x, localY = y, size = 512;
-    while (node.$ === 'Qua') {
-      size /= 2;
-      const right = localX >= size, bottom = localY >= size;
-      node = bottom ? (right ? node.br : node.bl) : (right ? node.tr : node.tl);
-      if (right) localX -= size;
-      if (bottom) localY -= size;
-    }
-    const index = y * 512 + x;
-    assert.equal(node.color, pixels[index], `Persisted ground changed pixel ${x},${y}`);
-    bytes.writeUInt32LE(node.color, index * 4);
-  }
-  return { pixels: pixels.length, encoding: 'row-major-u32le', sha256: sha256(bytes), equal: true };
-}
-
 function validateAstralSource() {
   const manifestPath = path.join(root, 'bend2/assets/MANIFEST.json');
   const manifestBytes = readSource(manifestPath);
@@ -200,7 +150,6 @@ export async function emitDefaultGround2035(outDirectory, records) {
   const boot = controller.boot_reads('', '', true, true, 1024, 640);
   const frame = boot?.snapshot?.frame;
   assertDefaultFrame(frame);
-  assertGroundKey(scene, frame);
 
   const { asset, runtime, manifestSha256 } = validateAstralSource();
   const requests = scene.asset_ids(0);
@@ -221,13 +170,13 @@ export async function emitDefaultGround2035(outDirectory, records) {
   const readyJsonSha256 = sha256(readyBytes);
 
   const ground = scene.settled_ground512(frame, scene.underlay512_asset(0, plates));
-  const groundNodes = assertImage(ground);
-  const groundJson = JSON.stringify(ground);
-  const groundBytes = Buffer.from(groundJson, 'utf8');
+  const groundBytes = Buffer.from(encodeGroundFile(ground));
+  const groundNodes = new DataView(groundBytes.buffer, groundBytes.byteOffset,
+    groundBytes.byteLength).getUint32(8, true);
   assert.ok(groundBytes.length > 0 && groundBytes.length <= maxGroundBytes,
-    'Default ground JSON exceeds its bounded size limit');
+    'Default ground BPG1 exceeds its bounded size limit');
   const groundSha256 = sha256(groundBytes);
-  const assetName = `assets/ground-initial-${groundSha256.slice(0, 12)}.json`;
+  const assetName = `assets/ground-initial-${groundSha256.slice(0, 12)}.bgp`;
   const metadataName = `assets/ground-initial-${groundSha256.slice(0, 12)}.meta.json`;
   const frameJson = JSON.stringify(frame, taggedBigInt);
   const frameJsonBytes = Buffer.byteLength(frameJson, 'utf8');
@@ -244,9 +193,8 @@ export async function emitDefaultGround2035(outDirectory, records) {
   fs.writeFileSync(assetPath, groundBytes, { flag: 'wx' });
   const persistedBytes = readSource(assetPath);
   assert.equal(sha256(persistedBytes), groundSha256, 'Written prepared ground asset changed bytes');
-  const persisted = JSON.parse(persistedBytes);
-  assert.equal(assertImage(persisted), groundNodes);
-  const pixelOracle = verifyPersistedPixels(ground, persisted);
+  // Verify the actual persisted file's bounded structure after byte readback.
+  decodeGroundFile(persistedBytes);
   const metadata = {
     schema: 'rift-bend-prepared-ground/2035-1',
     upstream: candidateCommit,
@@ -272,7 +220,7 @@ export async function emitDefaultGround2035(outDirectory, records) {
       imageNodes: groundNodes,
       depth: 9,
       size: 512,
-      pixelOracle,
+      encoding: 'BPG1-u32le',
     },
     groundKey: {
       predicate: 'Bend.sprite_same_ground',

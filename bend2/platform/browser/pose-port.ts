@@ -138,3 +138,32 @@ export function decodeGround(packet: PackedGround): any {
   requireValue(cursor === words.length && nodes === packet.nodes, 'trailing ground tokens');
   return image;
 }
+
+// BPG1 is the packed depth-9 image in a bounded little-endian file.
+// It stores no frame or plate policy; the asset consumer verifies those keys.
+export function encodeGroundFile(image: any): Uint8Array {
+  const packet = encodeGround(image);
+  const bytes = new Uint8Array(16 + packet.tokens.length * 4);
+  const data = new DataView(bytes.buffer);
+  data.setUint32(0, 0x31475042, true); // BPG1
+  data.setUint32(4, 9, true);
+  data.setUint32(8, packet.nodes, true);
+  data.setUint32(12, packet.tokens.length, true);
+  packet.tokens.forEach((word, index) => data.setUint32(16 + index * 4, word, true));
+  return bytes;
+}
+
+export function decodeGroundFile(bytes: Uint8Array): any {
+  requireValue(bytes instanceof Uint8Array && bytes.byteLength >= 24 &&
+    bytes.byteLength <= 16 + 699050 * 4, 'ground file bound');
+  const data = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const nodes = data.getUint32(8, true), length = data.getUint32(12, true);
+  requireValue(data.getUint32(0, true) === 0x31475042 && data.getUint32(4, true) === 9 &&
+    nodes >= 1 && nodes <= 349525 && length >= 2 && length <= 699050 &&
+    bytes.byteLength === 16 + length * 4, 'ground file header');
+  const nativeLittleEndian = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
+  const tokens = nativeLittleEndian && (bytes.byteOffset + 16) % 4 === 0
+    ? new Uint32Array(bytes.buffer, bytes.byteOffset + 16, length)
+    : Uint32Array.from({ length }, (_, index) => data.getUint32(16 + index * 4, true));
+  return decodeGround({ protocol: 1, tokens, nodes });
+}
