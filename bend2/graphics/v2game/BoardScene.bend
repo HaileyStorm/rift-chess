@@ -1865,10 +1865,12 @@ def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
 
 # Camera previews use nearest512 artwork over retained256 ground. The browser
 # binds this exact raster/filter to its nearest512 alpha picker; settled is linear.
-def fast_sprite_camera_pieces512_nearest(+frame: Scene.Frame,
+def fast_sprite_camera_ground256(frame: Scene.Frame,underlay256: Image) -> Image:
+  fast_ground(8n,256,underlay256,frame)
+
+def fast_sprite_camera_layer512_nearest(+frame: Scene.Frame,
   pieces: PieceSprites.Pieces,supports: PieceSprites.Supports,
-  underlay256: Image) -> Image:
-  +ground = fast_ground(8n,256,underlay256,frame)
+  ground: Image) -> Image:
   +context = context_for(9n,512,frame)
   +camera = Camera.basis(Scene.frame_view(frame))
   fast_sprite_piece_layers.filtered(Camera.depth_order(camera),context,pieces,

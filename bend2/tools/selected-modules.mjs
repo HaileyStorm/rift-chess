@@ -21,7 +21,7 @@ export const moduleSpecs = Object.freeze({
       'fast_ground512', 'fast_ground1024', 'settled_ground512',
       'fast_prepare512', 'fast_prepare1024',
       'fast_pointer512', 'fast_pointer1024',
-      'fast_camera256_for_512', 'fast_sprite_camera_pieces512_nearest',
+      'fast_camera256_for_512', 'fast_sprite_camera_ground256', 'fast_sprite_camera_layer512_nearest',
       'fast_sprite_camera_feedback512', 'fast_camera512', 'fast_camera1024',
       'fast_sprite_pieces512', 'fast_feedback_on_pieces512',
       'fast_sprite_motion512', 'sprite_motion_dirty512',

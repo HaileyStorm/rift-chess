@@ -86,7 +86,7 @@ let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-  previewSupport: 0, previewPaint: 0,
+  previewSupport: 0, previewGround: 0, previewSprites: 0, previewPaint: 0,
   prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
 
 async function ensureBotSession(): Promise<any> {
@@ -432,7 +432,7 @@ function render(packet: any): any {
     const at = performance.now(); const result = fn(); sceneTimes[key] = performance.now() - at; return result;
   };
   sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
-    previewSupport: 0, previewPaint: 0,
+    previewSupport: 0, previewGround: 0, previewSprites: 0, previewPaint: 0,
     prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   sceneReuse = { staticFeedback: false, menuBackground: false };
   if (request.background) {
@@ -561,8 +561,12 @@ function render(packet: any): any {
     if (preview) {
       if (!preview.artwork || preview.artwork.backdrop !== motionBackdrop ||
           !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
-        const image = timed('previewPaint', () =>
-          scene.fast_sprite_camera_pieces512_nearest(frame, preview!.pieces, preview!.supports, motionBackdrop));
+        const image = timed('previewPaint', () => {
+          const backdrop = timed('previewGround', () =>
+            scene.fast_sprite_camera_ground256(frame, motionBackdrop));
+          return timed('previewSprites', () =>
+            scene.fast_sprite_camera_layer512_nearest(frame, preview!.pieces, preview!.supports, backdrop));
+        });
         preview.artwork = { frame, image, backdrop: motionBackdrop };
       }
       return scene.fast_sprite_camera_feedback512(frame, preview.artwork.image);
