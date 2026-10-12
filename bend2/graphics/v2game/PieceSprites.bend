@@ -218,14 +218,20 @@ def source_valid(source: Sample.Texture) -> Bool:
     case Sample.Texture{depth,+size,colors,mask}:
       Bool.and(U32.is_ne(size,0),U32.is_eq(size,U32.shln(1,depth)))
 
-def draw_axis_bounds(empty: Bool,+target_depth: Nat,+target_size: U32,
+def draw_axis_bounds_filtered(empty: Bool,+target_depth: Nat,+target_size: U32,
   +source: Sample.Texture,+matrix: Transform.Matrix,+bounds: Rect.Box,
-  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  +opacity: U32,+clip: Rect.Box,filter: Sample.Filter,target: Image) -> Image:
   match empty:
     case True{}: target
     case False{}: RgbaAffine.draw(target_depth,target_size,
-      RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,
+      RgbaAffine.prepare(matrix),source,filter,opacity,
       alpha_clip(bounds,matrix,Sample.size(source),clip),target)
+
+def draw_axis_bounds(empty: Bool,target_depth: Nat,target_size: U32,
+  source: Sample.Texture,matrix: Transform.Matrix,bounds: Rect.Box,
+  opacity: U32,clip: Rect.Box,target: Image) -> Image:
+  draw_axis_bounds_filtered(empty,target_depth,target_size,source,matrix,bounds,
+    opacity,clip,Sample.Linear{},target)
 
 def draw_axis_case(valid: Bool,+target_depth: Nat,+target_size: U32,
   +source: Sample.Texture,+matrix: Transform.Matrix,
@@ -253,31 +259,37 @@ def draw_axis_aligned(+target_depth: Nat,+target_size: U32,+pieces: Pieces,
   draw_axis_visible(Bool.and(U32.is_ne(opacity,0),Bool.not(Rect.is_empty(clip))),
     target_depth,target_size,source,matrix,opacity,clip,target)
 
-def draw_axis_supported_case(valid: Bool,+target_depth: Nat,+target_size: U32,
+def draw_axis_supported_case_filtered(valid: Bool,+target_depth: Nat,+target_size: U32,
   +source: Sample.Texture,+matrix: Transform.Matrix,+bounds: Rect.Box,
-  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  +opacity: U32,+clip: Rect.Box,+filter: Sample.Filter,target: Image) -> Image:
   match valid:
     case False{}: RgbaAffine.draw(target_depth,target_size,
-      RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,clip,target)
-    case True{}: draw_axis_bounds(Rect.is_empty(bounds),target_depth,target_size,
-      source,matrix,bounds,opacity,clip,target)
+      RgbaAffine.prepare(matrix),source,filter,opacity,clip,target)
+    case True{}: draw_axis_bounds_filtered(Rect.is_empty(bounds),target_depth,target_size,
+      source,matrix,bounds,opacity,clip,filter,target)
 
-def draw_axis_supported_visible(visible: Bool,+target_depth: Nat,+target_size: U32,
+def draw_axis_supported_visible_filtered(visible: Bool,+target_depth: Nat,+target_size: U32,
   +source: Sample.Texture,+matrix: Transform.Matrix,bounds: Rect.Box,
-  +opacity: U32,+clip: Rect.Box,target: Image) -> Image:
+  +opacity: U32,+clip: Rect.Box,+filter: Sample.Filter,target: Image) -> Image:
   match visible:
     case False{}: target
-    case True{}: draw_axis_supported_case(
+    case True{}: draw_axis_supported_case_filtered(
       Bool.and(axis_valid(matrix),source_valid(source)),target_depth,target_size,
-      source,matrix,bounds,opacity,clip,target)
+      source,matrix,bounds,opacity,clip,filter,target)
 
-# Uses the same linear sampler, support margins, coverage and fallback as the
-# settled draw path, with the actual mask scan moved to support_prepare.
-def draw_axis_supported(+target_depth: Nat,+target_size: U32,pieces: Pieces,
+# Uses the chosen sampler with unchanged coverage, support margins and fallback.
+# The public settled wrapper retains linear filtering.
+def draw_axis_supported_filtered(+target_depth: Nat,+target_size: U32,pieces: Pieces,
   +side: Side,+kind: PieceKind,+matrix: Transform.Matrix,+opacity: U32,
-  +clip: Rect.Box,supports: Supports,target: Image) -> Image:
+  +clip: Rect.Box,supports: Supports,+filter: Sample.Filter,target: Image) -> Image:
   +source = texture(pieces,side,kind)
   +bounds = support_texture(supports,side,kind)
-  draw_axis_supported_visible(
+  draw_axis_supported_visible_filtered(
     Bool.and(U32.is_ne(opacity,0),Bool.not(Rect.is_empty(clip))),
-    target_depth,target_size,source,matrix,bounds,opacity,clip,target)
+    target_depth,target_size,source,matrix,bounds,opacity,clip,filter,target)
+
+def draw_axis_supported(target_depth: Nat,target_size: U32,pieces: Pieces,
+  side: Side,kind: PieceKind,matrix: Transform.Matrix,opacity: U32,
+  clip: Rect.Box,supports: Supports,target: Image) -> Image:
+  draw_axis_supported_filtered(target_depth,target_size,pieces,side,kind,matrix,
+    opacity,clip,supports,Sample.Linear{},target)

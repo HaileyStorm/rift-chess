@@ -492,32 +492,30 @@ def dispatch_at_web(+events: List<&2, T.Input>, shown: Presentation,
 
 # Displayed browser atlas frames use their immutable artwork pose. Native and
 # procedural presentations retain events_at and the original picker.
-def atlas_pick(preview: Bool, position: Model.Position, pose: SpriteMotion.Pose,
-  x: U32, y: U32, basis: Camera.Basis, pieces: PieceSprites.Pieces) -> U32:
-  match preview:
-    case False{}: AtlasPicking.pick_pose(position, pose, x, y, basis, pieces)
-    case True{}: AtlasPicking.pick_pose_preview256(position, pose, x, y, basis, pieces)
+def atlas_pick(raster: AtlasPicking.Raster,position: Model.Position,pose: SpriteMotion.Pose,
+  x: U32,y: U32,basis: Camera.Basis,pieces: PieceSprites.Pieces) -> U32:
+  AtlasPicking.pick_pose_raster(raster,position,pose,x,y,basis,pieces)
 
 def atlas_square.on(inside: Bool, +position: Model.Position,
   pose: SpriteMotion.Pose, +view: Camera.View, +bounds: T.Rect, +scale: U32,
-  +x: U32, +y: U32, pieces: PieceSprites.Pieces, preview: Bool) -> U32:
+  +x: U32, +y: U32, pieces: PieceSprites.Pieces, raster: AtlasPicking.Raster) -> U32:
   match inside:
     case False{}: 64
     case True{}:
-      atlas_pick(preview, position, pose,
+      atlas_pick(raster, position, pose,
         U32.div(U32.sub(x, T.rect_x(bounds)), scale),
         U32.div(U32.sub(y, T.rect_y(bounds)), scale), Camera.basis(view), pieces)
 
 def atlas_square(+shown: Presentation, +x: U32, +y: U32,
-  pieces: PieceSprites.Pieces, preview: Bool) -> U32:
+  pieces: PieceSprites.Pieces, raster: AtlasPicking.Raster) -> U32:
   match shown:
     case Presentation{position, view, revision, menu, +plan, pose}:
       +bounds = ChromeModel.plan_board(plan)
       atlas_square.on(Bool.and(U32.is_zero(menu), Layout.in_rect(x,y,bounds)),
-        position,pose,view,bounds,ChromeModel.plan_scale(plan),x,y,pieces,preview)
+        position,pose,view,bounds,ChromeModel.plan_scale(plan),x,y,pieces,raster)
 
 def atlas_click(control: U32, +shown: Presentation, +x: U32, +y: U32,
-  pieces: PieceSprites.Pieces, preview: Bool) -> T.Input:
+  pieces: PieceSprites.Pieces, raster: AtlasPicking.Raster) -> T.Input:
   match control:
     case 0:
       match shown:
@@ -525,46 +523,50 @@ def atlas_click(control: U32, +shown: Presentation, +x: U32, +y: U32,
           +bounds = ChromeModel.plan_board(plan)
           Bool.pick(T.Input,
             Bool.and(U32.is_zero(menu),Layout.in_rect(x,y,bounds)),
-            T.SquareInput{atlas_square(shown,x,y,pieces,preview),revision},T.Activate{0})
+            T.SquareInput{atlas_square(shown,x,y,pieces,raster),revision},T.Activate{0})
     case _: T.Activate{control}
 
 def atlas_event_at(event: T.Input, +shown: Presentation,
-  +pieces: PieceSprites.Pieces, preview: Bool) -> T.Input:
+  +pieces: PieceSprites.Pieces, raster: AtlasPicking.Raster) -> T.Input:
   match event:
     case T.PointerDown{+x,+y,0,False{}}:
       match shown:
         case Presentation{position,view,revision,menu,+plan,pose}:
-          atlas_click(ChromeModel.hit(plan,x,y),shown,x,y,pieces,preview)
+          atlas_click(ChromeModel.hit(plan,x,y),shown,x,y,pieces,raster)
     case T.PointerMove{+x,+y}:
-      T.PresentedMove{x,y,atlas_square(shown,x,y,pieces,preview)}
+      T.PresentedMove{x,y,atlas_square(shown,x,y,pieces,raster)}
     case T.PointerUp{+x,+y,button}:
-      T.PresentedUp{x,y,button,atlas_square(shown,x,y,pieces,preview)}
+      T.PresentedUp{x,y,button,atlas_square(shown,x,y,pieces,raster)}
     case _: event
 
 def atlas_events_at(events: List<&2,T.Input>, +shown: Presentation,
-  +pieces: PieceSprites.Pieces, +preview: Bool) -> List<&2,T.Input>:
+  +pieces: PieceSprites.Pieces, +raster: AtlasPicking.Raster) -> List<&2,T.Input>:
   match events:
     case Nil{}: []
     case event <> rest:
-      atlas_event_at(event,shown,pieces,preview) <> atlas_events_at(rest,shown,pieces,preview)
+      atlas_event_at(event,shown,pieces,raster) <> atlas_events_at(rest,shown,pieces,raster)
 
 def dispatch_at_web_atlas.for(+events: List<&2,T.Input>, shown: Presentation,
-  pieces: PieceSprites.Pieces, session: Session, preview: Bool) -> WebPacket:
+  pieces: PieceSprites.Pieces, session: Session, raster: AtlasPicking.Raster) -> WebPacket:
   match session:
     case Session{state,ground,style,quality,shell}:
-      +translated = atlas_events_at(events,shown,pieces,preview)
+      +translated = atlas_events_at(events,shown,pieces,raster)
       apply_web(Program.update_web_release(translated,state),ground,style,
         quality,shell,latest_probe(events,None{}))
 
 def dispatch_at_web_atlas_meta(events: List<&2,T.Input>, shown: Presentation,
   pieces: PieceSprites.Pieces, session: Session) -> WebPacket:
-  dispatch_at_web_atlas.for(events, shown, pieces, session, False{})
+  dispatch_at_web_atlas.for(events, shown, pieces, session, AtlasPicking.Linear512{})
 
 # Select this route for an immutable authored256 presentation. Coordinates and
-# controls remain logical; only artwork picking uses the preview raster.
+# controls remain logical; only artwork picking uses the raster raster.
 def dispatch_at_web_atlas_preview_meta(events: List<&2,T.Input>, shown: Presentation,
   pieces: PieceSprites.Pieces, session: Session) -> WebPacket:
-  dispatch_at_web_atlas.for(events, shown, pieces, session, True{})
+  dispatch_at_web_atlas.for(events, shown, pieces, session, AtlasPicking.Linear256{})
+
+def dispatch_at_web_atlas_nearest_preview_meta(events: List<&2,T.Input>,shown: Presentation,
+  pieces: PieceSprites.Pieces,session: Session) -> WebPacket:
+  dispatch_at_web_atlas.for(events,shown,pieces,session,AtlasPicking.Nearest512{})
 
 def dispatch_at_web_atlas(+events: List<&2,T.Input>, shown: Presentation,
   pieces: PieceSprites.Pieces, session: Session) -> Packet:

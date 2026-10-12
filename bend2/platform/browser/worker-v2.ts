@@ -64,7 +64,7 @@ let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | nul
 const MAX_ATLAS_MASKS = 8;
 let atlasMaskOffer = 0, atlasMaskPressure = false;
 const atlasMasks = new Map<number, {
-  frame: any; pieces: any; raster: 256 | 512; retired: boolean; firstOffer: number; lastOffer: number;
+  frame: any; pieces: any; raster: 256 | 512; filter: 'linear' | 'nearest'; retired: boolean; firstOffer: number; lastOffer: number;
 }>();
 
 function pruneAtlasMasks(): void {
@@ -311,7 +311,7 @@ function ensureSpriteHelper(): void {
       const layer = decodeGround(message.image);
       const imageUnpackMs = performance.now() - imageUnpackAt;
       atlasMasks.set(pending.id, { frame: pending.frame, pieces: message.pickData,
-        raster: 512, retired: false, firstOffer: 0, lastOffer: 0 });
+        raster: 512, filter: 'linear', retired: false, firstOffer: 0, lastOffer: 0 });
       atlasMaskPressure = false;
       spriteAtlasMaskId = pending.id;
       spriteLayer = layer;
@@ -489,7 +489,7 @@ function render(packet: any): any {
         const pieces = spritePose.pieces;
         const maskId = ++spriteTaskId;
         atlasMasks.set(maskId, { frame, pieces: scene.sprite_pick_data(pieces),
-          raster: 256, retired: false, firstOffer: 0, lastOffer: 0 });
+          raster: 512, filter: 'nearest', retired: false, firstOffer: 0, lastOffer: 0 });
         const supports = timed('previewSupport', () => scene.sprite_supports(pieces));
         preview = spritePreview = { frame, pieces, supports, theme: request.theme, maskId, artwork: null };
       }
@@ -549,7 +549,7 @@ function render(packet: any): any {
   }
   if (!request.frame) throw new Error('Missing Bend frame request');
   // Piece motion retains depth-9 artwork. Camera previews keep authored pieces
-  // at depth eight with their own matching alpha masks and raster identity.
+  // at depth nine with nearest sampling and matching raster/filter alpha masks.
   const board = timed('pointer', () => {
     if (spriteMoving) {
       // The exact same-view ground is independent of occupancy and pointer
@@ -562,10 +562,10 @@ function render(packet: any): any {
       if (!preview.artwork || preview.artwork.backdrop !== motionBackdrop ||
           !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
         const image = timed('previewPaint', () =>
-          scene.fast_sprite_camera_pieces256_for_512(frame, preview!.pieces, preview!.supports, motionBackdrop));
+          scene.fast_sprite_camera_pieces512_nearest(frame, preview!.pieces, preview!.supports, motionBackdrop));
         preview.artwork = { frame, image, backdrop: motionBackdrop };
       }
-      return scene.fast_sprite_camera_feedback256(frame, preview.artwork.image);
+      return scene.fast_sprite_camera_feedback512(frame, preview.artwork.image);
     }
     return request.motion ? replaceRetainedBackground(
       scene.fast_camera256_for_512(frame, motionUnderlay), motionUnderlay, motionBackdrop)
@@ -720,8 +720,9 @@ async function handleMessage(request: any): Promise<void> {
         if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
             !scene.sprite_has_view(mask.frame, request.presentation.view))
           throw new Error('Displayed atlas frame lost its matching pose alpha data');
-        const dispatch = mask.raster === 256
-          ? api.dispatch_at_web_atlas_preview_meta : api.dispatch_at_web_atlas_meta;
+        const dispatch = mask.filter === 'nearest'
+          ? api.dispatch_at_web_atlas_nearest_preview_meta
+          : mask.raster === 256 ? api.dispatch_at_web_atlas_preview_meta : api.dispatch_at_web_atlas_meta;
         const dispatched = dispatch(list(request.events), request.presentation, mask.pieces, session);
         packet = dispatched.packet;
         cameraReleased = dispatched.cameraReleased === true;

@@ -1556,15 +1556,18 @@ def sprite_supports(pieces: PieceSprites.Pieces) -> PieceSprites.Supports:
 
 # Prepared supports belong to these exact immutable textures. Settled callers
 # retain their original drawing path; preview callers prepare the boxes once.
+type SpriteSupports is Data:
+  SpriteSupports{bounds: PieceSprites.Supports,filter: Sample.Filter}
+
 def sprite_draw(+depth: Nat, +size: U32, +pieces: PieceSprites.Pieces,
   +side: PieceSprites.Side, +kind: PieceSprites.PieceKind,
   +matrix: Transform.Matrix, +opacity: U32, +clip: Rect.Box,
-  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  supports: Maybe<&2, SpriteSupports>, image: Image) -> Image:
   match supports:
     case None{}: PieceSprites.draw_axis_aligned(depth,size,pieces,side,kind,
       matrix,opacity,clip,image)
-    case Some{bounds}: PieceSprites.draw_axis_supported(depth,size,pieces,side,kind,
-      matrix,opacity,clip,bounds,image)
+    case Some{SpriteSupports{bounds,filter}}: PieceSprites.draw_axis_supported_filtered(depth,size,pieces,side,kind,
+      matrix,opacity,clip,bounds,filter,image)
 
 # Completed atlas frames and picking share the destination's exact F32 center;
 # lerp(source, destination, 1) can retain source-dependent rounding.
@@ -1600,7 +1603,7 @@ def sprite_contact_shadow(+depth: Nat, +size: U32, +width: F32,
 
 def sprite_piece_at(show: Bool, +square: U32, +code: U32,
   +context: Context, +pieces: PieceSprites.Pieces, clip: Rect.Box,
-  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  supports: Maybe<&2, SpriteSupports>, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, oldBoard,
@@ -1623,7 +1626,7 @@ def sprite_opacity(+age: U32) -> U32:
 
 def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
   +pieces: PieceSprites.Pieces, +clip: Rect.Box,
-  supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  supports: Maybe<&2, SpriteSupports>, image: Image) -> Image:
   match show context:
     case False{} _: image
     case True{} Context{depth, +size, +frame, +camera, board, +oldBoard,
@@ -1638,7 +1641,7 @@ def fast_sprite_dying_at(show: Bool, +square: U32, +context: Context,
 
 def fast_sprite_piece_layer(+square: U32, +context: Context,
   +pieces: PieceSprites.Pieces, +clip: Rect.Box,
-  +supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  +supports: Maybe<&2, SpriteSupports>, image: Image) -> Image:
   match context:
     case Context{depth, size, frame, camera, +board, oldBoard,
         previous, +holes, action, theme}:
@@ -1650,22 +1653,32 @@ def fast_sprite_piece_layer(+square: U32, +context: Context,
         Model.occupied(Model.board_get(board, square))), square,
         Model.board_get(board, square), context, pieces, clip, supports, dead)
 
-def fast_sprite_piece_layers.supported(order: List<&2, U32>, +context: Context,
+def fast_sprite_piece_layers.filtered(order: List<&2, U32>, +context: Context,
   +pieces: PieceSprites.Pieces, +clip: Rect.Box,
-  +supports: Maybe<&2, PieceSprites.Supports>, image: Image) -> Image:
+  +supports: Maybe<&2, SpriteSupports>, image: Image) -> Image:
   match order:
     case Nil{}: image
     case +square <> rest:
-      fast_sprite_piece_layers.supported(rest, context, pieces, clip, supports,
+      fast_sprite_piece_layers.filtered(rest, context, pieces, clip, supports,
         fast_sprite_piece_layer(square, context, pieces, clip, supports, image))
 
 def fast_sprite_piece_layers(order: List<&2, U32>, context: Context,
   pieces: PieceSprites.Pieces, clip: Rect.Box, image: Image) -> Image:
-  fast_sprite_piece_layers.supported(order,context,pieces,clip,None{},image)
+  fast_sprite_piece_layers.filtered(order,context,pieces,clip,None{},image)
 
 # Occupancy-only stage. `ground` must contain the board/background but no old
 # piece pixels. The caller may retain this result until occupancy, camera or
 # motion changes; pointer-only frames should use fast_feedback_on_pieces512.
+def sprite_support_mode(supports: Maybe<&2,PieceSprites.Supports>) -> Maybe<&2,SpriteSupports>:
+  match supports:
+    case None{}: None{}
+    case Some{bounds}: Some{SpriteSupports{bounds,Sample.Linear{}}}
+
+def fast_sprite_piece_layers.supported(order: List<&2,U32>,context: Context,
+  pieces: PieceSprites.Pieces,clip: Rect.Box,
+  supports: Maybe<&2,PieceSprites.Supports>,image: Image) -> Image:
+  fast_sprite_piece_layers.filtered(order,context,pieces,clip,sprite_support_mode(supports),image)
+
 def fast_sprite_pieces512(+frame: Scene.Frame,
   +pieces: PieceSprites.Pieces, ground: Image) -> Image:
   +context = context_for(9n, 512, frame)
@@ -1850,19 +1863,19 @@ def fast_camera256_for_512(+frame: Scene.Frame, underlay128: Image) -> Image:
   +pieces = camera_piece_layers(Camera.depth_order(camera),context,ground)
   fast_camera_feedback(context,pieces)
 
-# Authored orbit artwork uses the same depth-8 raster as its preview picker.
-# The caller supplies textures prepared for this exact displayed camera view.
-def fast_sprite_camera_pieces256_for_512(+frame: Scene.Frame,
-  pieces: PieceSprites.Pieces, supports: PieceSprites.Supports,
+# Camera previews use nearest512 artwork over retained256 ground. The browser
+# binds this exact raster/filter to its nearest512 alpha picker; settled is linear.
+def fast_sprite_camera_pieces512_nearest(+frame: Scene.Frame,
+  pieces: PieceSprites.Pieces,supports: PieceSprites.Supports,
   underlay256: Image) -> Image:
   +ground = fast_ground(8n,256,underlay256,frame)
-  +context = context_for(8n,256,frame)
+  +context = context_for(9n,512,frame)
   +camera = Camera.basis(Scene.frame_view(frame))
-  fast_sprite_piece_layers.supported(Camera.depth_order(camera),context,
-    pieces,Rect.screen(256),Some{supports},ground)
+  fast_sprite_piece_layers.filtered(Camera.depth_order(camera),context,pieces,
+    Rect.screen(512),Some{SpriteSupports{supports,Sample.Nearest{}}},ground)
 
-def fast_sprite_camera_feedback256(frame: Scene.Frame, artwork: Image) -> Image:
-  fast_camera_feedback(context_for(8n,256,frame),artwork)
+def fast_sprite_camera_feedback512(frame: Scene.Frame,artwork: Image) -> Image:
+  fast_camera_feedback(context_for(9n,512,frame),artwork)
 
 def fast_camera512(frame: Scene.Frame, underlay128: Image) -> Image:
   nearest2(8n,fast_camera256_for_512(frame,underlay128))

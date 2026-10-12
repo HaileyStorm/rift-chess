@@ -27,7 +27,7 @@ const ports = {
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
-  'worker-v2.ts': { sha256: '944ca680782347f23fb8e3e26ec278118f8e1728e9e4019b8115fc8cb8db60f3',
+  'worker-v2.ts': { sha256: '12731dac185d1c913a59db0deaefcaebad8165a094185826d884204b30e32504',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     bareCounts: { Con: 2, Nil: 1, Pix: 1, Qua: 1, Some: 1 } },
   'sprite-helper.ts': { sha256: 'c33ec4d13ac0647adc0792b5ca7c9faa5db9ac181566ab88cbc75e1688f03068',

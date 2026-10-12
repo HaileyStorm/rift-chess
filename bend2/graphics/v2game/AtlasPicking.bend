@@ -18,8 +18,8 @@ def painted_texel(texel: Sample.Texel, opacity: U32, count: U32) -> Bool:
   U32.is_ne(U32.div(U32.mul(U32.min(MaskedLayer.effective(
     Sample.alpha(texel), opacity), 255), count), 4), 0)
 
-def geometry_hit_opacity_at_size(geometry: RgbaAffine.Geometry, +texture: Sample.Texture,
-  +opacity: U32, +x: U32, +y: U32, size: U32) -> Bool:
+def geometry_hit_opacity_filtered_at_size(geometry: RgbaAffine.Geometry, +texture: Sample.Texture,
+  +opacity: U32, +x: U32, +y: U32, size: U32,+filter: Sample.Filter) -> Bool:
   match geometry:
     case RgbaAffine.Empty{}: False{}
     case RgbaAffine.Surface{+shape, inverse, bounds}:
@@ -27,8 +27,12 @@ def geometry_hit_opacity_at_size(geometry: RgbaAffine.Geometry, +texture: Sample
         Bool.and(Bool.not(RgbaAffine.excluded(shape, Rect.screen(size), x, y, 1)),
           painted_texel(RgbaAffine.sample_point(
             Transform.point(inverse, Quad.Point{F32.add(U32.to_f32(x), 0.5),
-              F32.add(U32.to_f32(y), 0.5)}), texture, Sample.Linear{}), opacity,
+              F32.add(U32.to_f32(y), 0.5)}), texture, filter), opacity,
             Facet.coverage(shape, U32.to_f32(x), U32.to_f32(y)))))
+
+def geometry_hit_opacity_at_size(geometry: RgbaAffine.Geometry, +texture: Sample.Texture,
+  +opacity: U32, +x: U32, +y: U32, size: U32) -> Bool:
+  geometry_hit_opacity_filtered_at_size(geometry,texture,opacity,x,y,size,Sample.Linear{})
 
 def geometry_hit_opacity(geometry: RgbaAffine.Geometry, texture: Sample.Texture,
   opacity: U32, x: U32, y: U32) -> Bool:
@@ -58,18 +62,23 @@ def layer_center(dying: Bool, pose: Motion.Pose, basis: Camera.Basis,
   square: U32) -> Quad.Point:
   layer_center_at_size(dying, pose, basis, square, 512)
 
-def posed_hit_at_size(show: Bool, +code: U32, +basis: Camera.Basis,
+def posed_hit_filtered_at_size(show: Bool, +code: U32, +basis: Camera.Basis,
   pieces: PieceSprites.Pieces, +pose: Motion.Pose, square: U32, +dying: Bool,
-  x: U32, y: U32, +size: U32) -> Bool:
+  x: U32, y: U32, +size: U32,+filter: Sample.Filter) -> Bool:
   match show:
     case False{}: False{}
     case True{}:
       +center = layer_center_at_size(dying, pose, basis, square, size)
       +opacity = Bool.pick(U32, dying, Motion.opacity(Motion.pose_progress(pose)), 255)
-      geometry_hit_opacity_at_size(RgbaAffine.prepare(Placement.piece_matrix(size, basis,
+      geometry_hit_opacity_filtered_at_size(RgbaAffine.prepare(Placement.piece_matrix(size, basis,
         center, Model.piece_type(code))), PieceSprites.texture(pieces,
         Placement.piece_side(code), Placement.piece_kind(Model.piece_type(code))),
-        opacity, x, y, size)
+        opacity, x, y, size, filter)
+
+def posed_hit_at_size(show: Bool, +code: U32, +basis: Camera.Basis,
+  pieces: PieceSprites.Pieces, +pose: Motion.Pose, square: U32, +dying: Bool,
+  x: U32, y: U32, +size: U32) -> Bool:
+  posed_hit_filtered_at_size(show,code,basis,pieces,pose,square,dying,x,y,size,Sample.Linear{})
 
 def posed_hit(show: Bool, code: U32, basis: Camera.Basis,
   pieces: PieceSprites.Pieces, pose: Motion.Pose, square: U32, dying: Bool,
@@ -78,22 +87,28 @@ def posed_hit(show: Bool, code: U32, basis: Camera.Basis,
 
 # Fold the renderer's dead-before-live layers in painter order. A painted dying
 # piece occludes earlier picks without selecting a removed piece (sentinel 64).
-def pick.go_at_size(order: List<&2, U32>, +board: List<&2, U32>, +holes: U32,
+def pick.go_filtered_at_size(order: List<&2, U32>, +board: List<&2, U32>, +holes: U32,
   +pose: Motion.Pose,
   +x: U32, +y: U32, +basis: Camera.Basis, +pieces: PieceSprites.Pieces,
-  +best: U32, +size: U32) -> U32:
+  +best: U32, +size: U32,+filter: Sample.Filter) -> U32:
   match order:
     case Nil{}: best
     case +square <> rest:
       +code = Model.board_get(board, square)
       +present = Model.present(holes, square)
-      +dead = posed_hit_at_size(Bool.and(present, Motion.dying_visible(pose, square)),
+      +dead = posed_hit_filtered_at_size(Bool.and(present, Motion.dying_visible(pose, square)),
         Model.board_get(Motion.pose_previous_board(pose), square), basis, pieces,
-        pose, square, True{}, x, y, size)
-      +hit = posed_hit_at_size(Bool.and(present, Model.occupied(code)), code, basis, pieces,
-        pose, square, False{}, x, y, size)
-      pick.go_at_size(rest, board, holes, pose, x, y, basis, pieces,
-        Bool.pick(U32, hit, square, Bool.pick(U32, dead, 64, best)), size)
+        pose, square, True{}, x, y, size, filter)
+      +hit = posed_hit_filtered_at_size(Bool.and(present, Model.occupied(code)), code, basis, pieces,
+        pose, square, False{}, x, y, size, filter)
+      pick.go_filtered_at_size(rest, board, holes, pose, x, y, basis, pieces,
+        Bool.pick(U32, hit, square, Bool.pick(U32, dead, 64, best)), size, filter)
+
+def pick.go_at_size(order: List<&2, U32>, +board: List<&2, U32>, +holes: U32,
+  +pose: Motion.Pose,
+  +x: U32, +y: U32, +basis: Camera.Basis, +pieces: PieceSprites.Pieces,
+  +best: U32, +size: U32) -> U32:
+  pick.go_filtered_at_size(order,board,holes,pose,x,y,basis,pieces,best,size,Sample.Linear{})
 
 def pick.go(order: List<&2, U32>, board: List<&2, U32>, holes: U32,
   pose: Motion.Pose, x: U32, y: U32, basis: Camera.Basis,
@@ -116,3 +131,19 @@ def pick_pose_preview256(+position: Model.Position, pose: Motion.Pose,
 def pick(+position: Model.Position, +x: U32, +y: U32,
   +basis: Camera.Basis, +pieces: PieceSprites.Pieces) -> U32:
   pick_pose(position, Motion.stationary(position), x, y, basis, pieces)
+
+# Sampling mode is presentation identity, independent of immutable artwork.
+type Raster is Data:
+  Linear512{}
+  Linear256{}
+  Nearest512{}
+
+def pick_pose_raster(raster: Raster,+position: Model.Position,+pose: Motion.Pose,
+  +x: U32,+y: U32,+basis: Camera.Basis,+pieces: PieceSprites.Pieces) -> U32:
+  match raster:
+    case Linear512{}: pick_pose(position,pose,x,y,basis,pieces)
+    case Linear256{}: pick_pose_preview256(position,pose,x,y,basis,pieces)
+    case Nearest512{}:
+      pick.go_filtered_at_size(Camera.depth_order(basis),Model.pos_board(position),
+        Model.pos_holes(position),pose,x,y,basis,pieces,Camera.square_at(x,y,basis),
+        512,Sample.Nearest{})
