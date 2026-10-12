@@ -10,6 +10,8 @@ import ./RgbaSample.bend as Sample
 import ./AffineTexture.bend as AffineTexture
 import ./MaskedLayer.bend as MaskedLayer
 import ./Transform2D.bend as Transform
+import ../pixels/Pixel.bend as Pixel
+import ./Color.bend as Color
 
 type Geometry is Data:
   Empty{}
@@ -210,15 +212,77 @@ def axis_high(tree: AxisTree) -> AxisTree:
     case AxisEmpty{}: AxisEmpty{}
     case AxisLeaf{axis}: AxisLeaf{axis}
 
+# Nearest-only scalar paint. Preserve Shapes.paint_leaf's two rounded opacity
+# stages and malformed target rule; a zero-opacity Pix may share its input.
+def nearest_paint_zero(empty: Bool,color: U32,background: U32,opacity: U32,
+  target: Image) -> Image:
+  match empty:
+    case True{}: target
+    case False{}: Pix{Color.over(color,background,opacity)}
+
+def nearest_paint_coverage(+count: U32,+opacity: U32,color: U32,+target: Image) -> Image:
+  match target:
+    case Pix{background}:
+      +amount = U32.div(U32.mul(U32.min(opacity,255),count),4)
+      nearest_paint_zero(U32.is_zero(amount),color,background,amount,target)
+    case Qua{tl,tr,bl,br}: Pix{0}
+
+def nearest_paint_channels(color: U32,alpha: U32,count: U32,opacity: U32,
+  target: Image) -> Image:
+  nearest_paint_coverage(count,MaskedLayer.effective(alpha,opacity),color,target)
+
+# Descend the two original trees together while both branch. Once one becomes
+# uniform, only its mate still needs a walk. No packing, cache or alpha-based
+# source omission; preserve full U32 RGB and each depth-zero Qua's zero sample.
+def joint_nearest_paint(+depth: Nat,+x: U32,+y: U32,+colors: Image,+mask: Image,
+  count: U32,opacity: U32,target: Image) -> Image:
+  match depth colors mask:
+    case _ Pix{color} Pix{alpha}:
+      nearest_paint_channels(color,Color.red(alpha),count,opacity,target)
+    case 0n _ _:
+      nearest_paint_channels(Pixel.sample_xy(0n,x,y,colors),
+        Color.red(Pixel.sample_xy(0n,x,y,mask)),count,opacity,target)
+    case 1n+rest Pix{color} _:
+      nearest_paint_channels(color,Color.red(Pixel.sample_xy(depth,x,y,mask)),
+        count,opacity,target)
+    case 1n+rest _ Pix{alpha}:
+      nearest_paint_channels(Pixel.sample_xy(depth,x,y,colors),Color.red(alpha),
+        count,opacity,target)
+    case 1n+rest Qua{ctl,ctr,cbl,cbr} Qua{mtl,mtr,mbl,mbr}:
+      +half = U32.shln(1,rest)
+      +horizontal = U32.is_ge(x,half)
+      +vertical = U32.is_ge(y,half)
+      +ctop = Bool.pick(Image,horizontal,ctr,ctl)
+      +cbottom = Bool.pick(Image,horizontal,cbr,cbl)
+      +mtop = Bool.pick(Image,horizontal,mtr,mtl)
+      +mbottom = Bool.pick(Image,horizontal,mbr,mbl)
+      +next_x = Bool.pick(U32,horizontal,U32.sub(x,half),x)
+      +next_y = Bool.pick(U32,vertical,U32.sub(y,half),y)
+      joint_nearest_paint(rest,next_x,next_y,Bool.pick(Image,vertical,cbottom,ctop),
+        Bool.pick(Image,vertical,mbottom,mtop),count,opacity,target)
+
+def nearest_paint_valid(valid: Bool,texture: Sample.Texture,x: U32,y: U32,
+  count: U32,opacity: U32,target: Image) -> Image:
+  match valid texture:
+    case False{} _: nearest_paint_channels(0,0,count,opacity,target)
+    case True{} Sample.Texture{depth,+size,colors,mask}:
+      joint_nearest_paint(depth,U32.min(x,U32.sub(size,1)),
+        U32.min(y,U32.sub(size,1)),colors,mask,count,opacity,target)
+
+def nearest_paint(+texture: Sample.Texture,x: U32,y: U32,count: U32,
+  opacity: U32,target: Image) -> Image:
+  nearest_paint_valid(U32.is_ne(Sample.size(texture),0),texture,x,y,count,opacity,target)
+
 def axis_leaf(empty: Bool,count: U32,xaxis: AxisTree,yaxis: AxisTree,
   texture: Sample.Texture,opacity: U32,target: Image) -> Image:
   match empty xaxis yaxis:
     case False{} AxisLeaf{x} AxisLeaf{y}:
-      paint(Sample.nearest(texture,x,y),count,opacity,target)
+      nearest_paint(texture,x,y,count,opacity,target)
     case _ _ _: target
 
 # Same clip, shape exclusion, full-coverage inheritance, edge coverage and
-# painter order as region. Only the repeated coordinate preparation differs.
+# painter order as region. Reuse uniform target inputs without constructing
+# four temporary Pix nodes; preserve the exact output Qua structure.
 def axes_region(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,full: Bool,
   +shape: Quad.Shape,+clip: Rect.Box,+texture: Sample.Texture,+opacity: U32,
   +xaxis: AxisTree,+yaxis: AxisTree,+target: Image) -> Image:
@@ -228,23 +292,43 @@ def axes_region(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,full: Bool,
       +count = region_count(full,shape,x,y)
       axis_leaf(U32.is_zero(count),count,xaxis,yaxis,texture,opacity,target)
     case 1n+rest False{}:
-      +covered = region_inside(full,shape,x,y,size)
-      +half = U32.div(size,2)
-      +xx = U32.add(x,half)
-      +yy = U32.add(y,half)
-      +xl = axis_low(xaxis)
-      +xh = axis_high(xaxis)
-      +yl = axis_low(yaxis)
-      +yh = axis_high(yaxis)
-      a = axes_region(rest,half,x,y,region_excluded(covered,shape,clip,x,y,half),covered,
-        shape,clip,texture,opacity,xl,yl,ImageOps.tl(target))
-      b = axes_region(rest,half,xx,y,region_excluded(covered,shape,clip,xx,y,half),covered,
-        shape,clip,texture,opacity,xh,yl,ImageOps.tr(target))
-      c = axes_region(rest,half,x,yy,region_excluded(covered,shape,clip,x,yy,half),covered,
-        shape,clip,texture,opacity,xl,yh,ImageOps.bl(target))
-      d = axes_region(rest,half,xx,yy,region_excluded(covered,shape,clip,xx,yy,half),covered,
-        shape,clip,texture,opacity,xh,yh,ImageOps.br(target))
-      Qua{a,b,c,d}
+      match target:
+        case Pix{background}:
+          +covered = region_inside(full,shape,x,y,size)
+          +half = U32.div(size,2)
+          +xx = U32.add(x,half)
+          +yy = U32.add(y,half)
+          +xl = axis_low(xaxis)
+          +xh = axis_high(xaxis)
+          +yl = axis_low(yaxis)
+          +yh = axis_high(yaxis)
+          a = axes_region(rest,half,x,y,region_excluded(covered,shape,clip,x,y,half),covered,
+            shape,clip,texture,opacity,xl,yl,target)
+          b = axes_region(rest,half,xx,y,region_excluded(covered,shape,clip,xx,y,half),covered,
+            shape,clip,texture,opacity,xh,yl,target)
+          c = axes_region(rest,half,x,yy,region_excluded(covered,shape,clip,x,yy,half),covered,
+            shape,clip,texture,opacity,xl,yh,target)
+          d = axes_region(rest,half,xx,yy,region_excluded(covered,shape,clip,xx,yy,half),covered,
+            shape,clip,texture,opacity,xh,yh,target)
+          Qua{a,b,c,d}
+        case Qua{tl,tr,bl,br}:
+          +covered = region_inside(full,shape,x,y,size)
+          +half = U32.div(size,2)
+          +xx = U32.add(x,half)
+          +yy = U32.add(y,half)
+          +xl = axis_low(xaxis)
+          +xh = axis_high(xaxis)
+          +yl = axis_low(yaxis)
+          +yh = axis_high(yaxis)
+          a = axes_region(rest,half,x,y,region_excluded(covered,shape,clip,x,y,half),covered,
+            shape,clip,texture,opacity,xl,yl,tl)
+          b = axes_region(rest,half,xx,y,region_excluded(covered,shape,clip,xx,y,half),covered,
+            shape,clip,texture,opacity,xh,yl,tr)
+          c = axes_region(rest,half,x,yy,region_excluded(covered,shape,clip,x,yy,half),covered,
+            shape,clip,texture,opacity,xl,yh,bl)
+          d = axes_region(rest,half,xx,yy,region_excluded(covered,shape,clip,xx,yy,half),covered,
+            shape,clip,texture,opacity,xh,yh,br)
+          Qua{a,b,c,d}
 
 def draw_axes_nearest_case(ready: Bool,+depth: Nat,+size: U32,+shape: Quad.Shape,
   +inverse: Transform.Matrix,+texture: Sample.Texture,opacity: U32,
