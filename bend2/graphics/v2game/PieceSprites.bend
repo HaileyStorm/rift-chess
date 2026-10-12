@@ -223,9 +223,14 @@ def draw_axis_bounds_filtered(empty: Bool,+target_depth: Nat,+target_size: U32,
   +opacity: U32,+clip: Rect.Box,filter: Sample.Filter,target: Image) -> Image:
   match empty:
     case True{}: target
-    case False{}: RgbaAffine.draw(target_depth,target_size,
-      RgbaAffine.prepare(matrix),source,filter,opacity,
-      alpha_clip(bounds,matrix,Sample.size(source),clip),target)
+    case False{}:
+      match filter:
+        case Sample.Nearest{}: RgbaAffine.draw_axes_nearest(target_depth,target_size,
+          RgbaAffine.prepare(matrix),source,opacity,
+          alpha_clip(bounds,matrix,Sample.size(source),clip),target)
+        case Sample.Linear{}: RgbaAffine.draw(target_depth,target_size,
+          RgbaAffine.prepare(matrix),source,Sample.Linear{},opacity,
+          alpha_clip(bounds,matrix,Sample.size(source),clip),target)
 
 def draw_axis_bounds(empty: Bool,target_depth: Nat,target_size: U32,
   source: Sample.Texture,matrix: Transform.Matrix,bounds: Rect.Box,

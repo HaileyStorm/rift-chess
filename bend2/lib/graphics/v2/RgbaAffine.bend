@@ -7,6 +7,7 @@ import ./ImageOps.bend as ImageOps
 import ./Facet.bend as Facet
 import ./Shapes.bend as Shapes
 import ./RgbaSample.bend as Sample
+import ./AffineTexture.bend as AffineTexture
 import ./MaskedLayer.bend as MaskedLayer
 import ./Transform2D.bend as Transform
 
@@ -146,3 +147,132 @@ def draw(depth: Nat,size: U32,geometry: Geometry,+texture: Sample.Texture,
   filter: Sample.Filter,+opacity: U32,clip: Rect.Box,target: Image) -> Image:
   draw_zero(Bool.or(U32.is_zero(opacity),U32.is_zero(Sample.size(texture))),
     depth,size,geometry,texture,filter,opacity,clip,target)
+
+# DRAFT separable preparation for finite diagonal inverse transforms only.
+# Keep Transform.point and AffineTexture.texel arithmetic exactly as in the generic
+# nearest leaf. Pixel centers are positive, so the omitted cross-axis term is the
+# same signed zero. Do not replace these calls with incremental UV stepping.
+type AxisTree is Data:
+  AxisEmpty{}
+  AxisLeaf{axis: U32}
+  AxisBranch{low: AxisTree,high: AxisTree}
+
+def axis_finite(+value: F32) -> Bool:
+  F32.is_eq(F32.sub(value,value),0.0)
+
+def axis_ready(matrix: Transform.Matrix) -> Bool:
+  match matrix:
+    case Transform.Matrix{+a,+b,+c,+d,+tx,+ty}:
+      Bool.and(Bool.and(F32.is_eq(b,0.0),F32.is_eq(c,0.0)),
+        Bool.and(Bool.and(axis_finite(a),axis_finite(b)),
+          Bool.and(Bool.and(axis_finite(c),axis_finite(d)),
+            Bool.and(axis_finite(tx),axis_finite(ty)))))
+
+def axis_coordinate(horizontal: Bool,coordinate: U32,inverse: Transform.Matrix,
+  source_size: U32) -> U32:
+  match horizontal:
+    case True{}:
+      AffineTexture.texel(px(Transform.point(inverse,Quad.Point{
+        F32.add(U32.to_f32(coordinate),0.5),0.5})),source_size)
+    case False{}:
+      AffineTexture.texel(py(Transform.point(inverse,Quad.Point{
+        0.5,F32.add(U32.to_f32(coordinate),0.5)})),source_size)
+
+# Clip-pruned binary trees cost O(width+height), not O(width*height).
+# A draw owns its trees; no quantized phases or stale cross-frame cache.
+def axis_prepare(+depth: Nat,+size: U32,+coordinate: U32,outside: Bool,
+  +horizontal: Bool,+inverse: Transform.Matrix,+source_size: U32,
+  +low: U32,+high: U32) -> AxisTree:
+  match depth outside:
+    case _ True{}: AxisEmpty{}
+    case 0n False{}:
+      AxisLeaf{axis_coordinate(horizontal,coordinate,inverse,source_size)}
+    case 1n+rest False{}:
+      +half = U32.div(size,2)
+      +middle = U32.add(coordinate,half)
+      AxisBranch{
+        axis_prepare(rest,half,coordinate,
+          Bool.or(U32.is_ge(coordinate,high),U32.is_le(middle,low)),
+          horizontal,inverse,source_size,low,high),
+        axis_prepare(rest,half,middle,
+          Bool.or(U32.is_ge(middle,high),U32.is_le(U32.add(middle,half),low)),
+          horizontal,inverse,source_size,low,high)}
+
+def axis_low(tree: AxisTree) -> AxisTree:
+  match tree:
+    case AxisBranch{low,high}: low
+    case AxisEmpty{}: AxisEmpty{}
+    case AxisLeaf{axis}: AxisLeaf{axis}
+
+def axis_high(tree: AxisTree) -> AxisTree:
+  match tree:
+    case AxisBranch{low,high}: high
+    case AxisEmpty{}: AxisEmpty{}
+    case AxisLeaf{axis}: AxisLeaf{axis}
+
+def axis_leaf(empty: Bool,count: U32,xaxis: AxisTree,yaxis: AxisTree,
+  texture: Sample.Texture,opacity: U32,target: Image) -> Image:
+  match empty xaxis yaxis:
+    case False{} AxisLeaf{x} AxisLeaf{y}:
+      paint(Sample.nearest(texture,x,y),count,opacity,target)
+    case _ _ _: target
+
+# Same clip, shape exclusion, full-coverage inheritance, edge coverage and
+# painter order as region. Only the repeated coordinate preparation differs.
+def axes_region(+depth: Nat,+size: U32,+x: U32,+y: U32,outside: Bool,full: Bool,
+  +shape: Quad.Shape,+clip: Rect.Box,+texture: Sample.Texture,+opacity: U32,
+  +xaxis: AxisTree,+yaxis: AxisTree,+target: Image) -> Image:
+  match depth outside:
+    case _ True{}: target
+    case 0n False{}:
+      +count = region_count(full,shape,x,y)
+      axis_leaf(U32.is_zero(count),count,xaxis,yaxis,texture,opacity,target)
+    case 1n+rest False{}:
+      +covered = region_inside(full,shape,x,y,size)
+      +half = U32.div(size,2)
+      +xx = U32.add(x,half)
+      +yy = U32.add(y,half)
+      +xl = axis_low(xaxis)
+      +xh = axis_high(xaxis)
+      +yl = axis_low(yaxis)
+      +yh = axis_high(yaxis)
+      a = axes_region(rest,half,x,y,region_excluded(covered,shape,clip,x,y,half),covered,
+        shape,clip,texture,opacity,xl,yl,ImageOps.tl(target))
+      b = axes_region(rest,half,xx,y,region_excluded(covered,shape,clip,xx,y,half),covered,
+        shape,clip,texture,opacity,xh,yl,ImageOps.tr(target))
+      c = axes_region(rest,half,x,yy,region_excluded(covered,shape,clip,x,yy,half),covered,
+        shape,clip,texture,opacity,xl,yh,ImageOps.bl(target))
+      d = axes_region(rest,half,xx,yy,region_excluded(covered,shape,clip,xx,yy,half),covered,
+        shape,clip,texture,opacity,xh,yh,ImageOps.br(target))
+      Qua{a,b,c,d}
+
+def draw_axes_nearest_case(ready: Bool,+depth: Nat,+size: U32,+shape: Quad.Shape,
+  +inverse: Transform.Matrix,+texture: Sample.Texture,opacity: U32,
+  +clip: Rect.Box,target: Image) -> Image:
+  match ready clip:
+    case False{} _:
+      region(depth,size,0,0,excluded(shape,clip,0,0,size),False{},
+        shape,inverse,clip,texture,Sample.Nearest{},opacity,target)
+    case True{} Rect.Box{left,top,right,bottom}:
+      +xaxis = axis_prepare(depth,size,0,False{},True{},inverse,Sample.size(texture),left,right)
+      +yaxis = axis_prepare(depth,size,0,False{},False{},inverse,Sample.size(texture),top,bottom)
+      axes_region(depth,size,0,0,excluded(shape,clip,0,0,size),False{},
+        shape,clip,texture,opacity,xaxis,yaxis,target)
+
+def draw_axes_nearest_geometry(geometry: Geometry,depth: Nat,size: U32,
+  texture: Sample.Texture,opacity: U32,clip: Rect.Box,target: Image) -> Image:
+  match geometry:
+    case Empty{}: target
+    case Surface{shape,+inverse,bounds}:
+      draw_axes_nearest_case(axis_ready(inverse),depth,size,shape,inverse,texture,opacity,clip,target)
+
+def draw_axes_nearest_zero(zero: Bool,depth: Nat,size: U32,geometry: Geometry,
+  texture: Sample.Texture,opacity: U32,clip: Rect.Box,target: Image) -> Image:
+  match zero:
+    case True{}: target
+    case False{}: draw_axes_nearest_geometry(geometry,depth,size,texture,opacity,clip,target)
+
+def draw_axes_nearest(depth: Nat,size: U32,geometry: Geometry,+texture: Sample.Texture,
+  +opacity: U32,clip: Rect.Box,target: Image) -> Image:
+  draw_axes_nearest_zero(Bool.or(U32.is_zero(opacity),U32.is_zero(Sample.size(texture))),
+    depth,size,geometry,texture,opacity,clip,target)
