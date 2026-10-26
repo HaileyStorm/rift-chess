@@ -53,7 +53,7 @@ let menuStaticData: any, menuStaticPlan: any;
 let plates: any, assetKey = '';
 let spriteLayer: any, spriteFrame: any, spriteTheme: number | null = null;
 // One current color pose, separate from the historical presentation alpha masks.
-let spritePose: { pieces: any; frame: any; theme: number } | null = null;
+let spritePose: { pieces: any; frame: any; theme: number; supports?: any } | null = null;
 let spriteGround: { image: any; frame: any; theme: number; id: number } | null = null;
 let spriteMotion: { frame: any; old: any; pieces: any; clip: any } | null = null;
 // Preview ownership never replaces the helper's settled pose/ground/layer.
@@ -492,7 +492,9 @@ function render(packet: any): any {
         const maskId = ++spriteTaskId;
         atlasMasks.set(maskId, { frame, pieces: scene.sprite_pick_data(pieces),
           raster: 512, filter: 'nearest', retired: false, firstOffer: 0, lastOffer: 0 });
-        const supports = timed('previewSupport', () => scene.sprite_supports(pieces));
+        // Support bounds depend only on this exact immutable pose's textures.
+        // Keep them through orbit views; a decoded replacement drops the cache.
+        const supports = spritePose.supports ??= timed('previewSupport', () => scene.sprite_supports(pieces));
         preview = spritePreview = { frame, pieces, supports, theme: request.theme, maskId, artwork: null };
       }
     }
