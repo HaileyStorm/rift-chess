@@ -1,0 +1,49 @@
+{
+  "schema": "rift-current99-native-fixed-binding/1",
+  "ownerTask": "01a10a7d-098d-7af3-84fa-a7317597c654",
+  "root": null,
+  "compilerRoot": null,
+  "consumerDirectory": null,
+  "entry": "bend2/core/v3/2035/PREPARED_CHECK.bend",
+  "outputDirectory": ".artifacts/bend2/2035-kernel-20261005",
+  "nodePath": null,
+  "nativeAcquisitionReceipt": { "path": null, "sha256": null },
+  "review": {
+    "disposition": null,
+    "path": null,
+    "sha256": null
+  },
+  "source": {
+    "commit": null,
+    "tree": null,
+    "review": { "disposition": null, "path": null, "sha256": null },
+    "compiler": [],
+    "inputs": [],
+    "frozenFiles": {},
+    "frozenSha256": null,
+    "closure": [],
+    "historicalWindows": [],
+    "historicalWindowsAdmission": { "disposition": null, "path": null, "sha256": null }
+  },
+  "kernelApproval": {
+    "path": null,
+    "sha256": "ff7c6437fb58403fc0c5df3e7d7149d535163c36c8eb49491f1c4b91f48a79fa"
+  },
+  "runtime": {
+    "schema": "rift-safe-linux-runtime-2035/1",
+    "runtime": null,
+    "review": { "disposition": null, "path": null, "sha256": null }
+  },
+  "consumerFiles": [],
+  "helpers": {
+    "contracts": { "path": "bend2/core/v3/2035/bendtt-gate/contracts.mjs", "sha256": null },
+    "groupContracts": { "path": "bend2/core/v3/2032/bendtt-gate/contracts.mjs", "sha256": null },
+    "selectedBinding": { "path": "bend2/toolchain-patches/2035/selected-binding.mjs", "sha256": null },
+    "selectedModules": { "path": "bend2/tools/selected-modules.mjs", "sha256": null },
+    "aggregate": { "path": "bend2/core/v3/2032/aggregate-safety.mjs", "sha256": null },
+    "lifecycle": { "path": "bend2/toolchain-patches/2032/preview/lifecycle.mjs", "sha256": null },
+    "supervisor": { "path": "bend2/core/v3/2032/bendtt-supervisor.mjs", "sha256": null },
+    "preload": { "path": "bend2/toolchain-patches/2032/tag-identity/preload-root.mjs", "sha256": null },
+    "proof": { "path": "bend2/core/v3/proof-authority.mjs", "sha256": null }
+  }
+}
