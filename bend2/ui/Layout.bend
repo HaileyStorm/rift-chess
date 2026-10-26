@@ -376,6 +376,24 @@ def undo_agree_enabled(+snapshot: Types.Snapshot) -> Bool:
     Bool.and(other_turn, Bool.not(Bool.or(Types.snapshot_moving(snapshot),
       Types.snapshot_checking(snapshot)))))
 
+# Only the consuming control traverses legal moves or history.
+def shift_enabled_for(id: U32, +selected: U32, ids: List<&2, U32>) -> Bool:
+  match id:
+    case 5:
+      Bool.and(U32.is_lt(selected, 64), shift_source(ids, Model.macro_of(selected)))
+    case _: False{}
+
+def next_page_enabled_for(id: U32, +page: U32, history: List<&2, String>) -> Bool:
+  match id:
+    case 46:
+      U32.is_lt(page, history_last_page(U32.from_nat(List.length(&2, String, history))))
+    case _: False{}
+
+def enabled_with_undo(id: U32, +snapshot: Types.Snapshot, base: Bool) -> Bool:
+  match id:
+    case 48: undo_agree_enabled(snapshot)
+    case _: base
+
 def enabled(+id: U32, +snapshot: Types.Snapshot, dynamic: Bool) -> Bool:
   +meta = Types.snapshot_meta(snapshot)
   +preferences = Types.snapshot_preferences(snapshot)
@@ -384,8 +402,7 @@ def enabled(+id: U32, +snapshot: Types.Snapshot, dynamic: Bool) -> Bool:
   +frame = Types.snapshot_frame(snapshot)
   +selected = Scene.frame_selected(frame)
   +has_selection = Bool.or(U32.is_lt(selected, 64), U32.is_lt(Scene.frame_tile(frame), 16))
-  +can_shift = Bool.and(U32.is_lt(selected, 64),
-    shift_source(Types.snapshot_legal(snapshot), Model.macro_of(selected)))
+  +can_shift = shift_enabled_for(id, selected, Types.snapshot_legal(snapshot))
   +not_moving = Bool.not(Bool.or(Types.snapshot_moving(snapshot), Types.snapshot_checking(snapshot)))
   +mode = Types.preferences_mode(preferences)
   +can_control = Bool.and(Bool.and(is_live, not_moving), U32.is_lt(Types.meta_revision(meta), 20000))
@@ -393,13 +410,13 @@ def enabled(+id: U32, +snapshot: Types.Snapshot, dynamic: Bool) -> Bool:
   +black_actor = Bool.or(U32.is_zero(mode), U32.is_eq(mode, 2))
   +panels = Types.snapshot_panels(snapshot)
   +page = Types.panels_page(panels)
-  +last_page = history_last_page(U32.from_nat(List.length(&2, String, Types.snapshot_history(snapshot))))
+  +can_next = next_page_enabled_for(id, page, Types.snapshot_history(snapshot))
   +can_confirm_resign = Bool.and(Bool.and(can_control, U32.is_eq(Types.panels_menu(panels), 5)),
     resign_actor_allowed(page, white_actor, black_actor))
   +base = enabled_for(id, meta, is_live, can_play, has_selection, can_shift,
-    U32.is_gt(page, 0), U32.is_lt(page, last_page), not_moving, dynamic,
+    U32.is_gt(page, 0), can_next, not_moving, dynamic,
     can_control, white_actor, black_actor, can_confirm_resign)
-  Bool.pick(Bool, U32.is_eq(id, 48), undo_agree_enabled(snapshot), base)
+  enabled_with_undo(id, snapshot, base)
 
 def is_front_view(view: Camera.View) -> Bool:
   match view:
