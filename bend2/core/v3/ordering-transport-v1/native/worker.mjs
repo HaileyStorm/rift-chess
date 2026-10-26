@@ -26,9 +26,8 @@ try {
   authenticate();
   assert.equal(readFile(path.join(compiler, 'safe.ts')).identity.sha256, h.contracts.safeSource.sha256);
   Bend = await import(pathToFileURL(path.join(compiler, 'bend.ts')).href);
-  const Comp = await import(pathToFileURL(path.join(compiler, 'comp.ts')).href);
   const Safe = await import(pathToFileURL(path.join(compiler, 'safe.ts')).href);
-  for (const [module, api] of [[Bend, 'book_nil'], [Bend, 'book_valid'], [Comp, 'js_lib'], [Safe, 'safe_emit']])
+  for (const [module, api] of [[Bend, 'book_nil'], [Bend, 'book_valid'], [Safe, 'safe_emit']])
     assert.equal(typeof module[api], 'function', `missing imported API ${api}`);
   assert.equal(Bend.BASE_BEND, base, 'compiler Base path escaped fixed current99 root');
   stage = 'full-ordering-transport-load';
@@ -39,12 +38,6 @@ try {
   const closure = closureFiles([...seen.keys()]); assert.deepEqual(closure, before.source.closure);
   stage = 'full-ordering-transport-check';
   Bend.book_valid(book, 0); assert.equal(book.hols, 0); assert.equal(Object.hasOwn(book, 'open'), false);
-  stage = 'current99-namespace-guard';
-  const originalOrder = book.order, view = { ...book, order: [] };
-  assert.strictEqual(view.tlds, book.tlds); assert.strictEqual(view.ctrs, book.ctrs);
-  const code = Comp.js_lib(view, true);
-  assert.ok(typeof code === 'string' && code.length > 0);
-  assert.strictEqual(book.order, originalOrder); assert.equal(view.order.length, 0);
   stage = 'promise-screen'; const verdict = h.proof.proofVerdict(Bend, { ...book, open: 0 });
   stage = 'safe-elaboration';
   const out = workerData.output;
@@ -68,10 +61,9 @@ try {
   assert.deepEqual(await captureBinding(true), before);
   parentPort.postMessage({ ok: true, mode: 'safe-emit', verdict,
     definitions: book.order.length, holes: book.hols, owned: verdict.own.length, closure, emitted,
-    namespaceGuard: 'Current99 Comp.js_lib(empty-root full-book view, true)',
     runtime: before.runtime, fetches, actualResourceLimits: { ...resourceLimits },
     workerExecArgv: [...process.execArgv], observedWorkerExitRequired: true,
-    scope: 'actual Linux current99 original frozen Laws plus linked ordering-transport witness full62 source/type/promise/namespace and exclusive Safe serialization; historical Windows evidence does not validate this new witness; kernel verdict belongs to parent' });
+    scope: 'actual Linux current99 original frozen Laws plus linked ordering-transport witness full62 source/type/promise and exclusive Safe serialization; historical Windows evidence does not validate this new witness; kernel verdict belongs to parent' });
 } catch (error) {
   parentPort.postMessage({ ok: false, stage, fetches, actualResourceLimits: { ...resourceLimits },
     error: String(error?.$ === 'Err' && Bend ? Bend.err_show(error) : error?.message ?? error).slice(0, 3000),

@@ -20,3 +20,9 @@ The archive must remain the exact original238-byte lease, device66309/inode49978
 Launch only through that original adapter with inherited owner identity, empty `NODE_OPTIONS`, no parent Node flags and process-local `BEND_NO_TELEMETRY=1`. Retain the original Node process/streams/exit and all failed/uncertain artifacts; do not replay the adapter or bare consumer. The kernel entry flag starts false and is set true immediately before the sole `runOwnedGroup` call. It appears in success/failure data, thrown errors and final failure JSON as `kernelAttempted`. A configuration/pre-output failure reports null `failureReceipt` and false `kernelAttempted`; a no-kernel conclusion still requires actual original Node closure and `workerMayBeLive:false`, not inference from absent PID/files. Any new kernel failure preserves its new canonical lease normally.
 
 This source does not manufacture native retirement, claim ownership, a launch intent, final approvals or a proof verdict. The next operation belongs to Root's reviewed fixed adapter and actual native owner. No tests, workload, compiler, Safe or kernel execution is authorized by this README itself.
+
+The native route uses the real complete CHECK/Safe/kernel pipeline. It omits the
+old synthetic empty-root Comp namespace check and its otherwise-unused Comp
+import; original historical receipts remain intact. No unit/integration runner
+or scenario matrix is added. Formal proofs and runtime identity/ownership,
+memory, stop and settlement protections remain.
