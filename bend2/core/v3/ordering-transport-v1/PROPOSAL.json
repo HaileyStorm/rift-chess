@@ -1,0 +1,60 @@
+{
+  "schema": "rift-ordering-witness-successor-proposal/1",
+  "version": "ordering-transport-v1",
+  "state": "unfrozen-candidate; Windows CHECK/Safe passed; native kernel pending",
+  "semanticMeaning": "unchanged",
+  "declarationAuthorities": [
+    {
+      "path": "bend2/laws/semantic-v2.json",
+      "sha256": "c8dcce907c3c3a6f70e9dfa12a74966879f30ea338b2734637c9acf4579943bf"
+    },
+    {
+      "path": "bend2/laws/semantic-prepared-v3.json",
+      "sha256": "1c614f4df66e694a5395ee1b00cc23a1c59c7cf2ad99d6e4c36e3427d1939fa6"
+    }
+  ],
+  "sourceFiles": {
+    "bend2/core/v3/ordering-transport-v1/OrderingProof.bend": "0df46148aaa492a2aff1cbda28d78b8a425ad482a232302ca10ec8e946a46b69",
+    "bend2/core/v3/ordering-transport-v1/CHECK.bend": "84f89694d3c4503d3769c4cc60ce481966583dea929b37890eff1839d10110e1",
+    "bend2/core/v3/ordering-transport-v1/PREPARED_CHECK.bend": "d0d5be5d6e5864cb9f46001da71e27d53a54d08461412478072976a47b13f89c"
+  },
+  "declaration": "bend2/core/v2/OrderingLaws.bend:55 canonical_ascending, exact original proposition and all other original declarations retained",
+  "replacesInSelectedClosure": {
+    "bend2/core/v2/OrderingProof.bend": "bend2/core/v3/ordering-transport-v1/OrderingProof.bend",
+    "bend2/core/v2/CHECK.bend": "bend2/core/v3/ordering-transport-v1/CHECK.bend",
+    "bend2/core/v3/2035/PREPARED_CHECK.bend": "bend2/core/v3/ordering-transport-v1/PREPARED_CHECK.bend"
+  },
+  "oldWitnessSha256": "8296db784f0593a8802b1df8b252850c2bd59904a3022290c844d670d5f1d095",
+  "repair": "Generic constructive Plan-start equality transport; pass explicit Plan(depth,U32.from_nat(0n),width) to unchanged planned_tree_sorted. Original witnesses otherwise copied with rebased imports.",
+  "semanticsUnchanged": [
+    "Original v2/prepared declarations and enumerator",
+    "Canonical window and all other proof bodies",
+    "Original frozen source/manifests/amendments and failed receipts",
+    "Compiler/evaluator/kernel FUEL400000000",
+    "Protected accepted 2.0.27 pin and published TypeScript app"
+  ],
+  "diagnosticEvidence": {
+    "archiveSha256": "23ee8aed0999f55cf30890f1ef651dc6615d05843359542bcc405177699a9ae3",
+    "rawStdoutSha256": "9fe9c55a77c7600f2333bf22e6bd7cb54a12ac0bdc8d812043c423cf2680105e",
+    "meaning": "One completed diagnostic: Ctx.need out-of-fuel expecting Plan(5n,U32.from_nat(0n),21760). No production proof acceptance."
+  },
+  "acceptancePending": [
+    "Actual unchanged-kernel full successor verdict",
+    "Reviewed linked immutable manifest and eventual full migration/adoption obligations"
+  ],
+  "freezeLimit": "This proposal is not a semantic freeze or native proof receipt. Freeze a new linked manifest only after genuine reviewed successor evidence; never rewrite old versions.",
+  "windowsEvidence": {
+    "receiptSha256": "423d1a26fc65064c87c71c3542004d7d9ee4fcce361e6d68cc16cb25da033fd8",
+    "definitions": 1587,
+    "holes": 0,
+    "tainted": 0,
+    "serializedBytes": 5679700,
+    "serializedSha256": "70425424edce61e864bf26818d033f643594667ddd2dbc4d778af136e2e7ff64",
+    "scope": "Actual Windows full successor CHECK/type/promise/namespace and exclusive Safe serialization only; no Linux/kernel or compiler adoption."
+  },
+  "independentSourceReview": {
+    "reviewerLane": "rift_migration_next",
+    "disposition": "accepted-source-only-witness-repair",
+    "basis": "Generic equality elimination correct direction and single affine consumption; all other proof bodies retained with import rebasing; exact original declarations;62->62 closure with exactly3 path replacements. Native proof verdict remains outstanding."
+  }
+}
