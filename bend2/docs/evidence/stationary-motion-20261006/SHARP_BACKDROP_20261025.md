@@ -71,3 +71,30 @@ Stable latency, sustained/physical memory, constrained devices, owner visual
 acceptance, native/device results and compiler adoption remain open. Frozen
 Laws, the accepted 2.0.27 pin, balanced parallelism, original GPU failure and the
 TypeScript application outside `bend2/` are unchanged.
+
+## Cold offline play
+
+The same exact package also completed one current-build offline journey after
+the local source commit `c628a4068ee64e818fa2152ac39ddc253224c6c9`:
+trusted clicks played g1-f3, the original Chrome process closed completely,
+and a new Chrome process reopened the same fresh task-owned profile offline.
+Saved journal bytes and the rendered position matched across that restart.
+Trusted clicks then played e7-e5 offline, leaving White to move with two
+persisted commands. The cached build manifest retained the exact SHA256 above.
+
+Both original browser children exited zero; the original parent exited zero,
+its streams reached EOF, its handle and Job closed, and the loopback server
+closed. No forced cleanup occurred. Retained output, including the isolated
+profile, occupied 22,815,261 bytes before the terminal receipt. The existing
+package was reused without another build or compiler run.
+
+Original ignored evidence in the same evidence directory:
+
+- `sharp-backdrop-offline-20261025-r1/result.json`, SHA256
+  `428c6d8cd9ec7f5977adeb44b25f914d3213f1886c271cced37768f8761045fd`
+- `sharp-backdrop-offline-20261025-r1-supervisor/terminal.json`, SHA256
+  `fc61c527fca0af8a30a91160411809266842dab244013920eaeb007379e7ac76`
+
+This establishes this browser build's cold offline persistence and continued
+play. It does not establish an operating-system restart, native/device
+acceptance, formal kernel verdict or compiler adoption.
