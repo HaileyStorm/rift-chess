@@ -170,7 +170,7 @@ export function captureBindingSync(worker = false) {
   const b = authenticate(), h = helpers;
   assert.ok(h, 'authenticated helper load required');
   assert.equal(git('rev-parse', '--show-toplevel'), b.root);
-  assert.equal(git('status', '--porcelain=v1', '--untracked-files=all'), '', 'native checkout must be clean');
+  assert.equal(git('status', '--porcelain=v1', '--untracked-files=no'), '', 'native tracked source must be clean');
   assert.equal(git('rev-parse', 'HEAD'), b.source.commit); assert.equal(git('rev-parse', 'HEAD^{tree}'), b.source.tree);
   const expectedPaths = h.aggregate.expectedCheckClosure(b.root, absolute(b.entry), b.source.frozenFiles,
     path.join(b.compilerRoot, 'base.bend'));
@@ -184,7 +184,8 @@ export function captureBindingSync(worker = false) {
   const runtime = captureRuntime(h.contracts, worker);
   authenticate();
   return { source: { schema: 'rift-current99-native-source-binding/1', sourceCommit: b.source.commit,
-    sourceTree: b.source.tree, sourceStatus: '', compilerRoot: b.compilerRoot, compiler: b.source.compiler,
+    sourceTree: b.source.tree, sourceStatus: '', sourceStatusScope: 'tracked-files',
+    compilerRoot: b.compilerRoot, compiler: b.source.compiler,
     frozenFiles: b.source.frozenFiles, frozenSha256: b.source.frozenSha256,
     closure, expectedPaths, inputs: records(b.source.inputs), historicalWindows: records(b.source.historicalWindows),
     historicalWindowsAdmission: bound(b.source.historicalWindowsAdmission).identity,
