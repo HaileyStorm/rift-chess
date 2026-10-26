@@ -37,7 +37,8 @@ const pixelPort = new PixelPort();
 // Raw transfer is the measured default. The optional ImageBitmap surface is
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
-let underlay: any, motionUnderlay: any, motionBackdrop: any, ground: any, prepared: any, chrome: any, retained: any;
+let underlay: any, motionUnderlay: any, motionBackdrop: any, motionBackdrop512: any;
+let ground: any, prepared: any, chrome: any, retained: any;
 let spritePrepared: { frame: any; layer: any; boardSize: number; image: any } | null = null;
 let sceneReuse = { staticFeedback: false, menuBackground: false };
 let assetTimes = { plateTransport: 0, plateDecode: 0, fontTransport: 0, fontDecode: 0 };
@@ -437,10 +438,11 @@ function render(packet: any): any {
   sceneReuse = { staticFeedback: false, menuBackground: false };
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
-    [motionUnderlay, motionBackdrop] = timed('motionUnderlay', () => [
-      scene.underlay128_asset(request.theme, plates), scene.underlay256_asset(request.theme, plates)]);
+    [motionUnderlay, motionBackdrop, motionBackdrop512] = timed('motionUnderlay', () => [
+      scene.underlay128_asset(request.theme, plates), scene.underlay256_asset(request.theme, plates),
+      boardSize === 512 ? underlay : scene.underlay512_asset(request.theme, plates)]);
   }
-  if (!underlay || !motionUnderlay || !motionBackdrop) throw new Error('Missing Bend underlay');
+  if (!underlay || !motionUnderlay || !motionBackdrop || !motionBackdrop512) throw new Error('Missing Bend underlay');
   if (request.background || request.ground) {
     groundInvalidated = true;
     preparedInvalidated = true;
@@ -559,15 +561,19 @@ function render(packet: any): any {
       return boardSize === 512 ? artwork : scene.nearest2(9n, artwork);
     }
     if (preview) {
-      if (!preview.artwork || preview.artwork.backdrop !== motionBackdrop ||
+      if (!preview.artwork || preview.artwork.backdrop !== motionBackdrop512 ||
           !scene.sprite_preview_same_artwork(preview.artwork.frame, frame)) {
         const image = timed('previewPaint', () => {
+          // Preserve the detailed plate only where the fast Bend painter kept
+          // its base; board geometry still uses the responsive 256px raster.
           const backdrop = timed('previewGround', () =>
-            scene.fast_sprite_camera_ground256(frame, motionBackdrop));
+            replaceRetainedBackground(
+              scene.fast_sprite_camera_ground256(frame, motionBackdrop),
+              motionBackdrop, motionBackdrop512));
           return timed('previewSprites', () =>
             scene.fast_sprite_camera_layer512_nearest(frame, preview!.pieces, preview!.supports, backdrop));
         });
-        preview.artwork = { frame, image, backdrop: motionBackdrop };
+        preview.artwork = { frame, image, backdrop: motionBackdrop512 };
       }
       return scene.fast_sprite_camera_feedback512(frame, preview.artwork.image);
     }
