@@ -108,6 +108,7 @@ export async function executeCurrent99() {
     catch (preservationError) { error.lockPreservationError = String(preservationError); }
     const failure = { schema: 'rift-bendtt-failure-2035/1', passed: false, stage,
       workerMayBeLive: error.workerMayBeLive === true, leasePreserved: preserved, source: before, worker,
+      memoryAdmissions: [firstMemory, secondMemory].filter(Boolean),
       kernel: kernel ? { ...kernel, stdout: kernel.stdout?.toString('utf8'), stderr: kernel.stderr?.toString('utf8') } : null,
       reason: String(error.message ?? error).slice(0, 1800), failureStack: String(error.workerFailure?.failureStack ?? error.stack ?? error).slice(0, 6000),
       workerFailure: error.workerFailure, workerLogs: error.workerLogs, configuredWorkerResourceLimits: error.configuredWorkerResourceLimits,
