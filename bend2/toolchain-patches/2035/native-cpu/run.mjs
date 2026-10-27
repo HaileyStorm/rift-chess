@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Worker, resourceLimits } from 'node:worker_threads';
-import { config, at, capture, git, loadHelpers, memoryAdmission, read, realDirectory,
+import { config, at, capture, git, loadHelpers, memoryAdmission, containmentSnapshot, read, realDirectory,
   write, writeJson, FLAGS, OUTPUT, bindNativeTools, syncDirectory } from './binding.mjs';
 
 const TIMEOUT = 600_000;
-const PROBE = `#include <X11/Xlib.h>
+const PROBE = `#define _GNU_SOURCE 1
+#include <X11/Xlib.h>
 #include <alsa/asoundlib.h>
 int main(int argc, char **argv) {
   if (argc == 2147483647) {
@@ -41,10 +42,10 @@ function packageDirectory(run, relative) {
   }
   return current;
 }
-async function emissionWorker(h, before, run, runIdentity) {
+async function emissionWorker(h, before, run, runIdentity, containmentIdentity) {
   const worker = new Worker(new URL('./worker.mjs', import.meta.url), { execArgv: [...FLAGS],
-    resourceLimits: { stackSizeMb: 64 }, stdout: true, stderr: true,
-    workerData: { expected: before, run, runIdentity, nativeTools: before.nativeTools.reference } });
+    resourceLimits: { stackSizeMb: 64, maxOldGenerationSizeMb: 65536 }, stdout: true, stderr: true,
+    workerData: { expected: before, run, runIdentity, containmentIdentity, nativeTools: before.nativeTools.reference } });
   const configured = { ...worker.resourceLimits }, logs = { stdout: [], stderr: [] }, sizes = { stdout: 0, stderr: 0 };
   let failure;
   for (const name of ['stdout', 'stderr']) worker[name].on('data', data => {
@@ -61,6 +62,7 @@ async function emissionWorker(h, before, run, runIdentity) {
   } catch (error) { primary ??= error; }
   if (primary) { primary.workerFailure = failure; primary.workerLogs = { captured, sizes }; throw primary; }
   assert.equal(configured.stackSizeMb, 64); assert.equal(result.actualResourceLimits.stackSizeMb, 64);
+  assert.equal(configured.maxOldGenerationSizeMb, 65536); assert.equal(result.actualResourceLimits.maxOldGenerationSizeMb, 65536);
   assert.deepEqual(result.workerExecArgv, FLAGS); assert.equal(result.fetches, 0);
   assert.ok(sizes.stdout <= 65_536 && sizes.stderr <= 65_536, 'Worker logs exceeded retained bound');
   return { ...result, configuredResourceLimits: configured, observedExit: true, exitCode: 0, logs: captured };
@@ -124,7 +126,7 @@ export async function buildNativeCpu() {
   assert.equal(fs.existsSync(path.join(output, `${b.runName}.intent.json`)), false, 'STOP: one-use build intent already exists');
   assert.equal(fs.existsSync(path.join(output, b.runName)), false, 'STOP: fixed build output already exists');
   const lockPath = path.join(output, 'active-native-cpu.lock');
-  let lease, run, stage = 'lease', firstMemory, worker, link, probe, version;
+  let lease, run, stage = 'lease', firstMemory, finalContainment, worker, link, probe, version;
   let emissionAttempted = false, clangLinkAttempted = false, lockPreserved = false;
   try {
     lease = h.lifecycle.acquireOwnedLock(lockPath, JSON.stringify({ schema: 'rift-current99-native-cpu-lease/1',
@@ -152,7 +154,7 @@ export async function buildNativeCpu() {
       '-lpthread', '-lm', '-lX11', '-lasound', '-o', path.join(run, 'x11-alsa-probe')]);
     assert.equal(read(probeFile).bytes.toString('utf8'), PROBE);
     stage = 'application-load-and-c-emission'; emissionAttempted = true;
-    worker = await emissionWorker(h, before, run, runIdentity);
+    worker = await emissionWorker(h, before, run, runIdentity, firstMemory.leaf.identity);
     writeJson(path.join(run, 'worker-success.json'), worker);
     assert.deepEqual(capture(), before); assert.deepEqual(h.assets.collectRuntimeAssets(), assets);
     const cPath = path.join(run, 'NativeV2.c'); assert.deepEqual(read(cPath).identity, worker.emitted);
@@ -179,9 +181,11 @@ export async function buildNativeCpu() {
     assert.deepEqual(h.assets.collectRuntimeAssets(), assets); assert.deepEqual(read(cPath).identity, worker.emitted);
     for (const [name, identity] of Object.entries(staged)) assert.deepEqual(read(at(pkg, name)).identity, identity);
     assert.deepEqual(read(path.join(pkg, 'run-native-v2.sh')).identity, shell);
+    stage = 'final-containment-snapshot';
+    finalContainment = containmentSnapshot(h.aggregate, 'final-before-receipt-and-lock-release', firstMemory.leaf.identity);
     const receipt = { schema: 'rift-current99-native-cpu-package/1', passed: true,
       before, after: before, emissionAttempted, clangLinkAttempted,
-      memoryAdmissions: [firstMemory, worker.admission], worker,
+      memoryAdmissions: [firstMemory, worker.admission], containment: finalContainment, worker,
       clang: { major: clangMajor, version: jsonProcess(version), dependencyProbe: jsonProcess(probe), link: jsonProcess(link) },
       binary: { ...binary.identity, elf }, sourceC: worker.emitted, assets: { original: assets, staged }, launcher: shell,
       parent: { pid: process.pid, resourceLimits: { ...resourceLimits }, execArgv: [...process.execArgv] },
@@ -195,9 +199,13 @@ export async function buildNativeCpu() {
   } catch (error) {
     if (lease) { lease.preserve = true;
       try { h.lifecycle.closeOwnedLock(lease); lockPreserved = true; } catch (closeError) { error.lockCloseError = String(closeError); } }
+    let failureContainment;
+    try { failureContainment = containmentSnapshot(h.aggregate, 'failure-observation', firstMemory?.leaf.identity ?? null); }
+    catch (snapshotError) { failureContainment = snapshotError.memoryAdmission ?? { error: String(snapshotError) }; }
     const failure = { schema: 'rift-current99-native-cpu-failure/1', passed: false, stage, before,
       emissionAttempted, clangLinkAttempted, lockPreserved, workerMayBeLive: error.workerMayBeLive === true,
       memoryAdmissions: [firstMemory, worker?.admission, error.memoryAdmission].filter(Boolean),
+      containment: finalContainment ?? failureContainment,
       worker: worker ?? null, workerFailure: error.workerFailure ?? null, workerLogs: error.workerLogs ?? null,
       partialProcess: error.partialResult ? jsonProcess(error.partialResult) : null,
       reason: String(error.message ?? error), stack: String(error.stack ?? error).slice(0, 8000),

@@ -55,6 +55,11 @@ The producer independently follows Bend imports and compares actual loaded paths
   `.artifacts/bend2/native-v2-current99-linux`; one fixed `runName` matching
   `run-[A-Za-z0-9_-]+`.
 - `review.disposition`: `accepted-for-one-current99-native-cpu-build`.
+- `memoryPolicy`: exactly `{schema: "rift-current99-native-memory-policy/1",
+  unit: "rift-current99-native-cpu-20261027-r2.service",
+  memoryMaxBytes: 77309411328, swapMaxBytes: 0, oomGroup: 1,
+  reserveBytes: 8589934592}`. This is a fixed experiment resource policy, not a
+  measured requirement or permission to alter another service.
 - `source.commit`, `source.tree`, `source.projectFiles` (86 repository-relative
   original path-to-SHA256 records), `source.candidateFiles` (the same 86 paths,
   only NativeV2 changed), and `source.baseEffectFiles` (69 compiler-relative
@@ -91,28 +96,62 @@ The consumer rechecks the original JSON raw hash and complete current executable
 identity in the parent, Worker and final binding snapshots. This data is an
 observation, not a separate acceptance run or permission to change dependencies.
 
-From the canonical root, with the actual owner environment, `NODE_OPTIONS` and
-`BUN_OPTIONS` empty and `BEND_NO_TELEMETRY=1`, launch the admitted Node without
-parent Node flags:
+The native owner/preparer creates the fresh fixed systemd user service under its
+own reviewed procedure, with `memory.max=72 GiB`, `memory.swap.max=0` and
+`memory.oom.group=1`. This source neither creates nor changes systemd services or
+cgroups. Preserve the original r1 intent, failure and source copies unchanged.
+From the canonical root **inside that service**, with the actual owner environment,
+`NODE_OPTIONS` and `BUN_OPTIONS` empty and `BEND_NO_TELEMETRY=1`, launch the admitted
+Node without parent Node flags:
 
 ```
 <admitted-node> <armed-consumer>/run.mjs --native-tools <original-json> --native-tools-sha256 <raw-sha256>
 ```
 
-The Worker uses only `--experimental-transform-types` and a 64 MiB stack, both
-read back. Its success requires the original exit event/code. The actual C
+The Worker uses only `--experimental-transform-types`, a 64 MiB stack, and
+`maxOldGenerationSizeMb=65536` (64 GiB). Configured and actual Worker limits are
+asserted and recorded; actual native readback is required, not assumed. This is
+the permitted V8 old-generation ceiling, not an allocation, required usage or
+total-memory limit. Native memory, buffers, other engine spaces, threads and the
+parent remain within the separate 72 GiB service cap. The nominal 8 GiB difference
+does not guarantee those allocations fit. No young-generation option, compiler
+parallelism, runtime scheduling or parent Node flag changes. Worker success
+requires the original exit event/code. The actual C
 compiler's `file_book`, reached by `compile_book` on real main/runtime roots,
 checks compiler-owned names and constructor/foreign-name collisions. No empty-root
 JS emission is used as a synthetic guard; C emission is not a formal proof claim.
 
-Two admissions require at least 88 GiB: before application loading and immediately
-before C emission. Both use host `MemAvailable` and the unchanged admitted
-init-cgroup-namespace/full-ancestry guard. Unreadable accounting, hidden ancestry,
-or insufficient headroom stops the build. The 88 GiB floor preserves the original
-native-emission requirement; it is not a measured current99 peak or a claim about
-Node heap capacity. X11/ALSA headers and link dependencies are compiled before
-expensive application emission. Clang 14+ is required. The dependency probe binary
-is not executed. Compilation uses the existing CPU flags and scheduling behavior.
+Containment and growth-reserve checks run before the first Clang command and
+immediately before C emission in the Worker. The unchanged
+init-cgroup-namespace/full-ancestry helper verifies namespace and mount visibility.
+The actual self leaf must be the fixed unit in the current UID's systemd user
+hierarchy, with exactly the bound cap, swap limit and OOM-group setting, zero
+current swap, and readable current usage/OOM counters. The cgroup directory's
+device/inode/path is pinned across parent and Worker snapshots.
+
+For each admission, remaining allowed growth is `72 GiB - leaf memory.current`.
+Host `MemAvailable` and **each finite outer ancestor's** `memory.max - memory.current`
+must cover that remaining growth **plus 8 GiB**. The self leaf is excluded from
+the outer reserve comparison; its cap is containment. This replaces the speculative
+88 GiB floor and does not assert current99's memory requirement or measured peak.
+These are point-in-time admissions, not continuous host reservations. Unreadable
+required accounting, hidden ancestry, incorrect controls/membership or insufficient
+outside headroom stops the build.
+
+Receipts retain actual current usage, cgroup identity, optional `memory.peak`, and
+original `memory.events` fields, including finite outer ancestors. Missing or
+unreadable optional peak is `null` with its actual error, never zero. Leaf `oom`,
+`oom_kill` and `oom_group_kill` counters must all remain zero. A final containment
+snapshot is recorded after link/settlement and before successful receipt/lock
+release; it verifies containment and no leaf OOM, without admitting further growth
+after work has finished. Failure snapshots are retained when readable. The external
+native observer owns unit freshness, whole-service exit/OOM evidence and failures
+that kill this producer; no OOM result is acceptance.
+
+X11/ALSA headers and link dependencies are compiled before expensive application
+emission. The dependency source defines `_GNU_SOURCE` before those headers, matching
+the generated program. Clang 14+ is required. The dependency probe binary is not
+executed. Compilation uses the existing CPU flags and scheduling behavior.
 
 The fixed output root has one `active-native-cpu.lock`. The run directory and
 `<runName>.intent.json` are created exclusively; intent remains permanently after

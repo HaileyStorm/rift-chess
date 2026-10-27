@@ -12,6 +12,11 @@ let nativeToolsReference;
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 export const OUTPUT = '.artifacts/bend2/native-v2-current99-linux';
 export const FLAGS = Object.freeze(['--experimental-transform-types']);
+export const MEMORY_POLICY = Object.freeze({
+  schema: 'rift-current99-native-memory-policy/1',
+  unit: 'rift-current99-native-cpu-20261027-r2.service',
+  memoryMaxBytes: 72 * 1024 ** 3, swapMaxBytes: 0, oomGroup: 1, reserveBytes: 8 * 1024 ** 3,
+});
 export const helpers = Object.freeze({
   preload: 'bend2/toolchain-patches/2032/tag-identity/preload-root.mjs',
   aggregate: 'bend2/core/v3/2032/aggregate-safety.mjs',
@@ -94,6 +99,7 @@ export function config() {
   assert.equal(here, path.join(b.root, relative(b.consumerDirectory)));
   assert.equal(b.outputDirectory, OUTPUT); assert.match(b.runName, /^run-[A-Za-z0-9_-]+$/);
   assert.equal(b.review.disposition, 'accepted-for-one-current99-native-cpu-build');
+  assert.deepEqual(b.memoryPolicy, MEMORY_POLICY, 'fixed experiment memory policy differs');
   assert.equal(process.env.BEND_NO_TELEMETRY, '1'); assert.equal(process.env.NODE_OPTIONS ?? '', '');
   assert.equal(process.env.BUN_OPTIONS ?? '', ''); assert.equal(typeof globalThis.Bun, 'undefined');
   return b;
@@ -178,7 +184,7 @@ export function capture(worker = false) {
   for (const [name, record] of Object.entries(baseEffects)) assert.deepEqual(record, compiler[name]);
   return { bindingSha256: approvedBindingSha256, source: { commit: b.source.commit, tree: b.source.tree,
     sourceStatusScope: 'tracked-files', originals, candidate, baseEffects }, compiler, repository,
-    runtime: { node, version: process.version }, clang, nativeTools: tools };
+    runtime: { node, version: process.version }, clang, nativeTools: tools, memoryPolicy: b.memoryPolicy };
 }
 export function expectedLoadedPaths() {
   const b = config(), files = new Set(), effects = new Set(['base.bend']), visit = file => {
@@ -209,23 +215,94 @@ export function expectedLoadedPaths() {
   assert.deepEqual(project, Object.keys(b.source.candidateFiles).sort());
   return [...files].sort();
 }
-export function memoryAdmission(aggregate, phase) {
-  let snapshot;
+function directoryIdentity(directory) {
+  realDirectory(directory); const s = fs.lstatSync(directory, { bigint: true });
+  assert.ok(s.ino !== 0n, 'cgroup directory identity unavailable');
+  return { path: directory, dev: String(s.dev), ino: String(s.ino) };
+}
+function byteCount(file) {
+  const text = fs.readFileSync(file, 'ascii').trim(); assert.match(text, /^[0-9]+$/, file);
+  const value = Number(text); assert.ok(Number.isSafeInteger(value) && value >= 0, file); return value;
+}
+function peakMemory(directory) {
+  try { return { bytes: byteCount(path.join(directory, 'memory.peak')), error: null }; }
+  catch (error) { return { bytes: null, error: { code: error.code ?? null, message: String(error.message ?? error) } }; }
+}
+function memoryEvents(directory) {
+  const raw = fs.readFileSync(path.join(directory, 'memory.events'), 'ascii');
+  const counters = {};
+  for (const line of raw.trim().split('\n')) {
+    const match = /^([a-z_]+)\s+([0-9]+)$/.exec(line); assert.ok(match, 'malformed memory.events');
+    assert.ok(!Object.hasOwn(counters, match[1]), 'duplicate memory.events field'); counters[match[1]] = match[2];
+  }
+  for (const name of ['oom', 'oom_kill', 'oom_group_kill']) assert.ok(Object.hasOwn(counters, name), `missing memory.events ${name}`);
+  return { raw, counters };
+}
+function collectMemory(aggregate, phase, expectedLeaf, requireGrowth) {
+  const policy = config().memoryPolicy;
+  const sample = { schema: 'rift-current99-native-memory-snapshot/1', phase,
+    sampledAt: new Date().toISOString(), policy, growthAdmissionRequired: requireGrowth, admitted: false };
   try {
     const text = fs.readFileSync('/proc/meminfo', 'ascii'); const m = /^MemAvailable:\s+(\d+)\s+kB$/m.exec(text);
     assert.ok(m, 'MemAvailable unavailable'); const available = Number(m[1]) * 1024;
     assert.ok(Number.isSafeInteger(available));
-    snapshot = aggregate.admittedMemorySnapshot({ hostFree: available });
+    sample.hostMemAvailableBytes = available;
+    const snapshot = aggregate.admittedMemorySnapshot({ hostFree: available }); sample.ancestry = snapshot;
     assert.equal(snapshot.mode, 'linux-init-cgroup-full-ancestry-admitted');
     assert.equal(snapshot.ancestryMode, 'init-cgroup-namespace-visible-v2-full-ancestry');
-    const sample = { phase, sampledAt: new Date().toISOString(), floorBytes: 88 * 1024 ** 3,
-      admitted: snapshot.availableBytes >= 88 * 1024 ** 3, snapshot };
-    if (!sample.admitted) { const error = Error('STOP: native C production requires 88 GiB under full host/cgroup ancestry');
-      error.memoryAdmission = sample; throw error; }
+    const cgroupPath = snapshot.cgroupPath, uid = process.getuid();
+    assert.ok(cgroupPath.startsWith(`/user.slice/user-${uid}.slice/user@${uid}.service/`),
+      'producer is not in the owning systemd user service hierarchy');
+    assert.equal(path.posix.basename(cgroupPath), policy.unit, 'wrong native experiment service membership');
+    const directory = `/sys/fs/cgroup${cgroupPath}`, identity = directoryIdentity(directory);
+    if (expectedLeaf !== null) assert.deepEqual(identity, expectedLeaf, 'native containment cgroup changed');
+    const leafRow = snapshot.visibleLimits.find(row => row.path === cgroupPath);
+    assert.ok(leafRow, 'self leaf absent from full ancestry');
+    const leaf = { identity, memoryMaxBytes: byteCount(path.join(directory, 'memory.max')),
+      swapMaxBytes: byteCount(path.join(directory, 'memory.swap.max')),
+      oomGroup: byteCount(path.join(directory, 'memory.oom.group')),
+      currentBytes: byteCount(path.join(directory, 'memory.current')),
+      swapCurrentBytes: byteCount(path.join(directory, 'memory.swap.current')),
+      peak: peakMemory(directory), events: memoryEvents(directory) };
+    sample.leaf = leaf;
+    assert.equal(leaf.memoryMaxBytes, policy.memoryMaxBytes, 'native service memory.max differs');
+    assert.equal(leafRow.max, String(policy.memoryMaxBytes), 'ancestry leaf cap differs');
+    assert.equal(leaf.swapMaxBytes, policy.swapMaxBytes, 'native service swap is not disabled');
+    assert.equal(leaf.oomGroup, policy.oomGroup, 'native service group OOM handling differs');
+    assert.equal(leaf.swapCurrentBytes, 0, 'native service already has swapped memory');
+    assert.ok(leaf.currentBytes <= policy.memoryMaxBytes, 'native service usage already exceeds cap');
+    for (const name of ['oom', 'oom_kill', 'oom_group_kill']) assert.equal(leaf.events.counters[name], '0',
+      'native service reports an OOM event; no OOM acceptance');
+    sample.remainingGrowthBytes = policy.memoryMaxBytes - leaf.currentBytes;
+    sample.requiredOutsideHeadroomBytes = sample.remainingGrowthBytes + policy.reserveBytes;
+    // The self cap is containment, not an outer resource reserve. Comparing the
+    // aggregate minimum (which includes self) to growth+reserve would reject
+    // every correctly capped service. Inspect only finite OUTER ancestors here.
+    sample.outerFiniteAncestors = [];
+    for (const row of snapshot.visibleLimits.filter(row => row.path !== cgroupPath
+      && row.max !== 'max' && row.max !== 'absent-root')) {
+      assert.match(row.max, /^[0-9]+$/); assert.match(row.current, /^[0-9]+$/);
+      const headroom = BigInt(row.max) - BigInt(row.current), outerDirectory = row.path === '/'
+        ? '/sys/fs/cgroup' : `/sys/fs/cgroup${row.path}`;
+      const record = { identity: directoryIdentity(outerDirectory), maxBytes: row.max, currentBytes: row.current,
+        headroomBytes: (headroom > 0n ? headroom : 0n).toString(), peak: peakMemory(outerDirectory),
+        events: memoryEvents(outerDirectory) };
+      sample.outerFiniteAncestors.push(record);
+      if (requireGrowth) assert.ok(headroom >= BigInt(sample.requiredOutsideHeadroomBytes),
+        `outer cgroup lacks remaining-growth plus host reserve: ${row.path}`);
+    }
+    if (requireGrowth) assert.ok(available >= sample.requiredOutsideHeadroomBytes,
+      'host MemAvailable lacks remaining-growth plus host reserve');
+    assert.deepEqual(directoryIdentity(directory), identity);
+    assert.ok(fs.readFileSync('/proc/self/cgroup', 'ascii').split('\n').includes(`0::${cgroupPath}`),
+      'native service membership changed while sampling');
+    sample.admitted = true;
     return sample;
   } catch (error) {
-    error.memoryAdmission ??= { phase, sampledAt: new Date().toISOString(), floorBytes: 88 * 1024 ** 3,
-      admitted: false, snapshot: snapshot ?? null, error: String(error.message ?? error) };
+    sample.error = { code: error.code ?? null, message: String(error.message ?? error) };
+    error.memoryAdmission = sample;
     throw error;
   }
 }
+export const memoryAdmission = (aggregate, phase, expectedLeaf = null) => collectMemory(aggregate, phase, expectedLeaf, true);
+export const containmentSnapshot = (aggregate, phase, expectedLeaf) => collectMemory(aggregate, phase, expectedLeaf, false);

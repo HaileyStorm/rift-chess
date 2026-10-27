@@ -13,7 +13,8 @@ globalThis.fetch = async () => { fetches++; throw Error('network denied in nativ
 try {
   bindNativeTools(workerData.nativeTools);
   const b = config(), h = await loadHelpers();
-  assert.equal(resourceLimits.stackSizeMb, 64); assert.deepEqual(process.execArgv, FLAGS);
+  assert.equal(resourceLimits.stackSizeMb, 64); assert.equal(resourceLimits.maxOldGenerationSizeMb, 65536);
+  assert.deepEqual(process.execArgv, FLAGS);
   const before = capture(true); assert.deepEqual(before, workerData.expected);
   assert.equal(workerData.run, at(b.root, `${b.outputDirectory}/${b.runName}`));
   realDirectory(workerData.run);
@@ -41,7 +42,7 @@ try {
   writeJson(path.join(workerData.run, 'source.json'), source);
   stage = 'pre-emission-input-recheck'; assert.deepEqual(capture(true), before);
   stage = 'immediately-before-c-emission-memory';
-  admission = memoryAdmission(h.aggregate, 'immediately-before-c-emission');
+  admission = memoryAdmission(h.aggregate, 'immediately-before-c-emission', workerData.containmentIdentity);
   writeJson(path.join(workerData.run, 'emission-memory.json'), admission);
   stage = 'application-c-emission';
   // compile_book calls file_book on actual main/runtime roots; file_book enforces
