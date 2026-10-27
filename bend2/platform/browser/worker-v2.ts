@@ -77,11 +77,14 @@ function pruneAtlasMasks(): void {
 let spritePlateTheme: number | null = null;
 let spriteHelper: Worker | null = null, spriteHello = false, spriteGeneration = 0, spriteTaskId = 0;
 let spritePending: { id: number; generation: number; frame: any; theme: number;
-  revision: number; at: number; epoch: number; quietWindowMs: number } | null = null;
+  revision: number; at: number; epoch: number; quietWindowMs: number; heldEpoch: number | null } | null = null;
 // A rapid sequence of settled camera commands otherwise starts an expensive
 // helper render for an intermediate view before the next input arrives.
 const CAMERA_QUIET_MS = 450;
-let spriteQueued: { frame: any; theme: number; revision: number } | null = null;
+const HELD_CAMERA_QUIET_MS = 200;
+let cameraInputEpoch = 0, spriteHeldEpoch: number | null = null;
+let spriteQueued: { frame: any; theme: number; revision: number; heldEpoch: number | null;
+  readyAt: number; quietWindowMs: number } | null = null;
 let spriteReleased: { frame: any; theme: number; revision: number } | null = null;
 let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
@@ -232,6 +235,8 @@ function disposeSprite(): void {
   spriteGeneration++;
   spritePending = null;
   spriteReleased = null;
+  cameraInputEpoch = 0;
+  spriteHeldEpoch = null;
   clearSpriteQueue();
   spriteHello = false;
   spriteLayer = spriteFrame = null;
@@ -272,18 +277,20 @@ function ensureSpriteHelper(): void {
     const pending = spritePending;
     if (!pending || message.id !== pending.id || message.generation !== pending.generation ||
         message.theme !== pending.theme) return;
-    spritePending = null;
-    if (message.kind === 'error') { spriteFault(String(message.message)); return; }
+    if (message.kind === 'error') { spritePending = null; spriteFault(String(message.message)); return; }
     if (message.kind !== 'result' || message.image?.protocol !== 1) {
+      spritePending = null;
       spriteFault('invalid image result'); return;
     }
     messageQueue = messageQueue.then(async () => {
       // A boot/dispose or newer job may run between receipt and acceptance.
       // Frame equality alone cannot bind helper-local ground identities.
-      if (helper !== spriteHelper || pending.generation !== spriteGeneration) return;
+      if (helper !== spriteHelper || spritePending !== pending || pending.generation !== spriteGeneration) return;
+      spritePending = null;
       const current = latestPacket;
       if (!current || (current.render.boardSize !== 512 && current.render.boardSize !== 1024) ||
-          cameraOrbiting || current.render.motion ||
+          ((cameraOrbiting || current.render.motion) && !(cameraOrbiting &&
+            pending.heldEpoch !== null && pending.heldEpoch === cameraInputEpoch)) ||
           current.snapshot.moving || current.render.theme !== pending.theme ||
           current.presentation.revision !== pending.revision ||
           !scene.sprite_same_placement(pending.frame, current.snapshot.frame)) {
@@ -321,6 +328,8 @@ function ensureSpriteHelper(): void {
       spritePose = pose;
       spriteGround = settled;
       spriteMotion = null;
+      spriteHeldEpoch = cameraOrbiting ? pending.heldEpoch : null;
+      clearSpriteQueue();
       const received = performance.now();
       const epoch = performance.timeOrigin + received;
       spriteMetrics = { ...message.metrics, imageUnpackMs,
@@ -330,25 +339,30 @@ function ensureSpriteHelper(): void {
         sendToAcceptanceMs: epoch - message.metrics.sendEpochMs,
         quietWindowMs: pending.quietWindowMs,
         roundTripMs: received - pending.at };
-      const refined = api.refine(session);
-      if (refined.presentation.revision !== pending.revision ||
-          !scene.sprite_same_placement(pending.frame, refined.snapshot.frame))
-        throw new Error('Bend sprite refinement changed the current position');
-      await emit(refined, 0, lastHostId, 'refinement');
-      latestPacket = refined;
+      await emitSpriteRefinement(pending.frame, pending.revision);
     }).catch(error => spriteFault(String(error)));
   });
 }
 
+async function emitSpriteRefinement(frame: any, revision: number): Promise<void> {
+  const refined = api.refine(session);
+  if (refined.presentation.revision !== revision ||
+      !scene.sprite_same_placement(frame, refined.snapshot.frame))
+    throw new Error('Bend sprite refinement changed the current position');
+  await emit(refined, 0, lastHostId, 'refinement');
+  latestPacket = refined;
+}
+
 function startSpriteJob(frame: any, theme: number, revision: number,
-  quietWindowMs = 0): void {
+  quietWindowMs = 0, heldEpoch: number | null = null): void {
+  if (spritePending) throw new Error('Sprite helper already has an in-flight job');
   const at = performance.now();
   if (spriteTaskId >= Number.MAX_SAFE_INTEGER) {
     spriteFault('Atlas mask identity exhausted');
     return;
   }
   const pending = { id: ++spriteTaskId, generation: ++spriteGeneration,
-    frame, theme, revision, at, epoch: performance.timeOrigin + at, quietWindowMs };
+    frame, theme, revision, at, epoch: performance.timeOrigin + at, quietWindowMs, heldEpoch };
   spritePending = pending;
   // The main Bend worker already decoded this exact theme plate for its first
   // playable frame. Clone it only on a helper/theme transition; the helper
@@ -367,6 +381,42 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   if (sharedPlate) spritePlateTheme = theme;
 }
 
+function armSpriteQueue(): void {
+  if (!spriteQueued || spriteTimer !== null) return;
+  spriteTimer = setTimeout(() => {
+    spriteTimer = null;
+    messageQueue = messageQueue.then(flushSpriteQueue).catch(error => spriteFault(String(error)));
+  }, Math.max(0, spriteQueued.readyAt - performance.now()));
+}
+
+async function flushSpriteQueue(): Promise<void> {
+  const queued = spriteQueued, current = latestPacket;
+  if (!queued || !current) return;
+  const held = queued.heldEpoch !== null;
+  if ((current.render.boardSize !== 512 && current.render.boardSize !== 1024) || current.snapshot.moving ||
+      (held ? !cameraOrbiting || queued.heldEpoch !== cameraInputEpoch
+        : cameraOrbiting || current.render.motion) ||
+      current.render.theme !== queued.theme || current.presentation.revision !== queued.revision ||
+      !scene.sprite_same_placement(queued.frame, current.snapshot.frame)) {
+    clearSpriteQueue();
+    return;
+  }
+  if (performance.now() < queued.readyAt) { armSpriteQueue(); return; }
+  // A synchronous helper render cannot be cancelled. Keep just this latest
+  // desired view until the original job replies; never fill its message queue.
+  if (spritePending) return;
+  clearSpriteQueue();
+  if (spriteLayer && spriteFrame && spriteTheme === queued.theme &&
+      scene.sprite_same_placement(spriteFrame, queued.frame)) {
+    if (held) {
+      spriteHeldEpoch = queued.heldEpoch;
+      await emitSpriteRefinement(queued.frame, queued.revision);
+    }
+    return;
+  }
+  startSpriteJob(queued.frame, queued.theme, queued.revision, queued.quietWindowMs, queued.heldEpoch);
+}
+
 function scheduleSprite(packet: any, cameraReleased = false): void {
   const frame = packet.snapshot.frame, theme = packet.render.theme;
   if (cameraReleased) {
@@ -378,13 +428,15 @@ function scheduleSprite(packet: any, cameraReleased = false): void {
   }
   const released = spriteReleased !== null;
   if ((packet.render.boardSize !== 512 && packet.render.boardSize !== 1024) ||
-      cameraOrbiting || packet.render.motion || packet.snapshot.moving) {
+      packet.snapshot.moving || (!cameraOrbiting && packet.render.motion)) {
     spriteReleased = null;
     clearSpriteQueue();
     return;
   }
+  const heldEpoch = cameraOrbiting ? cameraInputEpoch : null;
   if (spriteLayer && spriteTheme === theme && spriteFrame &&
-      scene.sprite_same_placement(spriteFrame, frame)) {
+      scene.sprite_same_placement(spriteFrame, frame) &&
+      (heldEpoch === null || spriteHeldEpoch === heldEpoch)) {
     spriteReleased = null;
     clearSpriteQueue();
     return;
@@ -393,30 +445,23 @@ function scheduleSprite(packet: any, cameraReleased = false): void {
   if (!spriteHello) return;
   if (spritePending && spritePending.theme === theme &&
       spritePending.revision === packet.presentation.revision &&
-      scene.sprite_same_placement(spritePending.frame, frame)) {
+      scene.sprite_same_placement(spritePending.frame, frame) &&
+      (heldEpoch === null || spritePending.heldEpoch === heldEpoch)) {
     spriteReleased = null;
+    clearSpriteQueue();
     return;
   }
-  if (!released && spriteQueued && spriteQueued.theme === theme &&
+  if (!released && spriteQueued && spriteQueued.theme === theme && spriteQueued.heldEpoch === heldEpoch &&
       spriteQueued.revision === packet.presentation.revision &&
-      scene.sprite_same_placement(spriteQueued.frame, frame)) return;
+      scene.sprite_same_placement(spriteQueued.frame, frame)) { armSpriteQueue(); return; }
   clearSpriteQueue();
-  if (!released && spriteLayer && spriteFrame && spriteTheme === theme && packet.render.ground &&
-      scene.sprite_camera_only_change(spriteFrame, frame)) {
-    spriteQueued = { frame, theme, revision: packet.presentation.revision };
-    spriteTimer = setTimeout(() => {
-      const queued = spriteQueued, current = latestPacket;
-      clearSpriteQueue();
-      if (!queued || !current || cameraOrbiting || current.render.motion || current.snapshot.moving ||
-          current.render.theme !== queued.theme ||
-          current.presentation.revision !== queued.revision ||
-          !scene.sprite_same_placement(queued.frame, current.snapshot.frame)) return;
-      startSpriteJob(queued.frame, queued.theme, queued.revision, CAMERA_QUIET_MS);
-    }, CAMERA_QUIET_MS);
-    return;
-  }
+  const quietWindowMs = heldEpoch !== null ? HELD_CAMERA_QUIET_MS :
+    !released && spriteLayer && spriteFrame && spriteTheme === theme && packet.render.ground &&
+      scene.sprite_camera_only_change(spriteFrame, frame) ? CAMERA_QUIET_MS : 0;
+  spriteQueued = { frame, theme, revision: packet.presentation.revision, heldEpoch,
+    readyAt: performance.now() + quietWindowMs, quietWindowMs };
   spriteReleased = null;
-  startSpriteJob(frame, theme, packet.presentation.revision);
+  armSpriteQueue();
 }
 
 function render(packet: any): any {
@@ -478,10 +523,13 @@ function render(packet: any): any {
   const spriteSettled = !request.motion && !packet.snapshot.moving &&
     spriteLayer && spriteFrame && spriteTheme === request.theme &&
     scene.sprite_same_placement(spriteFrame, frame);
+  const spriteHeld = cameraOrbiting && spriteHeldEpoch !== null && spriteHeldEpoch === cameraInputEpoch &&
+    !packet.snapshot.moving && spriteLayer && spriteFrame && spriteAtlasMaskId !== null &&
+    spriteTheme === request.theme && scene.sprite_same_placement(spriteFrame, frame);
   let preview: typeof spritePreview = null;
   // Retain artwork through release while the settled helper is still pending.
   // Before this theme's authored textures arrive, keep the existing proxy path.
-  if (!spriteMoving && !spriteSettled && spritePose && spritePose.theme === request.theme) {
+  if (!spriteMoving && !spriteSettled && !spriteHeld && spritePose && spritePose.theme === request.theme) {
     if (spritePreview && spritePreview.theme === request.theme && scene.sprite_same_view(spritePreview.frame, frame)) {
       preview = spritePreview;
     } else {
@@ -555,6 +603,7 @@ function render(packet: any): any {
   // Piece motion retains depth-9 artwork. Camera previews keep authored pieces
   // at depth nine with nearest sampling and matching raster/filter alpha masks.
   const board = timed('pointer', () => {
+    if (spriteHeld) return scene.fast_sprite_camera_feedback512(frame, spriteLayer);
     if (spriteMoving) {
       // The exact same-view ground is independent of occupancy and pointer
       // feedback. Interpret this 512px image at the board's existing tier.
@@ -583,10 +632,10 @@ function render(packet: any): any {
       scene.fast_camera256_for_512(frame, motionUnderlay), motionUnderlay, motionBackdrop)
       : scene[`fast_pointer${suffix}`](frame, prepared);
   });
-  renderedAtlas = Boolean(preview) || (!request.motion && (spriteMoving
+  renderedAtlas = Boolean(preview) || Boolean(spriteHeld) || (!request.motion && (spriteMoving
     ? spriteAtlasMaskId !== null : !packet.snapshot.moving && preparedAtlas));
   renderedAtlasMaskId = renderedAtlas
-    ? (preview ? preview.maskId : spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
+    ? (preview ? preview.maskId : spriteHeld || spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
   pruneAtlasMasks();
   retained = timed('compose', () => {
     if (playing) {
@@ -685,6 +734,7 @@ async function emit(packet: any, elapsed: number, id: number,
 }
 async function handleMessage(request: any): Promise<void> {
   const start = performance.now();
+  const wasOrbiting = cameraOrbiting;
   try {
     if (request.kind === 'retire-atlas-masks') {
       if (Object.keys(request).length !== 2 || !Array.isArray(request.masks) ||
@@ -747,6 +797,13 @@ async function handleMessage(request: any): Promise<void> {
     const appliedBot = applyReadyBot(packet);
     packet = appliedBot.packet;
     const orbiting = api.orbiting(packet.session) === true;
+    if ((wasOrbiting || orbiting) && request.kind === 'events' && request.events.some((input: any) =>
+      ['PointerDown', 'PointerMove', 'PointerUp', 'Wheel', 'KeyInput'].includes(String(input?.$).split(/[/.]/).pop()!))) {
+      if (cameraInputEpoch >= Number.MAX_SAFE_INTEGER) throw new Error('Camera input identity exhausted');
+      cameraInputEpoch++;
+      spriteHeldEpoch = null;
+      clearSpriteQueue();
+    }
     cameraOrbiting = orbiting;
     observeBotJob(api.bot_job(packet.session));
     await emit(packet, performance.now() - start, request.id, 'frame', appliedBot.execution);
