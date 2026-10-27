@@ -1,7 +1,7 @@
 {
   "schema": "rift-ordering-witness-successor-proposal/1",
   "version": "ordering-transport-v1",
-  "state": "unfrozen-candidate; Windows CHECK/Safe passed; native kernel pending",
+  "state": "frozen-linked-witness; Windows CHECK/Safe and original Linux unchanged-kernel proof accepted",
   "semanticMeaning": "unchanged",
   "declarationAuthorities": [
     {
@@ -39,10 +39,9 @@
     "meaning": "One completed diagnostic: Ctx.need out-of-fuel expecting Plan(5n,U32.from_nat(0n),21760). No production proof acceptance."
   },
   "acceptancePending": [
-    "Actual unchanged-kernel full successor verdict",
-    "Reviewed linked immutable manifest and eventual full migration/adoption obligations"
+    "Full migration/adoption duties, including native application/device evidence and reviewed toolchain amendment"
   ],
-  "freezeLimit": "This proposal is not a semantic freeze or native proof receipt. Freeze a new linked manifest only after genuine reviewed successor evidence; never rewrite old versions.",
+  "freezeLimit": "The linked manifest is immutable. This proposal indexes accepted evidence and remaining adoption work; never rewrite old semantic versions.",
   "windowsEvidence": {
     "receiptSha256": "423d1a26fc65064c87c71c3542004d7d9ee4fcce361e6d68cc16cb25da033fd8",
     "definitions": 1587,
@@ -55,6 +54,24 @@
   "independentSourceReview": {
     "reviewerLane": "rift_migration_next",
     "disposition": "accepted-source-only-witness-repair",
-    "basis": "Generic equality elimination correct direction and single affine consumption; all other proof bodies retained with import rebasing; exact original declarations;62->62 closure with exactly3 path replacements. Native proof verdict remains outstanding."
+    "basis": "Generic equality elimination correct direction and single affine consumption; all other proof bodies retained with import rebasing; exact original declarations;62->62 closure with exactly3 path replacements. Native proof verdict remains outstanding.",
+    "scope": "Original source-only review before native execution; historical basis below is preserved."
+  },
+  "nativeEvidence": {
+    "archiveSha256": "5bc4cde890e7e64d2983e28910cf7541f9ba819a7533bcb29c12d6415f801e3a",
+    "receiptSha256": "427fb5de4721d33c14a98156322bc109e3d01d1e9da2f5d319b4c6407508453e",
+    "kernelStdout": "ALL PROOFS CHECK\n",
+    "kernelExit": 0,
+    "safeSha256": "70425424edce61e864bf26818d033f643594667ddd2dbc4d778af136e2e7ff64",
+    "scope": "Exactly the original consumed linked witness full62 run; no repeat or compiler adoption"
+  },
+  "linkedManifest": {
+    "path": "bend2/laws/ordering-transport-v1.json",
+    "sha256": "e74c29eed4492173c7c71e4d1903b5fbccff72b32fcc6d901a343f23f7cd358d"
+  },
+  "independentNativeReview": {
+    "reviewerLane": "rift_migration_next",
+    "disposition": "accepted-exact-linked-witness-native-proof",
+    "basis": "Original full62 receipt, kernel/raw stream, settlement and retirement agree; current closure bytes match. No consequential contradiction. Full adoption remains separate."
   }
 }
