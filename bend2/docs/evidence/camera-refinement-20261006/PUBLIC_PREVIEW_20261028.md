@@ -1,4 +1,4 @@
-# Experimental browser publication â€” 2026-10-28
+# Experimental browser publication — 2026-10-28
 
 ## Current bottom-up plate follow-up
 
@@ -140,7 +140,7 @@ payload verification, previous hashed files and the historical root remain intac
 
 One hosted Chrome 156 journey verified the exact current service-worker cache,
 Settings toggles, a real background-cache hit after closing and reopening,
-e2â€“e4, and background invalidation when opening Settings on the changed board.
+e2–e4, and background invalidation when opening Settings on the changed board.
 Offline reload retained the exact saved record and displayed position. No
 page/console errors or failed requests occurred. The inspected offline PNG still
 matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
@@ -168,7 +168,7 @@ available for returning clients; the historical root payload is unchanged.
 Actual HTTPS readback matched the new manifest and all four changed payloads;
 unchanged payloads reuse the original verification below. One hosted Chrome 156
 journey verified the exact current service-worker cache and its cached manifest,
-opened Settings, observed Move Hints on and off, closed Settings, played e2â€“e4,
+opened Settings, observed Move Hints on and off, closed Settings, played e2–e4,
 and reloaded offline with the exact same saved record and displayed position.
 There were no page/console errors or failed requests. The inspected offline PNG
 still matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
@@ -220,9 +220,9 @@ saved-match and preference keys; the deployment README documents this behavior.
 
 ## Actual acceptance
 
-One real e2â€“e4 and offline saved-position continuation ran locally before push,
+One real e2–e4 and offline saved-position continuation ran locally before push,
 then against the actual hosted candidate in Windows Chrome 156.0.8078.48,
-headless, 1280Ã—800, scale 1, each with fresh browser storage. Both passed:
+headless, 1280×800, scale 1, each with fresh browser storage. Both passed:
 White changed to Black to move, and offline reload retained the exact saved
 record and displayed position. Neither run reported a page/console error or
 failed request. The hosted offline image was identical to the inspected local

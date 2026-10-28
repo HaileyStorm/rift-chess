@@ -1,12 +1,12 @@
-# Bottom-up game plate decoding â€” October 28, 2026
+# Bottom-up game plate decoding — October 28, 2026
 
 The game now assembles its depth9 RGA1 plates from adjacent pixel pairs,
-then merges adjacent 2Ã—2 image cells through eight further levels. This avoids
+then merges adjacent 2×2 image cells through eight further levels. This avoids
 the generic decoder's stretched-row intermediates and repeated matrix splits.
 `Assets.response.plate` selects this game-owned path. The original RGA1 parser,
 generic decoder, Laws and Proofs remain byte-for-byte unchanged.
 
-The fast path calls the original complete 512Ã—512 row parser before final image
+The fast path calls the original complete 512×512 row parser before final image
 assembly. Each level retains the original TL/TR/BL/BR order and `image_quad`
 uniform-region compaction. Other complete headers delegate unchanged to the
 generic decoder; short headers retain `BadLength`. Failed responses, depth9
@@ -24,7 +24,7 @@ emissions, artwork, fonts, bot and ground-only payload were reused. The canonica
 
 ## Actual application comparison
 
-One paired Chrome 156 journey played e2â€“e4 and e7â€“e5, opened Settings, selected
+One paired Chrome 156 journey played e2–e4 and e7–e5, opened Settings, selected
 Warm, closed Settings, rotated/released and selected g1's knight. Both builds
 ran in fresh contexts in one browser under the same owning Windows Job's
 two-logical-processor limit: affinity mask 3, limit flags 16. All eight complete
@@ -39,9 +39,13 @@ or forced cleanup occurred.
 | Initial plate decode | 339.1 ms | 175.0 ms |
 | Warm plate decode | 516.6 ms | 41.3 ms |
 | Warm total rendering-port work | 803.8 ms | 272.3 ms |
+| Warm trusted pointer-down to canvas draw end | 820.5 ms | 278.2 ms |
 
 These are individual baseline-first observations under uncontrolled host load,
-including possible warmup differences. Other work varied. They do not establish
+including possible warmup differences. Other work varied. The last row follows
+the actual trusted input through its associated request to the canvas draw end;
+it is a user-journey measurement, rather than an isolated decoder benchmark.
+Physical display scanout is not measured. They do not establish
 isolated speedup, stable p95, physical display latency or native-device results.
 Intermediate row lists still allocate; no heap reduction was measured.
 
@@ -66,6 +70,7 @@ Private originals remain under
 | Paired actual journey | `b7f7f39b369756db49a5d4502753d062e0e0718b8d9cbeca66dbf7ee129c6570` |
 | Journey original native terminal | `58f6fbb73a9c53ff20db5734ef6554c48b5a5a988c175d0f50256a53246b1bf6` |
 | Timing readout | `2068a6101dd2d84c582800f5c82a08cfa553777143d10fb8c5be612d9e2d9c20` |
+| Trusted-input timing readout | `15a9b77dfd4b8986b5c56954b6e46d923d66d0113506687808f95e6fb0c6dd5a` |
 
 The final selected-knight PNG is byte-identical to the prior accepted hover
 journey (`58610246c204dd225ff45ec3e6934833a01c764d21e9cf1d4bd583e06ed9c0b6`).
