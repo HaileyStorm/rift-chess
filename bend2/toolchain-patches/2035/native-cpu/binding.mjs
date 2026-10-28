@@ -14,7 +14,7 @@ export const OUTPUT = '.artifacts/bend2/native-v2-current99-linux';
 export const FLAGS = Object.freeze(['--experimental-transform-types']);
 export const MEMORY_POLICY = Object.freeze({
   schema: 'rift-current99-native-memory-policy/1',
-  unit: 'rift-current99-native-cpu-20261027-r2.service',
+  unit: 'rift-current99-native-cpu-20261028-r3.service',
   memoryMaxBytes: 72 * 1024 ** 3, swapMaxBytes: 0, oomGroup: 1, reserveBytes: 8 * 1024 ** 3,
 });
 export const helpers = Object.freeze({
@@ -165,7 +165,7 @@ export function capture(worker = false) {
   assert.equal(node.sha256, b.runtime.sha256);
   const tools = nativeTools(), clang = tools.clang;
   const originals = records(b.root, b.source.projectFiles);
-  assert.equal(Object.keys(originals).length, 86);
+  assert.equal(Object.keys(originals).length, 87);
   // Bind consumed source files, preserving ignored live sentinel/coordination
   // metadata. The independently derived and actual loaded closures below reject
   // extra consumed imports; an untracked directory inventory is not authority.

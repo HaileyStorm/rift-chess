@@ -28,8 +28,14 @@ Before bulk generation and at handoff run the existing
 lossless cleanup has completed; preserve toolchains, active/unknown runs, claims,
 recovery inputs and unique evidence. This producer does not clean them up.
 
+The October 28 source alignment adds `PlateDecode.bend` and updates only
+`Assets.bend`, `BoardScene.bend` and `MenuAA.bend` within the native project
+closure. The prior 86-file r2 build, ELF and gameplay/PCM/restart evidence remain
+historical at their original hashes. This is a fresh named source build; it
+does not replay the consumed r2 or change the queued original GPU sidecar job.
+
 Prepare the isolated candidate under its own claim, preserving the `bend2/`
-relative layout. Its complete consumed source set is the 86 admitted project
+relative layout. Its complete consumed source set is the 87 admitted project
 sources. Preserve host-local sentinel and coordination metadata without copying
 or treating it as compiler input. Apply the existing
 `native-v2-2032/events/0001-native-v2-events.patch` exactly once there. Its SHA256
@@ -42,7 +48,7 @@ source layout; a standalone external entry copy is insufficient.
 
 The compiler is the existing independently admitted current99 directory, not a
 new copy: 99 exact files totaling 1,208,629 bytes. Its Base/effect source set has
-69 bound files. The full static application input cone therefore has 155 files;
+69 bound files. The full static application input cone therefore has 156 files;
 that count includes foreign effect sources and is not a `book_load` seen count.
 The producer independently follows Bend imports and compares actual loaded paths.
 
@@ -56,12 +62,12 @@ The producer independently follows Bend imports and compares actual loaded paths
   `run-[A-Za-z0-9_-]+`.
 - `review.disposition`: `accepted-for-one-current99-native-cpu-build`.
 - `memoryPolicy`: exactly `{schema: "rift-current99-native-memory-policy/1",
-  unit: "rift-current99-native-cpu-20261027-r2.service",
+  unit: "rift-current99-native-cpu-20261028-r3.service",
   memoryMaxBytes: 77309411328, swapMaxBytes: 0, oomGroup: 1,
   reserveBytes: 8589934592}`. This is a fixed experiment resource policy, not a
   measured requirement or permission to alter another service.
-- `source.commit`, `source.tree`, `source.projectFiles` (86 repository-relative
-  original path-to-SHA256 records), `source.candidateFiles` (the same 86 paths,
+- `source.commit`, `source.tree`, `source.projectFiles` (87 repository-relative
+  original path-to-SHA256 records), `source.candidateFiles` (the same 87 paths,
   only NativeV2 changed), and `source.baseEffectFiles` (69 compiler-relative
   path-to-SHA256 records).
 - `compilerFiles`: the exact complete 99 compiler-relative path-to-SHA256 map.
@@ -99,7 +105,14 @@ observation, not a separate acceptance run or permission to change dependencies.
 The native owner/preparer creates the fresh fixed systemd user service under its
 own reviewed procedure, with `memory.max=72 GiB`, `memory.swap.max=0` and
 `memory.oom.group=1`. This source neither creates nor changes systemd services or
-cgroups. Preserve the original r1 intent, failure and source copies unchanged.
+cgroups. Preserve the original r1 intent, failure and source copies, accepted r2 output,
+retained lock and all old one-use intents unchanged. Use fresh r3 candidate,
+consumer, observer and run names; no old lock retirement is required. The actual
+owner must observe the existing active CPU lock absent rather than clear it.
+Use the corrected identity-bound service observer: persist terminal manager
+state before an optional final cgroup path sample; a removed cgroup is recorded
+as removed, never as a fabricated zero-use or successful original descriptor
+sample. Keep the original service InvocationID and original-handle joins.
 From the canonical root **inside that service**, with the actual owner environment,
 `NODE_OPTIONS` and `BUN_OPTIONS` empty and `BEND_NO_TELEMETRY=1`, launch the admitted
 Node without parent Node flags:
