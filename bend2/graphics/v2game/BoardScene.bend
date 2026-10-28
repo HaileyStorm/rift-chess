@@ -600,19 +600,6 @@ def interpolated_point(+size: U32, +basis: Camera.Basis, +source: U32,
   +dest: U32, +amount: U32) -> Quad.Point:
   SpriteMotion.interpolated_point(size, basis, source, dest, amount)
 
-# Selection is a piece-level silhouette cue, visible immediately on the proxy
-# frame and retained when the authored sprite replaces that frame. The broad
-# upper ring clears the art rather than hiding its face; the square outline
-# anchors the same cue at the square the player can click again to deselect.
-def selected_aura(show: Bool, +depth: Nat, +size: U32, +x: U32,
-  +y: U32, image: Image) -> Image:
-  match show:
-    case False{}: image
-    case True{}:
-      +crown_y = U32.sub(y, scale_coord(size, 30))
-      Ring.draw(depth, size, Shapes.Pos{x}, Shapes.Pos{crown_y},
-        scale_coord(size, 31), scale_coord(size, 33), 5434367, 215, image)
-
 def piece_at(show: Bool, +square: U32, code: U32, +c: Context,
   image: Image) -> Image:
   match show c:
@@ -623,12 +610,7 @@ def piece_at(show: Bool, +square: U32, code: U32, +c: Context,
       +moving_point = interpolated_point(size, camera, source, square, progress(frame))
       +x = Ortho.pixel(point_x(moving_point))
       +y = Ortho.pixel(point_y(moving_point))
-      +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
-      +hovered_here = U32.is_eq(square, Scene.frame_hovered(frame))
-      +drawn = PieceArt.draw(depth, size, x, y, code, image)
-      +selected = selected_aura(selected_here, depth, size, x, y, drawn)
-      PieceArt.focus_rim(Bool.and(hovered_here, Bool.not(selected_here)),
-        depth, size, x, y, 16768672, selected)
+      PieceArt.draw(depth, size, x, y, code, image)
 
 def captured_square(decoded: Maybe<Model.Action>, +previous: Model.Position) -> U32:
   SpriteMotion.captured_square(decoded, previous)
@@ -727,9 +709,7 @@ def fast_piece_at(show: Bool, +square: U32, code: U32, +c: Context,
       +moving_point = interpolated_point(size, camera, source, square, progress(frame))
       +x = Ortho.pixel(point_x(moving_point))
       +y = Ortho.pixel(point_y(moving_point))
-      +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
-      +drawn = PieceArt.proxy_draw(depth, size, x, y, code, image)
-      selected_aura(selected_here, depth, size, x, y, drawn)
+      PieceArt.proxy_draw(depth, size, x, y, code, image)
 
 def fast_dying_at(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
   match show c:
@@ -857,12 +837,10 @@ def camera_piece_at(show: Bool, +square: U32, +code: U32, +c: Context,
       +moving_point = interpolated_point(size, camera, source, square, progress(frame))
       +x = Ortho.pixel(point_x(moving_point))
       +y = Ortho.pixel(point_y(moving_point))
-      +selected_here = U32.is_eq(square, Scene.frame_selected(frame))
       +contact = camera_contact(depth, size, camera, inverse, mask,
         camera_ground_point(size, camera, source, square, progress(frame)), image)
       +footing = camera_footing(depth, size, camera, moving_point, code, contact)
-      +drawn = PieceArt.camera_draw_min(depth, size, x, y, code, footing)
-      PieceArt.focus_rim(selected_here, depth, size, x, y, 16169039, drawn)
+      PieceArt.camera_draw_min(depth, size, x, y, code, footing)
 
 # A captured token drifts and lifts while its contact stays at the capture square.
 def camera_dying_at(show: Bool, +square: U32, +c: Context,
@@ -913,17 +891,6 @@ def camera_piece_layers(order: List<&2, U32>, +c: Context,
         SpatialFast.invert(fast_affine(size, camera)),
         camera_contact_mask(presence_mask(holes)), image)
 
-def macro_center(+size: U32, +basis: Camera.Basis, +macro: U32) -> Quad.Point:
-  +file = F32.add(U32.to_f32(U32.mul(U32.mod(macro, 4), 2)), 0.5)
-  +rank = F32.add(U32.to_f32(U32.mul(U32.div(macro, 4), 2)), 0.5)
-  point(basis, size, file, F32.sub(7.0, rank))
-
-def point_pixel_x(p: Quad.Point) -> U32:
-  Ortho.pixel(point_x(p))
-
-def point_pixel_y(p: Quad.Point) -> U32:
-  Ortho.pixel(point_y(p))
-
 def circle_mark(+depth: Nat, +size: U32, +x: U32, +y: U32,
   +inner: U32, +outer: U32, color: U32, opacity: U32, image: Image) -> Image:
   Ring.draw(depth, size, Shapes.Pos{x}, Shapes.Pos{y},
@@ -957,35 +924,66 @@ def target_marks(targets: List<&2, U32>, +board: List<&2, U32>,
       target_marks(rest, board, c,
         target_mark(Model.occupied(Model.board_get(board, square)), square, c, image))
 
-def macro_ring(show: Bool, +macro: U32, +inner: U32, +outer: U32,
-  color: U32, +c: Context, image: Image) -> Image:
+# A platform is a 2x2 macro tile: outline only its outer projected perimeter.
+def macro_corners(+size: U32, +basis: Camera.Basis, +macro: U32) -> Corners:
+  +file = F32.add(U32.to_f32(U32.mul(Model.macro_file(macro), 2)), 0.5)
+  +row = F32.sub(7.0, F32.add(U32.to_f32(U32.mul(Model.macro_rank(macro), 2)), 0.5))
+  +fm = F32.sub(file, 1.0)
+  +fp = F32.add(file, 1.0)
+  +rm = F32.sub(row, 1.0)
+  +rp = F32.add(row, 1.0)
+  Corners{point(basis, size, fm, rm), point(basis, size, fp, rm),
+    point(basis, size, fp, rp), point(basis, size, fm, rp)}
+
+def macro_outline(show: Bool, +macro: U32, color: U32, opacity: U32,
+  +c: Context, image: Image) -> Image:
   match show c:
     case False{} _: image
-    case True{} Context{depth, +size, frame, camera, board, oldBoard,
+    case True{} Context{depth, +size, frame, +camera, board, oldBoard,
         previous, holes, action, theme}:
-      +center = macro_center(size, camera, macro)
-      circle_mark(depth, size, point_pixel_x(center), point_pixel_y(center),
-        inner, outer, color, 255, image)
+      outline_corners(macro_corners(size, camera, macro),
+        depth, size, color, opacity, image)
 
-def macro_marks(macros: List<&2, U32>, +c: Context, image: Image) -> Image:
-  match macros:
-    case Nil{}: image
-    case +macro <> rest:
-      macro_marks(rest, c, macro_ring(True{}, macro, 31, 33, 6608860, c, image))
-
-def shift_mark(+pair: U32, selected: U32, +c: Context, image: Image) -> Image:
-  +from = U32.div(pair, 16)
-  +to = U32.mod(pair, 16)
-  +strong = U32.is_eq(from, selected)
-  macro_ring(True{}, to, 21, 23,
-    Bool.pick(U32, strong, 16768672, 4638419), c, image)
-
-def shift_marks(pairs: List<&2, U32>, +selected: U32,
-  +c: Context, image: Image) -> Image:
+# The controller supplies legal Shift pairs; do not infer moveability from
+# adjacency or occupancy. Its existing Shift-hints preference still applies.
+def movable_macro(pairs: List<&2, U32>, +macro: U32) -> Bool:
   match pairs:
-    case Nil{}: image
+    case Nil{}: False{}
     case +pair <> rest:
-      shift_marks(rest, selected, c, shift_mark(pair, selected, c, image))
+      Bool.or(U32.is_eq(U32.div(pair, 16), macro), movable_macro(rest, macro))
+
+def tile_hover.show(show: Bool, +square: U32, +c: Context, image: Image) -> Image:
+  match show c:
+    case False{} _: image
+    case True{} Context{depth, size, +frame, camera, board, oldBoard,
+        previous, +holes, action, theme}:
+      +macro = Model.macro_of(square)
+      +visible = Bool.and(Model.present(holes, square),
+        Bool.and(U32.is_ne(macro, Scene.frame_tile(frame)),
+          movable_macro(Scene.frame_shifts(frame), macro)))
+      macro_outline(visible, macro, 16764762, 144, c, image)
+
+def tile_hover(+c: Context, image: Image) -> Image:
+  match c:
+    case Context{depth, size, +frame, camera, board, oldBoard,
+        previous, holes, action, theme}:
+      +hovered = Scene.frame_hovered(frame)
+      tile_hover.show(U32.is_lt(hovered, 64), hovered, c, image)
+
+# Hover square edges belong to pieces and their destinations. A free platform
+# uses only its macro perimeter, and a selected platform never gets cell edges.
+def square_hover(+c: Context, image: Image) -> Image:
+  match c:
+    case Context{depth, size, +frame, camera, +board, oldBoard,
+        previous, holes, action, theme}:
+      +hovered = Scene.frame_hovered(frame)
+      +selected = Scene.frame_selected(frame)
+      +visible = Bool.and(U32.is_lt(hovered, 64),
+        Bool.and(U32.is_ne(selected, hovered),
+          Bool.and(U32.is_ge(Scene.frame_tile(frame), 16),
+            Bool.or(U32.is_lt(selected, 64),
+              Model.occupied(Model.board_get(board, hovered))))))
+      square_outline(visible, hovered, 6282451, 212, c, image)
 
 def promotion_mark.ready(show: Bool, +depth: Nat, +size: U32,
   +camera: Camera.Basis, +to: U32, image: Image) -> Image:
@@ -1018,7 +1016,7 @@ def recent_marks.action(action: Model.Action, +c: Context, image: Image) -> Imag
       +a = square_ring(True{}, from, 20, 21, 7112872, 148, c, image)
       square_ring(True{}, to, 20, 21, 7112872, 148, c, a)
     case Model.ShiftAction{from, +to, promotion}:
-      macro_ring(True{}, to, 25, 29, 7112872, c, image)
+      macro_outline(True{}, to, 7112872, 148, c, image)
 
 def recent_marks(decoded: Maybe<Model.Action>, +c: Context, image: Image) -> Image:
   match decoded:
@@ -1036,17 +1034,12 @@ def feedback(+c: Context, image: Image) -> Image:
       +a = recent_marks(Model.decode(action), c, image)
       +b = square_outline(U32.is_lt(check, 64), check,
         16731983, 255, c, a)
-      +same = U32.is_eq(selected, hovered)
-      +c_hover = square_outline(Bool.and(U32.is_lt(hovered, 64), Bool.not(same)),
-        hovered, 6282451, 224, c, b)
-      +d = macro_marks(Scene.frame_tileTargets(frame), c, c_hover)
-      +e = macro_ring(U32.is_lt(tile, 16), tile, 37, 39,
-        16768672, c, d)
-      +f = square_outline(U32.is_lt(selected, 64), selected,
-        5434367, 255, c, e)
-      +g = target_marks(Scene.frame_targets(frame), board, c, f)
-      +h = shift_marks(Scene.frame_shifts(frame), tile, c, g)
-      promotion_mark(Model.decode(action), c, h)
+      +c_hover = square_hover(c, b)
+      +d = macro_outline(U32.is_lt(tile, 16), tile, 16764762, 255, c, c_hover)
+      +e = square_outline(U32.is_lt(selected, 64), selected,
+        5434367, 255, c, d)
+      +f = target_marks(Scene.frame_targets(frame), board, c, e)
+      promotion_mark(Model.decode(action), c, tile_hover(c, f))
 
 def capture_effect.show(show: Bool, +square: U32, +c: Context,
   image: Image) -> Image:
@@ -1098,35 +1091,13 @@ def fast_targets(targets: List<&2, U32>, +board: List<&2, U32>,
       fast_targets(rest, board, c,
         fast_target(Model.occupied(Model.board_get(board, square)), square, c, image))
 
-def fast_macro_targets(macros: List<&2, U32>, +c: Context,
-  image: Image) -> Image:
-  match macros:
-    case Nil{}: image
-    case +macro <> rest:
-      fast_macro_targets(rest, c,
-        macro_ring(True{}, macro, 29, 31, 4638419, c, image))
-
-def fast_shift_mark(+pair: U32, selected: U32, +c: Context,
-  image: Image) -> Image:
-  +from = U32.div(pair, 16)
-  +to = U32.mod(pair, 16)
-  +color = Bool.pick(U32, U32.is_eq(from, selected), 16768672, 4638419)
-  macro_ring(True{}, to, 21, 23, color, c, image)
-
-def fast_shift_marks(pairs: List<&2, U32>, +selected: U32,
-  +c: Context, image: Image) -> Image:
-  match pairs:
-    case Nil{}: image
-    case +pair <> rest:
-      fast_shift_marks(rest, selected, c, fast_shift_mark(pair, selected, c, image))
-
 def fast_recent.action(action: Model.Action, +c: Context, image: Image) -> Image:
   match action:
     case Model.MoveAction{+from, +to, promotion}:
       +a = square_ring(True{}, from, 20, 21, 7112872, 138, c, image)
       square_ring(True{}, to, 20, 21, 7112872, 138, c, a)
     case Model.ShiftAction{from, +to, promotion}:
-      macro_ring(True{}, to, 25, 28, 7112872, c, image)
+      macro_outline(True{}, to, 7112872, 138, c, image)
 
 def fast_recent(decoded: Maybe<Model.Action>, +c: Context, image: Image) -> Image:
   match decoded:
@@ -1170,14 +1141,11 @@ def fast_feedback_static(+c: Context, image: Image) -> Image:
       +a = fast_recent(Model.decode(action), c, image)
       +b = square_outline(U32.is_lt(check, 64), check,
         16731983, 255, c, a)
-      +d = fast_macro_targets(Scene.frame_tileTargets(frame), c, b)
-      +e = macro_ring(U32.is_lt(tile, 16), tile, 36, 38,
-        16768672, c, d)
-      +f = square_outline(U32.is_lt(selected, 64), selected,
-        5434367, 255, c, e)
-      +g = fast_targets(Scene.frame_targets(frame), board, c, f)
-      +i = fast_shift_marks(Scene.frame_shifts(frame), tile, c, g)
-      fast_promotion(Model.decode(action), c, i)
+      +d = macro_outline(U32.is_lt(tile, 16), tile, 16764762, 255, c, b)
+      +e = square_outline(U32.is_lt(selected, 64), selected,
+        5434367, 255, c, d)
+      +f = fast_targets(Scene.frame_targets(frame), board, c, e)
+      fast_promotion(Model.decode(action), c, f)
 
 def cue_list_nonempty(items: List<&2, U32>) -> Bool:
   match items:
@@ -1208,32 +1176,10 @@ def fast_camera_feedback(+context: Context, image: Image) -> Image:
             cue_list_nonempty(Scene.frame_targets(frame))),
             Bool.or(cue_list_nonempty(Scene.frame_shifts(frame)),
               action_present(Model.decode(action))))))
-      fast_camera_feedback.show(has_cue, context, image)
-
-def fast_hover_piece(show: Bool, +square: U32, +c: Context,
-  image: Image) -> Image:
-  match show c:
-    case False{} _: image
-    case True{} Context{depth, +size, +frame, +camera, +board, oldBoard,
-        previous, +holes, action, theme}:
-      +occupied = Model.occupied(Model.board_get(board, square))
-      +different = Bool.not(U32.is_eq(square, Scene.frame_selected(frame)))
-      +visible = Bool.and(Model.present(holes, square),
-        Bool.and(occupied, different))
-      +x = square_x(size, camera, square)
-      +y = square_y(size, camera, square)
-      PieceArt.focus_rim(visible, depth, size, x, y, 6282451, image)
+      tile_hover(context, fast_camera_feedback.show(has_cue, context, image))
 
 def fast_hover(+c: Context, image: Image) -> Image:
-  match c:
-    case Context{depth, size, +frame, camera, board, oldBoard,
-        previous, holes, action, theme}:
-      +selected = Scene.frame_selected(frame)
-      +hovered = Scene.frame_hovered(frame)
-      +piece_rim = fast_hover_piece(U32.is_lt(hovered, 64), hovered, c, image)
-      square_outline(Bool.and(U32.is_lt(hovered, 64),
-        Bool.not(U32.is_eq(selected, hovered))), hovered,
-        6282451, 212, c, piece_rim)
+  square_hover(c, tile_hover(c, image))
 
 def fast_feedback(+c: Context, image: Image) -> Image:
   fast_hover(c, fast_feedback_static(c, image))
@@ -1685,51 +1631,12 @@ def fast_sprite_pieces512(+frame: Scene.Frame,
   fast_sprite_piece_layers(Camera.depth_order(Camera.basis(Scene.frame_view(frame))),
     context, pieces, Rect.screen(512), ground)
 
-def fast_sprite_selected_focus(show: Bool, +square: U32,
-  +context: Context, image: Image) -> Image:
-  match show context:
-    case False{} _: image
-    case True{} Context{depth, +size, frame, +camera, +board, oldBoard,
-        previous, +holes, action, theme}:
-      +occupied = Model.occupied(Model.board_get(board, square))
-      +visible = Bool.and(Model.present(holes, square), occupied)
-      +x = square_x(size, camera, square)
-      +y = square_y(size, camera, square)
-      selected_aura(visible, depth, size, x, y, image)
-
-def fast_sprite_hover_focus(show: Bool, +square: U32,
-  +context: Context, image: Image) -> Image:
-  match show context:
-    case False{} _: image
-    case True{} Context{depth, +size, frame, +camera, +board, oldBoard,
-        previous, +holes, action, theme}:
-      +selected = Scene.frame_selected(frame)
-      +occupied = Model.occupied(Model.board_get(board, square))
-      +visible = Bool.and(U32.is_ne(square, selected),
-        Bool.and(Model.present(holes, square), occupied))
-      +x = square_x(size, camera, square)
-      +y = square_y(size, camera, square)
-      PieceArt.focus_rim(visible, depth, size, x, y, 16768672, image)
-
 def fast_sprite_feedback_on_pieces(+context: Context, pieces_image: Image) -> Image:
-  match context:
-    case Context{depth, size, +frame, camera, board, oldBoard,
-        previous, holes, action, theme}:
-      +static = fast_feedback_static(context, pieces_image)
-      +selected = Scene.frame_selected(frame)
-      +hovered = Scene.frame_hovered(frame)
-      +selected_focus = fast_sprite_selected_focus(U32.is_lt(selected, 64),
-        selected, context, static)
-      +hover_focus = fast_sprite_hover_focus(U32.is_lt(hovered, 64),
-        hovered, context, selected_focus)
-      +hover_outline = square_outline(Bool.and(U32.is_lt(hovered, 64),
-        U32.is_ne(selected, hovered)), hovered, 6282451, 212, context,
-        hover_focus)
-      fast_capture_effect(context, hover_outline)
+  fast_capture_effect(context, fast_hover(context,
+    fast_feedback_static(context, pieces_image)))
 
-# Feedback is deliberately a separate pass. Selection/hover plinth lighting is
-# always shown for occupied pieces; legal destination rings remain controlled
-# solely by the existing frame.targets overlay preference.
+# Edge feedback belongs to the board. Piece destination hints retain the
+# existing preference; selection/hover no longer draw circles over the art.
 def fast_feedback_on_pieces512(+frame: Scene.Frame, pieces_image: Image) -> Image:
   fast_sprite_feedback_on_pieces(context_for(9n, 512, frame), pieces_image)
 
@@ -1737,10 +1644,7 @@ def fast_feedback_on_pieces512(+frame: Scene.Frame, pieces_image: Image) -> Imag
 # selection and preference changes repaint only this small static overlay.
 def fast_sprite_feedback_static512(+frame: Scene.Frame,
   pieces_image: Image) -> Image:
-  +context = context_for(9n,512,frame)
-  +selected = Scene.frame_selected(frame)
-  +cues = fast_feedback_static(context,pieces_image)
-  fast_sprite_selected_focus(U32.is_lt(selected,64),selected,context,cues)
+  fast_feedback_static(context_for(9n,512,frame),pieces_image)
 
 def sprite_board_equal(a: List<&2,U32>,b: List<&2,U32>) -> Bool:
   match a b:
