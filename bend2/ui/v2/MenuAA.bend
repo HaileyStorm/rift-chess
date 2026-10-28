@@ -504,12 +504,6 @@ def background_scrim(+menu: U32,+mobile: Bool,+depth: Nat,+size: U32,
     case 11 False{}: image
     case _ _: scrim(depth,size,plan,image)
 
-def background_chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
-  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image,base_image: Image) -> Image:
-  +dynamic = dynamic_chrome(depth,size,data,plan,fonts,base_image)
-  +board = compose(depth,plan,board_image,dynamic)
-  background_scrim(Data.menu(data),Plan.plan_mobile(plan),depth,size,plan,board)
-
 def background_camera(mobile: Bool,+depth: Nat,+size: U32,+menu: U32,+theme: U32,
   +plan: Plan.Plan,+fonts: FontPack.Book,image: Image) -> Image:
   match mobile:
@@ -525,13 +519,19 @@ def background_panel(+menu: U32,+depth: Nat,+size: U32,+theme: U32,
     case 11: background_camera(Plan.plan_mobile(plan),depth,size,menu,theme,plan,fonts,image)
     case _: modal_on_scrim(depth,size,menu,theme,plan,fonts,image)
 
+def background_chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
+  +plan: Plan.Plan,+fonts: FontPack.Book,board_image: Image,base_image: Image) -> Image:
+  +dynamic = dynamic_chrome(depth,size,data,plan,fonts,base_image)
+  +board = compose(depth,plan,board_image,dynamic)
+  +scrimmed = background_scrim(Data.menu(data),Plan.plan_mobile(plan),depth,size,plan,board)
+  background_panel(Data.menu(data),depth,size,Data.theme(data),plan,fonts,scrimmed)
+
 def foreground_chrome(+depth: Nat,+size: U32,+data: Data.Presentation,
   +plan: Plan.Plan,+fonts: FontPack.Book,background: Image) -> Image:
-  +panel = background_panel(Data.menu(data),depth,size,Data.theme(data),plan,fonts,background)
-  paint_controls(depth,size,Data.theme(data),Data.menu(data),fonts,Plan.plan_controls(plan),panel)
+  paint_controls(depth,size,Data.theme(data),Data.menu(data),fonts,Plan.plan_controls(plan),background)
 
 # Caller additionally binds depth/size, font identity, base and board Images.
-# Every dynamic text/branch input is checked here; control labels and states
+# Every dynamic text/panel input is checked here; control labels and states
 # deliberately belong only to foreground_chrome and are repainted each time.
 def same_background(+old: Data.Presentation,+old_plan: Plan.Plan,
   +current: Data.Presentation,+current_plan: Plan.Plan) -> Bool:
