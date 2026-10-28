@@ -306,8 +306,11 @@ function ensureSpriteHelper(): void {
         throw new Error('Invalid or reused atlas mask identity');
       // Decode only a reply accepted by the source/generation/current-frame
       // guards above. No await can let an older view replace this pose.
+      // This helper loads fixed atlas pages once for its lifetime. A new
+      // accepted camera frame needs fresh placement/masks, not new textures.
       const pose = message.pose ? { pieces: decodePose(message.pose),
-        frame: pending.frame, theme: pending.theme } : spritePose;
+        frame: pending.frame, theme: pending.theme } : spritePose?.theme === pending.theme
+        ? { ...spritePose, frame: pending.frame } : null;
       const settled = message.ground ? { image: decodeGround(message.ground),
         frame: pending.frame, theme: pending.theme, id: message.groundId } : spriteGround;
       if (!pose || pose.theme !== pending.theme || !scene.sprite_same_view(pose.frame, pending.frame) ||
@@ -333,6 +336,7 @@ function ensureSpriteHelper(): void {
       const received = performance.now();
       const epoch = performance.timeOrigin + received;
       spriteMetrics = { ...message.metrics, imageUnpackMs,
+        poseReused: !message.pose, poseTransportBytes: message.pose?.tokens.byteLength ?? 0,
         // These spans include structured cloning/scheduling and the serialized
         // receiver callback respectively; neither is a pure transfer metric.
         dispatchToStartMs: message.metrics.startedEpochMs - pending.epoch,
@@ -373,7 +377,7 @@ function startSpriteJob(frame: any, theme: number, revision: number,
   const sharedPlate = spritePlateTheme === theme || !usablePlate ? undefined : plates;
   spriteHelper!.postMessage({ kind: 'job', protocol: 2, source: __BEND_SPRITE_SOURCE__,
     needPickData: true,
-    needPose: !spritePose || spritePose.theme !== theme || !scene.sprite_same_view(spritePose.frame, frame),
+    needPose: !spritePose || spritePose.theme !== theme,
     needGround: !spriteGround || spriteGround.theme !== theme || !scene.sprite_same_ground(spriteGround.frame, frame),
     knownGroundId: spriteGround?.id,
     id: pending.id, generation: pending.generation, theme, frame,
