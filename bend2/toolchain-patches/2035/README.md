@@ -90,8 +90,8 @@ derived path; neither preserved compiler needs restoration.
 ## Current-source browser preview
 
 As of October 28, `build-preview.mjs` is a source-bound **repacker** of reviewed
-emissions and a retained base package. It rebuilds the helper and game Worker,
-updates their exact host references and service-worker payload list, and copies
+emissions and a retained base package. It rebuilds the helper, game Worker and
+browser host from bound TypeScript, updates the service-worker list, and copies
 the already-bound bot, artwork and prepared ground. It does not invoke Bend,
 regenerate unchanged modules or change the accepted compiler pin.
 
@@ -104,26 +104,27 @@ $env:BEND_NO_TELEMETRY = '1'
   <input.json> <input-sha256> <artifact-root> <new-output-directory>
 ```
 
-The `rift-source-bound-preview-input/1` input names exact `base`, `modules`
+The `rift-source-bound-preview-input/2` input names exact `base`, `modules`
 (Controller, Scene and Menu manifests/outputs), rebuilt browser `ports`,
 `boundary` and its `boundaryDependencies`, `runtime`, `builder`,
 `retainedSources`, `sourceRevision` and `maxPackageBytes` (at most 8 MiB).
 File descriptors contain `path`, `bytes` and `sha256`; runtime also includes
-`version`. Seed retained host/asset source hashes from their reviewed package
-lineage, rather than accepting new current hashes as proof of that lineage.
-Changing unrebuilt host/assets needs a separately reviewed new base package.
-Rebuilt Worker/helper ports may change under a new reviewed input.
+`version`. The eleven browser descriptors include `host.ts`, `ports.ts`,
+`input-queue.ts` and `telemetry.ts` alongside the seven helper/Worker/SW inputs.
+Seed retained CSS, HTML and asset-manifest hashes from their reviewed package
+lineage; changing those unrebuilt inputs needs a reviewed new base package.
+Rebuilt browser ports may change under a new reviewed input.
 
 The artifact root contains the retained external inputs and the new output;
 repository-relative inputs resolve from this checkout. The output must not
 already exist. Consumed bytes are fenced before/after, selected emissions must
 retain whole-book/zero-hole receipts and current source bindings, and fetch and
 subprocess execution are disabled during bundling. The output remains a draft
-`rift-source-bound-preview/1` package. These guards do not establish fresh
+`rift-source-bound-preview/2` package. These guards do not establish fresh
 compiler, proof, browser, native, device or adoption acceptance.
 
 The [October 28 reproduction](../../docs/evidence/camera-refinement-20261006/CANONICAL_PREVIEW_REPACK_20261028.md)
-reproduced all 23 runtime payloads of the accepted edge-feedback preview
+with the original `/1` repacker reproduced all 23 runtime payloads of the accepted edge-feedback preview
 byte-for-byte. Its original browser/Shift/offline evidence remains applicable;
 no duplicate browser campaign was run for identical executable bytes.
 

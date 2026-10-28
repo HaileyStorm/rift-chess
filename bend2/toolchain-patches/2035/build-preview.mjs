@@ -35,21 +35,28 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   function checked(name, digest, max = 16 * 2 ** 20) { const target = file(name), bytes = read(target, max); assert.equal(sha(bytes), digest, target); fences.set(target, { digest, max }); return bytes; }
   const ref = (row, max) => { assert.match(row.sha256, /^[0-9a-f]{64}$/); const bytes = checked(row.path, row.sha256, max); assert.equal(bytes.length, row.bytes); return bytes; };
   const binding = JSON.parse(checked(path.resolve(inputPath), inputSha256, 512 * 2 ** 10));
-  assert.equal(binding.schema, 'rift-source-bound-preview-input/1'); assert.match(binding.sourceRevision, /^[0-9a-f]{40}$/);
+  assert.equal(binding.schema, 'rift-source-bound-preview-input/2'); assert.match(binding.sourceRevision, /^[0-9a-f]{40}$/);
   assert.equal(file(binding.builder.path), self); ref(binding.builder);
   assert.equal(process.execPath, file(binding.runtime.path)); assert.equal(Bun.version, binding.runtime.version); ref(binding.runtime, 128 * 2 ** 20);
   assert.equal(process.env.BEND_NO_TELEMETRY, '1');
   assert.ok(Number.isSafeInteger(binding.maxPackageBytes) && binding.maxPackageBytes > 0 && binding.maxPackageBytes <= 8 * 2 ** 20);
   const baseRoot = path.dirname(file(binding.base.path)), base = JSON.parse(ref(binding.base));
   assert.deepEqual(Object.keys(binding.modules).sort(), ['controller', 'menu', 'scene']);
-  // Rebuilt browser ports may change under a newly reviewed exact input.
-  // Unrebuilt host/assets stay bound separately by retainedSources below.
+  // All three bundles are rebuilt; every consumed browser source is explicit.
+  assert.ok(Array.isArray(binding.ports));
+  assert.deepEqual(binding.ports.map(row => row.path).sort(), ['worker-v2.ts', 'sprite-helper.ts', 'pose-port.ts', 'asset-port.ts', 'image-port.ts', 'bitmap-surface.ts', 'sw.js', 'host.ts', 'ports.ts', 'input-queue.ts', 'telemetry.ts'].map(name => 'bend2/platform/browser/' + name).sort());
   for (const row of binding.ports) ref(row);
   assert.ok(Array.isArray(binding.retainedSources));
-  for (const name of ['bend2/platform/browser/host.ts', 'bend2/platform/browser/ports.ts', 'bend2/platform/browser/input-queue.ts', 'bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html', 'bend2/assets/MANIFEST.json'])
+  for (const name of ['bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html', 'bend2/assets/MANIFEST.json'])
     assert.equal(binding.retainedSources.filter(row => row.path === name).length, 1, 'missing unrebuilt source binding: ' + name);
-  if (base.retainedSources) assert.deepEqual(binding.retainedSources, base.retainedSources, 'unrebuilt base sources changed');
-  for (const row of binding.retainedSources) ref(row);
+  for (const row of binding.retainedSources) {
+    if (base.retainedSources) {
+      const previous = base.retainedSources.filter(old => old.path === row.path);
+      assert.equal(previous.length, 1, 'unrebuilt source absent from base: ' + row.path);
+      assert.deepEqual(row, previous[0], 'unrebuilt base source changed: ' + row.path);
+    }
+    ref(row);
+  }
   const selected = {}, provenance = {};
   for (const key of ['controller', 'scene', 'menu']) {
     const record = binding.modules[key], manifest = JSON.parse(ref(record.manifest));
@@ -89,6 +96,11 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
       build.onLoad({ filter: /\.ts$/ }, args => {
         const name = path.relative(root, args.path).split(path.sep).join('/'), row = binding.ports.find(item => item.path === name); assert.ok(row, 'unbound browser source: ' + name); const bytes = ref(row);
         if (name.endsWith('/bitmap-surface.ts')) return { contents: bytes.toString(), loader: 'ts' };
+        if (name.endsWith('/telemetry.ts')) {
+          const text = bytes.toString();
+          assert.ok(!/\$\s*(?::|===|!==)\s*['"]|switch\s*\([^)]*\.\$/.test(text), 'unreviewed candidate browser tag port: ' + name);
+          return { contents: text, loader: 'ts' };
+        }
         const transformed = transformBrowserTags2035(name, bytes); transforms.push(transformed.metadata); return { contents: transformed.contents, loader: 'ts' };
       });
     } };
@@ -102,7 +114,7 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
     const workerBytes = await bundle('bend2/platform/browser/worker-v2.ts', { __BEND_SPRITE_SOURCE__: JSON.stringify(sceneHash), __BEND_SPRITE_HELPER__: JSON.stringify('./' + helper) });
     assert.deepEqual([...seen].sort(), ['controller', 'menu', 'scene']);
     const worker = 'worker-v2-' + sha(workerBytes).slice(0, 12) + '.js';
-    const hostBytes = Buffer.from(one(copied[oldHost].toString(), './' + oldWorker, './' + worker)), host = 'host-audio-' + sha(hostBytes).slice(0, 12) + '.js';
+    const hostBytes = await bundle('bend2/platform/browser/host.ts', { __BEND_WORKER__: JSON.stringify('./' + worker) }), host = 'host-audio-' + sha(hostBytes).slice(0, 12) + '.js';
     fs.mkdirSync(out); const files = {}; let total = 0;
     const put = (name, bytes) => { assert.ok(plain(name)); total += bytes.length; assert.ok(total < binding.maxPackageBytes && bytes.length < 8 * 2 ** 20); const target = path.join(out, name); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes, { flag: 'wx' }); assert.equal(sha(read(target)), sha(bytes)); files[name] = sha(bytes); };
     for (const [name, bytes] of Object.entries(copied)) if (![oldHost, oldWorker, oldHelper, 'index.html', 'sw.js'].includes(name)) put(name, bytes);
@@ -111,11 +123,11 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
     put('sw.js', Buffer.from(one(one(sw, '__BEND_BUILD__', version), '__BEND_ASSETS__', JSON.stringify(['./', './build.json', ...Object.keys(files).sort().map(name => './' + name)]))));
     for (const [name, bound] of fences) assert.equal(sha(read(name, bound.max)), bound.digest, name);
     assert.equal(networkCalls, 0); assert.equal(subprocessCalls, 0);
-    const manifest = { schema: 'rift-source-bound-preview/1', builtAt: new Date().toISOString(), version, files, selected: provenance, sources: binding.ports, retainedSources: binding.retainedSources,
+    const manifest = { schema: 'rift-source-bound-preview/2', builtAt: new Date().toISOString(), version, files, selected: provenance, sources: binding.ports, retainedSources: binding.retainedSources,
       sourceRevision: binding.sourceRevision, basePackage: binding.base, preparedGround: ground, browserBoundary: { canonical: binding.boundary, transformations: transforms },
       retainedEmissionCommentLineage: base.retainedEmissionCommentLineage, retainedControllerExecution: base.retainedControllerExecution,
-      packageInputSha256: inputSha256, runtime: binding.runtime, builder: binding.builder, rebuiltHelper: helper, networkCalls, subprocessCalls, compilerExecutions: 0, draft: true, adopted: false,
-      scope: 'Source-bound static repack of retained checked emissions and accepted base payload; no new compiler emission, proof/kernel/native/GPU/performance or adoption acceptance.' };
+      packageInputSha256: inputSha256, runtime: binding.runtime, builder: binding.builder, rebuiltHelper: helper, rebuiltBundles: { helper, worker, host }, networkCalls, subprocessCalls, compilerExecutions: 0, draft: true, adopted: false,
+      scope: 'All three browser bundles rebuilt from exact bound TypeScript and retained checked Bend emissions; base assets and prepared ground retained. No Bend compiler emission, proof/kernel/native/GPU/performance or adoption acceptance.' };
     const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n'); assert.ok(bytes.length <= 512 * 2 ** 10 && total + bytes.length <= binding.maxPackageBytes); fs.writeFileSync(path.join(out, 'build.json'), bytes, { flag: 'wx' }); assert.equal(sha(read(path.join(out, 'build.json'))), sha(bytes));
     const result = { ok: true, out, version, buildSha256: sha(bytes), bytes: total + bytes.length, networkCalls, subprocessCalls, compilerExecutions: 0 }; console.log(JSON.stringify(result)); return result;
   } finally {

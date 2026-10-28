@@ -42,6 +42,7 @@ let presentedTheme: number | null = null;
 let pendingRefinement: any = null;
 let busy = true, sequence = 0, timer = 0, clockActive = false, lastClock = 0, slow = 0;
 const queue = new PresentedInputQueue<any>();
+let hoverPump = 0;
 let capabilities: BrowserCapabilities;
 const requestStarted = new Map<number, number>();
 const bendCompute = new RollingP90();
@@ -86,15 +87,24 @@ function scheduleTextureProbe(): void {
   if (idle) idle(probe, { timeout: 2500 });
   else window.setTimeout(probe, 1000);
 }
-function send(input: any, picker?: PreparedPickFile): void {
+function cancelHoverPump(): void {
+  if (hoverPump) { cancelAnimationFrame(hoverPump); hoverPump = 0; }
+}
+function send(input: any, picker?: PreparedPickFile, deferHover = false): void {
   if (!presentation) { if (picker) ports?.discardPickFile(picker); return; }
   if (picker) { queuedPickers.set(input, picker); activePickers.add(picker); }
   const mask = atlasMaskId(presentation);
   if (mask !== null) queuedAtlasMasks.add(mask);
   queue.enqueue(input, presentation);
-  pump();
+  if (deferHover && !busy) {
+    // Capture the displayed presentation now, but let an immediate click join
+    // this hover's batch instead of waiting for a separate hover frame.
+    canvas.setAttribute('aria-busy', 'true');
+    if (!hoverPump) hoverPump = requestAnimationFrame(() => { hoverPump = 0; pump(); });
+  } else pump();
 }
 function pump(): void {
+  cancelHoverPump();
   if (busy) return;
   const batch = queue.takeBatch();
   if (!batch) return;
@@ -233,6 +243,7 @@ worker.addEventListener('message', event => {
     requestStarted.delete(message.id);
   }
   if (message.kind === 'fault') {
+    cancelHoverPump();
     for (const picker of activePickers) ports.discardPickFile(picker);
     ports.cancelPickFiles();
     activePickers.clear();
@@ -298,12 +309,14 @@ worker.addEventListener('message', event => {
   if (qualityWindow.length >= 8) queueMicrotask(nextQualityProbe);
 });
 worker.addEventListener('error', event => {
+  cancelHoverPump();
   for (const picker of activePickers) ports?.discardPickFile(picker);
   ports?.cancelPickFiles();
   activePickers.clear();
   status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only');
 });
 window.addEventListener('pagehide', () => {
+  cancelHoverPump();
   for (const picker of activePickers) ports?.discardPickFile(picker);
   ports?.cancelPickFiles();
   activePickers.clear();
@@ -337,7 +350,7 @@ canvas.addEventListener('pointerdown', event => {
 });
 canvas.addEventListener('pointermove', event => {
   if (event.isPrimary && touchImport?.pointerId !== event.pointerId)
-    send({ $: 'PointerMove', ...point(event) });
+    send({ $: 'PointerMove', ...point(event) }, undefined, event.buttons === 0);
 });
 canvas.addEventListener('pointerup', event => {
   if (touchImport?.pointerId === event.pointerId) {

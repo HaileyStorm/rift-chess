@@ -20,7 +20,7 @@ const map = Object.freeze({
   OpenUrl: 'ui/Types.OpenUrl', Exit: 'ui/Types.Exit',
 });
 const ports = {
-  'host.ts': { sha256: '813e50136a467a35542a8c39061f4d45f13138f4777eda9874c967df655334b5',
+  'host.ts': { sha256: '0ae5360b82f92b158176ec51cb7714e2a2f93548f3ce2b88d67f3de968417be7',
     counts: { QualityProbe: 1, Tick: 1, Activate: 1, PickFile: 1, PointerDown: 1,
       PointerMove: 1, PointerUp: 2, Wheel: 1, KeyInput: 1, Resize: 1 } },
   'ports.ts': { sha256: '9c13b291476f33a1c2f832fbe73538ea1018fe0d69a1db66ae7918f49dae7244',

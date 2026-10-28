@@ -1,5 +1,9 @@
 # Canonical preview repacker — October 28, 2026
 
+This records the original `/1` reproduction at commit `947d87f`. The later
+hover-pump change rebuilds the host as well through the explicit `/2` contract;
+the `/1` source and original receipts below remain historical evidence.
+
 The canonical `bend2/toolchain-patches/2035/build-preview.mjs` now packages the
 current reviewed emissions through the same mechanism used for the accepted
 [edge-feedback preview](../stationary-motion-20261006/EDGE_FEEDBACK_20261028.md).
