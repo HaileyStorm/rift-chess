@@ -1,6 +1,33 @@
 # Experimental browser publication — 2026-10-28
 
-## Current menu-panel follow-up
+## Current Settings reopening follow-up
+
+The same isolated URL now serves version `dbab7a213fbef5794afa`, deployment
+commit `cb821e599ea0c51109a446c708b391426ab0865f`. It adds the
+[Settings reopening improvement](MENU_REOPEN_20261028.md) from source commit
+`a2606b9d2ee71538c1c1a96c67a3bfbf24250b72`, retaining the Menu emission below.
+The public manifest SHA256 is
+`930832694bddf822781b99581677556710397645d3ddb5157a0d77bb042b7c17`.
+The successful push was independently verified through the remote ref. Actual
+HTTPS readback matched the new manifest and four changed payloads; unchanged
+payload verification, previous hashed files and the historical root remain intact.
+
+One hosted Chrome 156 journey verified the exact current service-worker cache,
+Settings toggles, a real background-cache hit after closing and reopening,
+e2–e4, and background invalidation when opening Settings on the changed board.
+Offline reload retained the exact saved record and displayed position. No
+page/console errors or failed requests occurred. The inspected offline PNG still
+matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
+Original Chrome 40952 and parent exited 0; the owning Job settled and closed
+normally without signals. This validates delivery and browser behavior, without
+extending the scoped timing evidence to native, device, GPU or stable performance.
+Publication required no new Bend emission or proof run.
+
+Private originals are retained under `public-preview-20261028-r3/`; hashes are
+recorded in the current private checkpoint. The dated prior publications below
+retain their original evidence and limits.
+
+## Prior menu-panel publication
 
 The same isolated URL now serves version `e53a618a096cd55e091c`, deployment
 commit `607835aab58636964d6e3c7c507c5437a76d5b32`. It includes the scoped
