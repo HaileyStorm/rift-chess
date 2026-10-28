@@ -1,6 +1,40 @@
 # Experimental browser publication — 2026-10-28
 
-## Current atlas-texture follow-up
+## Current edge-feedback follow-up
+
+The isolated URL now serves version `d6a06cc712721f86ce79`, deployment commit
+`e7f9e2babcaeb8a9599688525deaa90a88ed359d`. It includes the owner's
+[piece/platform edge-feedback change](../stationary-motion-20261006/EDGE_FEEDBACK_20261028.md)
+from source `1117a4cac8d3c2b7bcbebec1d6e59fbaba329988`. The public manifest is
+`5700665b043e6366562bbad7a044a10fe4d2966e7b8c25d16666c37e1ab947a6`.
+The current checked Scene, rebuilt helper and Worker are bound explicitly;
+unchanged Controller, Menu, bot, ground-only data and artwork retain their bytes.
+Actual remote refs and hosted manifest/five changed payload hashes matched.
+Prior hashed files and the historical root remain intact.
+
+One hosted Chrome 156 journey verified the current service-worker cache and
+cached manifest, selected g1, selected platform A2, and clicked c3 to Shift it
+into B2. Action 20825 committed, holes became 528 and Black was to move. Offline
+reload retained the exact saved record and displayed position. The hosted
+selected-platform image was inspected: amber outer edges, no internal hover
+outline or requested circle markers. Page/console errors and failed requests
+were zero. Original Chrome 17732 and parent exited 0; the owning Job settled
+and closed normally without signals.
+
+Private originals remain under `public-preview-20261028-r5/`:
+
+| Record | SHA256 |
+| --- | --- |
+| Hosted Shift/offline journey | `804aacaf238cdce3f9b0aabf98b7729f5544cb439eb0d45eed8cea41e3fcb344` |
+| Original-handle settlement | `7e6a01a5520edee5a4a17738869ca06c8d044112e7ad609666adcbad8feb54c0` |
+| Hosted five-file readback | `838729472bf4d05abb46a73b14c10f688906ad1baecf76b5afd47f0f38aa01f8` |
+
+This is scoped current browser/publication acceptance. Existing native outputs
+retain their earlier source bindings; native/GPU/device/performance and compiler
+adoption acceptance are not inferred. The dated publications below keep their
+original evidence and limits.
+
+## Prior atlas-texture publication
 
 The isolated URL now serves version `c694a9be1f968ae43d51`, deployment commit
 `55885262d0ff9aff5072e6b21c82aee2623bbb15`, with the

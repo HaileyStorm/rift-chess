@@ -7,8 +7,8 @@ platform hover and selection should use the platform's outer edges instead.
 
 `BoardScene.bend` now keeps cyan piece square edges and uses an amber projected
 outline around the complete 2×2 platform. Hover is subdued; selection is stronger.
-No internal cell hover outline is added to an unselected empty platform or a
-selected platform. Movability comes from the controller's existing fully legal
+No internal cell hover outline is added while choosing an empty platform or when
+a platform is selected. Movability comes from the controller's existing fully legal
 Shift pairs, retaining the Shift-hints preference. Missing platforms receive no
 hover outline. Recent Shift feedback also uses a perimeter instead of a circle.
 Piece move/capture/check/promotion cues retain their separate meanings.
