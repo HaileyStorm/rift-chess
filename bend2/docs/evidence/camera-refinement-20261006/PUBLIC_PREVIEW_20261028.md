@@ -1,6 +1,37 @@
-# Experimental browser publication — 2026-10-28
+# Experimental browser publication â€” 2026-10-28
 
-## Current hover-batching follow-up
+## Current bottom-up plate follow-up
+
+The isolated URL serves version `8fcc17dc6f5bc0d8f9c0`, deployment commit
+`d547dfa837bc57cfdd9ecc715e2cdefe54099401`. Source
+`311adf077fc247949decaa026a524515160b751a` adds the
+[game-owned bottom-up plate decoder](PLATE_DECODE_20261028.md). The public manifest
+is `3bebaefdbf458b17f7828d01614b87e3a2158ee6b42545d91a3e40573cdce88b`.
+Fresh Scene/helper/Worker/host bundles bind the changed Assets/PlateDecode
+closure; the original generic decoder, BoardScene geometry, Controller/Menu,
+artwork, bot and prepared ground remain unchanged. Prior hashed clients and the
+historical root are retained. Actual remote refs, hosted manifest and all five
+changed payload hashes matched.
+
+One hosted Chrome 156 journey verified the controlling service worker/current
+cache and exact cached manifest, selected g1, selected A2 and committed Shift
+20825 into B2. Holes became 528 and Black was to move; offline reload retained
+the exact saved record and summary. The selected-platform PNG matches the
+previous publication byte-for-byte. Page/console errors and failed requests
+were zero. Original Chrome 29920 and parent exited 0; handles and Job closed
+normally, without signals. This is hosted/offline evidence; the separate paired
+two-CPU timing observations retain their stated limits.
+
+Private originals are in `public-preview-20261028-r7/`:
+
+| Record | SHA256 |
+| --- | --- |
+| Hosted Shift/offline journey | `736aea1b1197c5ec7ded51d6316f481237fe740202fa0f1071af09d879a39306` |
+| Native supervisor terminal | `50a7127895f31bd5b8b09c2c264f4256dbf55a7d472a5855766ca20a6d24db46` |
+| Hosted file readback | `9dfd87c68ce843196c3921d5c64ada0a847ce2061065aa02a8d7d968277c8a50` |
+| Selected-platform image | `1a3f366af5e82d76fbfe9b371935cba96f09c9ac4c644c45284c87811fa9fa32` |
+
+## Earlier hover-batching follow-up
 
 The isolated URL serves version `e09631c598d2c0db4e6a`, deployment commit
 `7a44e450c63b0a755b76da024c2f9794526d159c`. Source
@@ -109,7 +140,7 @@ payload verification, previous hashed files and the historical root remain intac
 
 One hosted Chrome 156 journey verified the exact current service-worker cache,
 Settings toggles, a real background-cache hit after closing and reopening,
-e2–e4, and background invalidation when opening Settings on the changed board.
+e2â€“e4, and background invalidation when opening Settings on the changed board.
 Offline reload retained the exact saved record and displayed position. No
 page/console errors or failed requests occurred. The inspected offline PNG still
 matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
@@ -137,7 +168,7 @@ available for returning clients; the historical root payload is unchanged.
 Actual HTTPS readback matched the new manifest and all four changed payloads;
 unchanged payloads reuse the original verification below. One hosted Chrome 156
 journey verified the exact current service-worker cache and its cached manifest,
-opened Settings, observed Move Hints on and off, closed Settings, played e2–e4,
+opened Settings, observed Move Hints on and off, closed Settings, played e2â€“e4,
 and reloaded offline with the exact same saved record and displayed position.
 There were no page/console errors or failed requests. The inspected offline PNG
 still matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
@@ -189,9 +220,9 @@ saved-match and preference keys; the deployment README documents this behavior.
 
 ## Actual acceptance
 
-One real e2–e4 and offline saved-position continuation ran locally before push,
+One real e2â€“e4 and offline saved-position continuation ran locally before push,
 then against the actual hosted candidate in Windows Chrome 156.0.8078.48,
-headless, 1280×800, scale 1, each with fresh browser storage. Both passed:
+headless, 1280Ã—800, scale 1, each with fresh browser storage. Both passed:
 White changed to Black to move, and offline reload retained the exact saved
 record and displayed position. Neither run reported a page/console error or
 failed request. The hosted offline image was identical to the inspected local

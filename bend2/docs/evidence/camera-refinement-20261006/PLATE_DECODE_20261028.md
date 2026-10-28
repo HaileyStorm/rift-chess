@@ -1,12 +1,12 @@
-# Bottom-up game plate decoding — October 28, 2026
+# Bottom-up game plate decoding â€” October 28, 2026
 
 The game now assembles its depth9 RGA1 plates from adjacent pixel pairs,
-then merges adjacent 2×2 image cells through eight further levels. This avoids
+then merges adjacent 2Ã—2 image cells through eight further levels. This avoids
 the generic decoder's stretched-row intermediates and repeated matrix splits.
 `Assets.response.plate` selects this game-owned path. The original RGA1 parser,
 generic decoder, Laws and Proofs remain byte-for-byte unchanged.
 
-The fast path calls the original complete 512×512 row parser before final image
+The fast path calls the original complete 512Ã—512 row parser before final image
 assembly. Each level retains the original TL/TR/BL/BR order and `image_quad`
 uniform-region compaction. Other complete headers delegate unchanged to the
 generic decoder; short headers retain `BadLength`. Failed responses, depth9
@@ -24,7 +24,7 @@ emissions, artwork, fonts, bot and ground-only payload were reused. The canonica
 
 ## Actual application comparison
 
-One paired Chrome 156 journey played e2–e4 and e7–e5, opened Settings, selected
+One paired Chrome 156 journey played e2â€“e4 and e7â€“e5, opened Settings, selected
 Warm, closed Settings, rotated/released and selected g1's knight. Both builds
 ran in fresh contexts in one browser under the same owning Windows Job's
 two-logical-processor limit: affinity mask 3, limit flags 16. All eight complete
@@ -69,7 +69,10 @@ Private originals remain under
 
 The final selected-knight PNG is byte-identical to the prior accepted hover
 journey (`58610246c204dd225ff45ec3e6934833a01c764d21e9cf1d4bd583e06ed9c0b6`).
-Publication is recorded in [the preview evidence](PUBLIC_PREVIEW_20261028.md).
+The [published preview](PUBLIC_PREVIEW_20261028.md) serves version
+`8fcc17dc6f5bc0d8f9c0` from deployment `d547dfa837bc57cfdd9ecc715e2cdefe54099401`.
+Its actual current cache, piece/platform selection, tile Shift and offline
+saved-position continuation also passed; the platform PNG is unchanged.
 No new unit/integration suite or synthetic codec matrix was added. The full
 sprint, current-source native alignment, original GPU acceptance and reviewed
 compiler adoption remain open; accepted 2.0.27 and formal obligations are intact.
