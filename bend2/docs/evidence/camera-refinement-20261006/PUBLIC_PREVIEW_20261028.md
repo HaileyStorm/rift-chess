@@ -1,6 +1,36 @@
 # Experimental browser publication — 2026-10-28
 
-## Current edge-feedback follow-up
+## Current hover-batching follow-up
+
+The isolated URL serves version `e09631c598d2c0db4e6a`, deployment commit
+`7a44e450c63b0a755b76da024c2f9794526d159c`. Source
+`ba67d85ebebeefa011a8863945e3915afb665902` adds
+[immediate-click hover batching](HOVER_BATCH_20261028.md) through the bound host;
+helper, Worker, Bend emissions, bot, artwork and prepared ground retain their
+accepted bytes. The public manifest is
+`0bdf0c41d4cebfbcfe0af3ffefe8924b7c8ca65dcb703e068dfc10a0f6761b02`.
+Actual remote refs, hosted manifest and five runtime-file hashes matched
+(host/index/SW changed; helper/Worker unchanged). Prior hashed assets and the
+historical root remain intact.
+
+One hosted Chrome journey verified the current controlling SW/cache and cached
+manifest, selected g1, selected A2 and committed Shift action 20825 into B2.
+The displayed holes became 528; offline reload retained the exact saved record
+and Black-to-move position. There were no page/console errors or failed requests.
+Original Chrome 24824 and parent exited 0; handles and Job closed normally
+without signals. This adds hosted/offline evidence, not stable performance or
+native/GPU/compiler adoption.
+
+Private originals are in `public-preview-20261028-r6/`:
+
+| Record | SHA256 |
+| --- | --- |
+| Hosted Shift/offline journey | `587b04eda8c6c7de3e0abc2f52d72904bab0a33f43dccfe659ee5b3b557cad85` |
+| Native supervisor terminal | `d6e8719d6574532352561dd58da5fe92d2e979a0e0f3ed732bed2994773efef9` |
+| Hosted file readback | `7f7392deee96bf828fe501e01b445d09aee0af9fda52222a71dfcfbd9b617361` |
+| Selected-platform image | `1a3f366af5e82d76fbfe9b371935cba96f09c9ac4c644c45284c87811fa9fa32` |
+
+## Earlier edge-feedback follow-up
 
 The isolated URL now serves version `d6a06cc712721f86ce79`, deployment commit
 `e7f9e2babcaeb8a9599688525deaa90a88ed359d`. It includes the owner's

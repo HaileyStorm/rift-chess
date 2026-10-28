@@ -72,6 +72,11 @@ Private originals are under `native-gameplay-20261027-r1/hover-pump-20261028-r1/
 | Original native terminal | `0dacdc6b857bf9a964475c203d75f97f8316c7bb12f2cfe2996a9e11a6c0dd2b` |
 | Timing readout | `bf34e358af37748d10b5e855125011ac1d5dd311e1db09b304433b71bd6b033c` |
 
+The [published follow-up](PUBLIC_PREVIEW_20261028.md) serves public version
+`e09631c598d2c0db4e6a`, deployment `7a44e450c63b0a755b76da024c2f9794526d159c`.
+Its own original hosted cache, real tile Shift and offline saved-position
+continuation passed. It is separate from the constrained paired measurement.
+
 An earlier two-processor journey completed six plies, then its driver opened
 New Match using the wrong control ID and timed out waiting for Warm. That
 failed result remains original; the completed prefix is not a full-run pass.
