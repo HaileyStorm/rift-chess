@@ -89,6 +89,49 @@ derived path; neither preserved compiler needs restoration.
 
 ## Current-source browser preview
 
+As of October 28, `build-preview.mjs` is a source-bound **repacker** of reviewed
+emissions and a retained base package. It rebuilds the helper and game Worker,
+updates their exact host references and service-worker payload list, and copies
+the already-bound bot, artwork and prepared ground. It does not invoke Bend,
+regenerate unchanged modules or change the accepted compiler pin.
+
+Run it with the pinned local Bun executable and explicit reviewed input:
+
+```powershell
+$env:BEND_NO_TELEMETRY = '1'
+& ./.artifacts/toolchains/runtime/node_modules/@oven/bun-windows-x64/bin/bun.exe `
+  ./bend2/toolchain-patches/2035/build-preview.mjs `
+  <input.json> <input-sha256> <artifact-root> <new-output-directory>
+```
+
+The `rift-source-bound-preview-input/1` input names exact `base`, `modules`
+(Controller, Scene and Menu manifests/outputs), rebuilt browser `ports`,
+`boundary` and its `boundaryDependencies`, `runtime`, `builder`,
+`retainedSources`, `sourceRevision` and `maxPackageBytes` (at most 8 MiB).
+File descriptors contain `path`, `bytes` and `sha256`; runtime also includes
+`version`. Seed retained host/asset source hashes from their reviewed package
+lineage, rather than accepting new current hashes as proof of that lineage.
+Changing unrebuilt host/assets needs a separately reviewed new base package.
+Rebuilt Worker/helper ports may change under a new reviewed input.
+
+The artifact root contains the retained external inputs and the new output;
+repository-relative inputs resolve from this checkout. The output must not
+already exist. Consumed bytes are fenced before/after, selected emissions must
+retain whole-book/zero-hole receipts and current source bindings, and fetch and
+subprocess execution are disabled during bundling. The output remains a draft
+`rift-source-bound-preview/1` package. These guards do not establish fresh
+compiler, proof, browser, native, device or adoption acceptance.
+
+The [October 28 reproduction](../../docs/evidence/camera-refinement-20261006/CANONICAL_PREVIEW_REPACK_20261028.md)
+reproduced all 23 runtime payloads of the accepted edge-feedback preview
+byte-for-byte. Its original browser/Shift/offline evidence remains applicable;
+no duplicate browser campaign was run for identical executable bytes.
+
+### Historical selected-cache creation and acceptance
+
+The following describes the earlier creation path and its dated evidence;
+it is not the current repacker's run list or an instruction to repeat a campaign.
+
 `emit-selected.mjs` loads/checks a whole selected book and emits exact public roots
 through the unmodified candidate compiler API. Sequential controller, scene, menu
 and chrome runs passed. Their immutable manifests bind source/import closure,
@@ -99,7 +142,7 @@ is imposed. Each Worker has a300s bound and a fresh retained run directory.
 `browser-tag-boundary.mjs` adapts exact hash-bound browser source literals/sites.
 It retains qualified domain identity and distinguishes the two AssetResponse
 constructors. Base image/list tags stay bare. It does not rewrite object graphs
-or edit accepted ports. `build-preview.mjs` verifies four explicitly selected
+or edit accepted ports. The earlier `build-preview.mjs` verified four explicitly selected
 manifest/output hashes, current source bindings and exact pristine Git provenance,
 then installs both Bun plugins for helper, Worker and host. It packages existing
 verified assets into a fresh ignored `2035-preview/browser-*` directory. It does
@@ -110,14 +153,13 @@ binding, installed runtime and five public artifact bytes. The source-binding
 receipt remains outside the public package. The result is explicitly a draft
 candidate with hotseat and bot play; accepted2.0.27 is unchanged.
 
-Run through the repository wrapper, with Vivaldi left open:
+The historical creation commands were:
 
 ```powershell
 node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/emit-selected.mjs --module scene
-node bend2/tools/bend.mjs --run bend2/toolchain-patches/2035/build-preview.mjs
 ```
 
-The builder selects the recorded four runs rather than the newest directory; a
+That builder selected the recorded four runs rather than the newest directory; a
 new selection requires explicit byte review. See the evaluation record for the
 current24-scenario/689-check Chrome reference result and exact source/build
 identities, actual required-helper bot/controller result and cold-offline bot
