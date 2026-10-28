@@ -140,6 +140,10 @@ approval. The later, separately versioned
 [ordering-transport witness](../ordering-transport-v1/NATIVE_PROOF_20261026.md)
 has an accepted Linux full62 `ALL PROOFS CHECK` verdict under its own exact source
 and kernel bindings; it does not retag the Windows execution snapshots above.
-Native CPU/GUI/PCM/restart, device, GPU/performance, pin amendment and compiler
-adoption remain unestablished. This coverage document is a successor postimage,
-not part of those execution snapshots.
+The later [native CPU build review](../../../docs/evidence/stationary-motion-20261006/NATIVE_CPU_20261027.md)
+and [gameplay, routed PCM and application restart review](../../../docs/evidence/stationary-motion-20261006/NATIVE_GAMEPLAY_20261028.md)
+establish those separate native results under their exact package bindings.
+They do not retag the proof snapshots, establish physical audibility or OS reboot
+persistence, or close GPU/performance, pin amendment or compiler adoption.
+This coverage document is a successor postimage, not part of those execution
+snapshots.
