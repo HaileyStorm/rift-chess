@@ -3,6 +3,7 @@
 # this module validates and maps one requested theme to one retained Image.
 import Base
 import ../../lib/graphics/v2/assets/RgbImage.bend as RgbImage
+import ./PlateDecode.bend as PlateDecode
 
 type AssetId is Data:
   Astral{}
@@ -55,7 +56,7 @@ def response.plate(ok: Bool, bytes: List<&2, U32>) -> Plate:
     case False{}:
       Missing{}
     case True{}:
-      decoded.plate(RgbImage.decode_bytes(bytes))
+      decoded.plate(PlateDecode.decode_bytes(bytes))
 
 def response.into_plates(id: AssetId, plate: Plate) -> ObservatoryPlates:
   match id:
