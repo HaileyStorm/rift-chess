@@ -53,5 +53,6 @@ changed only its Worker source guard. Private originals remain under
 No page/console errors or failed requests occurred. Original Chrome 7096 and
 parent handles exited 0, the server closed, and the owning Job settled and
 closed normally without signals. This accepts the scoped browser optimization;
-it does not extend native, GPU, formal proof, compiler-pin or public deployment
-acceptance.
+it does not extend native, GPU, formal proof or compiler-pin acceptance.
+The later [public deployment evidence](PUBLIC_PREVIEW_20261028.md) separately
+records exact hosted payload and camera/picking acceptance.

@@ -1,6 +1,37 @@
 # Experimental browser publication — 2026-10-28
 
-## Current Settings reopening follow-up
+## Current atlas-texture follow-up
+
+The isolated URL now serves version `c694a9be1f968ae43d51`, deployment commit
+`55885262d0ff9aff5072e6b21c82aee2623bbb15`, with the
+[atlas texture reuse change](ATLAS_TEXTURE_REUSE_20261028.md) from source
+`63b3f8c264423e6bcc6bc9748b9d3c619a65d53d`. The public manifest SHA256 is
+`92b535cc5eebf34e86bfbac6edb8634cce219bc6eb2172dd64f278e5d6f2ba5f`.
+Remote ref and actual HTTPS manifest/four changed payload hashes matched.
+Previous hashed payloads, unchanged files and the historical root remain intact.
+
+One hosted Chrome 156 rotate/release and g1 selection verified the current
+service-worker cache and cached manifest. The initial atlas contained 230,884
+texture token bytes; the accepted rotated view reused those textures with zero
+new token bytes. Actual canvas picking selected the displayed g1 knight, and
+rotation/selection preserved the journal. No page/console errors or failed
+requests occurred. The rotated canvas was inspected. Original Chrome 1324 and
+parent exited 0, and the Job settled and closed without signals.
+
+Private originals remain under `public-preview-20261028-r4/`:
+
+| Record | SHA256 |
+| --- | --- |
+| Hosted journey | `a0eaeac7727569088db377e11bcf4fcb268a3cb710470c98c372138b6093f9d1` |
+| Original-handle settlement | `ab72b6eddb9b7792cce8ba2853ed3b3d6945c6db0e98cc46bb080732b82e2111` |
+| Hosted changed-file readback | `763efd0d646b68fae8cb2e566a3e238821684fd8be3e7451d513d659cc1fbf05` |
+
+This verifies the new hosted camera path. Unchanged Settings/persistence/offline
+evidence below retains its original versions; no duplicate broad journey,
+compiler or proof run occurred. Native, physical-device, GPU and stable
+performance acceptance are not extended by this publication.
+
+## Prior Settings reopening publication
 
 The same isolated URL now serves version `dbab7a213fbef5794afa`, deployment
 commit `cb821e599ea0c51109a446c708b391426ab0865f`. It adds the
