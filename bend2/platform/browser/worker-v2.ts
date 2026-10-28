@@ -638,13 +638,15 @@ function render(packet: any): any {
     ? (preview ? preview.maskId : spriteHeld || spriteMoving ? spriteAtlasMaskId : preparedAtlasMaskId) : null;
   pruneAtlasMasks();
   retained = timed('compose', () => {
-    if (playing) {
+    // A closed menu may reuse its one background on reopening. Drop it as
+    // soon as any retained image or rendering resource changes.
+    if (menuBackground && (menuBackground.depth !== request.depth || menuBackground.size !== request.size ||
+        menuBackground.fonts !== fonts || menuBackground.board !== board || menuBackground.base !== menuBase))
       menuBackground = null;
+    if (playing) {
       return menu.compose(request.depth, plan, board, chrome);
     }
-    if (!menuBackground || menuBackground.depth !== request.depth || menuBackground.size !== request.size ||
-        menuBackground.fonts !== fonts || menuBackground.board !== board || menuBackground.base !== menuBase ||
-        !menu.same_background(menuBackground.data, menuBackground.plan, data, plan)) {
+    if (!menuBackground || !menu.same_background(menuBackground.data, menuBackground.plan, data, plan)) {
       menuBackground = { depth: request.depth, size: request.size, data, plan,
         fonts, board, base: menuBase,
         image: menu.background_chrome(request.depth, request.size, data, plan, fonts, board, menuBase) };

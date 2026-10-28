@@ -27,8 +27,9 @@ const ports = {
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
-  'worker-v2.ts': { sha256: 'ab6832bdeea3bbda3595cb79f98d716ce5025867559d224309d9f7618d9f880c',
+  'worker-v2.ts': { sha256: '681412cee7b9588d07af0da4d2bf4bef902e202867999055816e3d75fd24d248',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
+    leafCounts: { PointerDown: 1, PointerMove: 1, PointerUp: 1, Wheel: 1, KeyInput: 1 },
     bareCounts: { Con: 2, Nil: 1, Pix: 1, Qua: 1, Some: 1 } },
   'sprite-helper.ts': { sha256: 'c33ec4d13ac0647adc0792b5ca7c9faa5db9ac181566ab88cbc75e1688f03068',
     counts: { Ready: 2, Frame: 1, ObservatoryPlates: 1 },
@@ -48,7 +49,7 @@ const definitions = {
     Effect: ['PickFile', 'Store', 'Download', 'Sound', 'OpenUrl', 'Exit'] } },
   'bend2/graphics/Scene.bend': { sha256: '7d0ce609c97ffae8b0662de2ec58d85120a9605c151c7becd5c91a60fa5cbc65',
     types: { Frame: ['Frame'] } },
-  'bend2/graphics/v2game/PieceSprites.bend': { sha256: 'de3f1178280de74dead3143342f765d4eff1c1b7796a501543a90b120dac3c59',
+  'bend2/graphics/v2game/PieceSprites.bend': { sha256: '56541b51a4064eef4d187c793d61fa1b3f37ef1bd87aba5e133ee0d0577fd02d',
     types: { Pieces: ['Pieces'] } },
   'bend2/lib/graphics/v2/RgbaSample.bend': { sha256: '7af8dfdd7343a1d3db0803bfb7df12162fc5b5bc3638c6688bbd356a0a6bf1bc',
     types: { Texture: ['Texture'] } },
@@ -85,7 +86,7 @@ export function transformBrowserTags2035(relative, input) {
   const bytes = Buffer.from(input);
   assert.equal(sha256(bytes), spec.sha256, `browser boundary preimage changed: ${relative}`);
   const source = bytes.toString('utf8');
-  const allowed = new Set([...Object.keys(spec.counts), ...Object.keys(spec.bareCounts ?? {}),
+  const allowed = new Set([...Object.keys(spec.counts), ...Object.keys(spec.bareCounts ?? {}), ...Object.keys(spec.leafCounts ?? {}),
     ...(name === 'asset-port.ts' ? ['AssetResponse'] : [])]);
   for (const literal of source.matchAll(/'([A-Z][A-Za-z_]*)'/g))
     assert.ok(allowed.has(literal[1]), `unsupported constructor-like literal in ${relative}: ${literal[1]}`);
@@ -114,9 +115,14 @@ export function transformBrowserTags2035(relative, input) {
     assert.equal(occurrences(source, `'${tag}'`), count);
     assert.equal(occurrences(contents, `'${tag}'`), count, `Base tag changed: ${tag}`);
   }
+  // These compare the extracted final tag segment, rather than construct an ABI tag.
+  for (const [tag, count] of Object.entries(spec.leafCounts ?? {})) {
+    assert.equal(occurrences(source, `'${tag}'`), count);
+    assert.equal(occurrences(contents, `'${tag}'`), count, `Input leaf comparison changed: ${tag}`);
+  }
   return { contents, loader: 'ts', metadata: { path: relative, sourceSha256: spec.sha256,
     resultSha256: sha256(contents), bytes: Buffer.byteLength(contents), changes,
-    unchangedBaseLiteralCounts: spec.bareCounts ?? {} } };
+    unchangedBaseLiteralCounts: spec.bareCounts ?? {}, unchangedInputLeafCounts: spec.leafCounts ?? {} } };
 }
 
 export function browserTagBoundaryBinding2035() {
