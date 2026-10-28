@@ -55,3 +55,6 @@ historical evidence; this change extends its cached layer without repeating its
 capture/orbit campaign. This accepts the scoped browser optimization. Earlier
 native receipts keep their exact source scope; no new native/GPU, compiler-pin,
 formal-proof, public deployment or owner visual acceptance is inferred.
+
+The later [publication follow-up](../camera-refinement-20261006/PUBLIC_PREVIEW_20261028.md#current-menu-panel-follow-up)
+provides separate actual hosted/offline acceptance for this menu successor.

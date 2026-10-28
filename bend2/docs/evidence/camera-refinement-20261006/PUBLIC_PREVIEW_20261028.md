@@ -1,5 +1,41 @@
 # Experimental browser publication — 2026-10-28
 
+## Current menu-panel follow-up
+
+The same isolated URL now serves version `e53a618a096cd55e091c`, deployment
+commit `607835aab58636964d6e3c7c507c5437a76d5b32`. It includes the scoped
+[menu-panel reuse improvement](../stationary-motion-20261006/MENU_PANEL_20261028.md)
+from source commit `838ece28d2d10d879a638ad9634dbb75e3f0032a`. Its public manifest
+SHA256 is `f773225a8e4024e63b42064a08309ca6ba178d49658a1d8bcb0d57ae6adaa88c`.
+The fresh Menu emission replaces only that module; Controller, Scene, helper,
+bot and artwork retain their exact accepted browser bindings. Private producer
+paths are excluded from the public derivative. Previous hashed files remain
+available for returning clients; the historical root payload is unchanged.
+
+Actual HTTPS readback matched the new manifest and all four changed payloads;
+unchanged payloads reuse the original verification below. One hosted Chrome 156
+journey verified the exact current service-worker cache and its cached manifest,
+opened Settings, observed Move Hints on and off, closed Settings, played e2–e4,
+and reloaded offline with the exact same saved record and displayed position.
+There were no page/console errors or failed requests. The inspected offline PNG
+still matches `a92204e8adf1e881d3bf2fde680249242206d6768295a1563a362abb26e3b885`.
+Original Chrome and parent exits were 0; the Job settled and closed normally.
+
+Private originals are retained under `public-preview-20261028-r2/`:
+
+| Record | SHA256 |
+| --- | --- |
+| Hosted journey | `60f52d35ffdb13b63c82e26a5d4a7f91b635b79ca2698041980d2acd79bd9b15` |
+| Original-handle settlement | `ca6e29caa877a20818e27bd2402c0388839d8318d1e8f8ec9cda8e8ff1933391` |
+| Changed hosted payload readback | `8229ef2b90fa6bc51f5a9bab34752c747242fa96a55bd0a8f8b411ee722fa641` |
+
+This verifies the updated hosted browser/offline path, with the same shared
+saved-game keys and experimental status. It does not extend native, GPU, stable
+performance or compiler-adoption evidence. No new compiler or proof run occurred
+during publication. The initial publication records below retain their scope.
+
+## Initial publication
+
 The retained held-orbit package is published at
 <https://haileystorm.github.io/rift-chess-bend2/preview-20261028/> in deployment
 commit `5032979ecfa641590044ed059efa4b39945468ea`. Public version
