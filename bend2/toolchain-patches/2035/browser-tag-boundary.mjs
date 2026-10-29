@@ -27,7 +27,7 @@ const ports = {
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
-  'worker-v2.ts': { sha256: 'af7647c2e5e722d163976f85b7619656967da1fff8308da4c1c6d37ab9df0d95',
+  'worker-v2.ts': { sha256: '3918467348baeb773bc307d532accd205e19ec5a407bb0c0de66758861afae7d',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     leafCounts: { PointerDown: 1, PointerMove: 1, PointerUp: 1, Wheel: 1, KeyInput: 1 },
     bareCounts: { Con: 2, Nil: 1, Pix: 1, Qua: 1, Some: 1 } },
@@ -39,7 +39,7 @@ const ports = {
     bareCounts: { Pix: 4, Qua: 4 } },
   'asset-port.ts': { sha256: '2a2927c81f5b652685ee2cacb0608b4a7b3eb528fffc8322eebeaad6a215d3e0',
     counts: {}, bareCounts: { Nil: 1, Con: 1 } },
-  'image-port.ts': { sha256: 'ade7731dddfe6b8d47fe6dee39200684bf1de0981846b47030532bc12c0385ef',
+  'image-port.ts': { sha256: '24b4bd3208f99803fb034b2ca6d7b46c18ea89256773321c16c2738af5d9ca44',
     counts: {}, bareCounts: { Pix: 3, Qua: 3 } },
 };
 const definitions = {

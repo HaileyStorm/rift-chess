@@ -6,8 +6,9 @@ import Controller from '../../ApplicationControl.bend';
 import BoardScene from '../../graphics/v2game/BoardScene.bend';
 // @ts-ignore A separate Bend native-resolution menu/raster book.
 import MenuAA from '../../ui/v2/MenuAA.bend';
-import { PixelPort, extentForOutput, replaceRetainedBackground } from './image-port';
+import { PixelPort, OpaqueBoardPort, extentForOutput, replaceRetainedBackground } from './image-port';
 import { BitmapSurface } from './bitmap-surface';
+import { CanvasPreview } from '../../lib/graphics/v2/host/CanvasPreview.mjs';
 import { loadAssetRequests, loadFontPack } from './asset-port';
 import { decodePose, decodeGround } from './pose-port';
 declare const __BEND_SPRITE_HELPER__: string;
@@ -34,6 +35,10 @@ function values(value: any): any[] {
   return result;
 }
 const pixelPort = new PixelPort();
+const opaqueBoardPort = new OpaqueBoardPort();
+let canvasPreview: CanvasPreview | null = null;
+let canvasTexturePieces: any = null;
+let canvasMetrics: any = null;
 // Raw transfer is the measured default. The optional ImageBitmap surface is
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
@@ -65,7 +70,7 @@ let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | nul
 const MAX_ATLAS_MASKS = 8;
 let atlasMaskOffer = 0, atlasMaskPressure = false;
 const atlasMasks = new Map<number, {
-  frame: any; pieces: any; raster: 256 | 512; filter: 'linear' | 'nearest'; retired: boolean; firstOffer: number; lastOffer: number;
+  frame: any; pieces: any; raster: 256 | 512; filter: 'linear' | 'nearest'; labels?: any; retired: boolean; firstOffer: number; lastOffer: number;
 }>();
 
 function pruneAtlasMasks(): void {
@@ -242,6 +247,9 @@ function disposeSprite(): void {
   spriteLayer = spriteFrame = null;
   spritePose = spriteGround = spriteMotion = null;
   spritePreview = null;
+  canvasPreview = null;
+  canvasTexturePieces = null;
+  canvasMetrics = null;
   spritePrepared = null;
   menuBackground = null;
   spriteAtlasMaskId = preparedAtlasMaskId = renderedAtlasMaskId = null;
@@ -485,6 +493,7 @@ function render(packet: any): any {
     previewSupport: 0, previewGround: 0, previewSprites: 0, previewPaint: 0,
     prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
   sceneReuse = { staticFeedback: false, menuBackground: false };
+  canvasMetrics = null;
   if (request.background) {
     underlay = timed('underlay', () => scene[`underlay${suffix}_asset`](request.theme, plates));
     [motionUnderlay, motionBackdrop, motionBackdrop512] = timed('motionUnderlay', () => [
@@ -534,7 +543,8 @@ function render(packet: any): any {
   // Retain artwork through release while the settled helper is still pending.
   // Before this theme's authored textures arrive, keep the existing proxy path.
   if (!spriteMoving && !spriteSettled && !spriteHeld && spritePose && spritePose.theme === request.theme) {
-    if (spritePreview && spritePreview.theme === request.theme && scene.sprite_same_view(spritePreview.frame, frame)) {
+    if (spritePreview && spritePreview.theme === request.theme && scene.sprite_same_view(spritePreview.frame, frame) &&
+        (typeof api.canvas_plan !== 'function' || scene.sprite_same_placement(spritePreview.frame, frame))) {
       preview = spritePreview;
     } else {
       pruneAtlasMasks();
@@ -546,7 +556,8 @@ function render(packet: any): any {
           raster: 512, filter: 'nearest', retired: false, firstOffer: 0, lastOffer: 0 });
         // Support bounds depend only on this exact immutable pose's textures.
         // Keep them through orbit views; a decoded replacement drops the cache.
-        const supports = spritePose.supports ??= timed('previewSupport', () => scene.sprite_supports(pieces));
+        const supports = typeof api.canvas_plan === 'function' ? null :
+          spritePose.supports ??= timed('previewSupport', () => scene.sprite_supports(pieces));
         preview = spritePreview = { frame, pieces, supports, theme: request.theme, maskId, artwork: null };
       }
     }
@@ -604,6 +615,54 @@ function render(packet: any): any {
         menuControls));
   }
   if (!request.frame) throw new Error('Missing Bend frame request');
+
+  // Bend owns stationary geometry, placement and eligibility. The generic port
+  // renders the same integer rectangles into color and immutable label Images.
+  // Keep the existing painter for animations, menus and unavailable Canvas.
+  if (playing && preview && !packet.snapshot.moving &&
+      typeof api.canvas_plan === 'function' && api.canvas_supported(frame)) {
+    try {
+      const began = performance.now();
+      canvasPreview ??= new CanvasPreview(512);
+      const textureMetrics = canvasTexturePieces === preview.pieces ? { texturesReused: true } :
+        canvasPreview.setTextures(values(api.canvas_textures(preview.pieces)));
+      canvasTexturePieces = preview.pieces;
+      const commands = api.canvas_plan(frame);
+      const result = canvasPreview.render(commands, motionBackdrop512);
+      const rect = plan.board;
+      if (!rect || rect.width !== boardSize || rect.height !== boardSize)
+        throw new Error('Bend board placement does not match its render tier');
+      const bitmap = opaqueBoardPort.render(chrome, packet.width, packet.height,
+        extentForOutput(packet.width, packet.height), result.bitmap, 512,
+        { left: rect.x, top: rect.y, size: boardSize });
+      const mask = atlasMasks.get(preview.maskId);
+      if (!mask) throw new Error('Canvas frame lost its reserved label identity');
+      mask.labels = result.labels;
+      renderedAtlas = true;
+      renderedAtlasMaskId = preview.maskId;
+      pruneAtlasMasks();
+      canvasMetrics = { ...textureMetrics, ...result.metrics, totalMs: performance.now() - began };
+      retained = { canvasBitmap: bitmap };
+      return retained;
+    } catch (error) {
+      canvasMetrics = { fallback: String(error) };
+      // A failed frame has not been offered; its existing analytic mask remains
+      // the correct match for the established painter used below.
+      const mask = atlasMasks.get(preview.maskId);
+      if (mask?.labels) {
+        // An offered label image belongs to its displayed frame forever. The
+        // fallback requires its own identity; never rewrite an earlier offer.
+        pruneAtlasMasks();
+        if (atlasMasks.size >= MAX_ATLAS_MASKS || spriteTaskId >= Number.MAX_SAFE_INTEGER)
+          throw new Error('No atlas identity available for Canvas fallback');
+        const id = ++spriteTaskId;
+        atlasMasks.set(id, { frame, pieces: mask.pieces, raster: 512, filter: 'nearest',
+          retired: false, firstOffer: 0, lastOffer: 0 });
+        preview.maskId = id;
+      }
+    }
+  }
+
   // Piece motion retains depth-9 artwork. Camera previews keep authored pieces
   // at depth nine with nearest sampling and matching raster/filter alpha masks.
   const board = timed('pointer', () => {
@@ -625,6 +684,7 @@ function render(packet: any): any {
             replaceRetainedBackground(
               scene.fast_sprite_camera_ground256(frame, motionBackdrop),
               motionBackdrop, motionBackdrop512));
+          preview!.supports ??= timed('previewSupport', () => scene.sprite_supports(preview!.pieces));
           return timed('previewSprites', () =>
             scene.fast_sprite_camera_layer512_nearest(frame, preview!.pieces, preview!.supports, backdrop));
         });
@@ -699,9 +759,10 @@ async function emit(packet: any, elapsed: number, id: number,
   const frame = render(packet);
   const treeMs = performance.now() - pixelStart;
   const pixels: ArrayBuffer | null = packet.dirty
-    ? pixelPort.render(frame, packet.width, packet.height, extentForOutput(packet.width, packet.height)) : null;
+    ? frame?.canvasBitmap ? null : pixelPort.render(frame, packet.width, packet.height, extentForOutput(packet.width, packet.height)) : null;
   const traversalMs = performance.now() - pixelStart - treeMs;
-  const bitmap = pixels ? bitmapSurface.convert(pixels, packet.width, packet.height) : null;
+  const bitmap = packet.dirty && frame?.canvasBitmap ? frame.canvasBitmap :
+    pixels ? bitmapSurface.convert(pixels, packet.width, packet.height) : null;
   const pixelMs = performance.now() - pixelStart;
   if (!bitmap && pixels) transfers.push(pixels);
   if (bitmap) transfers.push(bitmap);
@@ -735,7 +796,7 @@ async function emit(packet: any, elapsed: number, id: number,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
-    treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, botExecution,
+    treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, canvasMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
 }
 async function handleMessage(request: any): Promise<void> {
@@ -788,10 +849,10 @@ async function handleMessage(request: any): Promise<void> {
         if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
             !scene.sprite_has_view(mask.frame, request.presentation.view))
           throw new Error('Displayed atlas frame lost its matching pose alpha data');
-        const dispatch = mask.filter === 'nearest'
+        const dispatch = mask.labels ? api.canvas_dispatch_meta : mask.filter === 'nearest'
           ? api.dispatch_at_web_atlas_nearest_preview_meta
           : mask.raster === 256 ? api.dispatch_at_web_atlas_preview_meta : api.dispatch_at_web_atlas_meta;
-        const dispatched = dispatch(list(request.events), request.presentation, mask.pieces, session);
+        const dispatched = dispatch(list(request.events), request.presentation, mask.labels ?? mask.pieces, session);
         packet = dispatched.packet;
         cameraReleased = dispatched.cameraReleased === true;
       } else {

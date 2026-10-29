@@ -104,10 +104,16 @@ $env:BEND_NO_TELEMETRY = '1'
   <input.json> <input-sha256> <artifact-root> <new-output-directory>
 ```
 
-The `rift-source-bound-preview-input/2` input names exact `base`, `modules`
+The current `rift-source-bound-preview-input/3` input names exact `base`, `modules`
 (Controller, Scene and Menu manifests/outputs), rebuilt browser `ports`,
 `boundary` and its `boundaryDependencies`, `runtime`, `builder`,
-`retainedSources`, `sourceRevision` and `maxPackageBytes` (at most 8 MiB).
+`retainedSources`, `hostModules`, `sourceRevision` and `maxPackageBytes` (at most 8 MiB).
+The two host modules bind the generic Canvas preview and ImageBuffer. A Canvas
+controller record may explicitly bind `CanvasBrowserControl.bend` to the existing
+`ApplicationControl.bend` host import through its checked `hostEntry` descriptor.
+That descriptor must occur in the controller's actual checked source closure.
+Earlier `/2` packages and builders remain retained evidence; the current Worker
+imports these host modules and therefore requires `/3`.
 File descriptors contain `path`, `bytes` and `sha256`; runtime also includes
 `version`. The eleven browser descriptors include `host.ts`, `ports.ts`,
 `input-queue.ts` and `telemetry.ts` alongside the seven helper/Worker/SW inputs.
@@ -120,7 +126,7 @@ repository-relative inputs resolve from this checkout. The output must not
 already exist. Consumed bytes are fenced before/after, selected emissions must
 retain whole-book/zero-hole receipts and current source bindings, and fetch and
 subprocess execution are disabled during bundling. The output remains a draft
-`rift-source-bound-preview/2` package. These guards do not establish fresh
+`rift-source-bound-preview/3` package. These guards do not establish fresh
 compiler, proof, browser, native, device or adoption acceptance.
 
 The [October 28 reproduction](../../docs/evidence/camera-refinement-20261006/CANONICAL_PREVIEW_REPACK_20261028.md)

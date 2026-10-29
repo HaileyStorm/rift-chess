@@ -35,7 +35,7 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   function checked(name, digest, max = 16 * 2 ** 20) { const target = file(name), bytes = read(target, max); assert.equal(sha(bytes), digest, target); fences.set(target, { digest, max }); return bytes; }
   const ref = (row, max) => { assert.match(row.sha256, /^[0-9a-f]{64}$/); const bytes = checked(row.path, row.sha256, max); assert.equal(bytes.length, row.bytes); return bytes; };
   const binding = JSON.parse(checked(path.resolve(inputPath), inputSha256, 512 * 2 ** 10));
-  assert.equal(binding.schema, 'rift-source-bound-preview-input/2'); assert.match(binding.sourceRevision, /^[0-9a-f]{40}$/);
+  assert.equal(binding.schema, 'rift-source-bound-preview-input/3'); assert.match(binding.sourceRevision, /^[0-9a-f]{40}$/);
   assert.equal(file(binding.builder.path), self); ref(binding.builder);
   assert.equal(process.execPath, file(binding.runtime.path)); assert.equal(Bun.version, binding.runtime.version); ref(binding.runtime, 128 * 2 ** 20);
   assert.equal(process.env.BEND_NO_TELEMETRY, '1');
@@ -57,6 +57,10 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
     }
     ref(row);
   }
+  const hostModules = binding.hostModules ?? [];
+  assert.deepEqual(hostModules.map(row => row.path).sort(),
+    ['bend2/lib/graphics/v2/host/CanvasPreview.mjs', 'bend2/lib/graphics/v2/host/ImageBuffer.mjs'].sort());
+  for (const row of hostModules) ref(row);
   const selected = {}, provenance = {};
   for (const key of ['controller', 'scene', 'menu']) {
     const record = binding.modules[key], manifest = JSON.parse(ref(record.manifest));
@@ -69,7 +73,17 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
         assert.equal(one(ref(lineage.preimage).toString(), lineage.from, lineage.to), ref(lineage.current).toString());
       else ref(row);
     }
-    selected[key] = { entry: record.entry, bytes: ref(record.output) }; provenance[key] = record;
+    let hostEntry = record.entry;
+    if (record.hostEntry) {
+      assert.equal(binding.schema, 'rift-source-bound-preview-input/3');
+      assert.equal(key, 'controller');
+      assert.equal(record.entry, 'bend2/CanvasBrowserControl.bend');
+      assert.equal(record.hostEntry.path, 'bend2/ApplicationControl.bend');
+      ref(record.hostEntry);
+      assert.ok(manifest.sources.some(row => row.path === record.hostEntry.path && row.sha256 === record.hostEntry.sha256));
+      hostEntry = record.hostEntry.path;
+    }
+    selected[key] = { entry: record.entry, hostEntry, bytes: ref(record.output) }; provenance[key] = record;
   }
   const copied = {};
   for (const [name, digest] of Object.entries(base.files)) { assert.ok(plain(name)); copied[name] = checked(path.join(baseRoot, name), digest, 8 * 2 ** 20); }
@@ -92,7 +106,13 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   try {
     const { transformBrowserTags2035 } = await import(pathToFileURL(boundaryPath).href), transforms = [], seen = new Set();
     const plugin = { name: 'source-bound-current-preview', setup(build) {
-      build.onLoad({ filter: /\.bend$/ }, args => { const key = Object.keys(selected).find(name => file(selected[name].entry) === path.resolve(args.path)); assert.ok(key, 'unselected Bend import'); seen.add(key); return { contents: selected[key].bytes.toString(), loader: 'js' }; });
+      build.onLoad({ filter: /\.bend$/ }, args => { const key = Object.keys(selected).find(name => file(selected[name].hostEntry) === path.resolve(args.path)); assert.ok(key, 'unselected Bend import'); seen.add(key); return { contents: selected[key].bytes.toString(), loader: 'js' }; });
+      build.onLoad({ filter: /\.mjs$/ }, args => {
+        const name = path.relative(root, args.path).split(path.sep).join('/');
+        const row = hostModules.find(item => item.path === name);
+        assert.ok(row, 'unbound host module: ' + name);
+        return { contents: ref(row).toString(), loader: 'js' };
+      });
       build.onLoad({ filter: /\.ts$/ }, args => {
         const name = path.relative(root, args.path).split(path.sep).join('/'), row = binding.ports.find(item => item.path === name); assert.ok(row, 'unbound browser source: ' + name); const bytes = ref(row);
         if (name.endsWith('/bitmap-surface.ts')) return { contents: bytes.toString(), loader: 'ts' };
@@ -123,8 +143,8 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
     put('sw.js', Buffer.from(one(one(sw, '__BEND_BUILD__', version), '__BEND_ASSETS__', JSON.stringify(['./', './build.json', ...Object.keys(files).sort().map(name => './' + name)]))));
     for (const [name, bound] of fences) assert.equal(sha(read(name, bound.max)), bound.digest, name);
     assert.equal(networkCalls, 0); assert.equal(subprocessCalls, 0);
-    const manifest = { schema: 'rift-source-bound-preview/2', builtAt: new Date().toISOString(), version, files, selected: provenance, sources: binding.ports, retainedSources: binding.retainedSources,
-      sourceRevision: binding.sourceRevision, basePackage: binding.base, preparedGround: ground, browserBoundary: { canonical: binding.boundary, transformations: transforms },
+    const manifest = { schema: binding.schema.replace('-input', ''), builtAt: new Date().toISOString(), version, files, selected: provenance, sources: binding.ports, retainedSources: binding.retainedSources,
+      sourceRevision: binding.sourceRevision, hostModules, basePackage: binding.base, preparedGround: ground, browserBoundary: { canonical: binding.boundary, transformations: transforms },
       retainedEmissionCommentLineage: base.retainedEmissionCommentLineage, retainedControllerExecution: base.retainedControllerExecution,
       packageInputSha256: inputSha256, runtime: binding.runtime, builder: binding.builder, rebuiltHelper: helper, rebuiltBundles: { helper, worker, host }, networkCalls, subprocessCalls, compilerExecutions: 0, draft: true, adopted: false,
       scope: 'All three browser bundles rebuilt from exact bound TypeScript and retained checked Bend emissions; base assets and prepared ground retained. No Bend compiler emission, proof/kernel/native/GPU/performance or adoption acceptance.' };
