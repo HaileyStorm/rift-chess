@@ -213,3 +213,48 @@ hash verification; the shipping path keeps the verified background-cache change.
 No threshold was relaxed, tier injected or unchanged run repeated to obtain an
 enhanced result. Higher resolution remains conditional on responsiveness and
 actual displayed-pixel acceptance.
+
+
+## Reuse the viewport backdrop on the first Canvas frame
+
+The worker now copies the already-materialized opaque viewport RGBA into the
+Canvas background surface before transferring the original buffer to the host.
+This avoids converting the same immutable Bend Image a second time on the first
+orbit. Canvas keeps its identity-based cache and existing rendering fallback.
+Commands, geometry, textures, picking, quality policy and the native source cone
+are unchanged. Construction and upload occur earlier, including for a user who
+never orbits; this trades a small startup allocation/upload for removing the
+later duplicate conversion.
+
+The source-bound build completed without compiler emission. Candidate build
+SHA256: `8659fb35eb8ed6138b52193c5f00e7db9f3ec61a4526138b06c9f5a42782adaf`.
+One real Windows/Chrome 156 first-orbit pair compared the preceding cache package
+with this candidate, using fresh 1280 x 800, DPR 1 contexts and one 24-point
+trusted right-drag each. Initial state and held Bend view matched. Held full
+RGBA and PNG bytes were identical; the held and settled images were inspected.
+There were no errors, failed requests or Canvas fallback. Original browser,
+serving, parent, streams and Job closed normally. Original result SHA256:
+`29aacb9b54adc92526dde5189db047e7dd358ff74f8974630d6014df7319decf`.
+Original terminal SHA256:
+`d1006a338b6c367919b29b231ab2ad27294baf8abc73da7750a438ba6f23f622`.
+
+The first Canvas frame now reports a background cache hit. Its background phase
+was 156.1 ms before and 0.5 ms after; the complete Canvas path was 306.7 ms and
+166.5 ms, and first consumed-input-to-draw latency was 316.6 ms and 261.8 ms.
+The complete Canvas-path timer also includes texture preparation, Bend command
+and picking work, composition and offer handling; it is not the sum of only
+the renderer's component timers. Overall fresh-motion input p95 was 316.6 ms
+and 320.4 ms, with five versus nine consumed frames. No overall motion gain is
+claimed. Public-ready time was 838.5 ms and 1054.5 ms; the explicit backdrop
+phase rose from 28.0 ms to 35.2 ms, while first authored completion was 2250.5 ms
+and 2252.2 ms. This uncontrolled sequential pair cannot attribute the larger
+startup difference to the change. Whole-pair Job peak memory was 1,418,571,776
+bytes; no per-candidate memory delta was measured.
+
+Independent source review found no correctness issue with copying before
+transfer, immutable identity, fallback or the updated boundary pin. Acceptance
+is limited to eliminating this duplicate first-Canvas conversion with matching
+pixels. No broad latency gain, 30% input improvement, 33.3 ms target, formal or
+native result, higher-resolution result or compiler adoption is established.
+No unchanged campaign, unit/integration suite or scenario matrix was added.
+The existing hosted preview remains at the preceding verified cache package.

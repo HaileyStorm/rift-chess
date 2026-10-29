@@ -817,6 +817,14 @@ async function emit(packet: any, elapsed: number, id: number,
     } catch {
       // A decorative surface must never prevent the playable frame.
     }
+    if (backdrop && typeof api.canvas_plan === 'function') {
+      try {
+        canvasPreview ??= new CanvasPreview(512);
+        canvasPreview.setBackground(motionBackdrop512, backdrop);
+      } catch {
+        // The viewport retains its bytes even if the optional Canvas upload fails.
+      }
+    }
   }
   if (backdrop) transfers.push(backdrop);
   self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,

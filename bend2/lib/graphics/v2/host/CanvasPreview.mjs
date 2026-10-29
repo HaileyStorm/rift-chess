@@ -101,6 +101,19 @@ export class CanvasPreview {
   return {textures:ordered.length,textureBuilds,textureCacheHits,textureMs:now()-started};
  }
 
+ /** RGBA must describe this exact immutable Image at the constructor's size.
+  * Copy before returning: the caller still owns and may transfer the buffer.
+  */
+ setBackground(image,rgba){
+  if(!(rgba instanceof ArrayBuffer)||rgba.byteLength!==this.#size*this.#size*4)throw new RangeError('Background must be a live full-size RGBA ArrayBuffer');
+  if(!image||!['Pix','Qua'].includes(image.$))throw new TypeError('Background requires an immutable Image');
+  if(this.#background?.image===image)return;
+  const data=this.#backgroundSurface.context.createImageData(this.#size,this.#size);
+  data.data.set(new Uint8ClampedArray(rgba));
+  this.#backgroundSurface.context.putImageData(data,0,0);
+  this.#background={image};
+ }
+
  #commands(commands){
   const result=[];let pointCount=0;
   const points=value=>{
