@@ -2,8 +2,10 @@
 
 The [application ring-room change](AUDIO_RING_20261029.md) passed one fresh Linux
 source check, C emission, CPU ELF link and package build. All original processes
-settled, and the fresh build claims were released. **The executable was not run;
-audio continuity and the mitigation's effect remain untested.**
+settled, and the fresh build claims were released. **The executable was not run
+in this build.** A [subsequent, separate CPU playback episode](NATIVE_AUDIO_R4_PLAYBACK_20261029.md)
+records one contiguous source-consistent move cue; the original build receipt
+remains build-only evidence.
 
 The exact source is commit `83ac95f58d59aa2944beddf216c504584cc7b29f`, tree
 `bf367d61af3f74c77691ee533867e4b749c148aa`. Its native closure changes only

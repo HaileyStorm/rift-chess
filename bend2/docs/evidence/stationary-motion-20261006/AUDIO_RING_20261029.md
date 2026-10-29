@@ -73,5 +73,7 @@ those exact historical bytes; the proposed current NativeV2 source is different.
 Private raw evidence remains retained outside this public document.
 
 The proposal subsequently [passed a fresh native CPU source/build](NATIVE_AUDIO_R4_BUILD_20261029.md).
-The resulting executable was not run in that build; playback and the mitigation's
-effect remain untested, and the original PCM findings above are unchanged.
+The resulting executable was not run in that build. A
+[separate r4 CPU playback episode](NATIVE_AUDIO_R4_PLAYBACK_20261029.md) subsequently
+recorded one complete contiguous move cue. That observation does not establish
+a causal fix or physical audibility; the original PCM findings above are unchanged.
