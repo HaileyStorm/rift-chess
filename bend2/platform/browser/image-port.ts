@@ -63,26 +63,41 @@ export class PixelPort {
         const rgba = this.littleEndian
           ? (0xff000000 | (color & 0xff00) | ((color >>> 16) & 255) | ((color & 255) << 16)) >>> 0
           : ((color << 8) | 255) >>> 0;
-        const right = Math.min(width, x + size), bottom = Math.min(height, y + size);
-        // Small leaves dominate detailed trees; scalar stores avoid thousands
-        // of two-element TypedArray.fill calls while preserving the same bytes.
-        if (size <= 2) {
-          for (let row = y; row < bottom; row++) {
-            for (let column = x; column < right; column++) pixels[row * width + column] = rgba;
-          }
-        } else {
-          for (let row = y; row < bottom; row++) pixels.fill(rgba, row * width + x, row * width + right);
+        // Detailed trees mostly end in one- or two-pixel cells. Write these
+        // directly; the outer bounds check already admits their top-left pixel.
+        if (size === 1) {
+          pixels[y * width + x] = rgba;
+          return;
         }
+        if (size === 2) {
+          const start = y * width + x;
+          pixels[start] = rgba;
+          if (x + 1 < width) pixels[start + 1] = rgba;
+          if (y + 1 < height) {
+            pixels[start + width] = rgba;
+            if (x + 1 < width) pixels[start + width + 1] = rgba;
+          }
+          return;
+        }
+        const right = Math.min(width, x + size), bottom = Math.min(height, y + size);
+        for (let row = y; row < bottom; row++) pixels.fill(rgba, row * width + x, row * width + right);
         return;
       }
       if (node.$ !== 'Qua' || size <= 1) throw new Error('Invalid Bend image tree');
       stats.quads++;
       const half = size / 2;
       // A prior uniform cell is the previous value of each new child too.
-      paint(node.tl, old?.$ === 'Qua' ? old.tl : old, x, y, half);
-      paint(node.tr, old?.$ === 'Qua' ? old.tr : old, x + half, y, half);
-      paint(node.bl, old?.$ === 'Qua' ? old.bl : old, x, y + half, half);
-      paint(node.br, old?.$ === 'Qua' ? old.br : old, x + half, y + half, half);
+      if (old?.$ === 'Qua') {
+        paint(node.tl, old.tl, x, y, half);
+        paint(node.tr, old.tr, x + half, y, half);
+        paint(node.bl, old.bl, x, y + half, half);
+        paint(node.br, old.br, x + half, y + half, half);
+      } else {
+        paint(node.tl, old, x, y, half);
+        paint(node.tr, old, x + half, y, half);
+        paint(node.bl, old, x, y + half, half);
+        paint(node.br, old, x + half, y + half, half);
+      }
     };
     // A failed traversal may have painted some pixels. Invalidate identity
     // reuse before it starts so the next valid frame repaints the whole extent.

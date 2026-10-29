@@ -39,8 +39,8 @@ const ports = {
     bareCounts: { Pix: 4, Qua: 4 } },
   'asset-port.ts': { sha256: '2a2927c81f5b652685ee2cacb0608b4a7b3eb528fffc8322eebeaad6a215d3e0',
     counts: {}, bareCounts: { Nil: 1, Con: 1 } },
-  'image-port.ts': { sha256: 'b6572c2d14902f36bb0833e9644ee7cad0672f0e540576e7f40a4e60fbaf974f',
-    counts: {}, bareCounts: { Pix: 3, Qua: 6 } },
+  'image-port.ts': { sha256: 'ade7731dddfe6b8d47fe6dee39200684bf1de0981846b47030532bc12c0385ef',
+    counts: {}, bareCounts: { Pix: 3, Qua: 3 } },
 };
 const definitions = {
   'bend2/ui/Types.bend': { sha256: 'd8f40447f58f9f825b9808128619c57a6cde14b3a67879e799c4fa9b3794c5ce',

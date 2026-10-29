@@ -77,3 +77,7 @@ No unit/integration suite or permutation matrix was introduced. Stable desktop
 and constrained performance, native current-source alignment, the original GPU
 criterion, broader owner visual acceptance and reviewed compiler adoption remain
 open. Accepted 2.0.27, immutable laws and runtime parallelism remain unchanged.
+
+The subsequent [image-copy/profile review](IMAGE_COPY_20261028.md) preserves this
+original failure, corrects profiler-startup attribution and identifies the
+remaining texture-sampling construction cost. It establishes no motion speedup.
