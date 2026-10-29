@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 
 const OFFICIAL = '79df8d9c40722ee9507a1e253f283b51025f9d6c';
 const CURRENT = '.artifacts/bend2/toolchain-patches/workers-2035-cli-r2/bend2';
+const LEGACY_HEAD = Object.freeze({ base: 'repository', path: 'bend2/laws/amendments/005-bend-2-0-27.json',
+  bytes: 3591, sha256: 'bc1ada63e4af9ae88c3e956f635657bffddc9f6a31cd604b42a602c8eb6c795c' });
+const LEGACY_PIN = Object.freeze({ base: 'repository', path: 'bend2/TOOLCHAIN.json',
+  bytes: 334, sha256: '17419db1617fece38c72dba9136463a313db43bf2c61f657334d9fdce0ae51a6' });
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const keys = (value, names) => assert.deepEqual(Object.keys(value).sort(), [...names].sort());
 const requiredAssurance = Object.freeze([
@@ -131,7 +135,30 @@ function identities(c, descriptor) {
     assert.equal(amendment.sequence, i + 1); assert.equal(amendment.parentSha256, parent);
     assert.equal(amendment.semanticMeaning, 'unchanged'); parent = sha(raw);
   }
-  return protectedPaths;
+  const amendmentHead = legacy.files.find(row => row.path === amendments[amendments.length - 1]);
+  assert.equal(amendmentHead.sha256, parent);
+  return { protectedPaths, predecessor: { sequence: amendments.length, amendment: amendmentHead },
+    toolchain: legacy.files.find(row => row.path === 'bend2/TOOLCHAIN.json') };
+}
+
+// The trusted record subject includes this successor declaration. Historical
+// chain traversal belongs only to deliberate adoption inspection below.
+function successorAmendment(record, descriptor, descriptorRef) {
+  const amendment = record.successorAmendment;
+  assert.ok(amendment, 'explicit successor amendment unresolved');
+  keys(amendment, ['schema', 'semanticMeaning', 'predecessor', 'preserved', 'transition']);
+  assert.equal(amendment.schema, 'rift-toolchain-successor-amendment/1');
+  assert.equal(amendment.semanticMeaning, 'unchanged');
+  keys(amendment.predecessor, ['sequence', 'amendment']);
+  assert.equal(amendment.predecessor.sequence, 5);
+  assert.deepEqual(amendment.predecessor.amendment, LEGACY_HEAD);
+  keys(amendment.preserved, ['legacyCreationInputs', 'toolchain']);
+  assert.deepEqual(amendment.preserved.legacyCreationInputs, descriptor.legacyCreationInputs);
+  assert.deepEqual(amendment.preserved.toolchain, LEGACY_PIN);
+  keys(amendment.transition, ['kind', 'descriptor']);
+  assert.equal(amendment.transition.kind, 'explicit-current35-v2-production-selection');
+  assert.deepEqual(amendment.transition.descriptor, descriptorRef);
+  return amendment;
 }
 
 function permittedSubstitutions(c, record, protectedPaths) {
@@ -167,13 +194,19 @@ function assuranceReferences(record) {
 // may be used by the owning adoption review, never imported/executed here.
 export function inspectAdoptionInputs({ repositoryRoot, packetRoot, descriptorRef, adoptionRef = null }) {
   const c = context(repositoryRoot, packetRoot), descriptor = c.json(descriptorRef);
-  const protectedPaths = identities(c, descriptor);
+  const legacy = identities(c, descriptor);
   if (adoptionRef) {
     const record = c.json(adoptionRef);
     assert.equal(record.schema, 'rift-toolchain-adoption/2');
     assert.deepEqual(record.descriptor, descriptorRef);
     assert.deepEqual(record.historicalAuthorities, descriptor.legacyCreationInputs);
-    permittedSubstitutions(c, record, protectedPaths);
+    const amendment = successorAmendment(record, descriptor, descriptorRef);
+    assert.deepEqual(amendment.predecessor, legacy.predecessor);
+    assert.deepEqual(amendment.preserved.toolchain, legacy.toolchain);
+    const pin = c.json(legacy.toolchain);
+    assert.equal(pin.bendVersion, '2.0.27');
+    assert.equal(pin.bendCommit, 'd37909174ebd664338ae3194799a9e0899dedd51');
+    permittedSubstitutions(c, record, legacy.protectedPaths);
     for (const reference of assuranceReferences(record)) c.ref(reference);
   }
   c.finish();
@@ -258,6 +291,7 @@ export function resolveActive({ repositoryRoot, packetRoot, descriptorRef, adopt
   assert.equal(review.reviewer, '01a1124e-8f2a-7aa0-891d-6ef073d7aee8');
   assert.equal(review.descriptorSha256, descriptorRef.sha256);
   assert.equal(review.recordSubjectSha256, reviewSubjectSha256(record));
+  successorAmendment(record, descriptor, descriptorRef);
   // Assurance applicability is covered by the trusted reviewed record subject.
   // Inspecting receipt bytes belongs to adoption review, not every build.
   assuranceReferences(record);
