@@ -41,6 +41,15 @@ const opaqueBoardPort = new OpaqueBoardPort();
 let canvasPreview: CanvasPreview | null = null;
 let canvasTexturePieces: any = null;
 let canvasMetrics: any = null;
+type RequestTiming = { timeOrigin: number; arrivedAt: number; handlerStartedAt: number };
+
+function prepareCanvasTextures(pieces: any): any {
+  canvasPreview ??= new CanvasPreview(512);
+  if (canvasTexturePieces === pieces) return { texturesReused: true };
+  const metrics = canvasPreview.setTextures(values(api.canvas_textures(pieces)));
+  canvasTexturePieces = pieces;
+  return metrics;
+}
 // Raw transfer is the measured default. The optional ImageBitmap surface is
 // enabled only by an explicit host profile promotion at boot.
 let bitmapSurface = new BitmapSurface(false);
@@ -353,6 +362,21 @@ function ensureSpriteHelper(): void {
         sendToAcceptanceMs: epoch - message.metrics.sendEpochMs,
         quietWindowMs: pending.quietWindowMs,
         roundTripMs: received - pending.at };
+      // Make this accepted pose ready for its first orbit before offering the
+      // authored refinement. This moves conversion into detail readiness; it
+      // does not remove its startup cost or change textures/picking. A held
+      // orbit keeps its existing path rather than inserting preparation work.
+      if (!cameraOrbiting && typeof api.canvas_plan === 'function' &&
+          api.canvas_supported(current.snapshot.frame)) {
+        const preparationStart = performance.now();
+        try {
+          spriteMetrics.canvasPreparation = prepareCanvasTextures(pose.pieces);
+        } catch (error) {
+          // Canvas is optional; keep the accepted authored painter available.
+          spriteMetrics.canvasPreparation = { fallback: String(error) };
+        }
+        spriteMetrics.canvasPreparationMs = performance.now() - preparationStart;
+      }
       await emitSpriteRefinement(pending.frame, pending.revision);
     }).catch(error => spriteFault(String(error)));
   });
@@ -625,13 +649,10 @@ function render(packet: any): any {
       typeof api.canvas_plan === 'function' && api.canvas_supported(frame)) {
     try {
       const began = performance.now();
-      canvasPreview ??= new CanvasPreview(512);
-      const textureMetrics = canvasTexturePieces === preview.pieces ? { texturesReused: true } :
-        canvasPreview.setTextures(values(api.canvas_textures(preview.pieces)));
-      canvasTexturePieces = preview.pieces;
+      const textureMetrics = prepareCanvasTextures(preview.pieces);
       const commands = api.canvas_plan(frame);
       const canvasPick = api.canvas_pick_state(commands, preview.pieces);
-      const result = canvasPreview.render(commands, motionBackdrop512);
+      const result = canvasPreview!.render(commands, motionBackdrop512);
       const rect = plan.board;
       if (!rect || rect.width !== boardSize || rect.height !== boardSize)
         throw new Error('Bend board placement does not match its render tier');
@@ -766,7 +787,8 @@ async function ensureFont(): Promise<void> {
   await fontLoad;
 }
 async function emit(packet: any, elapsed: number, id: number,
-  kind: 'frame' | 'refinement' = 'frame', botExecution: BotExecution | null = null): Promise<void> {
+  kind: 'frame' | 'refinement' = 'frame', botExecution: BotExecution | null = null,
+  requestTiming: RequestTiming | null = null): Promise<void> {
   const portStart = performance.now();
   session = packet.session;
   assetTimes = { plateTransport: 0, plateDecode: 0, fontTransport: 0, fontDecode: 0 };
@@ -827,17 +849,23 @@ async function emit(packet: any, elapsed: number, id: number,
     }
   }
   if (backdrop) transfers.push(backdrop);
-  self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,
+  const response = { kind, id, image, bitmap, width: packet.width, height: packet.height,
     backdrop, backdropMs: performance.now() - backdropStart,
     renderTheme: packet.render.theme,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: playPortMs, pixelMs, audioMs,
     treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, canvasMetrics, botExecution,
-    pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
+    pixelStats: { ...pixelPort.lastStats },
+    requestTiming: requestTiming ? { ...requestTiming, publishAt: 0 } : null };
+  // Relative to this Worker's timeOrigin, after response construction and
+  // immediately before postMessage; cloning/delivery are outside this span.
+  if (response.requestTiming) response.requestTiming.publishAt = performance.now();
+  self.postMessage(response, { transfer: transfers });
 }
-async function handleMessage(request: any): Promise<void> {
+async function handleMessage(request: any, arrivedAt: number): Promise<void> {
   const start = performance.now();
+  const requestTiming = { timeOrigin: performance.timeOrigin, arrivedAt, handlerStartedAt: start };
   const wasOrbiting = cameraOrbiting;
   try {
     if (request.kind === 'retire-atlas-masks') {
@@ -910,7 +938,7 @@ async function handleMessage(request: any): Promise<void> {
     }
     cameraOrbiting = orbiting;
     observeBotJob(api.bot_job(packet.session));
-    await emit(packet, performance.now() - start, request.id, 'frame', appliedBot.execution);
+    await emit(packet, performance.now() - start, request.id, 'frame', appliedBot.execution, requestTiming);
     latestPacket = packet;
     lastHostId = request.id;
     scheduleSprite(packet, cameraReleased);
@@ -924,7 +952,8 @@ async function handleMessage(request: any): Promise<void> {
 // but serialize here too: asset awaits and async render work must not let an
 // older request overwrite a newer Bend session or retained image cache.
 self.addEventListener('message', event => {
+  const arrivedAt = performance.now();
   const request = (event as MessageEvent).data;
-  messageQueue = messageQueue.then(() => handleMessage(request));
+  messageQueue = messageQueue.then(() => handleMessage(request, arrivedAt));
 });
 self.postMessage({ kind: 'ready', keys: [api.storage_key(0), api.storage_key(1), api.storage_key(2)], maxFileBytes: api.max_file_bytes() });
