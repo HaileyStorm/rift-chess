@@ -8,18 +8,6 @@ import { config, at, capture, git, loadHelpers, memoryAdmission, containmentSnap
   write, writeJson, FLAGS, OUTPUT, bindNativeTools, syncDirectory } from './binding.mjs';
 
 const TIMEOUT = 600_000;
-const PROBE = `#define _GNU_SOURCE 1
-#include <X11/Xlib.h>
-#include <alsa/asoundlib.h>
-int main(int argc, char **argv) {
-  if (argc == 2147483647) {
-    (void)XOpenDisplay(argv[0]);
-    snd_pcm_t *pcm = 0;
-    return snd_pcm_open(&pcm, "default", SND_PCM_STREAM_PLAYBACK, 0);
-  }
-  return 0;
-}
-`;
 const jsonProcess = r => ({ ...r, stdout: r.stdout?.toString('utf8'), stderr: r.stderr?.toString('utf8') });
 function environment(run) {
   return { PATH: '/usr/bin:/bin', HOME: path.join(run, 'home'), TMPDIR: path.join(run, 'tmp'),
@@ -126,7 +114,7 @@ export async function buildNativeCpu() {
   assert.equal(fs.existsSync(path.join(output, `${b.runName}.intent.json`)), false, 'STOP: one-use build intent already exists');
   assert.equal(fs.existsSync(path.join(output, b.runName)), false, 'STOP: fixed build output already exists');
   const lockPath = path.join(output, 'active-native-cpu.lock');
-  let lease, run, stage = 'lease', firstMemory, finalContainment, worker, link, probe, version;
+  let lease, run, stage = 'lease', firstMemory, finalContainment, worker, link;
   let emissionAttempted = false, clangLinkAttempted = false, lockPreserved = false;
   try {
     lease = h.lifecycle.acquireOwnedLock(lockPath, JSON.stringify({ schema: 'rift-current99-native-cpu-lease/1',
@@ -143,16 +131,6 @@ export async function buildNativeCpu() {
     stage = 'initial-memory-admission'; firstMemory = memoryAdmission(h.aggregate, 'before-application-load');
     writeJson(path.join(run, 'initial-memory.json'), firstMemory);
     const linker = { ...b, clang: before.clang };
-    stage = 'clang-version'; version = await clang(h, linker, run, 'clang-version', ['--version']);
-    // Original byte streams are already durably saved; reject invalid UTF-8 in
-    // the version protocol rather than parsing replacement-character text.
-    const clangMajor = h.assets.parseClangVersion(new TextDecoder('utf-8', { fatal: true })
-      .decode(Buffer.concat([version.stdout, version.stderr])));
-    stage = 'x11-alsa-headers-link';
-    const probeFile = path.join(run, 'x11-alsa-probe.c'); write(probeFile, PROBE);
-    probe = await clang(h, linker, run, 'x11-alsa-probe', ['-std=c11', '-O0', '-x', 'c', probeFile,
-      '-lpthread', '-lm', '-lX11', '-lasound', '-o', path.join(run, 'x11-alsa-probe')]);
-    assert.equal(read(probeFile).bytes.toString('utf8'), PROBE);
     stage = 'application-load-and-c-emission'; emissionAttempted = true;
     worker = await emissionWorker(h, before, run, runIdentity, firstMemory.leaf.identity);
     writeJson(path.join(run, 'worker-success.json'), worker);
@@ -183,10 +161,10 @@ export async function buildNativeCpu() {
     assert.deepEqual(read(path.join(pkg, 'run-native-v2.sh')).identity, shell);
     stage = 'final-containment-snapshot';
     finalContainment = containmentSnapshot(h.aggregate, 'final-before-receipt-and-lock-release', firstMemory.leaf.identity);
-    const receipt = { schema: 'rift-current99-native-cpu-package/1', passed: true,
+    const receipt = { schema: 'rift-current99-native-cpu-package/2', passed: true,
       before, after: before, emissionAttempted, clangLinkAttempted,
       memoryAdmissions: [firstMemory, worker.admission], containment: finalContainment, worker,
-      clang: { major: clangMajor, version: jsonProcess(version), dependencyProbe: jsonProcess(probe), link: jsonProcess(link) },
+      clang: { link: jsonProcess(link) },
       binary: { ...binary.identity, elf }, sourceC: worker.emitted, assets: { original: assets, staged }, launcher: shell,
       parent: { pid: process.pid, resourceLimits: { ...resourceLimits }, execArgv: [...process.execArgv] },
       scope: 'one actual current99 event-overlay application load/book_valid/C emission, CPU ELF link and asset staging; no ELF invocation, GUI/input/PCM/restart/GPU/performance/formal-proof/pin-adoption claim' };

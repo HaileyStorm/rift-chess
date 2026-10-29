@@ -137,7 +137,7 @@ compiler's `file_book`, reached by `compile_book` on real main/runtime roots,
 checks compiler-owned names and constructor/foreign-name collisions. No empty-root
 JS emission is used as a synthetic guard; C emission is not a formal proof claim.
 
-Containment and growth-reserve checks run before the first Clang command and
+Containment and growth-reserve checks run before application loading and
 immediately before C emission in the Worker. The unchanged
 init-cgroup-namespace/full-ancestry helper verifies namespace and mount visibility.
 The actual self leaf must be the fixed unit in the current UID's systemd user
@@ -164,10 +164,13 @@ after work has finished. Failure snapshots are retained when readable. The exter
 native observer owns unit freshness, whole-service exit/OOM evidence and failures
 that kill this producer; no OOM result is acceptance.
 
-X11/ALSA headers and link dependencies are compiled before expensive application
-emission. The dependency source defines `_GNU_SOURCE` before those headers, matching
-the generated program. Clang 14+ is required. The dependency probe binary is not
-executed. Compilation uses the existing CPU flags and scheduling behavior.
+The actual generated application is the only Clang compilation. Its real link
+exercises the consumed X11/ALSA headers, libraries and symbols with the existing
+CPU flags and scheduling. The resolved, reviewed Clang executable is bound by
+path, bytes and filesystem identity; its hash is checked around that original
+child. There is no version-only subprocess, version-text parser or dummy
+dependency source/binary. Missing dependencies now fail at the real application
+link, after C emission, instead of at a preliminary diagnostic compile.
 
 The fixed output root has one `active-native-cpu.lock`. The run directory and
 `<runName>.intent.json` are created exclusively; intent remains permanently after
@@ -177,10 +180,20 @@ existing owned-process-group supervisor with original exit, bounded streams and
 group-quiescence checks. Its bounded ownership-aware timeout/settlement policy
 is retained; unknown liveness is reported, not treated as completion.
 Exclusive writes fsync both their files and containing directories; new output
-directories fsync their parents before launch. Clang version, dependency and link
-commands retain original raw stdout/stderr byte files with identities in process
-records and receipts, including partial supervisor results on failure. Decoded
-text is human metadata; version parsing rejects invalid UTF-8 after saving bytes.
+directories fsync their parents before launch. The actual Clang link retains
+original raw stdout/stderr byte files with identities in process records and
+receipts, including partial supervisor results on failure. Decoded text is human
+metadata; original bytes remain authoritative.
+
+Future successful package receipts use `rift-current99-native-cpu-package/2` and
+retain only `clang.link`; the bound executable remains in `before.clang`. Version
+and dummy-probe receipt fields and outputs are retired. Consumed r1–r4 copies,
+bindings, `/1` receipts, collectors and probe records stay unchanged. A future
+fresh source/run binding and its owning collector must use the new receipt shape;
+this cleanup authorizes no replay, migration or rebuild of accepted output. The
+shared asset helper's version-parser export remains for its other historical
+callers. No compiler, Base/effect input, law, ownership, resource or original-process
+settlement obligation changes.
 
 Success returns the package receipt path and identity. Failure returns its exact
 reason, retained failure receipt where writable, lock state and liveness flag.
