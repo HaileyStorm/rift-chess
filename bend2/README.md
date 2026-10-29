@@ -1,6 +1,6 @@
 # Rift Chess — the Bend2 experiment
 
-[Play the Bend2 preview](https://haileystorm.github.io/rift-chess-bend2/) ·
+[Play the current Bend2 candidate](https://haileystorm.github.io/rift-chess-bend2/preview-20261028/) ·
 [Play the original game](https://haileystorm.github.io/rift-chess/)
 
 This is a separate, playable adaptation of Rift Chess. It does not replace the
@@ -17,12 +17,21 @@ published piece/wall scene and do not prove native parity for later source. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The public Bend link serves build `e788562833af84fd6840` from clean source
+The current candidate preview is build `8fcc17dc6f5bc0d8f9c0`, deployed at
+`preview-20261028/` in the separate Bend site. It includes the reviewed knight
+set and edge feedback: piece selection keeps its edge highlight; movable tiles
+use amber outer edges; selection circles and blue chasm circles are removed.
+Bend 2.0.35 is still a candidate. The accepted 2.0.27 compiler and its frozen
+creation inputs remain unchanged while native/GPU, performance and adoption
+work continues. See the [current review](docs/REVIEW_2026-10-05.md) and
+[edge-feedback evidence](docs/evidence/stationary-motion-20261006/EDGE_FEEDBACK_20261028.md).
+
+The older site-root release serves build `e788562833af84fd6840` from clean source
 `9d4a532`, with a board-first
 menu, source-bound 8-bit font pack, an explicit Bend bot WebWorker library,
-and a separate Bend-rendered sprite helper. Run
-`node bend2/tools/bend.mjs --run bend2/tools/build.ts --v2-preview`
-and `node bend2/tools/serve.mjs 4185 --v2-preview` to inspect it locally.
+and a separate Bend-rendered sprite helper. The 2.0.27 build and cache tools
+below describe that historical release; they do not rebuild the current
+2.0.35 candidate.
 The [compact-motion checkpoint](docs/evidence/v2-motion-compact/README.md)
 is historical; the current preview also has clipped camera-facing wall faces,
 shorter and lower-set authored pieces, warmer exposed sides, a one-entry
@@ -81,7 +90,25 @@ The frozen manifest and independent review receipts are in
 [`laws/semantic-v2.json`](laws/semantic-v2.json) and
 [`docs/evidence/laws-v2/`](docs/evidence/laws-v2/).
 
-## Build and verify
+## Current build and validation
+
+Use [the validation policy](../docs/VALIDATION.md): zero active unit/integration
+tests, minimal real E2E journeys and unchanged formal proofs. Reuse compatible
+proof and application evidence. `npm test`, the legacy readiness aggregator,
+library font/raster suites and old scenario matrices are retired commands.
+Their retained source and receipts remain provenance.
+
+The current candidate packaging entrypoint is
+`toolchain-patches/2035/build-preview.mjs`. It consumes explicitly bound Bend
+emissions and assets; packaging does not compile the game or establish new
+proof, native or device acceptance. Root owns its selected inputs and build
+lease. A reviewed successor production route is being prepared; do not change
+`TOOLCHAIN.json` or point the old loaders at the candidate compiler.
+
+The root npm build/dev/desktop/package commands continue to select the original
+TypeScript application. They do not build this Bend experiment.
+
+## Retained 2.0.27 creation toolchain
 
 This experiment lives in the main Rift Chess checkout, beside the original
 TypeScript game (branch `codex/visual-overhaul`). The compiler is pinned in
@@ -91,7 +118,7 @@ with no tracked changes, and a portable Bun 1.4.2. `BUN_BIN` can point to that
 runtime. The Windows development setup uses the official
 `@oven/bun-windows-x64@1.4.2` package in the ignored
 `.artifacts/toolchains/runtime` directory. Browser players need neither tool.
-On a fresh checkout:
+The retained creation layout was established with:
 
 ```powershell
 git clone https://github.com/bendlang/bend .artifacts/toolchains/bend
@@ -99,20 +126,7 @@ git -C .artifacts/toolchains/bend checkout d37909174ebd664338ae3194799a9e0899ded
 npm install --prefix .artifacts/toolchains/runtime @oven/bun-windows-x64@1.4.2
 ```
 
-Run these from the **repository root**, not from `bend2/`:
-
-```text
-node bend2/tools/amend.mjs
-node bend2/tools/freeze-v2.mjs
-node bend2/tools/verify.mjs
-node bend2/core/v2/check.mjs
-node bend2/tools/mutate-v2.mjs
-node bend2/tools/verify-library.mjs --check
-node bend2/tools/bend.mjs --run bend2/tools/build.ts
-node bend2/tools/serve.mjs 4184
-```
-
-`amend.mjs` verifies the reviewed amendment chain in `laws/amendments/`. Frozen
+`amend.mjs` verifies the historical amendment chain in `laws/amendments/`. Frozen
 manifests are never rewritten; a compiler pin move, a change to a frozen tool
 under `tools/` or a prose correction to a frozen document (other than the change
 policy) is recorded there with its own receipts and
@@ -122,9 +136,9 @@ of `docs/LAWS_V2.md` (the 2.0 text is preserved in `docs/history/`); amendment
 003 moved the compiler to `6a77e12` (Bend 2.0.26); amendment 005 moves it to
 `d379091` (Bend 2.0.27). Law,
 proof, implementation, fixture and reference bytes cannot be amended; they need
-a new semantic version under the change policy. To move the compiler, follow
-"Updating the Bend toolchain" in the local guide. The root `npm test` excludes
-`bend2/**` and `.artifacts/**`.
+a new semantic version under the change policy. A compiler transition still
+requires the reviewed amendment procedure; the historical creator's retired
+test-receipt shape is not a reason to revive those suites or manufacture passes.
 
 The preview is then `http://127.0.0.1:4184/`. The browser distribution is
 `bend2/dist/`. Its scripts and stylesheet have content-based names, and its own
@@ -137,7 +151,7 @@ game's offline navigation fallback would intercept an experimental subdirectory,
 so nesting the preview beneath `/rift-chess/` is deliberately avoided. Its
 deployment repository contains only generated files and a source link.
 
-The normal build checks both semantic freezes and the exact proved Kernel and
+The historical build checks both semantic freezes and the exact proved Kernel and
 proof witnesses. `--draft` is for local iteration before a new reviewed
 attestation, not for a published acceptance claim. Full proof normalization can
 take a couple of minutes with the pinned young checker. The proof runner uses a
