@@ -61,12 +61,12 @@ function textureShape(texture){
 }
 
 export class CanvasPreview {
- #size;#frame;#backgroundBuffer;#background=null;
+ #size;#frame;#backgroundBuffer;#backgroundSurface;#background=null;
  #textures=[];#records=new Map();
 
  constructor(size=512){
   this.#backgroundBuffer=new ImageBuffer(size);
-  this.#size=size;this.#frame=surface(size,true);
+  this.#size=size;this.#frame=surface(size,true);this.#backgroundSurface=surface(size,true);
   if(typeof this.#frame.canvas.transferToImageBitmap!=='function')throw new Error('Canvas preview requires transferable ImageBitmap frames');
  }
 
@@ -140,11 +140,12 @@ export class CanvasPreview {
   const backgroundStarted=now();
   if(!metrics.backgroundCacheHit){
    this.#backgroundBuffer.write(background);
-   const data=color.createImageData(size,size);data.data.set(this.#backgroundBuffer.bytes);
-   this.#background={image:background,data};
+   const data=this.#backgroundSurface.context.createImageData(size,size);data.data.set(this.#backgroundBuffer.bytes);
+   this.#backgroundSurface.context.putImageData(data,0,0);
+   this.#background={image:background};
   }
   color.setTransform(1,0,0,1,0,0);color.globalCompositeOperation='source-over';color.globalAlpha=1;color.imageSmoothingEnabled=false;
-  color.putImageData(this.#background.data,0,0);
+  color.drawImage(this.#backgroundSurface.canvas,0,0);
   metrics.backgroundMs=now()-backgroundStarted;
   const drawStarted=now();
   for(const command of parsed){

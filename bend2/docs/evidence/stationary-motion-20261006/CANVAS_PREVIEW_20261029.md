@@ -148,3 +148,36 @@ renderer optimization or another unchanged timing repeat. All original browser,
 parent, stream, server and Job handles closed; no errors or Canvas fallback
 occurred. Original terminal SHA256:
 `8b702d6f4cd4c558d9faa93b16b5d2d50c0b2c0e48e51e1b25dc04250b673010`.
+
+## Cache the immutable background surface
+
+The Canvas renderer now uploads a changed Bend background once to a retained
+opaque surface and draws that surface into each new frame. It previously used
+`putImageData` on the drawing surface every frame. Logical size, commands,
+textures, sampling, picking and bitmap ownership remain unchanged.
+
+One real Windows/Chrome 156 application pair compared the preceding shared-UI
+package with this change. Both used a fresh context and the same trusted
+24-point right-drag. The held Bend view matched, and the full captured RGBA and
+PNG were byte-identical. There were no errors, request failures or Canvas
+fallbacks. All original browser, serving, parent and Job handles settled.
+Candidate build SHA256:
+`97ad0d4556136c92ffa5e33d359129500e222b96104cdc2e7b18ff5a0d09cad2`.
+Original result SHA256:
+`561794263281f64d1256749cb65995d9336affc7753a22eac9c050ed52178009`.
+Original terminal SHA256:
+`230c3681793e75d776ef57186c0678506a6b67b79f825cf5346920bba03c9c0a`.
+
+For frames reusing the background, background-copy p95 was 5.9 ms before and
+0.3 ms after; command drawing p95 was 15.9 ms and 1.1 ms. There were 12 baseline
+and 23 candidate cache-hit frames. For requests actually consuming a fresh
+trusted right-drag move, worker preparation p95 was 158.2 ms and 3.1 ms,
+and consumed-input-to-draw-end p95 was 521.2 ms and 50.8 ms. These subsets exclude
+release frames that merely retain an older move ID. The earlier private derived
+summary's `workerRenderMs` field incorrectly named controller dispatch time;
+the later timing review corrects that interpretation without changing originals.
+
+This is one uncontrolled sequential pair with different input coalescing. It
+does not establish stable FPS, delivery cadence, a browser backend change or
+the 33.3 ms motion target. The held and settled images were inspected. No
+unchanged campaign, unit/integration suite or scenario matrix was added.

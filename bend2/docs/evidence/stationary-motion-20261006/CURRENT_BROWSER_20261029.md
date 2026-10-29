@@ -1,5 +1,9 @@
 # Current Canvas browser acceptance
 
+This records the original functional package. The later shared-layout and
+viewport update has its own [UI evidence](UI_UX_20261029.md); the compatible
+functional results below are retained with their exact original scopes.
+
 The package bound by SHA256
 `b214430598fba583d9a9a45f4a5a7605afdad38ebd08ae34b46eeb59396adb7d`
 completed the remaining functional browser obligations through real public UI.
@@ -41,6 +45,36 @@ The separate [Canvas picking/motion evidence](CANVAS_PREVIEW_20261029.md) retain
 the actual displayed-frame g1 selection/deselection and paired motion improvement.
 The 33.3 ms motion planning target remains open. No physical-device, stable
 performance, human WOW, proof, native or compiler-adoption claim follows here.
+
+## Worker applicability to current99
+
+The retained bot is an actual application witness, not a claim that it was newly
+emitted through current99's CLI. Its source binding SHA256 is
+`e33380e50eda1db29c5ba4526de408f9fdcb3aa95356c75e3e390eaf84581363`.
+Comparison of its 98-file compiler inventory with current99 found only changed
+`main.ts` and added `worker_output.ts`. Relevant `bend.ts`, `comp.ts` and
+`web_runtime.js` match the bot binding, as do its five game sources, three
+creation tools and three loader dependencies. All five emitted bot artifacts
+match the actual browser package. No Worker-backend change was found in that
+CLI-only delta.
+
+The original online/cold-offline application witness has terminal SHA256
+`06065d783e9537964fdc69c04e1855320b045e40a70b070670b1fc7e2e21219c`:
+choices `[3980,20065]`, authentic nested jobs/results through both helpers in
+each phase, saved-position reload and normal original-process settlement.
+The current r2 prefix additionally establishes displayed Shift20825 followed by
+bot20065 and actual bot Worker scripts served. Its complete receipt remains
+failed for the later cache issue described above.
+
+Compatible retained semantic receipts are runtime
+`75b73293641b005fbe811e4bf14ba06e60f8b48f2cc5976380cc9b8addd185e4`, compiler
+`fd8a249e510132e6d7250da5e1e1cbb7f4719c31f13f5bc865ca5e23006bc933` and
+creation-stage reconciliation
+`a4c67847873605c840c992393abe1233095f21d2813fb20c2cf948ddee55dde5`.
+These are scoped finite controls and application execution. General fork/cap
+correctness remains unproved; no Worker receipt substitutes for a kernel verdict.
+The historical 107-case inventory is neither a completion quota nor a fresh
+backlog. This unchanged backend does not justify another matrix or bot emission.
 
 ## Experimental publication
 
