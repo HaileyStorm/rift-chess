@@ -71,3 +71,7 @@ claimed. The historical compiler/runtime and failed RMS result remain preserved.
 The script's original-source hash checks must remain intact. Reproduction needs
 those exact historical bytes; the proposed current NativeV2 source is different.
 Private raw evidence remains retained outside this public document.
+
+The proposal subsequently [passed a fresh native CPU source/build](NATIVE_AUDIO_R4_BUILD_20261029.md).
+The resulting executable was not run in that build; playback and the mitigation's
+effect remain untested, and the original PCM findings above are unchanged.
