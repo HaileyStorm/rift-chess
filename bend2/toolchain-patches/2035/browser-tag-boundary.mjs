@@ -20,14 +20,14 @@ const map = Object.freeze({
   OpenUrl: 'ui/Types.OpenUrl', Exit: 'ui/Types.Exit',
 });
 const ports = {
-  'host.ts': { sha256: '0ae5360b82f92b158176ec51cb7714e2a2f93548f3ce2b88d67f3de968417be7',
+  'host.ts': { sha256: '94bcafdce209616254301f0cb04920c2400dea982da6bfda3698fbe590768c5f',
     counts: { QualityProbe: 1, Tick: 1, Activate: 1, PickFile: 1, PointerDown: 1,
       PointerMove: 1, PointerUp: 2, Wheel: 1, KeyInput: 1, Resize: 1 } },
   'ports.ts': { sha256: '9c13b291476f33a1c2f832fbe73538ea1018fe0d69a1db66ae7918f49dae7244',
     counts: { PortError: 4, FileText: 1, Store: 1, Download: 1, PickFile: 1, Sound: 1, OpenUrl: 1, Exit: 1 } },
   'input-queue.ts': { sha256: '8f1a4124e0387bc7b532a96d92e6f13293effe5259f6f46de2015006ab463d31',
     counts: { PointerMove: 2 } },
-  'worker-v2.ts': { sha256: '9b1e16861c908b3aa038affe4974e58996894f8363572e50edae14b7a822edf7',
+  'worker-v2.ts': { sha256: 'fe30799b7fe7b96d1b1811f9f25707c7efef6716a887f9a87531748ccb36e183',
     counts: { Pieces: 1, ObservatoryPlates: 1, Ready: 1, Sound: 2 },
     leafCounts: { PointerDown: 1, PointerMove: 1, PointerUp: 1, Wheel: 1, KeyInput: 1 },
     bareCounts: { Con: 2, Nil: 1, Pix: 1, Qua: 1, Some: 1 } },

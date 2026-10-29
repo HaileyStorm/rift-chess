@@ -121,10 +121,30 @@ The actual motion and detail frames were inspected. Candidate motion p95 was
 and detailed arrival was 1,000.3 ms versus 1,811.6 ms. The candidate consumed all
 48 trusted moves and presented 48 measured motion frames. This uncontrolled pair
 does not establish stable performance; the 33.3 ms planning target remains open.
-No unchanged-source timing repeat was added. Original terminal SHA256:
+That pair was not repeated with the same driver. Original terminal SHA256:
 `85d920f79ae587eef5b6e041cbcb10d0301510e9be6ee3b0f42c72073faefb92`.
 
 The first attempt was denied a localhost connection by the sandbox (`EACCES`)
 before any app request. It settled normally and remains preserved; the completed
 journey used permitted local networking. All browser, serving and parent handles
 from both attempts closed normally. No unit/integration tests were introduced.
+
+## Input-pacing limitation
+
+Reading the original current-package recording separated rendering cost from
+offered input cadence: the 48 motion frames had worker-rendering p95 16.4 ms and
+request-to-presentation p95 26.2 ms, while trusted pointer spacing was 42.8 ms p95.
+The driver awaited each mouse action's acknowledgment before dispatching the next.
+This does not attribute the 42.4 ms presentation cadence to renderer throughput.
+
+One bounded candidate-only observation used the existing independently scheduled
+mouse-promise form against this exact package. All 48 original promises settled
+before release, but Chrome delivered 38 trusted moves and 21 consumed/presented
+batches. Actual trusted spacing was 49.0 ms p95 and observer arrival spacing
+51.3 ms; the intended 16 ms delivery was not established. Presentation cadence was
+74.2 ms p95, consumed-input latency 112.4 ms and detailed arrival 1,249.3 ms.
+The 33.3 ms motion target remains open. These data do not justify a specific
+renderer optimization or another unchanged timing repeat. All original browser,
+parent, stream, server and Job handles closed; no errors or Canvas fallback
+occurred. Original terminal SHA256:
+`8b702d6f4cd4c558d9faa93b16b5d2d50c0b2c0e48e51e1b25dc04250b673010`.

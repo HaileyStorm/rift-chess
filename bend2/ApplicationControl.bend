@@ -198,18 +198,18 @@ def viewport(+scale: U32, +board_depth: Nat, mobile: Bool) -> ChromePlan.Viewpor
 def compact.top(+id: U32) -> Bool:
   Bool.or(U32.is_eq(id,1),Bool.or(U32.is_eq(id,2),U32.is_eq(id,27)))
 
-def compact.play(+id: U32, +has_destinations: Bool) -> Bool:
-  # Layout replaces overflowing destination buttons with MOVES (47). Keep
-  # that opener even when destinations exist; otherwise the compact pane is
-  # empty and its legal choices become inaccessible from the controls.
-  Bool.or(compact.top(id),Bool.or(ChromePlan.dest_id(id),
-    Bool.or(U32.is_eq(id,47),Bool.and(Bool.not(has_destinations),
-      Bool.or(U32.is_eq(id,3),Bool.or(U32.is_eq(id,5),U32.is_eq(id,55)))))))
+def compact.play(+id: U32, +enabled: Bool) -> Bool:
+  # Layout supplies actual destinations or its overflow opener, never both.
+  Bool.or(U32.is_eq(id,3),Bool.or(ChromePlan.dest_id(id),
+    Bool.or(U32.is_eq(id,47),Bool.and(enabled,
+      Bool.or(U32.is_eq(id,4),U32.is_eq(id,5))))))
 
-def compact.show(+menu: U32, +id: U32, +has_destinations: Bool) -> Bool:
-  Bool.pick(Bool,U32.is_zero(menu),compact.play(id,has_destinations),
-    Bool.pick(Bool,Bool.or(U32.is_eq(menu,3),U32.is_eq(menu,7)),
-      True{},Bool.not(compact.top(id))))
+def compact.show(+menu: U32, +id: U32, +enabled: Bool) -> Bool:
+  match menu:
+    case 0: compact.play(id,enabled)
+    case 12:
+      Bool.or(Bool.not(Bool.and(U32.is_ge(id,6),U32.is_le(id,10))),enabled)
+    case _: Bool.not(compact.top(id))
 
 def compact.include(show: Bool, head: T.Control,
   rest: List<&2,T.Control>) -> List<&2,T.Control>:
@@ -217,24 +217,19 @@ def compact.include(show: Bool, head: T.Control,
     case True{}: head <> rest
     case False{}: rest
 
-def compact.filter(controls: List<&2,T.Control>, +menu: U32,
-  +has_destinations: Bool) -> List<&2,T.Control>:
+def compact.filter(controls: List<&2,T.Control>, +menu: U32) -> List<&2,T.Control>:
   match controls:
     case Nil{}: []
     case +head <> tail:
       +id = T.control_id(head)
-      +rest = compact.filter(tail,menu,has_destinations)
-      compact.include(compact.show(menu,id,has_destinations),
+      +rest = compact.filter(tail,menu)
+      compact.include(compact.show(menu,id,T.control_enabled(head)),
         T.Control{id,T.control_label(head),T.control_bounds(head),
           T.control_enabled(head),T.control_active(head)},rest)
 
-def compact.openers(has_destinations: Bool, +snapshot: T.Snapshot) -> List<&2,T.Control>:
-  match has_destinations:
-    case True{}: []
-    case False{}:
-      [Layout.control(47,T.Rect{0,0,1,1},snapshot,False{}),
-        T.Control{56,"VIEW",T.Rect{0,0,1,1},True{},False{}},
-        T.Control{57,"MATCH",T.Rect{0,0,1,1},True{},False{}}]
+def compact.openers() -> List<&2,T.Control>:
+  [T.Control{56,"VIEW",T.Rect{0,0,1,1},True{},False{}},
+    T.Control{57,"GAME",T.Rect{0,0,1,1},True{},False{}}]
 
 def compact.ids(ids: List<&2,U32>, +snapshot: T.Snapshot) -> List<&2,T.Control>:
   match ids:
@@ -246,14 +241,14 @@ def compact.ids(ids: List<&2,U32>, +snapshot: T.Snapshot) -> List<&2,T.Control>:
 def compact.controls.for(menu: U32, +snapshot: T.Snapshot) -> List<&2,T.Control>:
   match menu:
     case 11: compact.ids([28,11,12,13,14,15,16,17,18,19],snapshot)
-    case 12: compact.ids([28,3,4,6,7,8,9,10],snapshot)
+    case 12:
+      compact.filter(compact.ids([28,2,55,1,21,20,27,6,7,10,8,9],snapshot),menu)
+    case 2: compact.ids([28,22,23,24,25,26,53,54],snapshot)
     case 0:
-      +has_destinations = U32.is_ne(Layout.destination_count(snapshot),0)
       List.append(&2,T.Control,
-        compact.filter(Layout.controls(snapshot),menu,has_destinations),
-        compact.openers(has_destinations,snapshot))
+        compact.filter(Layout.controls(snapshot),menu),compact.openers())
     case _:
-      compact.filter(Layout.controls(snapshot),menu,False{})
+      compact.filter(Layout.controls(snapshot),menu)
 
 def compact.controls(+snapshot: T.Snapshot) -> List<&2,T.Control>:
   compact.controls.for(T.panels_menu(T.snapshot_panels(snapshot)),snapshot)

@@ -47,10 +47,18 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   assert.deepEqual(binding.ports.map(row => row.path).sort(), ['worker-v2.ts', 'sprite-helper.ts', 'pose-port.ts', 'asset-port.ts', 'image-port.ts', 'bitmap-surface.ts', 'sw.js', 'host.ts', 'ports.ts', 'input-queue.ts', 'telemetry.ts'].map(name => 'bend2/platform/browser/' + name).sort());
   for (const row of binding.ports) ref(row);
   assert.ok(Array.isArray(binding.retainedSources));
+  // An explicit stylesheet input is rebuilt; other retained sources stay
+  // byte-identical to their admitted base rather than silently drifting.
+  const stylesheet = binding.stylesheet ?? null;
+  if (stylesheet) {
+    assert.equal(stylesheet.path, 'bend2/platform/browser/platform.css');
+    ref(stylesheet);
+    assert.deepEqual(binding.retainedSources.find(row => row.path === stylesheet.path), stylesheet);
+  }
   for (const name of ['bend2/platform/browser/platform.css', 'bend2/platform/browser/index.html', 'bend2/assets/MANIFEST.json'])
     assert.equal(binding.retainedSources.filter(row => row.path === name).length, 1, 'missing unrebuilt source binding: ' + name);
   for (const row of binding.retainedSources) {
-    if (base.retainedSources) {
+    if (base.retainedSources && row.path !== stylesheet?.path) {
       const previous = base.retainedSources.filter(old => old.path === row.path);
       assert.equal(previous.length, 1, 'unrebuilt source absent from base: ' + row.path);
       assert.deepEqual(row, previous[0], 'unrebuilt base source changed: ' + row.path);
@@ -89,6 +97,8 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   for (const [name, digest] of Object.entries(base.files)) { assert.ok(plain(name)); copied[name] = checked(path.join(baseRoot, name), digest, 8 * 2 ** 20); }
   const only = prefix => { const names = Object.keys(copied).filter(name => name.startsWith(prefix) && name.endsWith('.js')); assert.equal(names.length, 1); return names[0]; };
   const oldHost = only('host-audio-'), oldWorker = only('worker-v2-'), oldHelper = only('sprite-helper-');
+  const oldStyle = stylesheet ? Object.keys(copied).filter(name => /^style-[0-9a-f]+\.css$/.test(name)) : [];
+  if (stylesheet) assert.equal(oldStyle.length, 1, 'expected one base stylesheet');
   const boundaryPath = file(binding.boundary.path); assert.equal(boundaryPath, path.join(root, 'bend2/toolchain-patches/2035/browser-tag-boundary.mjs')); ref(binding.boundary);
   assert.ok(Array.isArray(binding.boundaryDependencies));
   for (const name of ['bend2/toolchain-patches/2035/selected-binding.mjs', 'bend2/tools/selected-modules.mjs'])
@@ -137,14 +147,21 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
     const hostBytes = await bundle('bend2/platform/browser/host.ts', { __BEND_WORKER__: JSON.stringify('./' + worker) }), host = 'host-audio-' + sha(hostBytes).slice(0, 12) + '.js';
     fs.mkdirSync(out); const files = {}; let total = 0;
     const put = (name, bytes) => { assert.ok(plain(name)); total += bytes.length; assert.ok(total < binding.maxPackageBytes && bytes.length < 8 * 2 ** 20); const target = path.join(out, name); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes, { flag: 'wx' }); assert.equal(sha(read(target)), sha(bytes)); files[name] = sha(bytes); };
-    for (const [name, bytes] of Object.entries(copied)) if (![oldHost, oldWorker, oldHelper, 'index.html', 'sw.js'].includes(name)) put(name, bytes);
-    put(helper, helperBytes); put(worker, workerBytes); put(host, hostBytes); put('index.html', Buffer.from(one(copied['index.html'].toString(), './' + oldHost, './' + host)));
+    for (const [name, bytes] of Object.entries(copied)) if (![oldHost, oldWorker, oldHelper, ...oldStyle, 'index.html', 'sw.js'].includes(name)) put(name, bytes);
+    let html = one(copied['index.html'].toString(), './' + oldHost, './' + host);
+    let rebuiltStylesheet = null;
+    if (stylesheet) {
+      const bytes = ref(stylesheet), name = 'style-' + sha(bytes).slice(0, 12) + '.css';
+      put(name, bytes); html = one(html, './' + oldStyle[0], './' + name);
+      rebuiltStylesheet = { file: name, source: stylesheet };
+    }
+    put(helper, helperBytes); put(worker, workerBytes); put(host, hostBytes); put('index.html', Buffer.from(html));
     const version = sha(JSON.stringify(files)).slice(0, 20), sw = ref(binding.ports.find(row => row.path.endsWith('/sw.js'))).toString();
     put('sw.js', Buffer.from(one(one(sw, '__BEND_BUILD__', version), '__BEND_ASSETS__', JSON.stringify(['./', './build.json', ...Object.keys(files).sort().map(name => './' + name)]))));
     for (const [name, bound] of fences) assert.equal(sha(read(name, bound.max)), bound.digest, name);
     assert.equal(networkCalls, 0); assert.equal(subprocessCalls, 0);
     const manifest = { schema: binding.schema.replace('-input', ''), builtAt: new Date().toISOString(), version, files, selected: provenance, sources: binding.ports, retainedSources: binding.retainedSources,
-      sourceRevision: binding.sourceRevision, hostModules, basePackage: binding.base, preparedGround: ground, browserBoundary: { canonical: binding.boundary, transformations: transforms },
+      sourceRevision: binding.sourceRevision, hostModules, basePackage: binding.base, preparedGround: ground, rebuiltStylesheet, browserBoundary: { canonical: binding.boundary, transformations: transforms },
       retainedEmissionCommentLineage: base.retainedEmissionCommentLineage, retainedControllerExecution: base.retainedControllerExecution,
       packageInputSha256: inputSha256, runtime: binding.runtime, builder: binding.builder, rebuiltHelper: helper, rebuiltBundles: { helper, worker, host }, networkCalls, subprocessCalls, compilerExecutions: 0, draft: true, adopted: false,
       scope: 'All three browser bundles rebuilt from exact bound TypeScript and retained checked Bend emissions; base assets and prepared ground retained. No Bend compiler emission, proof/kernel/native/GPU/performance or adoption acceptance.' };

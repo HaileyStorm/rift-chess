@@ -35,6 +35,8 @@ function values(value: any): any[] {
   return result;
 }
 const pixelPort = new PixelPort();
+// Decoration has its own staging so it cannot replace play pixels or statistics.
+const backdropPixelPort = new PixelPort();
 const opaqueBoardPort = new OpaqueBoardPort();
 let canvasPreview: CanvasPreview | null = null;
 let canvasTexturePieces: any = null;
@@ -806,11 +808,23 @@ async function emit(packet: any, elapsed: number, id: number,
     mask.lastOffer = maskOffer;
     mask.retired = false;
   }
+  const playPortMs = performance.now() - portStart;
+  const backdropStart = performance.now();
+  let backdrop: ArrayBuffer | undefined;
+  if (kind === 'frame' && packet.render.background) {
+    try {
+      backdrop = backdropPixelPort.render(motionBackdrop512, 512, 512, 512);
+    } catch {
+      // A decorative surface must never prevent the playable frame.
+    }
+  }
+  if (backdrop) transfers.push(backdrop);
   self.postMessage({ kind, id, image, bitmap, width: packet.width, height: packet.height,
+    backdrop, backdropMs: performance.now() - backdropStart,
     renderTheme: packet.render.theme,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
-    effects, after: packet.after, renderMs: elapsed, portMs: performance.now() - portStart, pixelMs, audioMs,
+    effects, after: packet.after, renderMs: elapsed, portMs: playPortMs, pixelMs, audioMs,
     treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, canvasMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats } }, { transfer: transfers });
 }

@@ -3,8 +3,29 @@ import { Ports, type PreparedPickFile } from './ports';
 import { PresentedInputQueue } from './input-queue';
 import { makeBrowserProfile, measureBrowserCapabilities, PROFILE_EVENT, queryMaxTextureEdge, RollingP90, type BrowserCapabilities } from './telemetry';
 declare const __BEND_WORKER__: string;
-const canvas = document.querySelector('canvas')!;
+const canvas = document.querySelector<HTMLCanvasElement>('main > canvas')!;
 const context = canvas.getContext('2d', { alpha: false })!;
+let viewportBackdrop: HTMLCanvasElement | null = null;
+function presentViewportBackdrop(backdrop: unknown): void {
+  if (!(backdrop instanceof ArrayBuffer) || backdrop.byteLength !== 512 * 512 * 4) return;
+  try {
+    const surface = viewportBackdrop ?? document.createElement('canvas');
+    if (!viewportBackdrop) {
+      surface.width = surface.height = 512;
+      surface.className = 'viewport-backdrop';
+      surface.setAttribute('aria-hidden', 'true');
+    }
+    const target = surface.getContext('2d', { alpha: false });
+    if (!target) return;
+    target.putImageData(new ImageData(new Uint8ClampedArray(backdrop), 512, 512), 0, 0);
+    if (!viewportBackdrop) {
+      document.body.append(surface);
+      viewportBackdrop = surface;
+    }
+  } catch {
+    // Background decoration is optional; retain the working play surface.
+  }
+}
 const status = document.querySelector<HTMLElement>('[role="status"]')!;
 const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
@@ -285,6 +306,7 @@ worker.addEventListener('message', event => {
     canvas.setAttribute('aria-label', message.summary);
     accessibility(message.controls);
     status.textContent = message.summary;
+    if (message.kind === 'frame') presentViewportBackdrop(message.backdrop);
   }
   canvas.dataset.ready = 'true'; canvas.dataset.renderMs = String(message.renderMs);
   canvas.dataset.frame = String(message.id);
