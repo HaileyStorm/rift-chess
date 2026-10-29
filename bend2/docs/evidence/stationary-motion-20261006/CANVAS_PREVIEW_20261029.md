@@ -181,3 +181,24 @@ This is one uncontrolled sequential pair with different input coalescing. It
 does not establish stable FPS, delivery cadence, a browser backend change or
 the 33.3 ms motion target. The held and settled images were inspected. No
 unchanged campaign, unit/integration suite or scenario matrix was added.
+
+## Conditional higher-resolution experiment
+
+A separate private experiment added a 1024-pixel Canvas backing and matching
+physical-pixel sprite picking, retaining logical geometry and the unchanged Bend
+quality policy. Whole-book checking/emission passed with zero holes; its actual
+package SHA256 was
+`6a221c8f89b0893c055a7fb894fac0932e60274d94708709577fed447cd27346`.
+One real 96-point orbit completed without errors or fallback. All eleven actual
+quality probes retained standard detail: after startup, worker windows measured
+3.9–7.5 ms, above the existing 2.5 ms promotion threshold. No enhanced offer or
+enhanced sprite-edge click was observed. Original result SHA256:
+`aa0a78e2b223bbddd5be973dc704e726a70467b23642eaa5ea93505663d59854`.
+
+This does not measure actual 2× cost or prove that higher resolution is
+impossible. The experiment's exact source patch, package and original records
+are retained privately. Its uncommitted source changes were removed after exact
+hash verification; the shipping path keeps the verified background-cache change.
+No threshold was relaxed, tier injected or unchanged run repeated to obtain an
+enhanced result. Higher resolution remains conditional on responsiveness and
+actual displayed-pixel acceptance.
