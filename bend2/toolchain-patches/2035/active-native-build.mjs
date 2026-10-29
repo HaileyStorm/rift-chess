@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
-import { resolveActive } from '../../tools/active-toolchain.mjs';
+import { resolveActive, resolveCandidateNativeBuild } from '../../tools/active-toolchain.mjs';
 import { read, verify, write, writeJson, sha256, directoryIdentity, syncDirectory, memorySnapshot, FLAGS, LIMITS } from './native-resources.mjs';
 
 const self = fileURLToPath(import.meta.url), TIMEOUT = 600000;
@@ -40,6 +40,23 @@ function overlay(bytes) {
     '        T.Wheel{x, y, F32.sub(0.0, F32.mul(dy, 100.0))} <> acc, closed)'].join(eol) + eol;
   const result = Buffer.from(text.replace(anchor, anchor + addition)); assert.equal(sha256(result), OVERLAY); return result;
 }
+function reviewedApplication(active, selection, ref) {
+  const descriptor = JSON.parse(ref(selection.descriptorRef, false).bytes);
+  let authority, application;
+  if (active.kind === 'owning-reviewed-candidate-native-selection') {
+    authority = JSON.parse(ref(selection.candidateRef, false).bytes);
+    assert.equal(authority.schema, 'rift-candidate-native-build/1');
+    application = authority.application; ref(authority.review, false);
+    ref(descriptor.activeToolchain.lineage, false);
+  } else {
+    assert.equal(active.kind, 'owning-reviewed-active-selection');
+    authority = JSON.parse(ref(selection.adoptionRef, false).bytes);
+    assert.equal(authority.schema, 'rift-toolchain-adoption/2');
+    application = authority.currentApplication; ref(authority.activationReview, false);
+  }
+  ref(selection.originalLaunchRef, false);
+  return { descriptor, application };
+}
 function context(active, selection, inputRef) {
   const roots = { repository: active.repositoryRoot, packet: active.packetRoot }, fences = new Map(), allowed = new Map();
   function ref(row, selected = true) {
@@ -56,9 +73,7 @@ function context(active, selection, inputRef) {
   }
   assert.equal(active.inputRefs.filter(r => r.base === inputRef.base && r.path === inputRef.path
     && r.bytes === inputRef.bytes && r.sha256 === inputRef.sha256).length, 1, 'build config must be an exact selected input');
-  const descriptor = JSON.parse(ref(selection.descriptorRef, false).bytes);
-  const adoption = JSON.parse(ref(selection.adoptionRef, false).bytes);
-  ref(adoption.activationReview, false); ref(selection.originalLaunchRef, false);
+  const { descriptor, application } = reviewedApplication(active, selection, ref);
   const inventory = JSON.parse(ref(descriptor.activeToolchain.inventory, false).bytes);
   for (const row of inventory.files) {
     const bound = { ...row, base: 'repository', path: descriptor.activeToolchain.sourceDirectory + '/' + relative(row.path) };
@@ -68,7 +83,7 @@ function context(active, selection, inputRef) {
   for (const row of allowed.values()) ref(row);
   const config = JSON.parse(ref(inputRef).bytes);
   assert.equal(config.schema, 'rift-current35-native-build-input/1');
-  assert.equal(config.sourceRevision, adoption.currentApplication.sourceRevision);
+  assert.equal(config.sourceRevision, application.sourceRevision);
   assert.equal(config.entry.base, 'repository'); assert.equal(config.entry.path, 'bend2/NativeV2.bend');
   assert.equal(config.entry.sha256, ORIGINAL); assert.equal(config.eventPatch.sha256, PATCH); ref(config.eventPatch);
   assert.equal(config.eventPatch.base, 'repository');
@@ -165,8 +180,9 @@ function retainLink(run, result, command) {
   }
   const record = { ...metadata, command, streams }; writeJson(path.join(run, 'clang-process.json'), record); return record;
 }
-export async function buildActiveNative2035({ selection, inputRef, outputDirectory }) {
-  const active = resolveActive({ ...selection, purpose: 'nativeBuild' });
+async function buildNative2035({ selection, inputRef, outputDirectory }, active) {
+  const candidate = active.kind === 'owning-reviewed-candidate-native-selection';
+  const classification = candidate ? { kind: 'candidate-nonadopted-native-cpu-build', adopted: false } : {};
   assert.equal(active.adapterRef.base, 'repository'); assert.equal(path.resolve(active.repositoryRoot, active.adapterRef.path), self);
   assert.equal(process.platform, 'linux'); assert.equal(process.arch, 'x64'); assert.equal(process.env.BEND_NO_TELEMETRY, '1');
   assert.equal(process.env.NODE_OPTIONS ?? '', ''); assert.equal(process.env.NODE_PATH ?? '', ''); assert.equal(process.env.BUN_OPTIONS ?? '', '');
@@ -190,7 +206,8 @@ export async function buildActiveNative2035({ selection, inputRef, outputDirecto
   try {
     verify([...c.fences.values()]);
     lease = h.lifecycle.acquireOwnedLock(path.join(parent, 'active-native-build.lock'), JSON.stringify({ output: run, selection: active.reviewSha256, owner: process.env.CODEX_THREAD_ID }));
-    writeJson(intent, { schema: 'rift-current35-native-build-intent/1', output: run, inputRef, selection: active, pid: process.pid, noRetry: true });
+    writeJson(intent, { schema: 'rift-current35-native-build-intent/1', ...classification,
+      output: run, inputRef, selection: active, pid: process.pid, noRetry: true });
     const runIdentity = mkdir(run); runCreated = true;
     stage = 'initial-admission'; initial = memorySnapshot(h.aggregate, b.containment.unit, 'before-application-load');
     writeJson(path.join(run, 'initial-memory.json'), initial);
@@ -243,21 +260,23 @@ export async function buildActiveNative2035({ selection, inputRef, outputDirecto
     verify(fences); assert.deepEqual(h.assets.collectRuntimeAssets(), assets);
     for (const row of [...Object.values(files), shell, worker.emitted]) assert.deepEqual(read(row.path).identity, row);
     assert.equal(fetches, 0); stage = 'receipt';
-    receipt = { schema: 'rift-current35-native-cpu-package/1', passed: true, selection: active, inputRef,
+    receipt = { schema: candidate ? 'rift-current35-native-cpu-candidate-package/1' : 'rift-current35-native-cpu-package/1',
+      ...classification, passed: true, selection: active, inputRef,
       sourceRevision: b.sourceRevision, originalEntry: b.entry, eventPatch: b.eventPatch, overlaySha256: OVERLAY,
       sourceClosure: b.sourceClosure, staged, worker, link: linkRecord, assets, files, launcher: shell, binary: { ...binary.identity, elf },
       admissions: [initial, worker.admission], containment: memorySnapshot(h.aggregate, b.containment.unit, 'final', initial.leaf.identity, false),
-      scope: 'Current35 source validation, C emission, CPU ELF link and assets only; no ELF/CUDA/device/proof or inherited acceptance claim.' };
+      scope: (candidate ? 'Nonadopted candidate. ' : '') +
+        'Current35 source validation, C emission, CPU ELF link and assets only; no ELF/CUDA/device/proof or inherited acceptance claim.' };
     const receiptPath = path.join(pkg, 'receipt.json'), receiptBytes = Buffer.from(JSON.stringify(receipt, null, 2) + '\n');
     h.lifecycle.finalizeOwnedManifest(path.join(pkg, 'receipt.pending'), receiptPath, receiptBytes,
       { beforeCommit: () => { verify(fences); } });
     const receiptReadback = read(receiptPath); assert.deepEqual(receiptReadback.bytes, receiptBytes);
     syncDirectory(pkg); const receiptIdentity = receiptReadback.identity;
     h.lifecycle.releaseOwnedLock(lease); lease = null;
-    return { passed: true, receipt: receiptIdentity, binary: binary.identity, sourceC: worker.emitted };
+    return { passed: true, ...classification, receipt: receiptIdentity, binary: binary.identity, sourceC: worker.emitted };
   } catch (error) {
     if (lease) { lease.preserve = true; try { h.lifecycle.closeOwnedLock(lease); } catch (e) { error.lockCloseError = String(e); } }
-    const failure = { schema: 'rift-current35-native-build-failure/1', stage, reason: String(error.message ?? error),
+    const failure = { schema: 'rift-current35-native-build-failure/1', ...classification, stage, reason: String(error.message ?? error),
       workerMayBeLive: error.workerMayBeLive === true, worker: worker ?? error.workerFailure ?? null,
       workerLogs: error.workerLogs ?? null, link: linkRecord ?? null,
       receiptWriteError: error.receiptWriteError ?? null, admission: error.memoryAdmission ?? null, initial,
@@ -266,5 +285,16 @@ export async function buildActiveNative2035({ selection, inputRef, outputDirecto
     catch (e) { error.receiptWriteError = String(e); }
     throw error;
   } finally { globalThis.fetch = oldFetch; }
+}
+
+export async function buildActiveNative2035(args) {
+  return buildNative2035(args, resolveActive({ ...args.selection, purpose: 'nativeBuild' }));
+}
+
+export async function buildCandidateNative2035(args) {
+  const candidate = resolveCandidateNativeBuild(args.selection);
+  assert.deepEqual(args.inputRef, candidate.buildConfigRef);
+  assert.equal(path.resolve(args.outputDirectory), candidate.outputDirectory);
+  return buildNative2035(args, candidate);
 }
 

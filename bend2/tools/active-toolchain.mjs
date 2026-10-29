@@ -290,6 +290,70 @@ export function resolveActive({ repositoryRoot, packetRoot, descriptorRef, adopt
     assuranceBoundary: 'Trusted owning review establishes accepted applicability; identity checks prove no semantics or runtime behavior.' });
 }
 
+export function candidateNativeBuildSubjectSha256(record) {
+  const { review: ignored, ...subject } = record;
+  return sha(Buffer.from(JSON.stringify(subject)));
+}
+
+// Candidate CPU packaging can refresh application evidence before adoption.
+// Its owning review authorizes one bound build, never production selection.
+export function resolveCandidateNativeBuild({ repositoryRoot, packetRoot, descriptorRef, candidateRef,
+  trustedReviewSha256, hostId, originalLaunchRef }) {
+  const c = context(repositoryRoot, packetRoot), descriptor = c.json(descriptorRef), record = c.json(candidateRef);
+  assert.equal(descriptor.schema, 'rift-active-toolchain/2');
+  assert.ok(['unarmed', 'proposed-active'].includes(descriptor.state));
+  keys(record, ['schema', 'purpose', 'adopted', 'descriptor', 'hostRuntime', 'adapter',
+    'application', 'buildConfig', 'outputDirectory', 'originalLaunch', 'review']);
+  assert.equal(record.schema, 'rift-candidate-native-build/1');
+  assert.equal(record.purpose, 'nativeBuild'); assert.equal(record.adopted, false);
+  assert.deepEqual(record.descriptor, descriptorRef); assert.deepEqual(record.originalLaunch, originalLaunchRef);
+  assert.match(trustedReviewSha256 ?? '', /^[a-f0-9]{64}$/, 'caller has no trusted candidate review binding');
+  assert.equal(record.review.sha256, trustedReviewSha256);
+  const review = c.json(record.review);
+  assert.equal(review.schema, 'rift-candidate-native-build-review/1');
+  assert.equal(review.disposition, 'accepted-for-one-current35-native-cpu-build');
+  assert.equal(review.reviewer, '01a1124e-8f2a-7aa0-891d-6ef073d7aee8');
+  assert.equal(review.descriptorSha256, descriptorRef.sha256);
+  assert.equal(review.recordSubjectSha256, candidateNativeBuildSubjectSha256(record));
+  const compiler = descriptor.activeToolchain;
+  assert.equal(compiler.version, '2.0.35'); assert.equal(compiler.officialCommit, OFFICIAL);
+  assert.equal(compiler.sourceDirectory, CURRENT);
+  const lineage = c.json(compiler.lineage);
+  assert.equal(lineage.schema, 'rift-current99-lineage-identities/1');
+  assert.equal(lineage.officialCommit, OFFICIAL); assert.deepEqual(lineage.effectiveInventory, compiler.inventory);
+  const effective = inventory(c, compiler.inventory, CURRENT);
+  assert.equal(effective.files.length, 99);
+  assert.equal(effective.files.reduce((sum, row) => sum + row.bytes, 0), 1208629);
+  const runtime = record.hostRuntime;
+  assert.ok(typeof hostId === 'string' && hostId.length > 0); assert.equal(runtime.hostId, hostId);
+  assert.equal(runtime.purpose, 'nativeBuild'); assert.equal(runtime.platform, 'linux'); assert.equal(runtime.engine, 'node');
+  const checkRuntimeUnchanged = bindHostRuntime(runtime, c.json(originalLaunchRef));
+  assert.equal(record.adapter.base, 'repository');
+  assert.equal(record.adapter.path, 'bend2/toolchain-patches/2035/active-native-build.mjs'); c.ref(record.adapter);
+  keys(record.application, ['sourceRevision', 'inputs']);
+  assert.match(record.application.sourceRevision, /^[a-f0-9]{40}$/);
+  const inputs = record.application.inputs;
+  assert.ok(Array.isArray(inputs) && inputs.length > 0);
+  assert.equal(new Set(inputs.map(r => r.base + ':' + r.path)).size, inputs.length, 'duplicate candidate input');
+  for (const reference of inputs) c.ref(reference);
+  assert.equal(inputs.filter(r => r.base === record.buildConfig.base && r.path === record.buildConfig.path).length, 1);
+  assert.deepEqual(inputs.find(r => r.base === record.buildConfig.base && r.path === record.buildConfig.path), record.buildConfig);
+  c.ref(record.buildConfig);
+  const outputDirectory = path.resolve(c.roots.repository, relative(record.outputDirectory));
+  assert.ok(record.outputDirectory.startsWith('.artifacts/bend2/'));
+  c.finish(); checkRuntimeUnchanged();
+  return Object.freeze({ kind: 'owning-reviewed-candidate-native-selection', adopted: false,
+    version: '2.0.35', purpose: 'nativeBuild', hostId, runtime,
+    sourceDirectory: path.resolve(c.roots.repository, CURRENT),
+    repositoryRoot: c.roots.repository, packetRoot: c.roots.packet,
+    adapterRef: Object.freeze({ ...record.adapter }),
+    inputRefs: Object.freeze(inputs.map(reference => Object.freeze({ ...reference }))),
+    buildConfigRef: Object.freeze({ ...record.buildConfig }), outputDirectory,
+    descriptorSha256: descriptorRef.sha256, candidateSha256: candidateRef.sha256,
+    reviewSha256: trustedReviewSha256,
+    assuranceBoundary: 'One reviewed nonadopted candidate CPU build only; no production, application, device or formal acceptance.' });
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   throw Error('use owning reviewed launcher');
 }
