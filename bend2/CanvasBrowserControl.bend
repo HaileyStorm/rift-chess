@@ -4,10 +4,10 @@ import ./ApplicationControl.bend as Control
 import ./core/Model.bend as Model
 import ./graphics/Camera.bend as Camera
 import ./graphics/Scene.bend as Scene
-import ./graphics/Pixel.bend as Pixel
 import ./graphics/v2game/PieceSprites.bend as PieceSprites
 import ./graphics/v2game/BrowserOrbit.bend as BrowserOrbit
 import ./lib/graphics/v2/CanvasPreview.bend as Preview
+import ./lib/graphics/v2/CanvasPicking.bend as Picking
 import ./lib/graphics/v2/RgbaSample.bend as Sample
 import ./ui/Types.bend as T
 import ./ui/Layout.bend as Layout
@@ -69,6 +69,10 @@ def canvas_textures(pieces: PieceSprites.Pieces) -> List<&2,Sample.Texture>:
 def canvas_plan(frame: Scene.Frame) -> List<&2,Preview.Command>:
   BrowserOrbit.plan(frame)
 
+def canvas_pick_state(commands: List<&2,Preview.Command>,pieces: PieceSprites.Pieces) ->
+  Picking.State:
+  Picking.prepare(commands,BrowserOrbit.textures(pieces))
+
 # Zero labels expose ground; missing ground never selects through a board hole.
 def canvas_label(+label: U32,position: Model.Position,view: Camera.View,
   x: U32,y: U32) -> U32:
@@ -80,36 +84,36 @@ def canvas_label(+label: U32,position: Model.Position,view: Camera.View,
       Bool.pick(U32,U32.is_lt(label,65),U32.sub(label,1),64)
 
 def canvas_pick.on(inside: Bool,position: Model.Position,view: Camera.View,
-  +x: U32,+y: U32,labelImage: Image) -> U32:
+  +x: U32,+y: U32,pickState: Picking.State) -> U32:
   match inside:
     case False{}: 64
     case True{}:
-      canvas_label(Pixel.sample_xy(9n,x,y,labelImage),position,view,x,y)
+      canvas_label(Picking.at(pickState,x,y),position,view,x,y)
 
 def canvas_pick(position: Model.Position,view: Camera.View,+x: U32,+y: U32,
-  labelImage: Image) -> U32:
+  pickState: Picking.State) -> U32:
   canvas_pick.on(Bool.and(U32.is_lt(x,512),U32.is_lt(y,512)),
-    position,view,x,y,labelImage)
+    position,view,x,y,pickState)
 
 def canvas_square.on(inside: Bool,position: Model.Position,view: Camera.View,
-  +bounds: T.Rect,+scale: U32,x: U32,y: U32,labelImage: Image) -> U32:
+  +bounds: T.Rect,+scale: U32,x: U32,y: U32,pickState: Picking.State) -> U32:
   match inside:
     case False{}: 64
     case True{}:
       canvas_pick(position,view,
         U32.div(U32.sub(x,T.rect_x(bounds)),scale),
-        U32.div(U32.sub(y,T.rect_y(bounds)),scale),labelImage)
+        U32.div(U32.sub(y,T.rect_y(bounds)),scale),pickState)
 
 def canvas_square(shown: Control.Presentation,+x: U32,+y: U32,
-  labelImage: Image) -> U32:
+  pickState: Picking.State) -> U32:
   match shown:
     case Control.Presentation{position,view,revision,menu,+plan,pose}:
       +bounds = ChromeModel.plan_board(plan)
       canvas_square.on(Bool.and(U32.is_zero(menu),Layout.in_rect(x,y,bounds)),
-        position,view,bounds,ChromeModel.plan_scale(plan),x,y,labelImage)
+        position,view,bounds,ChromeModel.plan_scale(plan),x,y,pickState)
 
 def canvas_click(control: U32,+shown: Control.Presentation,+x: U32,+y: U32,
-  labelImage: Image) -> T.Input:
+  pickState: Picking.State) -> T.Input:
   match control:
     case 0:
       match shown:
@@ -117,33 +121,33 @@ def canvas_click(control: U32,+shown: Control.Presentation,+x: U32,+y: U32,
           +bounds = ChromeModel.plan_board(plan)
           Bool.pick(T.Input,
             Bool.and(U32.is_zero(menu),Layout.in_rect(x,y,bounds)),
-            T.SquareInput{canvas_square(shown,x,y,labelImage),revision},T.Activate{0})
+            T.SquareInput{canvas_square(shown,x,y,pickState),revision},T.Activate{0})
     case _: T.Activate{control}
 
 def canvas_event_at(event: T.Input,+shown: Control.Presentation,
-  labelImage: Image) -> T.Input:
+  pickState: Picking.State) -> T.Input:
   match event:
     case T.PointerDown{+x,+y,0,False{}}:
       match shown:
         case Control.Presentation{position,view,revision,menu,plan,pose}:
-          canvas_click(ChromeModel.hit(plan,x,y),shown,x,y,labelImage)
+          canvas_click(ChromeModel.hit(plan,x,y),shown,x,y,pickState)
     case T.PointerMove{+x,+y}:
-      T.PresentedMove{x,y,canvas_square(shown,x,y,labelImage)}
+      T.PresentedMove{x,y,canvas_square(shown,x,y,pickState)}
     case T.PointerUp{+x,+y,button}:
-      T.PresentedUp{x,y,button,canvas_square(shown,x,y,labelImage)}
+      T.PresentedUp{x,y,button,canvas_square(shown,x,y,pickState)}
     case _: event
 
 def canvas_events_at(events: List<&2,T.Input>,+shown: Control.Presentation,
-  +labelImage: Image) -> List<&2,T.Input>:
+  +pickState: Picking.State) -> List<&2,T.Input>:
   match events:
     case Nil{}: []
     case event <> rest:
-      canvas_event_at(event,shown,labelImage) <> canvas_events_at(rest,shown,labelImage)
+      canvas_event_at(event,shown,pickState) <> canvas_events_at(rest,shown,pickState)
 
 def canvas_dispatch_meta(+events: List<&2,T.Input>,shown: Control.Presentation,
-  labelImage: Image,session: Control.Session) -> Control.WebPacket:
+  pickState: Picking.State,session: Control.Session) -> Control.WebPacket:
   match session:
     case Control.Session{state,ground,style,quality,shell}:
-      +translated = canvas_events_at(events,shown,labelImage)
+      +translated = canvas_events_at(events,shown,pickState)
       Control.apply_web(Program.update_web_release(translated,state),ground,style,
         quality,shell,Control.latest_probe(events,None{}))

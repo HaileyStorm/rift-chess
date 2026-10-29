@@ -60,37 +60,13 @@ function textureShape(texture){
  return {depth,size};
 }
 
-/** Numeric uniform intermediates avoid allocating discarded leaf Images. */
-function labelImage(codes,size){
- const image=value=>typeof value==='number'?{$:'Pix',color:value}:value;
- const uniform=(x,y,side)=>{
-  const value=codes[y*size+x],right=x+side,bottom=y+side;
-  for(let row=y;row<bottom;row++){
-   let index=row*size+x;
-   for(let column=x;column<right;column++,index++)if(codes[index]!==value)return -1;
-  }
-  return value;
- };
- const build=(x,y,side)=>{
-  if(side===1)return codes[y*size+x];
-  // Most of the label surface is uniform background. Verify the complete
-  // region directly, avoiding a recursive visit to every empty pixel.
-  if(side>=8){const value=uniform(x,y,side);if(value>=0)return value;}
-  const half=side/2;
-  const tl=build(x,y,half),tr=build(x+half,y,half),bl=build(x,y+half,half),br=build(x+half,y+half,half);
-  if(typeof tl==='number'&&tl===tr&&tl===bl&&tl===br)return tl;
-  return {$:'Qua',tl:image(tl),tr:image(tr),bl:image(bl),br:image(br)};
- };
- return image(build(0,0,size));
-}
-
 export class CanvasPreview {
- #size;#frame;#labelCodes;#backgroundBuffer;#background=null;
+ #size;#frame;#backgroundBuffer;#background=null;
  #textures=[];#records=new Map();
 
  constructor(size=512){
   this.#backgroundBuffer=new ImageBuffer(size);
-  this.#size=size;this.#frame=surface(size,true);this.#labelCodes=new Uint32Array(size*size);
+  this.#size=size;this.#frame=surface(size,true);
   if(typeof this.#frame.canvas.transferToImageBitmap!=='function')throw new Error('Canvas preview requires transferable ImageBitmap frames');
  }
 
@@ -100,12 +76,9 @@ export class CanvasPreview {
   colors.write(texture.colors);mask.write(texture.mask);
   const target=surface(size,false),data=target.context.createImageData(size,size);
   data.data.set(colors.bytes);
-  const coverage=new Uint8Array(size*size);
-  for(let pixel=0,offset=0;pixel<coverage.length;pixel++,offset+=4){
-   coverage[pixel]=mask.bytes[offset];data.data[offset+3]=coverage[pixel];
-  }
+  for(let offset=0;offset<data.data.length;offset+=4)data.data[offset+3]=mask.bytes[offset];
   target.context.putImageData(data,0,0);
-  return {texture,depth,size,colors:texture.colors,mask:texture.mask,canvas:target.canvas,coverage};
+  return {texture,depth,size,colors:texture.colors,mask:texture.mask,canvas:target.canvas};
  }
 
  /** Texture IDs are indices in this array. Inputs are immutable Bend Data. */
@@ -126,19 +99,6 @@ export class CanvasPreview {
   });
   this.#records=records;this.#textures=ordered;
   return {textures:ordered.length,textureBuilds,textureCacheHits,textureMs:now()-started};
- }
-
- /** Integer rectangles use the Chrome nearest pixel-center compatibility rule. */
- #rasterLabel(command){
-  const {left,top,width,height,label,record}=command,size=this.#size,sourceSize=record.size;
-  const firstX=Math.max(0,left),lastX=Math.min(size,left+width),firstY=Math.max(0,top),lastY=Math.min(size,top+height);
-  for(let y=firstY;y<lastY;y++){
-   const sy=Math.floor((y+0.5-top)*sourceSize/height),sourceRow=sy*sourceSize,row=y*size;
-   for(let x=firstX;x<lastX;x++){
-    const sx=Math.floor((x+0.5-left)*sourceSize/width);
-    if(record.coverage[sourceRow+sx]>0)this.#labelCodes[row+x]=label;
-   }
-  }
  }
 
  #commands(commands){
@@ -204,12 +164,8 @@ export class CanvasPreview {
    }
   }
   metrics.drawMs=now()-drawStarted;
-  const labelStarted=now();this.#labelCodes.fill(0);
-  for(const command of parsed)if(command.kind==='Sprite'&&command.label>0)this.#rasterLabel(command);
-  metrics.labelRasterMs=now()-labelStarted;
-  const treeStarted=now(),image=labelImage(this.#labelCodes,size);metrics.labelImageMs=now()-treeStarted;
   const transferStarted=now(),bitmap=this.#frame.canvas.transferToImageBitmap();metrics.bitmapTransferMs=now()-transferStarted;
   metrics.totalMs=now()-started;
-  return {bitmap,labels:image,metrics};
+  return {bitmap,metrics};
  }
 }

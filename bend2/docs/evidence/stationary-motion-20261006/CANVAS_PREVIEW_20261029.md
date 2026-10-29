@@ -15,11 +15,13 @@ generic host modules. Retained `/2` packages and their original builders remain
 historical evidence.
 
 Canvas coverage and blending are a separate preview contract. Sprites use
-integer destination rectangles and nearest sampling. The generic port constructs
-an immutable label Image from binary source alpha using pixel-center nearest
-sampling. Bend interprets labels, revision, controls, board bounds and ground
-holes. Displayed mask offers retain their view and placement; a fallback receives
-a separate identity rather than rewriting an earlier displayed label image.
+integer destination rectangles and nearest sampling. Bend retains a compact
+picking state from those exact displayed commands and immutable source alpha
+masks. It samples only the requested pixel, in front-to-back order, using integer
+pixel-center nearest sampling. Bend interprets labels, revision, controls, board
+bounds and ground holes. Displayed offers retain their view and placement;
+switching between Canvas and the fallback painter receives a separate identity
+once an earlier offer exists, preserving its original picking interpretation.
 Canvas frames transfer an ImageBitmap and composite it with Bend's chrome;
 they avoid synchronous Canvas pixel readback. Texture resources follow the
 immutable pose identity. Detailed refinement still uses the existing renderer.
@@ -67,7 +69,7 @@ This is browser implementation and bounded acceptance evidence, not formal proof
 native/device acceptance, human visual approval, compiler adoption or completion
 of the full sprint. The hosted preview is not changed by this commit.
 
-## Uniform label compression
+## Retained intermediate: uniform label compression
 
 A subsequent change verifies complete uniform regions before recursively
 building their children. It returns the same label values while avoiding empty
@@ -95,3 +97,34 @@ baseline-order description; its actual one-lane record, source loop and explicit
 candidate-only scope establish that no baseline application episode ran.
 Original terminal SHA256:
 `ab211d21f7bb8cc00d6965d894855dd5192b129486d4f265229132f4675ca8fe`.
+
+## Direct displayed-command picking
+
+The next implementation removes the per-frame label raster and quadtree entirely.
+`CanvasPicking.bend` retains labelled sprite rectangles and source masks in
+front-to-back order. Its integer pixel-center calculation matches the former
+label raster, while sampling only a requested pointer position. The color port
+now returns only the transferable bitmap and timing metadata. Both directions
+of a Canvas/fallback transition preserve previously offered picking identities.
+
+The new controller's whole-book check and emission passed with zero holes.
+Manifest SHA256:
+`43efb747b54b5a15b4e12d9832303f4b153a339bac547f34177d2614204affbc`.
+The exact browser package SHA256 is
+`b214430598fba583d9a9a45f4a5a7605afdad38ebd08ae34b46eeb59396adb7d`.
+
+One real application pair compared the retained uniform-label package with this
+candidate. Both completed without errors or fallback; displayed Canvas g1
+selection/deselection and saved history matched. Motion PNGs were byte-identical.
+The actual motion and detail frames were inspected. Candidate motion p95 was
+42.4 ms versus 116.8 ms, consumed-input-to-draw p95 was 60.0 ms versus 137.0 ms,
+and detailed arrival was 1,000.3 ms versus 1,811.6 ms. The candidate consumed all
+48 trusted moves and presented 48 measured motion frames. This uncontrolled pair
+does not establish stable performance; the 33.3 ms planning target remains open.
+No unchanged-source timing repeat was added. Original terminal SHA256:
+`85d920f79ae587eef5b6e041cbcb10d0301510e9be6ee3b0f42c72073faefb92`.
+
+The first attempt was denied a localhost connection by the sandbox (`EACCES`)
+before any app request. It settled normally and remains preserved; the completed
+journey used permitted local networking. All browser, serving and parent handles
+from both attempts closed normally. No unit/integration tests were introduced.

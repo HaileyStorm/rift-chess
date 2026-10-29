@@ -70,7 +70,7 @@ let preparedAtlasMaskId: number | null = null, renderedAtlasMaskId: number | nul
 const MAX_ATLAS_MASKS = 8;
 let atlasMaskOffer = 0, atlasMaskPressure = false;
 const atlasMasks = new Map<number, {
-  frame: any; pieces: any; raster: 256 | 512; filter: 'linear' | 'nearest'; labels?: any; retired: boolean; firstOffer: number; lastOffer: number;
+  frame: any; pieces: any; raster: 256 | 512; filter: 'linear' | 'nearest'; canvasPick?: any; retired: boolean; firstOffer: number; lastOffer: number;
 }>();
 
 function pruneAtlasMasks(): void {
@@ -617,7 +617,7 @@ function render(packet: any): any {
   if (!request.frame) throw new Error('Missing Bend frame request');
 
   // Bend owns stationary geometry, placement and eligibility. The generic port
-  // renders the same integer rectangles into color and immutable label Images.
+  // renders color; Bend retains picking from these exact integer commands.
   // Keep the existing painter for animations, menus and unavailable Canvas.
   if (playing && preview && !packet.snapshot.moving &&
       typeof api.canvas_plan === 'function' && api.canvas_supported(frame)) {
@@ -628,6 +628,7 @@ function render(packet: any): any {
         canvasPreview.setTextures(values(api.canvas_textures(preview.pieces)));
       canvasTexturePieces = preview.pieces;
       const commands = api.canvas_plan(frame);
+      const canvasPick = api.canvas_pick_state(commands, preview.pieces);
       const result = canvasPreview.render(commands, motionBackdrop512);
       const rect = plan.board;
       if (!rect || rect.width !== boardSize || rect.height !== boardSize)
@@ -635,9 +636,23 @@ function render(packet: any): any {
       const bitmap = opaqueBoardPort.render(chrome, packet.width, packet.height,
         extentForOutput(packet.width, packet.height), result.bitmap, 512,
         { left: rect.x, top: rect.y, size: boardSize });
-      const mask = atlasMasks.get(preview.maskId);
+      let mask = atlasMasks.get(preview.maskId);
       if (!mask) throw new Error('Canvas frame lost its reserved label identity');
-      mask.labels = result.labels;
+      if (!mask.canvasPick && mask.firstOffer > 0) {
+        // Earlier offers used the fallback painter's analytic coverage. A
+        // successful Canvas frame must not change their picking interpretation.
+        pruneAtlasMasks();
+        if (atlasMasks.size >= MAX_ATLAS_MASKS || spriteTaskId >= Number.MAX_SAFE_INTEGER) {
+          bitmap.close();
+          throw new Error('No atlas identity available for Canvas presentation');
+        }
+        const id = ++spriteTaskId;
+        mask = { frame, pieces: mask.pieces, raster: 512, filter: 'nearest',
+          retired: false, firstOffer: 0, lastOffer: 0 };
+        atlasMasks.set(id, mask);
+        preview.maskId = id;
+      }
+      mask.canvasPick = canvasPick;
       renderedAtlas = true;
       renderedAtlasMaskId = preview.maskId;
       pruneAtlasMasks();
@@ -649,8 +664,8 @@ function render(packet: any): any {
       // A failed frame has not been offered; its existing analytic mask remains
       // the correct match for the established painter used below.
       const mask = atlasMasks.get(preview.maskId);
-      if (mask?.labels) {
-        // An offered label image belongs to its displayed frame forever. The
+      if (mask?.canvasPick) {
+        // An offered picking state belongs to its displayed frame forever. The
         // fallback requires its own identity; never rewrite an earlier offer.
         pruneAtlasMasks();
         if (atlasMasks.size >= MAX_ATLAS_MASKS || spriteTaskId >= Number.MAX_SAFE_INTEGER)
@@ -849,10 +864,10 @@ async function handleMessage(request: any): Promise<void> {
         if (!mask || !Number.isSafeInteger(offer) || offer < 1 || offer < mask.firstOffer || offer > mask.lastOffer ||
             !scene.sprite_has_view(mask.frame, request.presentation.view))
           throw new Error('Displayed atlas frame lost its matching pose alpha data');
-        const dispatch = mask.labels ? api.canvas_dispatch_meta : mask.filter === 'nearest'
+        const dispatch = mask.canvasPick ? api.canvas_dispatch_meta : mask.filter === 'nearest'
           ? api.dispatch_at_web_atlas_nearest_preview_meta
           : mask.raster === 256 ? api.dispatch_at_web_atlas_preview_meta : api.dispatch_at_web_atlas_meta;
-        const dispatched = dispatch(list(request.events), request.presentation, mask.labels ?? mask.pieces, session);
+        const dispatched = dispatch(list(request.events), request.presentation, mask.canvasPick ?? mask.pieces, session);
         packet = dispatched.packet;
         cameraReleased = dispatched.cameraReleased === true;
       } else {
