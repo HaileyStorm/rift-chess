@@ -14,7 +14,7 @@ export const OUTPUT = '.artifacts/bend2/native-v2-current99-linux';
 export const FLAGS = Object.freeze(['--experimental-transform-types']);
 export const MEMORY_POLICY = Object.freeze({
   schema: 'rift-current99-native-memory-policy/1',
-  unit: 'rift-current99-native-cpu-20261028-r3.service',
+  unit: 'rift-current99-native-cpu-20261029-r4.service',
   memoryMaxBytes: 72 * 1024 ** 3, swapMaxBytes: 0, oomGroup: 1, reserveBytes: 8 * 1024 ** 3,
 });
 export const helpers = Object.freeze({
@@ -172,8 +172,8 @@ export function capture(worker = false) {
   const candidate = records(b.candidateRoot, b.source.candidateFiles);
   assert.deepEqual(Object.keys(candidate), Object.keys(originals));
   for (const name of Object.keys(originals)) if (name !== 'bend2/NativeV2.bend') assert.deepEqual(candidate[name], originals[name]);
-  assert.equal(originals['bend2/NativeV2.bend'].sha256, '29fc92d043aff032de13ceafad63ef4f101c72b08f93b7199c3ce40bd333cf6d');
-  assert.equal(candidate['bend2/NativeV2.bend'].sha256, '9fe46e219123e3f59958de98c6f9b65fc618cca85ca0325740dffc30e8aef292');
+  assert.equal(originals['bend2/NativeV2.bend'].sha256, '8447be64f7f196bd7ecb14a9bb07a795f0bab004ad7078f4703b11e7a31882db');
+  assert.equal(candidate['bend2/NativeV2.bend'].sha256, '805482c3f7fb7958977ad6f1e3d46476dd1dc6d3969234b36784c250762907a8');
   const patch = 'bend2/toolchain-patches/native-v2-2032/events/0001-native-v2-events.patch';
   assert.equal(repository[patch]?.sha256, '28ec36660b3d78c2373b5ff0591385e7a6cc39e6fd33cb9a2a1732d0a01ad2fa');
   const compiler = inventory(b.compilerRoot);

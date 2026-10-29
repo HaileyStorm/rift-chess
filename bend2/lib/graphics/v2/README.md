@@ -180,18 +180,12 @@ baseline 18 in a 24×24 cell, quantizes coverage to four levels, and packs
 ASCII atlas with a question-mark replacement for unsupported code points;
 it does not perform Unicode shaping or bidirectional layout.
 
-Run source checks and finite tests via the local wrapper after the toolchain
-pin is ready:
+Follow the current [validation policy](../../../docs/REVIEW_2026-10-05.md):
+zero active unit/integration suites and minimal real application E2E acceptance.
+Use the affected application's source check/build and actual rendered journey
+when behavior changes. Historical finite-check sources and results remain
+provenance, with no routine run command or scenario target.
 
-```text
-node bend2/tools/bend.mjs bend2/lib/graphics/v2/RaisedFacet.bend --check-only
-node bend2/tools/bend.mjs bend2/lib/graphics/v2/contracts/PROOF.bend --check-only
-node bend2/tools/bend.mjs --run bend2/lib/graphics/v2/tests/library.ts
-```
-
-Core finite checks cover partial coverage, offscreen clipping, compositing,
-fractional facets, generic extrusion, signed Stamp clipping and Image frame
-upsampling. Grid-specific tests/renders live under grid8 and still exercise
-this package through imports. Neither suite proves native/device speed,
-browser presentation or aesthetics. Any new formal law needs review before
-its source/English contract freezes.
+Formal laws and proof obligations remain intact. Any new formal law needs
+review before its source/English contract freezes. Browser behavior, subjective
+appearance and native/device results require their own relevant actual evidence.

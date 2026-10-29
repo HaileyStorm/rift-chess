@@ -6,6 +6,11 @@ settlement. **Move-associated audio and a Shift-control appearance discrepancy
 remain unresolved.** This is not complete native UI/audio or compiler adoption
 acceptance.
 
+Later [offline waveform review](AUDIO_RING_20261029.md) found three
+source-consistent move-cue blocks in the original PCM, separated by gaps. That
+adds narrower positive evidence without changing the failed RMS comparison or
+establishing uninterrupted playback, exclusive attribution or physical audibility.
+
 This uses the [reviewed current87 build](NATIVE_CPU_20261028.md), source
 `01b884665523e9c0b1b2c50ba8086f3917c38901`, tree
 `1f1935dae5c6cdfb731d336a6d9ec528fdca69ee`. Both launches used the same
@@ -82,6 +87,11 @@ Its original event-readback and manager metadata remain, including the collector
 incorrect still-running assertion and correction. This is no longer a live queued
 lease. One fresh serial resource continuation was requested for the original,
 still-unexecuted sidecar job; no extra workload allowance or GPU acceptance follows.
+
+That continuation subsequently [built and settled successfully](CUDA_SIDECAR_20261029.md)
+against its retained older C. Its fresh and old watch claims are now released and
+the lease withdrawn. This later result supersedes the pending-build status only;
+it does not establish current87 or later-source GPU compatibility or performance.
 
 Accepted Bend2.0.27, immutable laws, runtime parallelism, prior failed/uncertain
 records and the complete sprint scope remain unchanged.

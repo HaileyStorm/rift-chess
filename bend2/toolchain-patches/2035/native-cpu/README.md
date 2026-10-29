@@ -28,11 +28,14 @@ Before bulk generation and at handoff run the existing
 lossless cleanup has completed; preserve toolchains, active/unknown runs, claims,
 recovery inputs and unique evidence. This producer does not clean them up.
 
-The October 28 source alignment adds `PlateDecode.bend` and updates only
-`Assets.bend`, `BoardScene.bend` and `MenuAA.bend` within the native project
-closure. The prior 86-file r2 build, ELF and gameplay/PCM/restart evidence remain
-historical at their original hashes. This is a fresh named source build; it
-does not replay the consumed r2 or change the queued original GPU sidecar job.
+The October 29 r4 source changes only NativeV2's application audio pump: it
+fills the queried free room of the existing 4096-frame ring instead of capping
+each pump at 2048 frames. Device/effect ordering, synthesis, runtime and compiler
+remain unchanged. This is a mitigation awaiting actual native recording, not a
+claim of uninterrupted playback or a proven cause of the original gaps. The
+reviewed r3 CPU build and its gameplay/PCM/restart records remain historical.
+The old-C CUDA sidecar has separately built and settled successfully; this fresh
+CPU build neither invokes it nor establishes current-source GPU compatibility.
 
 Prepare the isolated candidate under its own claim, preserving the `bend2/`
 relative layout. Its complete consumed source set is the 87 admitted project
@@ -40,8 +43,8 @@ sources. Preserve host-local sentinel and coordination metadata without copying
 or treating it as compiler input. Apply the existing
 `native-v2-2032/events/0001-native-v2-events.patch` exactly once there. Its SHA256
 is `28ec36660b3d78c2373b5ff0591385e7a6cc39e6fd33cb9a2a1732d0a01ad2fa`;
-NativeV2 changes from `29fc92d043aff032de13ceafad63ef4f101c72b08f93b7199c3ce40bd333cf6d`
-to `9fe46e219123e3f59958de98c6f9b65fc618cca85ca0325740dffc30e8aef292`.
+NativeV2 changes from `8447be64f7f196bd7ecb14a9bb07a795f0bab004ad7078f4703b11e7a31882db`
+to `805482c3f7fb7958977ad6f1e3d46476dd1dc6d3969234b36784c250762907a8`.
 All other candidate files equal their committed originals. Do not patch the
 canonical NativeV2 or compiler. Stable loading requires this complete relative
 source layout; a standalone external entry copy is insufficient.
@@ -62,7 +65,7 @@ The producer independently follows Bend imports and compares actual loaded paths
   `run-[A-Za-z0-9_-]+`.
 - `review.disposition`: `accepted-for-one-current99-native-cpu-build`.
 - `memoryPolicy`: exactly `{schema: "rift-current99-native-memory-policy/1",
-  unit: "rift-current99-native-cpu-20261028-r3.service",
+  unit: "rift-current99-native-cpu-20261029-r4.service",
   memoryMaxBytes: 77309411328, swapMaxBytes: 0, oomGroup: 1,
   reserveBytes: 8589934592}`. This is a fixed experiment resource policy, not a
   measured requirement or permission to alter another service.
@@ -106,7 +109,7 @@ The native owner/preparer creates the fresh fixed systemd user service under its
 own reviewed procedure, with `memory.max=72 GiB`, `memory.swap.max=0` and
 `memory.oom.group=1`. This source neither creates nor changes systemd services or
 cgroups. Preserve the original r1 intent, failure and source copies, accepted r2 output,
-retained lock and all old one-use intents unchanged. Use fresh r3 candidate,
+retained lock and all old one-use intents unchanged. Use fresh r4 candidate,
 consumer, observer and run names; no old lock retirement is required. The actual
 owner must observe the existing active CPU lock absent rather than clear it.
 Use the corrected identity-bound service observer: persist terminal manager

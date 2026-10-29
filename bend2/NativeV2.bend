@@ -1350,7 +1350,9 @@ def pump_split(split: AudioSplit, audio: Audio) -> IO(Pump):
     IO.pure(Pump, pump_written(written, tail))
 
 def audio_capacity(+queued: U32) -> U32:
-  U32.min(2048, U32.sub(4096, U32.min(4096, queued)))
+  # Audio.write reports queued stereo frames; its existing ring holds 4096.
+  # Fill the queried free room before rendering can delay the next pump.
+  U32.sub(4096, U32.min(4096, queued))
 
 def pump_write_choice(empty: Bool, no_room: Bool, capacity: U32,
   audio: Audio, +pending: List<&2, F32>) -> IO(Pump):
