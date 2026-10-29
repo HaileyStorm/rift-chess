@@ -2,9 +2,10 @@
 
 Owning review accepts the current87 package's actual CPU window/menu/input,
 e2–e4 move, camera change, saved-state restart and normal original-process
-settlement. **Move-associated audio and a Shift-control appearance discrepancy
-remain unresolved.** This is not complete native UI/audio or compiler adoption
-acceptance.
+settlement. **Uninterrupted move-associated audio remains unestablished for this
+recording.** The earlier Shift appearance concern was mistaken: the original
+button pixels match exactly before and after restart. This is not complete
+native UI/audio or compiler adoption acceptance.
 
 Later [offline waveform review](AUDIO_RING_20261029.md) found three
 source-consistent move-cue blocks in the original PCM, separated by gaps. That
@@ -35,19 +36,24 @@ window/protocol/original-process ownership binding was used.
 
 Root inspected the1024×640 Preferences, post-input and restarted images. The
 menu is readable; the restored white pawn on e4, Black-to-move position and camera
-agree. The Shift button is darker before restart and brighter afterward, although
-both images say “Choose a piece.” No Shift action was performed. Semantic saved
-state does not establish pixel equality or correct Shift functionality.
+agree. Both images say “Choose a piece.” No Shift action was performed.
 
-Read-only source review found no legitimate persisted selection explanation:
-Layout.shift_enabled_for id5 requires selected<64 plus a legal shift; the
-no-selection text, command completion and restore all require/reset selection.
-MenuAA.same_control includes enabled/active in its equality. An independently
-hash-verified read of the original15,263,458-byte emitted C confirms the
-selected<64 guard in FID_UI_LAYOUT_SHIFT_ENABLED_FOR_K2139. A missing guard or
-cache-key explanation is therefore unsupported. This remains a rendered-control
-inconsistency requiring a focused source/lowering inquiry, not a proven functional
-Shift failure. No application rerun or speculative repair was performed.
+An initial visual review incorrectly reported a brighter Shift button after
+restart. A subsequent direct comparison of the unchanged original RGB pixels,
+independently reproduced, corrects that report: the entire Shift rectangle
+`[368,468) × [592,630)` has **zero differing pixels**. The Undo rectangle also
+matches. All424 differences in the complete image are confined to inclusive
+coordinates x517–581, y331–448 on the board; every pixel outside that region
+matches. There is no recorded chrome discrepancy to diagnose in this pair.
+
+The source review remains useful provenance: Layout's id5 enable guard requires
+selected<64 and a legal shift; MenuAA.same_control compares enabled/active. The
+original emitted C retains that guard. The original window origins also match,
+and native button styling has no hover branch. These observations supplied no
+evidence of a Shift defect. The pixel comparison closes the mistaken appearance
+concern without an application rerun, speculative repair or new functional
+Shift-acceptance claim. The original images and earlier review history remain
+unchanged.
 
 ## Audio limits
 
