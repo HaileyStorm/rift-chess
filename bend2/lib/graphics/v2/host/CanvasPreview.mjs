@@ -63,8 +63,19 @@ function textureShape(texture){
 /** Numeric uniform intermediates avoid allocating discarded leaf Images. */
 function labelImage(codes,size){
  const image=value=>typeof value==='number'?{$:'Pix',color:value}:value;
+ const uniform=(x,y,side)=>{
+  const value=codes[y*size+x],right=x+side,bottom=y+side;
+  for(let row=y;row<bottom;row++){
+   let index=row*size+x;
+   for(let column=x;column<right;column++,index++)if(codes[index]!==value)return -1;
+  }
+  return value;
+ };
  const build=(x,y,side)=>{
   if(side===1)return codes[y*size+x];
+  // Most of the label surface is uniform background. Verify the complete
+  // region directly, avoiding a recursive visit to every empty pixel.
+  if(side>=8){const value=uniform(x,y,side);if(value>=0)return value;}
   const half=side/2;
   const tl=build(x,y,half),tr=build(x+half,y,half),bl=build(x,y+half,half),br=build(x+half,y+half,half);
   if(typeof tl==='number'&&tl===tr&&tl===bl&&tl===br)return tl;

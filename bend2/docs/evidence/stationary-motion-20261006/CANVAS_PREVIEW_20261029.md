@@ -66,3 +66,32 @@ private provenance. No unit/integration suite or new scenario matrix was added.
 This is browser implementation and bounded acceptance evidence, not formal proof,
 native/device acceptance, human visual approval, compiler adoption or completion
 of the full sprint. The hosted preview is not changed by this commit.
+
+## Uniform label compression
+
+A subsequent change verifies complete uniform regions before recursively
+building their children. It returns the same label values while avoiding empty
+pixel recursion. Drawing, sprite placement, label sampling and game rules are
+unchanged. The revised package SHA256 is
+`72393bce18e0d194165b8dd12d582a020f5e98c386d58d19a6f6828faedf3c52`.
+
+The real application comparison against the preceding Canvas package completed
+with no errors or fallback, matching motion captures, successful displayed-frame
+g1 selection/deselection and unchanged history. Both contexts and original
+browser/parent handles closed. This pair measured motion p95 of 76.6 ms versus
+46.8 ms, input-to-draw p95 of 96.5 ms versus 86.6 ms, and detailed arrival of
+1,142.8 ms versus 941.3 ms. Label construction samples fell from 15.4–35.6 ms to
+2.1–13.0 ms. These are another uncontrolled pair, not an absolute performance
+chain across earlier runs. Original parent terminal SHA256:
+`dd4fa6d1acc335f9265f4ebcd11e369393adde45ffa61ee05cf0c66887303a0e`.
+
+That pair's trusted-input spacing itself had 44.2 ms p95. A separate single
+candidate observation dispatched bounded original mouse actions at 16 ms without
+waiting for each protocol acknowledgment, then joined every original promise.
+It observed 44 trusted moves, 16 motion presentations, 59.7 ms motion p95 and
+1,317 ms detailed arrival; input spacing p95 was 31.7 ms. It confirms that the
+33.3 ms target remains open. The original profile retains an inherited
+baseline-order description; its actual one-lane record, source loop and explicit
+candidate-only scope establish that no baseline application episode ran.
+Original terminal SHA256:
+`ab211d21f7bb8cc00d6965d894855dd5192b129486d4f265229132f4675ca8fe`.
