@@ -182,6 +182,17 @@ does not establish stable FPS, delivery cadence, a browser backend change or
 the 33.3 ms motion target. The held and settled images were inspected. No
 unchanged campaign, unit/integration suite or scenario matrix was added.
 
+The verified cache change is now in the [shared UX preview](https://haileystorm.github.io/rift-chess-bend2/preview-20261029-ux/),
+version `1931bdc5c1c4e9d1af32`, deployment commit
+`1e0826a7c735d3f6d9062ccd6a415861ea2f6119`. The public package retains 24 files;
+19 payload files are unchanged. One actual hosted short orbit, Game/Settings
+journey and offline service-worker reload passed. Five changed public files
+matched exact bytes. Hosted result SHA256:
+`83c9e5c3e95bb0e09b18fe63f15fafa70490a0988cff5719ec7581e11202fa82`.
+Original terminal SHA256:
+`37c934ac3ad8cbf32f44b8223a97efb09093e5114c5e1fe1ad85d1fa36b37925`.
+Private evidence and other preview URLs remain outside this publication.
+
 ## Conditional higher-resolution experiment
 
 A separate private experiment added a 1024-pixel Canvas backing and matching
