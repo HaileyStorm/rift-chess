@@ -944,6 +944,13 @@ def macro_outline(show: Bool, +macro: U32, color: U32, opacity: U32,
       outline_corners(macro_corners(size, camera, macro),
         depth, size, color, opacity, image)
 
+# Legal destination holes use the same outer perimeter as platform selection.
+def tile_targets(items: List<&2, U32>, +c: Context, image: Image) -> Image:
+  match items:
+    case Nil{}: image
+    case +macro <> rest:
+      tile_targets(rest, c, macro_outline(True{}, macro, 16764762, 200, c, image))
+
 # The controller supplies legal Shift pairs; do not infer moveability from
 # adjacency or occupancy. Its existing Shift-hints preference still applies.
 def movable_macro(pairs: List<&2, U32>, +macro: U32) -> Bool:
@@ -1034,7 +1041,7 @@ def feedback(+c: Context, image: Image) -> Image:
       +a = recent_marks(Model.decode(action), c, image)
       +b = square_outline(U32.is_lt(check, 64), check,
         16731983, 255, c, a)
-      +c_hover = square_hover(c, b)
+      +c_hover = square_hover(c, tile_targets(Scene.frame_tileTargets(frame), c, b))
       +d = macro_outline(U32.is_lt(tile, 16), tile, 16764762, 255, c, c_hover)
       +e = square_outline(U32.is_lt(selected, 64), selected,
         5434367, 255, c, d)
@@ -1141,7 +1148,8 @@ def fast_feedback_static(+c: Context, image: Image) -> Image:
       +a = fast_recent(Model.decode(action), c, image)
       +b = square_outline(U32.is_lt(check, 64), check,
         16731983, 255, c, a)
-      +d = macro_outline(U32.is_lt(tile, 16), tile, 16764762, 255, c, b)
+      +destinations = tile_targets(Scene.frame_tileTargets(frame), c, b)
+      +d = macro_outline(U32.is_lt(tile, 16), tile, 16764762, 255, c, destinations)
       +e = square_outline(U32.is_lt(selected, 64), selected,
         5434367, 255, c, d)
       +f = fast_targets(Scene.frame_targets(frame), board, c, e)

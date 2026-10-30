@@ -210,6 +210,13 @@ def macro_outline(show: Bool,macro: U32,camera: Camera.Basis,color: U32,
     case False{}: acc
     case True{}: outline(BoardScene.macro_corners(512,camera,macro),color,opacity,acc)
 
+def tile_targets(items: List<&2,U32>,+camera: Camera.Basis,
+  acc: List<&2,Preview.Command>) -> List<&2,Preview.Command>:
+  match items:
+    case Nil{}: acc
+    case +macro <> rest:
+      tile_targets(rest,camera,macro_outline(True{},macro,camera,16764762,200,acc))
+
 def circle_points(fuel: Nat,+index: U32,+center: Quad.Point,+radius: F32) ->
   List<&2,Quad.Point>:
   match fuel:
@@ -308,7 +315,8 @@ def feedback(+frame: Scene.Frame,+camera: Camera.Basis,holes: U32,
   +hovered = Scene.frame_hovered(frame)
   +a = recent(Model.decode(action),camera,acc)
   +b = square_outline(U32.is_lt(check,64),check,camera,16731983,255,a)
-  +d = macro_outline(U32.is_lt(tile,16),tile,camera,16764762,255,b)
+  +destinations = tile_targets(Scene.frame_tileTargets(frame),camera,b)
+  +d = macro_outline(U32.is_lt(tile,16),tile,camera,16764762,255,destinations)
   +e = square_outline(U32.is_lt(selected,64),selected,camera,5434367,255,d)
   +f = targets(Scene.frame_targets(frame),camera,board,e)
   +promoted = promotion(Model.decode(action),camera,f)
