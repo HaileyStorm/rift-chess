@@ -1,5 +1,17 @@
 # Experimental graphical Native entrypoint
 
+## Current NativeV2 frontier: October 30
+
+The historical adapter attempts below remain unchanged. Current35 source
+`e225285d` has an accepted CPU package and actual shared-UI menu/move/save/Export/
+Undo-cancellation result. Original routed PCM and same-save restart remain
+applicable through their unchanged source bindings. The matching CUDA sidecar
+and GPU-off/on full-window episode passed the original 250 ms contract with
+positive original-process settlement; see [current GPU evidence](evidence/stationary-motion-20261006/GPU_CURRENT35_20261030.md)
+and [acceptance limits](evidence/stationary-motion-20261006/ACCEPTANCE_20261030.md).
+Final reviewed production selection remains pending. These scoped results do
+not establish physical audibility, general GPU throughput or broad-device speed.
+
 This document's `Native.bend` behavior and 2026-09-23 emitter attempt are
 historical evidence for the first graphical adapter. They do not describe a
 working full-game native binary. The newer `NativeV2.bend` is an unreleased

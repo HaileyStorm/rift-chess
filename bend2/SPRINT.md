@@ -11,7 +11,7 @@ The existing game is published as 1.2.1. The Bend adaptation was migrated from
 `bend2/`. The existing application and reference remain comparison inputs, not
 alternative runtime code for the Bend game.
 
-## Current execution frontier: October 29
+## Current execution frontier: October 30
 
 The full sprint remains active in Windows Root chat
 `01a1124e-8f2a-7aa0-891d-6ef073d7aee8`. The accepted compiler remains pristine
@@ -22,17 +22,21 @@ below are historical checkpoints, not the current run list.
 
 Current-source browser play, real bot/Shift, record import/export, cached offline
 play and the hosted preview have scoped acceptance. Linux has separately reviewed
-native GUI, PCM and same-save restart evidence for its original source. New shared
-UI changes intentionally affect that native source cone; preserve those originals
-and refresh only the affected native build/UI acceptance. Formal source bindings
+native GUI, PCM and same-save restart evidence for its original source. The shared
+UI refresh now has its current CPU/UI result and matching CUDA sidecar plus the
+original paired full-window 250 ms predicate. Audio/restart applicability retains
+its unchanged source bindings. Formal source bindings
 remain unchanged; no unchanged proof or mutation campaign is required again.
 
 The owner's latest direction keeps the current pieces, board and background art,
 improves control placement/count/flow, fills the browser viewport background, and
 makes higher resolution conditional on responsiveness. See the
 [UI update](docs/evidence/stationary-motion-20261006/UI_UX_20261029.md).
-Measured motion/device targets, ordinary current35 production selection and its
-reviewed compiler-pin amendment remain unfinished. Zero active unit/integration
+The observed request-to-draw processing budget passed; stable display cadence,
+physical-device and higher-resolution performance retain explicit limits.
+See [current acceptance](docs/evidence/stationary-motion-20261006/ACCEPTANCE_20261030.md).
+Ordinary current35 production selection and its reviewed successor amendment
+remain unfinished. Zero active unit/integration
 tests and minimal actual E2E journeys remain the validation policy.
 
 ## Historical plan: October 5 review and rollover

@@ -43,8 +43,13 @@ scenario quota. Completed bot/Shift/orbit journeys were not repeated for the tai
 
 The separate [Canvas picking/motion evidence](CANVAS_PREVIEW_20261029.md) retains
 the actual displayed-frame g1 selection/deselection and paired motion improvement.
-The 33.3 ms motion planning target remains open. No physical-device, stable
-performance, human WOW, proof, native or compiler-adoption claim follows here.
+The later [direct Canvas observation](DIRECT_CANVAS_20261030.md) met the
+33.3 ms request-to-draw processing endpoint in its recorded profile. The
+[ordinary journey](RESPONSIVENESS_20261030.md) adds current menus/move/Undo,
+startup observations and actual stale-result rejection. Stable display cadence,
+physical-device and higher-resolution performance remain unestablished; the
+owner's [layout acceptance](UI_UX_20261029.md) has its own presented-view scope.
+No proof, native or compiler-adoption claim follows from browser behavior.
 
 ## Worker applicability to current99
 

@@ -16,22 +16,27 @@ The older `Native.bend` graphical emitter hit a compiler arity limit; that is
 historical, not the present `NativeV2.bend` status. The shared-source NativeV2
 has emitted and run as a Linux X11 CPU ELF. The current shared UI has completed
 native menu, move/save, Export and Undo-cancellation acceptance. Routed PCM and
-saved-game restart reuse their original, unchanged source bindings; current CUDA
-acceptance remains pending. Older native receipts retain their original source
+saved-game restart reuse their original, unchanged source bindings. The current
+CUDA sidecar and paired GUI run passed owning review at the original 250 ms
+capture contract; see [current GPU evidence](docs/evidence/stationary-motion-20261006/GPU_CURRENT35_20261030.md).
+Older native receipts retain their original source
 scope. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The current candidate preview is build `ee1619d005cf7204269e`, deployed at
-`preview-20261029-ux/` in the separate Bend site. It includes the reviewed knight
+The current candidate preview is deployed at `preview-20261029-ux/` in the
+separate Bend site; its [live manifest](https://haileystorm.github.io/rift-chess-bend2/preview-20261029-ux/build.json)
+identifies the exact package. It includes the reviewed knight
 set, a screen-filling background, grouped Game and View menus, and direct Canvas
 motion composition. Piece selection keeps its edge highlight; movable tiles use
 amber outer edges; selection circles and blue chasm circles are removed. The
 owner accepted the current layout on October 29. See the
 [UI evidence](docs/evidence/stationary-motion-20261006/UI_UX_20261029.md).
 Bend 2.0.35 is still a candidate. The accepted 2.0.27 compiler and its frozen
-creation inputs remain unchanged while native/GPU, performance and adoption
-work continues. See the [current review](docs/REVIEW_2026-10-05.md) and
+creation inputs remain unchanged while final production selection and handoff
+continue. Scoped performance observations and limits are recorded in the
+[current acceptance](docs/evidence/stationary-motion-20261006/ACCEPTANCE_20261030.md).
+See the [current review](docs/REVIEW_2026-10-05.md) and
 [edge-feedback evidence](docs/evidence/stationary-motion-20261006/EDGE_FEEDBACK_20261028.md).
 
 The older site-root release serves build `e788562833af84fd6840` from clean source

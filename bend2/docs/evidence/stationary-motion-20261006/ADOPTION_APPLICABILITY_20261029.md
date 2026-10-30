@@ -2,15 +2,17 @@
 
 ## Current disposition after the shared UI update
 
-At source `27565bacce2bf1f415c4d0fc01f7f3e02c793566`, adoption is still unarmed.
+The current implementation at `12c0573f` and later documentation refresh retain
+an unarmed successor until final owning review and production selection.
 The original formal evidence remains applicable to its unchanged proof inputs.
 Browser acceptance now combines the original functional aggregate with the
 later shared UI, viewport, Canvas and hosted/offline evidence; see
 [the current browser record](CURRENT_BROWSER_20261029.md),
 [the UI record](UI_UX_20261029.md) and
 [the Canvas record](CANVAS_PREVIEW_20261029.md). Their original package revisions
-and limits remain distinct. This is not one fresh all-feature execution, and the
-declared motion target remains unresolved.
+and limits remain distinct. This is not one fresh all-feature execution.
+The [current acceptance disposition](ACCEPTANCE_20261030.md) accepts the observed
+draw-processing budget while preserving cadence/device/causal-speedup limits.
 
 The original r4 same-save restart and GPU-off/on GUI results have since been
 reviewed, resolving those historical missing-result statements below within
@@ -19,8 +21,9 @@ their original source and executable scope. See
 The subsequent shared UI update changed `ApplicationControl.bend`,
 `ChromePlanCompact.bend` and `MenuAA.bend` inside the native 87-file cone.
 The old assertion that all 87 inputs remain unchanged no longer applies to the
-current application. A fresh CPU package and affected rendered UI acceptance
-are pending; metadata preparation does not establish either outcome.
+current application. The fresh CPU package and affected rendered UI acceptance
+have now completed; original routed PCM and restart reuse nine unchanged source
+bindings. Metadata preparation alone established none of those outcomes.
 
 The GPU consequence is stronger than a visual-source label. In effective99's
 `comp.ts`, `compile_book` derives program-wide function/constructor IDs and
@@ -31,13 +34,15 @@ An old sidecar therefore cannot be paired with a new host by assuming that a
 UI change leaves the GPU ABI unchanged. The earlier r6 GPU assurance explicitly
 relied on all 87 old source rows matching; that premise is now false.
 
-After the current CPU build supplies its actual C and receipt, the remaining
-GPU work is one matching host/sidecar build and the existing minimal paired
-selection episode: 1024 x 640, 60 ms press, capture 250 ms after release, the
-unchanged predicate and balanced parallelism, with fresh native ownership and
-GPU lease. No larger GPU campaign follows. Original GPU results, failures and
-consumed intents remain intact. PCM and restart reuse still needs its separate
-source applicability review; it is not silently relabeled as the new ELF.
+The current C/CPU receipt, distinct CUDA host link, matching sidecar and minimal
+paired selection episode now have original results and owning reviews:
+1024 x 640, 60 ms press, capture 250 ms after release, unchanged predicate and
+balanced parallelism, fresh native ownership and separate GPU leases. Both modes
+changed 8,484 pixels on selection and restored exactly after deselection.
+See [current CUDA evidence](GPU_CURRENT35_20261030.md). No larger GPU campaign
+follows. Original GPU results, failures and consumed intents remain intact.
+PCM/restart applicability has its separate unchanged-source review; neither is
+silently relabeled as execution of the new ELF.
 
 ## Historical initial mapping at d71966c
 

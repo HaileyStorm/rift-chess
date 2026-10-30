@@ -98,6 +98,15 @@ the successor declaration is covered by the existing owning review digest.
    settlement. These records supply no live access, resource, claim or retry
    authority. Root npm commands continue to select the TypeScript application.
 
+   When the required deliverable already has accepted exact source/product
+   evidence, an actual host-bound `resolveActive()` selection may retain that
+   product as its witness. This is selection of existing reviewed bytes, not a
+   new build or a cached-output API. Preserve its original creation flags and
+   receipts. Do not repeat emission, native linking or device execution merely
+   to change a revision label or exercise every adapter; use build APIs for
+   needed new products. A compiler-free browser production repack can reuse
+   accepted selected outputs, and identical public bytes need no redeployment.
+
 `buildActivePreview2035` binds its repack input to the reviewed application's
 source revision and returns the resolved selection alongside the actual build
 result. The underlying compiler-free repacker retains its `draft: true` and
@@ -128,8 +137,8 @@ settlement remain required. Building a package does not execute its ELF or CUDA.
 Current-source browser evidence must bind the actual shipped controller, scene,
 menu, host/Worker, displayed-pixel picking, assets and offline product. New adaptive
 resolution output needs its own applicable real acceptance; an earlier package
-is not silently relabeled. The declared motion target still needs its actual
-measurement and owning disposition before its assurance slot can be closed.
+is not silently relabeled. The declared motion target has its actual qualified
+measurement and [owning disposition](evidence/stationary-motion-20261006/ACCEPTANCE_20261030.md).
 The [direct Canvas observation](evidence/stationary-motion-20261006/DIRECT_CANVAS_20261030.md)
 met the complete request-to-draw processing budget in one current Windows profile;
 changed-view cadence, physical presentation and higher resolution retain their
@@ -148,9 +157,11 @@ The new nonadopted package receipt is
 `7c19141aebac29bd23a19362d786c35ffb47c9dd0408a6f0c4824f2927ef3ccc`,
 with ELF `8481d75b58777133bf6ae79397fca4b7ca8cbbab58238a9bf297d88426959483`.
 No Bend emission or ELF invocation occurred in that continuation. The old failed
-build, lock, intent and invalid earlier continuation remain preserved. Fresh
-affected native UI/device acceptance remains pending; bind its actual results
-when they exist.
+build, lock, intent and invalid earlier continuation remain preserved. Current
+shared-source native menu/move/save/Export/Undo-cancellation acceptance completed
+with positive original joins. The [matching current CUDA result](evidence/stationary-motion-20261006/GPU_CURRENT35_20261030.md)
+also passed owning review; bind those actual originals without relabeling the
+old stopped attempts.
 Earlier native GUI, routed PCM, same-save restart and GPU records retain their
 original scope and limitations. Preserve the original GPU full-window contract:
 1024x640, 60 ms press, capture 250 ms after release, unchanged balanced

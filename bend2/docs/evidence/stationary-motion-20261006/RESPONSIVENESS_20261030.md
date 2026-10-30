@@ -10,8 +10,9 @@ The package is `64a981ed6cd471d6302dda79fca5a9eddc6382ea40e8be7c17e6474c11150b9b
 version `4101bf5038a614b95842`. It reuses the earlier direct-Canvas package's Bend
 outputs and adds one bounded diagnostic field for the last rejected sprite-helper
 reply. The existing rejection guards, scheduling, rendering and constructor
-translations are unchanged. This private package is distinct from the published
-`ee1619d005cf7204269e` preview; its creation metadata remains unadopted.
+translations are unchanged. Its public derivative is build
+`503b339dca38180443fb`; private creation metadata remains unadopted. The exact
+public payload passed the hosted online/offline journey below.
 
 ## Actual feedback
 
@@ -88,3 +89,20 @@ The two successful arms used unchanged sources in the normal host context.
 This adds no unit/integration suite, scenario quota, forced quality tier or
 automatic retry. Earlier offline/bot/Shift, paired pixels, native PCM/restart and
 formal results retain their original scope. Compiler adoption remains pending.
+
+## Published derivative
+
+Deployment `79ebde3255e5d48cd2af41623cfe9e5409fab559` passed its actual GitHub
+Pages workflow. The public manifest SHA256 is
+`d997ebf9727ffa475099f918b03194d7f03303c392ed6fbd246093f4cb200fe7`.
+Nineteen public files were reused unchanged; five changed files (568,431 bytes)
+were independently read back over HTTPS. One short orbit and Game → Settings
+worked online, then again after the same context reloaded offline with status
+200 from the Service Worker. The original browser, parent, readers and Job
+settled, with no changed inputs or errors. Root viewed both Settings captures;
+the offline capture is an early coarse-piece frame, not a completed-detail
+assertion. Authored-artwork acceptance comes from the ordinary journey above.
+
+Hosted original terminal SHA256:
+`f1bff2e484aede30dca6216aec1bb6d9a13289f10046e8dc5a5b4f45d63eaa10`.
+This small publication check adds no gameplay, timing or native acceptance.
