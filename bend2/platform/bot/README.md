@@ -3,7 +3,8 @@
 `History.bend` projects the initial/current position, complete action list,
 draw policy and legal IDs from a certified prepared match. `contract.mjs`
 provides a versioned, host-neutral request/reply validator for the future AI
-bridge. A request carries Bend piece codes and absolute a1-first board
+bridge. `context.mjs` converts a certified context and eligible bot job into
+that request, rejecting disagreement between their positions or legal IDs. A request carries Bend piece codes and absolute a1-first board
 coordinates, the checked match's initial position and **all** accepted board
 IDs, current position, draw policy, current legal IDs, game epoch, revision and
 model identity. Natural counters are decimal strings so JavaScript cannot silently
