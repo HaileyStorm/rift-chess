@@ -7,9 +7,16 @@ Their original processes exited 0 and their readers joined. This supersedes the
 pending-selection status in the `f47f8863` documentation checkpoint.
 
 [Play Rift](https://haileystorm.github.io/rift-chess-bend2/preview-20261029-ux/).
-The current public build is `503b339dca38180443fb`, with manifest SHA256
-`d997ebf9727ffa475099f918b03194d7f03303c392ed6fbd246093f4cb200fe7`.
-Its actual hosted online/offline check passed. The owner accepted the presented
+The current public build is `e035930500ad2c4eef09`, with manifest SHA256
+`b8703ce3b5e61acfc9b545dbd4aaf9b156d8dc253302d1c73ed07bd75e8e8f84`.
+The selected-tile hint repair at `681e708` restores legal destination outer
+perimeters in both renderers. Its affected Controller/Scene modules passed
+whole-book validation and emission; unchanged Menu/artwork were retained.
+The focused hosted mouse journey passed: Shift hints hid/restored the displayed
+destination perimeter, and selecting B2 committed the actual A2-to-B2 shift.
+No formal, native or GPU campaign was repeated for this drawing repair.
+The preceding `503b339dca38180443fb` build's hosted online/offline check remains
+historical evidence for that build. The owner accepted the presented
 art direction and current Game/View organization. The original TypeScript
 [game](https://haileystorm.github.io/rift-chess/) remains available separately.
 
