@@ -657,7 +657,7 @@ function render(packet: any): any {
       if (!rect || rect.width !== boardSize || rect.height !== boardSize)
         throw new Error('Bend board placement does not match its render tier');
       const bitmap = opaqueBoardPort.render(chrome, packet.width, packet.height,
-        extentForOutput(packet.width, packet.height), result.bitmap, 512,
+        extentForOutput(packet.width, packet.height), result.canvas, 512,
         { left: rect.x, top: rect.y, size: boardSize });
       let mask = atlasMasks.get(preview.maskId);
       if (!mask) throw new Error('Canvas frame lost its reserved label identity');

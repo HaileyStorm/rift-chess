@@ -67,7 +67,6 @@ export class CanvasPreview {
  constructor(size=512){
   this.#backgroundBuffer=new ImageBuffer(size);
   this.#size=size;this.#frame=surface(size,true);this.#backgroundSurface=surface(size,true);
-  if(typeof this.#frame.canvas.transferToImageBitmap!=='function')throw new Error('Canvas preview requires transferable ImageBitmap frames');
  }
 
  #makeTexture(texture,shape){
@@ -145,7 +144,9 @@ export class CanvasPreview {
   return result;
  }
 
- /** The caller owns transferring or closing the returned ImageBitmap. */
+ /** Borrow the owned canvas synchronously; do not retain or transfer it.
+  * Its contents are replaced by the next render on this instance.
+  */
  render(commands,background){
   const started=now(),parsed=this.#commands(commands);
   const metrics={commands:parsed.length,sprites:0,commandMs:now()-started,backgroundCacheHit:this.#background?.image===background};
@@ -178,8 +179,7 @@ export class CanvasPreview {
    }
   }
   metrics.drawMs=now()-drawStarted;
-  const transferStarted=now(),bitmap=this.#frame.canvas.transferToImageBitmap();metrics.bitmapTransferMs=now()-transferStarted;
   metrics.totalMs=now()-started;
-  return {bitmap,metrics};
+  return {canvas:this.#frame.canvas,metrics};
  }
 }

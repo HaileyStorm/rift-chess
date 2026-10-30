@@ -130,12 +130,19 @@ menu, host/Worker, displayed-pixel picking, assets and offline product. New adap
 resolution output needs its own applicable real acceptance; an earlier package
 is not silently relabeled. The declared motion target still needs its actual
 measurement and owning disposition before its assurance slot can be closed.
+The [direct Canvas observation](evidence/stationary-motion-20261006/DIRECT_CANVAS_20261030.md)
+met the complete request-to-draw processing budget in one current Windows profile;
+changed-view cadence, physical presentation and higher resolution retain their
+separate limitations.
 
-The Linux owner completed metadata-only preparation; its original READBACK is
-retained. The requested shared-UI source was not imported or built in that step.
-The fresh affected native build and UI acceptance remain pending. Bind and
-review their actual source/package/tool/runtime/settlement records when they
-exist. This document supplies no replacement receipt.
+The Linux owner imported the reviewed shared-UI source at `e225285d` and completed
+whole-source validation and C emission. Its original one-shot CPU build then
+failed in Clang because `stdbool.h` was unavailable. All original processes
+settled; the failed lock, intent, C and partial package remain preserved. No ELF
+or completed native package was produced. The exact compiler/header cause and a
+separate C-only link continuation are under review. Do not replay the emitter or
+silently treat that failed build as successful. Fresh affected native UI/device
+acceptance remains pending; bind its actual results when they exist.
 Earlier native GUI, routed PCM, same-save restart and GPU records retain their
 original scope and limitations. Preserve the original GPU full-window contract:
 1024x640, 60 ms press, capture 250 ms after release, unchanged balanced

@@ -109,8 +109,8 @@ export class PixelPort {
   }
 }
 
-/** Opaque bitmap placement. Bend supplies geometry; this host only composites
- * its immutable chrome and board surfaces without synchronous pixel readback. */
+/** Opaque Canvas placement. The board canvas is borrowed for this synchronous
+ * call; only the final composed bitmap transfers ownership to the caller. */
 export class OpaqueBoardPort {
   private readonly chromePort = new PixelPort();
   private chrome?: Image;
@@ -121,34 +121,33 @@ export class OpaqueBoardPort {
   private extent = 0;
 
   render(chrome: Image, width: number, height: number, extent: number,
-    source: ImageBitmap, sourceSize: number,
+    source: OffscreenCanvas, sourceSize: number,
     rectangle: { left: number; top: number; size: number }): ImageBitmap {
-    try {
-      extentForOutput(width, height);
-      const { left, top, size } = rectangle;
-      if (![left, top, size, sourceSize, extent].every(Number.isSafeInteger) ||
-          Math.abs(left) > 4096 || Math.abs(top) > 4096 || size < 1 || size > 4096 ||
-          sourceSize < 1 || sourceSize > 4096 || source.width !== sourceSize || source.height !== sourceSize ||
-          extent < Math.max(width, height) || extent > 4096 || (extent & (extent - 1)) !== 0)
-        throw new RangeError('Invalid opaque bitmap placement');
-      if (typeof OffscreenCanvas !== 'function') throw new Error('OffscreenCanvas unavailable');
-      if (!this.base || this.width !== width || this.height !== height) {
-        this.base = new OffscreenCanvas(width, height);
-        this.output = new OffscreenCanvas(width, height);
-        this.width = width; this.height = height; this.chrome = undefined;
-      }
-      const base = this.base.getContext('2d', { alpha: false });
-      const output = this.output!.getContext('2d', { alpha: false });
-      if (!base || !output) throw new Error('Canvas 2D unavailable');
-      if (this.chrome !== chrome || this.extent !== extent) {
-        const bytes = new Uint8ClampedArray(this.chromePort.render(chrome, width, height, extent));
-        base.putImageData(new ImageData(bytes, width, height), 0, 0);
-        this.chrome = chrome; this.extent = extent;
-      }
-      output.imageSmoothingEnabled = false;
-      output.drawImage(this.base, 0, 0);
-      output.drawImage(source, left, top, size, size);
-      return this.output!.transferToImageBitmap();
-    } finally { source.close(); }
+    extentForOutput(width, height);
+    const { left, top, size } = rectangle;
+    if (![left, top, size, sourceSize, extent].every(Number.isSafeInteger) ||
+        Math.abs(left) > 4096 || Math.abs(top) > 4096 || size < 1 || size > 4096 ||
+        sourceSize < 1 || sourceSize > 4096 || source.width !== sourceSize || source.height !== sourceSize ||
+        extent < Math.max(width, height) || extent > 4096 || (extent & (extent - 1)) !== 0)
+      throw new RangeError('Invalid opaque Canvas placement');
+    if (typeof OffscreenCanvas !== 'function') throw new Error('OffscreenCanvas unavailable');
+    if (!(source instanceof OffscreenCanvas)) throw new TypeError('Board source must be an OffscreenCanvas');
+    if (!this.base || this.width !== width || this.height !== height) {
+      this.base = new OffscreenCanvas(width, height);
+      this.output = new OffscreenCanvas(width, height);
+      this.width = width; this.height = height; this.chrome = undefined;
+    }
+    const base = this.base.getContext('2d', { alpha: false });
+    const output = this.output!.getContext('2d', { alpha: false });
+    if (!base || !output) throw new Error('Canvas 2D unavailable');
+    if (this.chrome !== chrome || this.extent !== extent) {
+      const bytes = new Uint8ClampedArray(this.chromePort.render(chrome, width, height, extent));
+      base.putImageData(new ImageData(bytes, width, height), 0, 0);
+      this.chrome = chrome; this.extent = extent;
+    }
+    output.imageSmoothingEnabled = false;
+    output.drawImage(this.base, 0, 0);
+    output.drawImage(source, left, top, size, size);
+    return this.output!.transferToImageBitmap();
   }
 }
