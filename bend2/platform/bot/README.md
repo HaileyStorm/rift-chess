@@ -30,6 +30,11 @@ The worker's current protocol uses bare constructor tags and has only been
 exercised with the separately emitted pinned-compiler Canvas facade; current35
 needs an explicit compatible adapter and fresh reviewed build inputs.
 
+`NativeDeferred.bend` exposes the existing deferred controller behavior under a
+host-neutral facade for the future native effect bridge. It does not change
+NativeV2's current dispatch or the operational heuristic bot. A native host must
+provide the worker lifetime, identity, cancellation and final guarded apply.
+
 This module is a building block only. It is not wired into the existing bot,
 worker, native event loop or application build; no new bot or trained model is
 shipped by its presence. The current heuristic remains active.
