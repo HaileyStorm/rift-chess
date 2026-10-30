@@ -18,6 +18,18 @@ import, mode/model changes and close must invalidate/cancel the current request;
 matching identity alone is not a substitute for lifecycle handling. A separate
 game epoch is required even when a new game reuses revision zero.
 
+`learned-client.mjs` is an opt-in browser-side building block for the local CPU
+WASM worker. It creates a fresh epoch when invalidated, cancels and terminates
+the prior worker, validates a reply against its request and exposes `isCurrent`
+for the host to check before asking Bend to apply the action. The host must call
+`invalidate()` on every relevant lifecycle transition, check the current match
+and readiness, and use `bot_apply_at` for final validation. Worker/model errors
+are reported; this client does not silently choose a fallback. The enclosing
+package must authenticate the executing script and bind its local bundle assets.
+The worker's current protocol uses bare constructor tags and has only been
+exercised with the separately emitted pinned-compiler Canvas facade; current35
+needs an explicit compatible adapter and fresh reviewed build inputs.
+
 This module is a building block only. It is not wired into the existing bot,
 worker, native event loop or application build; no new bot or trained model is
 shipped by its presence. The current heuristic remains active.
