@@ -1,6 +1,7 @@
 # Browser-only Canvas presentation; original controller values retain their tags.
 import Base
 import ./ApplicationControl.bend as Control
+import ./platform/bot/History.bend as BotHistory
 import ./core/Model.bend as Model
 import ./graphics/Camera.bend as Camera
 import ./graphics/Scene.bend as Scene
@@ -29,6 +30,9 @@ def bot_fallback_at(revision: U32,session: Control.Session) -> Control.Packet:
 
 def bot_job(session: Control.Session) -> Control.BotJob:
   Control.bot_job(session)
+
+def bot_context(session: Control.Session) -> BotHistory.Context:
+  Control.bot_context(session)
 
 def dispatch_at_web_atlas_meta(events: List<&2,T.Input>,shown: Control.Presentation,
   pieces: PieceSprites.Pieces,session: Control.Session) -> Control.WebPacket:
