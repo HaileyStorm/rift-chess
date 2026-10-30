@@ -128,6 +128,15 @@ Changes to this resolver change its consumed source hash. Refresh future native
 candidate metadata and its owning review with the new bytes after integration;
 never silently patch a consumed packet, original receipt or historical review.
 
+Compiler inventory validation compares unique membership independently of the
+sealed row order, then verifies every original file size and hash. The inventory
+bytes, lineage and descriptor references remain unchanged. The original Linux
+`4afd5729` placement stopped before its intent/copy because the helper incorrectly
+required Python's filename ordering; the resolver had the same unnecessary
+ordering assumption. Its completed source import and failed attempt remain
+historical originals. Corrected helpers and resolver bindings require a new
+source-bound continuation, never a replay or edit of those originals.
+
 The [legacy toolchain-update guide](LOCAL_BEND_GUIDE.md#updating-the-bend-toolchain)
 describes the original frozen creation/amendment workflow. Its old creator,
 receipt shapes and test commands are historical obligations, not a command list

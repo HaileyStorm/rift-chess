@@ -81,7 +81,6 @@ function inventory(c, reference, expectedDirectory) {
   assert.equal(value.sourceDirectory, expectedDirectory);
   const names = value.files.map(row => relative(row.path));
   assert.equal(new Set(names).size, names.length);
-  assert.deepEqual(names, [...names].sort());
   const observed = [];
   function walk(directory, prefix = '') {
     assert.equal(fs.realpathSync(directory), directory);
@@ -92,7 +91,9 @@ function inventory(c, reference, expectedDirectory) {
     }
   }
   walk(path.resolve(c.roots.repository, expectedDirectory));
-  assert.deepEqual(observed.sort(), names, 'compiler inventory membership differs');
+  // The sealed inventory preserves its producer's order. Membership and byte
+  // identity do not depend on that order or on a host's filename collation.
+  assert.deepEqual(observed.sort(), [...names].sort(), 'compiler inventory membership differs');
   for (const row of value.files) c.ref({ ...row, base: 'repository', path: expectedDirectory + '/' + row.path });
   return value;
 }
