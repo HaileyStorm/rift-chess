@@ -19,6 +19,7 @@ import ./ui/v2/Quality.bend as Quality
 import ./ui/State.bend as S
 import ./ui/Program.bend as Program
 import ./ui/Codec.bend as Codec
+import ./platform/bot/History.bend as BotHistory
 import ./lib/audio/Synthesis.bend as Synthesis
 
 type GroundKey is Data:
@@ -591,6 +592,13 @@ def bot_job(session: Session) -> BotJob:
       BotJob{Program.bot_work_ready(state),
         Program.bot_apply_ready(revision, state), revision,
         S.pos(state), S.legal(state)}
+
+# Complete initial position and board-action history for the future bot bridge.
+# Eligibility and commitment remain guarded by bot_job and bot_apply_at.
+def bot_context(session: Session) -> BotHistory.Context:
+  match session:
+    case Session{state, _, _, _, _}:
+      BotHistory.from_ready(S.ready(state))
 
 def bot_apply_at(revision: U32, id: U32, session: Session) -> Packet:
   match session:
