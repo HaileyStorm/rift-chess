@@ -98,6 +98,24 @@ the successor declaration is covered by the existing owning review digest.
    settlement. These records supply no live access, resource, claim or retry
    authority. Root npm commands continue to select the TypeScript application.
 
+`buildActivePreview2035` binds its repack input to the reviewed application's
+source revision and returns the resolved selection alongside the actual build
+result. The underlying compiler-free repacker retains its `draft: true` and
+`adopted: false` manifest: that manifest describes repacking, while the owning
+caller's execution record must retain the returned trusted selection. Changing
+those flags would not establish adoption. Candidate repacks keep their existing
+interface; only the production wrapper requires the reviewed revision match.
+
+`emitActiveSelected2035({ selection, inputRef, outputDirectory })` is the
+`selectedEmission` purpose adapter. Its selected config binds the application
+revision, entry/exports, complete source closure, effective99 inventory, pure
+preloader/selection helpers, expected preloads and output filename. It validates
+the whole book and emits selected JavaScript without executing that output.
+The selected inputs also bind the helpers' imports, resolver and existing
+manifest finalizer. Authority, runtime and consumed source bytes are fenced
+through final publication; the owning launcher retains process settlement.
+This replaces neither frozen derived97 creators nor their historical receipts.
+
 The candidate-native API remains separate: `resolveCandidateNativeBuild()` and
 `buildCandidateNative2035()` can authorize one reviewed, source-bound CPU package
 before adoption. Their candidate record/review and nonadopted result do not

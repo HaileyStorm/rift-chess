@@ -18,9 +18,12 @@ export async function buildActivePreview2035({ selection, inputRef, outputDirect
   assert.equal(matches.length, 1, 'package input must be an exact unique selected purpose input');
   const bound = matches[0], inputRoot = bound.base === 'repository'
     ? active.repositoryRoot : active.packetRoot;
+  assert.match(active.sourceRevision, /^[0-9a-f]{40}$/);
   const { buildPreview2035 } = await import('./build-preview.mjs');
-  return buildPreview2035({ inputPath: path.resolve(inputRoot, bound.path),
-    inputSha256: bound.sha256, artifactRoot: active.packetRoot, outputDirectory });
+  const result = await buildPreview2035({ inputPath: path.resolve(inputRoot, bound.path),
+    inputSha256: bound.sha256, artifactRoot: active.packetRoot, outputDirectory,
+    expectedSourceRevision: active.sourceRevision });
+  return { ...result, selection: active };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === self) {

@@ -12,7 +12,7 @@ const within = (parent, file) => { const relative = path.relative(parent, file);
 const plain = name => typeof name === 'string' && name && !path.isAbsolute(name) && !name.includes('\\') && !name.includes(':') && name.split('/').every(p => p && p !== '.' && p !== '..');
 const one = (text, before, after) => { assert.equal(text.split(before).length - 1, 1); return text.replace(before, after); };
 
-export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, outputDirectory }) {
+export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, outputDirectory, expectedSourceRevision }) {
   assert.ok(typeof Bun !== 'undefined' && typeof Bun.build === 'function', 'use the local Bun runtime');
   assert.match(inputSha256, /^[0-9a-f]{64}$/);
   const artifacts = path.resolve(artifactRoot), out = path.resolve(outputDirectory), fences = new Map();
@@ -36,6 +36,10 @@ export async function buildPreview2035({ inputPath, inputSha256, artifactRoot, o
   const ref = (row, max) => { assert.match(row.sha256, /^[0-9a-f]{64}$/); const bytes = checked(row.path, row.sha256, max); assert.equal(bytes.length, row.bytes); return bytes; };
   const binding = JSON.parse(checked(path.resolve(inputPath), inputSha256, 512 * 2 ** 10));
   assert.equal(binding.schema, 'rift-source-bound-preview-input/3'); assert.match(binding.sourceRevision, /^[0-9a-f]{40}$/);
+  if (expectedSourceRevision !== undefined) {
+    assert.match(expectedSourceRevision, /^[0-9a-f]{40}$/);
+    assert.equal(binding.sourceRevision, expectedSourceRevision, 'preview input differs from the reviewed application revision');
+  }
   assert.equal(file(binding.builder.path), self); ref(binding.builder);
   assert.equal(process.execPath, file(binding.runtime.path)); assert.equal(Bun.version, binding.runtime.version); ref(binding.runtime, 128 * 2 ** 20);
   assert.equal(process.env.BEND_NO_TELEMETRY, '1');

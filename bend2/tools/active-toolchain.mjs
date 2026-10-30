@@ -319,6 +319,7 @@ export function resolveActive({ repositoryRoot, packetRoot, descriptorRef, adopt
     sourceDirectory: path.resolve(c.roots.repository, CURRENT), runtime: bindings[0],
     repositoryRoot: c.roots.repository, packetRoot: c.roots.packet,
     adapterRef: Object.freeze({ ...adapter }),
+    sourceRevision: record.currentApplication.sourceRevision,
     inputRefs: Object.freeze(inputs.map(reference => Object.freeze({ ...reference }))),
     descriptorSha256: descriptorRef.sha256, adoptionSha256: adoptionRef.sha256,
     reviewSha256: trustedReviewSha256,
