@@ -128,11 +128,54 @@ function context(active, selection, inputRef) {
   }
   assert.equal(config.runtime.path, process.execPath); assert.equal(config.runtime.version, process.version);
   for (const key of ['path', 'bytes', 'sha256']) assert.equal(config.runtime[key], active.runtime.executable[key]);
+  assert.deepEqual(Object.keys(config.compilerResources).sort(), ['directory', 'inventory']);
+  const resourceRoot = config.compilerResources.directory, resourceRef = config.compilerResources.inventory;
+  assert.ok(path.isAbsolute(resourceRoot)); assert.equal(path.resolve(resourceRoot), resourceRoot);
+  assert.notEqual(resourceRoot, path.parse(resourceRoot).root);
+  const resourceDirectory = directoryIdentity(resourceRoot);
+  assert.ok(Number.isSafeInteger(resourceRef.bytes) && resourceRef.bytes > 0 && resourceRef.bytes <= 1024 ** 2);
+  const resourceInventory = JSON.parse(ref(resourceRef).bytes);
+  assert.equal(resourceInventory.root, resourceRoot);
+  assert.ok(Array.isArray(resourceInventory.files) && resourceInventory.files.length > 0 && resourceInventory.files.length <= 4096);
+  const resourceNames = [], resourceDirectories = new Map(); let resourceBytes = 0;
+  for (const row of resourceInventory.files) {
+    assert.equal(row.kind, 'file'); const name = relative(row.path), file = path.join(resourceRoot, name);
+    assert.ok(within(resourceRoot, file)); assert.match(row.sha256, /^[a-f0-9]{64}$/);
+    assert.ok(Number.isSafeInteger(row.bytes) && row.bytes > 0 && row.bytes <= 128 * 1024 ** 2);
+    resourceBytes += row.bytes; assert.ok(resourceBytes <= 256 * 1024 ** 2);
+    const stat = fs.lstatSync(file); assert.ok(stat.isFile() && !stat.isSymbolicLink()); assert.equal(stat.size, row.bytes);
+    const actual = read(file); assert.equal(actual.identity.bytes, row.bytes); assert.equal(actual.identity.sha256, row.sha256);
+    if (fences.has(file)) assert.deepEqual(actual.identity, fences.get(file));
+    fences.set(file, actual.identity); resourceNames.push(name);
+  }
+  assert.equal(new Set(resourceNames).size, resourceNames.length); resourceNames.sort();
+  function verifyCompilerResources(initial = false) {
+    assert.deepEqual(directoryIdentity(resourceRoot), resourceDirectory);
+    const observed = [], directories = []; let entries = 0;
+    function walk(directory) {
+      const identity = directoryIdentity(directory); directories.push(directory);
+      if (initial) resourceDirectories.set(directory, identity);
+      else assert.deepEqual(identity, resourceDirectories.get(directory));
+      for (const name of fs.readdirSync(directory)) {
+        assert.ok(++entries <= 8192, 'compiler resource tree exceeds traversal bound');
+        const file = path.join(directory, name), stat = fs.lstatSync(file);
+        assert.ok(!stat.isSymbolicLink());
+        if (stat.isDirectory()) walk(file);
+        else { assert.ok(stat.isFile()); observed.push(path.relative(resourceRoot, file).split(path.sep).join('/')); }
+      }
+    }
+    walk(resourceRoot); assert.deepEqual(observed.sort(), resourceNames);
+    assert.deepEqual(directories.sort(), [...resourceDirectories.keys()].sort());
+  }
+  verifyCompilerResources(true);
+  const compilerResources = { directory: resourceRoot, directoryIdentity: resourceDirectory, inventory: resourceRef,
+    files: resourceNames.length, bytes: resourceBytes,
+    relationship: 'Matching default compiler resource directory is an owning reviewed source/intake fact; no runtime compiler query or resource override.' };
   assert.equal(active.runtime.engine, 'node'); assert.deepEqual(process.execArgv, []);
   assert.deepEqual(config.workerExecArgv, FLAGS);
   assert.deepEqual(Object.keys(config.containment), ['unit']);
   relative(config.outputParent); assert.ok(config.outputParent.startsWith('.artifacts/bend2/'));
-  ref(config.entry); return { config, compiler, found, bound, fences, ref };
+  ref(config.entry); return { config, compiler, found, bound, fences, ref, compilerResources, verifyCompilerResources };
 }
 async function emit(workerPath, data, lifecycle, run) {
   const worker = new Worker(pathToFileURL(workerPath), { workerData: data, execArgv: [...FLAGS],
@@ -238,7 +281,7 @@ async function buildNative2035({ selection, inputRef, outputDirectory }, active)
       TMP: path.join(run, 'tmp'), TEMP: path.join(run, 'tmp'), LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8', BEND_NO_TELEMETRY: '1',
       NODE_OPTIONS: '', BUN_OPTIONS: '', HTTP_PROXY: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9', ALL_PROXY: 'http://127.0.0.1:9',
       http_proxy: 'http://127.0.0.1:9', https_proxy: 'http://127.0.0.1:9', all_proxy: 'http://127.0.0.1:9', NO_PROXY: '', no_proxy: '' };
-    stage = 'clang-link'; verify(fences); const binaryPath = path.join(pkg, 'bin/rift-chess-native-v2');
+    stage = 'clang-link'; verify(fences); c.verifyCompilerResources(); const binaryPath = path.join(pkg, 'bin/rift-chess-native-v2');
     const linkArgs = h.assets.clangCompileArguments(worker.emitted.path, binaryPath), linkCommand = [b.clang.path, ...linkArgs];
     try { link = await h.supervisor.runOwnedGroup(b.clang.path, linkArgs,
       { cwd: run, env, timeoutMs: TIMEOUT, maxOutputBytes: 2 * 1024 ** 2, label: 'current35 native CPU link' }); }
@@ -263,13 +306,14 @@ async function buildNative2035({ selection, inputRef, outputDirectory }, active)
     receipt = { schema: candidate ? 'rift-current35-native-cpu-candidate-package/1' : 'rift-current35-native-cpu-package/1',
       ...classification, passed: true, selection: active, inputRef,
       sourceRevision: b.sourceRevision, originalEntry: b.entry, eventPatch: b.eventPatch, overlaySha256: OVERLAY,
-      sourceClosure: b.sourceClosure, staged, worker, link: linkRecord, assets, files, launcher: shell, binary: { ...binary.identity, elf },
+      sourceClosure: b.sourceClosure, clang: b.clang, compilerResources: c.compilerResources,
+      staged, worker, link: linkRecord, assets, files, launcher: shell, binary: { ...binary.identity, elf },
       admissions: [initial, worker.admission], containment: memorySnapshot(h.aggregate, b.containment.unit, 'final', initial.leaf.identity, false),
       scope: (candidate ? 'Nonadopted candidate. ' : '') +
         'Current35 source validation, C emission, CPU ELF link and assets only; no ELF/CUDA/device/proof or inherited acceptance claim.' };
     const receiptPath = path.join(pkg, 'receipt.json'), receiptBytes = Buffer.from(JSON.stringify(receipt, null, 2) + '\n');
     h.lifecycle.finalizeOwnedManifest(path.join(pkg, 'receipt.pending'), receiptPath, receiptBytes,
-      { beforeCommit: () => { verify(fences); } });
+      { beforeCommit: () => { verify(fences); c.verifyCompilerResources(); } });
     const receiptReadback = read(receiptPath); assert.deepEqual(receiptReadback.bytes, receiptBytes);
     syncDirectory(pkg); const receiptIdentity = receiptReadback.identity;
     h.lifecycle.releaseOwnedLock(lease); lease = null;

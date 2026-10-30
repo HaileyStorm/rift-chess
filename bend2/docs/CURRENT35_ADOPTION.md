@@ -139,10 +139,18 @@ The Linux owner imported the reviewed shared-UI source at `e225285d` and complet
 whole-source validation and C emission. Its original one-shot CPU build then
 failed in Clang because `stdbool.h` was unavailable. All original processes
 settled; the failed lock, intent, C and partial package remain preserved. No ELF
-or completed native package was produced. The exact compiler/header cause and a
-separate C-only link continuation are under review. Do not replay the emitter or
-silently treat that failed build as successful. Fresh affected native UI/device
-acceptance remains pending; bind its actual results when they exist.
+or completed native package was produced by that original attempt. The owning
+header intake identified its Clang22 default resource directory as missing the
+standard headers. A distinct reviewed C-only continuation then linked the exact
+retained C with installed Clang18 and its matching resources. Its original Clang,
+Node and observer exited0; the original groups and service handles settled.
+The new nonadopted package receipt is
+`7c19141aebac29bd23a19362d786c35ffb47c9dd0408a6f0c4824f2927ef3ccc`,
+with ELF `8481d75b58777133bf6ae79397fca4b7ca8cbbab58238a9bf297d88426959483`.
+No Bend emission or ELF invocation occurred in that continuation. The old failed
+build, lock, intent and invalid earlier continuation remain preserved. Fresh
+affected native UI/device acceptance remains pending; bind its actual results
+when they exist.
 Earlier native GUI, routed PCM, same-save restart and GPU records retain their
 original scope and limitations. Preserve the original GPU full-window contract:
 1024x640, 60 ms press, capture 250 ms after release, unchanged balanced
