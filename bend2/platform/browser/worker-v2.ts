@@ -105,6 +105,12 @@ let spriteReleased: { frame: any; theme: number; revision: number } | null = nul
 let spriteTimer: ReturnType<typeof setTimeout> | null = null;
 let latestPacket: any, lastHostId = 0;
 let spriteMetrics: any = null;
+// Keep only the last rejected helper reply for ordinary frame diagnostics.
+// A synchronous render still runs to completion; its stale result is discarded.
+let spriteDiscard: { id: number; generation: number; timeOrigin: number;
+  sentAt: number; replyReceivedAt: number; currentHostId: number;
+  currentRevision: number | null; currentView: any; cameraInputEpoch: number;
+  heldEpoch: number | null; reason: 'incompatible-current-frame' } | null = null;
 let sceneTimes = { underlay: 0, motionUnderlay: 0, ground: 0, sprite: 0,
   previewSupport: 0, previewGround: 0, previewSprites: 0, previewPaint: 0,
   prepared: 0, shell: 0, chrome: 0, pointer: 0, compose: 0 };
@@ -270,6 +276,7 @@ function disposeSprite(): void {
   spriteTheme = null;
   spritePlateTheme = null;
   spriteMetrics = null;
+  spriteDiscard = null;
   spriteHelper?.terminate();
   spriteHelper = null;
 }
@@ -301,6 +308,7 @@ function ensureSpriteHelper(): void {
       spritePending = null;
       spriteFault('invalid image result'); return;
     }
+    const replyReceivedAt = performance.now();
     messageQueue = messageQueue.then(async () => {
       // A boot/dispose or newer job may run between receipt and acceptance.
       // Frame equality alone cannot bind helper-local ground identities.
@@ -313,6 +321,11 @@ function ensureSpriteHelper(): void {
           current.snapshot.moving || current.render.theme !== pending.theme ||
           current.presentation.revision !== pending.revision ||
           !scene.sprite_same_placement(pending.frame, current.snapshot.frame)) {
+        spriteDiscard = { id: pending.id, generation: pending.generation,
+          timeOrigin: performance.timeOrigin, sentAt: pending.at, replyReceivedAt,
+          currentHostId: lastHostId, currentRevision: current?.presentation.revision ?? null,
+          currentView: current?.presentation.view ?? null, cameraInputEpoch,
+          heldEpoch: pending.heldEpoch, reason: 'incompatible-current-frame' };
         if (current) scheduleSprite(current);
         return;
       }
@@ -855,7 +868,7 @@ async function emit(packet: any, elapsed: number, id: number,
     atlasPick: renderedAtlas, atlasMaskId: renderedAtlas ? renderedAtlasMaskId : null, atlasMaskOffer: maskOffer,
     controls: values(packet.controls), presentation: packet.presentation, summary: packet.summary,
     effects, after: packet.after, renderMs: elapsed, portMs: playPortMs, pixelMs, audioMs,
-    treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, canvasMetrics, botExecution,
+    treeMs, traversalMs, sceneTimes, sceneReuse, assetTimes, spriteMetrics, spriteDiscard, canvasMetrics, botExecution,
     pixelStats: { ...pixelPort.lastStats },
     requestTiming: requestTiming ? { ...requestTiming, publishAt: 0 } : null };
   // Relative to this Worker's timeOrigin, after response construction and

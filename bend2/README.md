@@ -1,26 +1,34 @@
 # Rift Chess — the Bend2 experiment
 
-[Play the current Bend2 candidate](https://haileystorm.github.io/rift-chess-bend2/preview-20261028/) ·
+[Play the current Bend2 candidate](https://haileystorm.github.io/rift-chess-bend2/preview-20261029-ux/) ·
 [Play the original game](https://haileystorm.github.io/rift-chess/)
 
 This is a separate, playable adaptation of Rift Chess. It does not replace the
 published Three.js/Electron game. The rules, match history and adjudication,
 opponent scoring, projection, picking, sprites, menus, bitmap fonts, input policy,
-record codec and audio synthesis are written in Bend 2. The browser adapter only
-transports events and explicit IO effects, copies Bend pixels to Canvas and Bend
-PCM samples to Web Audio, and mirrors Bend controls for assistive technology.
+record codec and audio synthesis are written in Bend 2. The browser adapter
+transports events and explicit IO effects, presents Bend pixels and motion-preview
+Canvas commands with authored piece textures, routes Bend PCM to Web Audio, and
+mirrors Bend controls for assistive technology. Bend owns placement, projection,
+selection and picking; the Canvas path avoids rebuilding a full pixel buffer for
+each motion frame.
 The older `Native.bend` graphical emitter hit a compiler arity limit; that is
 historical, not the present `NativeV2.bend` status. The shared-source NativeV2
-has emitted and run as a Linux X11 CPU ELF, with separate CUDA-window, PCM-route
-and saved-game restart checkpoints. Those older binaries predate the current
-published piece/wall scene and do not prove native parity for later source. The
+has emitted and run as a Linux X11 CPU ELF. The current shared UI has completed
+native menu, move/save, Export and Undo-cancellation acceptance. Routed PCM and
+saved-game restart reuse their original, unchanged source bindings; current CUDA
+acceptance remains pending. Older native receipts retain their original source
+scope. The
 smaller `NativeCLI.bend` also has a browser-independent Linux ELF and file-backed
 playthrough. See [native evidence and gaps](docs/NATIVE.md).
 
-The current candidate preview is build `8fcc17dc6f5bc0d8f9c0`, deployed at
-`preview-20261028/` in the separate Bend site. It includes the reviewed knight
-set and edge feedback: piece selection keeps its edge highlight; movable tiles
-use amber outer edges; selection circles and blue chasm circles are removed.
+The current candidate preview is build `ee1619d005cf7204269e`, deployed at
+`preview-20261029-ux/` in the separate Bend site. It includes the reviewed knight
+set, a screen-filling background, grouped Game and View menus, and direct Canvas
+motion composition. Piece selection keeps its edge highlight; movable tiles use
+amber outer edges; selection circles and blue chasm circles are removed. The
+owner accepted the current layout on October 29. See the
+[UI evidence](docs/evidence/stationary-motion-20261006/UI_UX_20261029.md).
 Bend 2.0.35 is still a candidate. The accepted 2.0.27 compiler and its frozen
 creation inputs remain unchanged while native/GPU, performance and adoption
 work continues. See the [current review](docs/REVIEW_2026-10-05.md) and
@@ -43,11 +51,11 @@ White and settled authored sprites remain unchanged, and Front stays 65°.
 The [hosted orbit receipt](docs/evidence/v2-motion-brass-edge/README.md#hosted-preview)
 binds its source, live bytes and focused real-Chrome playtest. Non-draft builds
 verify the frozen semantic and graphics manifests and source-bound worker graph.
-The [Linux CPU-only candidate](docs/evidence/native-2028-cpu/README.md)
-now reports a passing source/C/ELF, X.Org interaction, routed PCM and
+The historical [Linux CPU-only candidate](docs/evidence/native-2028-cpu/README.md)
+reports a passing source/C/ELF, X.Org interaction, routed PCM and
 save/restart run on the current `9d4a532` native inputs. GPU parity, physical audio,
-owner visual acceptance and Bend 2.0.28
-pin review remain open. See
+owner visual acceptance and Bend 2.0.28 pin review were still open at that
+checkpoint. See
 [the current sprint checkpoint](SPRINT.md) for evidence and limitations.
 
 ## Start here
