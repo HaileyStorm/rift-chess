@@ -18,6 +18,10 @@ type State is Data:
 type Step is Data:
   Step{bot: State, packet: Control.Packet}
 
+type ContextWire is Data:
+  ValidContext{text: String}
+  InvalidContext{message: String}
+
 def next_id(+value: U32) -> U32:
   match value:
     case 4294967295: 0
@@ -211,6 +215,21 @@ def bounded_history(value: History.Context) -> Bool:
     case History.Context{_, _, actions, _, _}:
       Nat.is_le(List.length(&2, U32, actions), 20000n)
 
+def context_wire_size(valid: Bool, text: String) -> ContextWire:
+  match valid:
+    case False{}: InvalidContext{"complete history exceeds native transport limit"}
+    case True{}: ValidContext{text}
+
+def context_wire_history(valid: Bool, context: History.Context) -> ContextWire:
+  match valid:
+    case False{}: InvalidContext{"complete history exceeds 20000 actions"}
+    case True{}:
+      +text = wire(context)
+      context_wire_size(Nat.is_le(String.length(text), 1048576n), text)
+
+def context_wire(+context: History.Context) -> ContextWire:
+  context_wire_history(bounded_history(context), context)
+
 def with_context(state: State, revision: U32, context: String) -> State:
   match state:
     case BotState{enabled, failure, model, epoch, request, _, token, _, ready}:
@@ -262,12 +281,30 @@ def committed(+state: State, +first: Control.Packet, +final: Control.Packet,
   +job = Deferred.bot_job(packet_session(final))
   commit_revision(state, merge_packets(first, final), revision, token, job)
 
-def commit(state: State, +packet: Control.Packet) -> IO(Step):
+def commit_action(state: State, +packet: Control.Packet) -> IO(Step):
   match state:
     case BotState{enabled, failure, model, epoch, request, +revision, +token, context, +ready}:
       committed(BotState{enabled, failure, model, epoch, request, revision, token, context, ready},
         packet, Deferred.bot_apply_at(revision, U32.sub(U32.mod(ready, 32768), 1),
           packet_session(packet)), revision, token)
+
+# A running token may outlive an unobserved same-revision context change. Only
+# this fresh exact-history comparison authorizes either a new or held reply.
+def commit_context_matches(same: Bool, state: State, packet: Control.Packet) -> IO(Step):
+  match same:
+    case True{}: commit_action(state, packet)
+    case False{}:
+      do IO<Step>:
+        next : State <- invalidate(state)
+        finish_state(next, packet)
+
+def commit_wire(context: ContextWire, +state: State, packet: Control.Packet) -> IO(Step):
+  match context:
+    case InvalidContext{message}: fatal(state, packet, message)
+    case ValidContext{text}: commit_context_matches(String.eq(state_context(state), text), state, packet)
+
+def commit(state: State, +packet: Control.Packet) -> IO(Step):
+  commit_wire(context_wire(Deferred.bot_context(packet_session(packet))), state, packet)
 
 def ready_to_apply(allowed: Bool, state: State, packet: Control.Packet) -> IO(Step):
   match allowed:
@@ -388,19 +425,23 @@ def checked_context(state: State, packet: Control.Packet, +revision: U32,
         BotState{enabled, failure, model, epoch, request, old_revision, token, old_context, ready},
         packet, revision, context, can_apply)
 
-def context_size(valid: Bool, state: State, packet: Control.Packet,
-  revision: U32, context: String, can_apply: Bool) -> IO(Step):
-  match valid:
-    case False{}: fatal(state, packet, "complete history exceeds native transport limit")
-    case True{}: checked_context(state, packet, revision, context, can_apply)
+def context_serialized(context: ContextWire, state: State, packet: Control.Packet,
+  revision: U32, can_apply: Bool) -> IO(Step):
+  match context:
+    case InvalidContext{message}: fatal(state, packet, message)
+    case ValidContext{text}: checked_context(state, packet, revision, text, can_apply)
 
-def context_history(valid: Bool, state: State, packet: Control.Packet,
-  revision: U32, context: History.Context, can_apply: Bool) -> IO(Step):
-  match valid:
-    case False{}: fatal(state, packet, "complete history exceeds 20000 actions")
-    case True{}:
-      +text = wire(context)
-      context_size(Nat.is_le(String.length(text), 1048576n), state, packet, revision, text, can_apply)
+def context_needed(state: State, current_revision: U32) -> Bool:
+  match state:
+    case BotState{_, _, _, _, _, revision, token, _, _}:
+      Bool.or(U32.is_zero(token), U32.is_ne(revision, current_revision))
+
+def eligible_context(needed: Bool, state: State, +packet: Control.Packet,
+  revision: U32, can_apply: Bool) -> IO(Step):
+  match needed:
+    case True{}: context_serialized(context_wire(Deferred.bot_context(packet_session(packet))),
+      state, packet, revision, can_apply)
+    case False{}: active(state, packet, can_apply)
 
 def ineligible(has_context: Bool, state: State, packet: Control.Packet) -> IO(Step):
   match has_context:
@@ -411,12 +452,10 @@ def ineligible(has_context: Bool, state: State, packet: Control.Packet) -> IO(St
         finish_state(next, packet)
 
 def eligible(allowed: Bool, +state: State, +packet: Control.Packet,
-  revision: U32, can_apply: Bool) -> IO(Step):
+  +revision: U32, can_apply: Bool) -> IO(Step):
   match allowed:
     case False{}: ineligible(Bool.not(String.is_empty(state_context(state))), state, packet)
-    case True{}:
-      +context = Deferred.bot_context(packet_session(packet))
-      context_history(bounded_history(context), state, packet, revision, context, can_apply)
+    case True{}: eligible_context(context_needed(state, revision), state, packet, revision, can_apply)
 
 def observe_job(job: Control.BotJob, state: State, packet: Control.Packet) -> IO(Step):
   match job:
