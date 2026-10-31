@@ -43,10 +43,21 @@ in. Component checks use CPU inference and an older checked Canvas facade; the
 current35 package still needs compatible controller exports, constructor tags,
 source and asset admission, review, and a real application lifecycle journey.
 
-`NativeDeferred.bend` exposes the existing deferred controller behavior under a
-host-neutral facade for the future native effect bridge. It does not change
-NativeV2's current dispatch or the operational heuristic bot. A native host must
-provide the worker lifetime, identity, cancellation and final guarded apply.
+`NativeDeferred.bend` exposes deferred controller behavior under a host-neutral
+facade. `NativeLoop.bend` and `NativeCpu` add an experimental opt-in NativeV2
+CPU route with a bounded background dispatcher, lifecycle cancellation and
+guarded application. Without a compiled model bundle, the original heuristic
+dispatch remains the default. The opt-in C branch expects a build-generated
+`RIFT_NATIVE_BOT_BUNDLE` header; a future authenticated package builder must
+bind the exact model, header, CPU libraries, executable and notices. The C code
+does not independently authenticate those bytes at runtime.
 
-No trained model is shipped by this source change. The native event loop and
-production browser package remain to be integrated and qualified.
+The source has passed a pinned 2.0.27 Bend check, and a small isolated CPU
+dispatcher journey exercised completed inference, stale-token rejection and
+cleanup. A whole NativeV2 C emission timed out before producing an executable;
+no real window, audio, responsiveness or current35 acceptance follows. Complete
+history is checked each frame, so long-game responsiveness also remains to be
+measured. The existing production build and frozen receipts are unchanged.
+
+No trained model is shipped by this source change. The native application and
+production browser package remain to be built and qualified.

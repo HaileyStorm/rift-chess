@@ -13,6 +13,7 @@ import ./ui/v2/ChromeData.bend as ChromeData
 import ./ui/v2/ChromePlan.bend as ChromePlan
 import ./ui/v2/MenuAA.bend as MenuAA
 import ./ui/v2/fonts/FontPack.bend as MenuFontPack
+import ./platform/bot/NativeLoop.bend as NativeBot
 
 type Cache is Data:
   Cache{valid: Bool, size: U32, board_size: U32, motion: Bool,
@@ -80,13 +81,13 @@ type AssetFrame is Data:
 
 type TickNext is Data:
   TickNext{paths: NativePaths, stamp: Nat, alt_mask: U32,
-    ctrl_mask: U32, shift_mask: U32, now: Nat}
+    ctrl_mask: U32, shift_mask: U32, now: Nat, bot: NativeBot.State}
 
 type State is Type:
   State{frame_box: List<&2, NativeFrame>, paths: NativePaths,
     audio: Maybe<Audio>, audio_ready: Bool, audio_pending: List<&2, F32>,
     alt_mask: U32, ctrl_mask: U32, shift_mask: U32,
-    stamp: Nat}
+    stamp: Nat, bot: NativeBot.State}
 
 def empty_cache(fonts: MenuFontPack.Book,
   sprites: Maybe<&2, PieceSprites.Pieces>,
@@ -309,21 +310,21 @@ def render_frame_box(frame_box: List<&2, NativeFrame>) -> Maybe<Rendered>:
 def view_result(rendered: Maybe<Rendered>, +old_frame_box: List<&2, NativeFrame>,
   paths: NativePaths, audio: Maybe<Audio>, audio_ready: Bool,
   audio_pending: List<&2, F32>, alt_mask: U32, ctrl_mask: U32,
-  shift_mask: U32, stamp: Nat) -> State & Image:
+  shift_mask: U32, stamp: Nat, bot: NativeBot.State) -> State & Image:
   match rendered:
     case Some{Rendered{frame_box, +output}}:
       (State{frame_box, paths, audio, audio_ready, audio_pending,
-        alt_mask, ctrl_mask, shift_mask, stamp}, output)
+        alt_mask, ctrl_mask, shift_mask, stamp, bot}, output)
     case None{}:
       (State{old_frame_box, paths, audio, audio_ready, audio_pending,
-        alt_mask, ctrl_mask, shift_mask, stamp}, Pix{0})
+        alt_mask, ctrl_mask, shift_mask, stamp, bot}, Pix{0})
 
 def view(state: State) -> State & Image:
   match state:
     case State{+frame_box, paths, audio, audio_ready, audio_pending,
-      alt_mask, ctrl_mask, shift_mask, stamp}:
+      alt_mask, ctrl_mask, shift_mask, stamp, bot}:
       view_result(render_frame_box(frame_box), frame_box, paths, audio,
-        audio_ready, audio_pending, alt_mask, ctrl_mask, shift_mask, stamp)
+        audio_ready, audio_pending, alt_mask, ctrl_mask, shift_mask, stamp, bot)
 
 def mouse_button(+button: U32) -> U32:
   Bool.pick(U32, U32.is_eq(button, 0), 0,
@@ -1052,12 +1053,12 @@ def boot_packet(saved: Read, preferences: Read) -> Control.Packet:
 def boot_state(paths: NativePaths, +packet: Control.Packet,
   plates: Assets.ObservatoryPlates, fonts: MenuFontPack.Book,
   sprites: Maybe<&2, PieceSprites.Pieces>,
-  stamp: Nat) -> State:
+  stamp: Nat, bot: NativeBot.State) -> State:
   +data = packet_chrome_data(packet)
   +plan = packet_chrome_plan(packet)
   +cache = cache_with_assets(empty_cache(fonts, sprites, data, plan),
     packet_theme(packet), plates)
-  State{box_frame(packet, cache), paths, None{}, False{}, [], 0, 0, 0, stamp}
+  State{box_frame(packet, cache), paths, None{}, False{}, [], 0, 0, 0, stamp, bot}
 
 def packet_effects(packet: Control.Packet) -> List<&2, T.Effect>:
   match packet:
@@ -1482,10 +1483,10 @@ def asset_frame_failure(runtime: Runtime) -> IO(Maybe<State>):
 def tick_after_asset_pump(next: TickNext,
   frame_box: List<&2, NativeFrame>, runtime: Runtime) -> IO(Maybe<State>):
   match next runtime:
-    case TickNext{paths, stamp, alt_mask, ctrl_mask, shift_mask, now}
+    case TickNext{paths, stamp, alt_mask, ctrl_mask, shift_mask, now, bot}
       Runtime{audio, ready, pending, _, _}:
       IO.pure(Maybe<State>, Some{State{frame_box, paths, audio, ready,
-        pending, alt_mask, ctrl_mask, shift_mask, now}})
+        pending, alt_mask, ctrl_mask, shift_mask, now, bot}})
 
 def tick_after_assets_ready(next: TickNext,
   frame_box: List<&2, NativeFrame>, runtime: Runtime) -> IO(Maybe<State>):
@@ -1505,53 +1506,63 @@ def tick_after_assets(next: TickNext, step: AssetStep) -> IO(Maybe<State>):
       tick_after_assets_choice(valid, next, frame_box, runtime)
 
 def make_tick_next(paths: NativePaths, stamp: Nat, alt_mask: U32,
-  ctrl_mask: U32, shift_mask: U32, now: Nat) -> TickNext:
-  TickNext{paths, stamp, alt_mask, ctrl_mask, shift_mask, now}
+  ctrl_mask: U32, shift_mask: U32, now: Nat, bot: NativeBot.State) -> TickNext:
+  TickNext{paths, stamp, alt_mask, ctrl_mask, shift_mask, now, bot}
+
+def tick_after_bot(step: NativeBot.Step, cache: Cache, paths: NativePaths,
+  stamp: Nat, next_alt: U32, next_ctrl: U32, next_shift: U32,
+  runtime: Runtime, now: Nat) -> IO(Maybe<State>):
+  match step:
+    case NativeBot.Step{bot, next_packet}:
+      +next_frame_box = box_frame(next_packet, cache)
+      +next_tick = make_tick_next(paths, stamp, next_alt, next_ctrl, next_shift, now, bot)
+      do IO<Maybe<State>>:
+        assets : AssetStep <- ensure_assets(next_frame_box, runtime)
+        tick_after_assets(next_tick, assets)
 
 def tick_continue(native_inputs: List<&2, T.Input>, next_alt: U32,
   next_ctrl: U32, next_shift: U32, +packet: Control.Packet, cache: Cache,
-  paths: NativePaths, +stamp: Nat, runtime: Runtime, +now: Nat) -> IO(Maybe<State>):
+  paths: NativePaths, +stamp: Nat, runtime: Runtime, +now: Nat,
+  bot: NativeBot.State) -> IO(Maybe<State>):
   match runtime:
     case Runtime{audio, ready, pending, +effect_inputs, _}:
       +elapsed = U32.min(240, U32.from_nat(Nat.sub(now, stamp)))
       +with_effects = List.append(&2, T.Input, effect_inputs, native_inputs)
       +tick_inputs = List.append(&2, T.Input, with_effects, [T.Tick{elapsed}])
-      +next_packet = Control.dispatch_at(tick_inputs,
-        packet_presentation(packet), packet_session(packet))
-      +next_frame_box = box_frame(next_packet, cache)
-      +next_tick = make_tick_next(paths, stamp, next_alt, next_ctrl,
-        next_shift, now)
       do IO<Maybe<State>>:
-        assets : AssetStep <- ensure_assets(next_frame_box,
-          Runtime{audio, ready, pending, effect_inputs, False{}})
-        tick_after_assets(next_tick, assets)
+        step : NativeBot.Step <- NativeBot.step(tick_inputs,
+          packet_presentation(packet), packet_session(packet), bot)
+        tick_after_bot(step, cache, paths, stamp, next_alt, next_ctrl, next_shift,
+          Runtime{audio, ready, pending, effect_inputs, False{}}, now)
 
 def tick_finish_choice(closed: Bool, exit: Bool, inputs: List<&2, T.Input>,
   next_alt: U32, next_ctrl: U32, next_shift: U32, packet: Control.Packet,
   cache: Cache, paths: NativePaths, stamp: Nat, audio: Maybe<Audio>,
   ready: Bool, pending: List<&2, F32>, effect_inputs: List<&2, T.Input>,
-  now: Nat) -> IO(Maybe<State>):
+  now: Nat, bot: NativeBot.State) -> IO(Maybe<State>):
   match closed exit:
     case True{} _:
       do IO<Maybe<State>>:
+        Unit <- NativeBot.cancel(bot)
         Unit <- close_audio(audio)
         IO.pure(Maybe<State>, None{})
     case False{} True{}:
       do IO<Maybe<State>>:
+        Unit <- NativeBot.cancel(bot)
         Unit <- close_audio(audio)
         IO.pure(Maybe<State>, None{})
     case False{} False{}:
       tick_continue(inputs, next_alt, next_ctrl, next_shift, packet, cache,
-        paths, stamp, Runtime{audio, ready, pending, effect_inputs, False{}}, now)
+        paths, stamp, Runtime{audio, ready, pending, effect_inputs, False{}}, now, bot)
 
 def tick_finish(batch: Batch, packet: Control.Packet,
   cache: Cache, paths: NativePaths, stamp: Nat,
-  runtime: Runtime, now: Nat) -> IO(Maybe<State>):
+  runtime: Runtime, now: Nat, bot: NativeBot.State) -> IO(Maybe<State>):
   match batch runtime:
     case Batch{inputs, next_alt, next_ctrl, next_shift, closed}
       Runtime{audio, ready, pending, effect_inputs, exit}:
       tick_finish_choice(closed, exit, inputs, next_alt, next_ctrl, next_shift,
-        packet, cache, paths, stamp, audio, ready, pending, effect_inputs, now)
+        packet, cache, paths, stamp, audio, ready, pending, effect_inputs, now, bot)
 
 def frame_box_valid(frame_box: List<&2, NativeFrame>) -> Bool:
   match frame_box:
@@ -1572,37 +1583,38 @@ def invalid_frame(runtime: Runtime) -> IO(Maybe<State>):
         IO.pure(Maybe<State>, None{})
 
 def tick_after_effects(frame_box: List<&2, NativeFrame>, batch: Batch,
-  paths: NativePaths, stamp: Nat, runtime: Runtime, now: Nat) -> IO(Maybe<State>):
+  paths: NativePaths, stamp: Nat, runtime: Runtime, now: Nat,
+  bot: NativeBot.State) -> IO(Maybe<State>):
   match frame_box:
     case NativeFrame{+packet, cache} <> Nil{}:
-      tick_finish(batch, packet, cache, paths, stamp, runtime, now)
+      tick_finish(batch, packet, cache, paths, stamp, runtime, now, bot)
     case _: invalid_frame(runtime)
 
 @unsafe
 def tick_valid_frame(+frame_box: List<&2, NativeFrame>, batch: Batch,
-  +paths: NativePaths, stamp: Nat, runtime: Runtime) -> IO(Maybe<State>):
+  +paths: NativePaths, stamp: Nat, runtime: Runtime, bot: NativeBot.State) -> IO(Maybe<State>):
   +effects = frame_box_effects(frame_box)
   do IO<Maybe<State>>:
     ready : Runtime <- ensure_audio(runtime)
     effected : Runtime <- effects_go(effects, ready, paths)
     now : Nat <- IO.now()
-    tick_after_effects(frame_box, batch, paths, stamp, effected, now)
+    tick_after_effects(frame_box, batch, paths, stamp, effected, now, bot)
 
 @unsafe
 def tick_frame(valid: Bool, +frame_box: List<&2, NativeFrame>, batch: Batch,
-  paths: NativePaths, stamp: Nat, runtime: Runtime) -> IO(Maybe<State>):
+  paths: NativePaths, stamp: Nat, runtime: Runtime, bot: NativeBot.State) -> IO(Maybe<State>):
   match valid:
-    case True{}: tick_valid_frame(frame_box, batch, paths, stamp, runtime)
+    case True{}: tick_valid_frame(frame_box, batch, paths, stamp, runtime, bot)
     case False{}: invalid_frame(runtime)
 
 @unsafe
 def tick(native_events: List<Event>, state: State) -> IO(Maybe<State>):
   match state:
     case State{+frame_box, +paths, audio, audio_ready, audio_pending,
-      alt_mask, ctrl_mask, shift_mask, stamp}:
+      alt_mask, ctrl_mask, shift_mask, stamp, bot}:
       +batch = events(native_events, alt_mask, ctrl_mask, shift_mask)
       runtime : Runtime = Runtime{audio, audio_ready, audio_pending, [], False{}}
-      tick_frame(frame_box_valid(frame_box), frame_box, batch, paths, stamp, runtime)
+      tick_frame(frame_box_valid(frame_box), frame_box, batch, paths, stamp, runtime, bot)
 
 def start_asset_app(paths: NativePaths, +packet: Control.Packet,
   theme: U32, stamp: Nat) -> IO(Unit):
@@ -1610,8 +1622,10 @@ def start_asset_app(paths: NativePaths, +packet: Control.Packet,
     plates : Assets.ObservatoryPlates <- load_theme_assets(theme)
     fonts : MenuFontPack.Book <- load_menu_font()
     sprites : Maybe<&2, PieceSprites.Pieces> <- load_native_sprites()
-    App.run(~State, ~App{view, tick}, "Rift Chess Bend2", 1024, 640,
-      boot_state(paths, packet, plates, fonts, sprites, stamp))
+    bot : NativeBot.State <- NativeBot.boot()
+    Unit <- App.run(~State, ~App{view, tick}, "Rift Chess Bend2", 1024, 640,
+      boot_state(paths, packet, plates, fonts, sprites, stamp, bot))
+    NativeBot.shutdown()
 
 def start_app(paths: NativePaths, saved: Read, preferences: Read) -> IO(Unit):
   +packet = boot_packet(saved, preferences)
