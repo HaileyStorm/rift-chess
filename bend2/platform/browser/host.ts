@@ -3,6 +3,8 @@ import { Ports, type PreparedPickFile } from './ports';
 import { PresentedInputQueue } from './input-queue';
 import { makeBrowserProfile, measureBrowserCapabilities, PROFILE_EVENT, queryMaxTextureEdge, RollingP90, type BrowserCapabilities } from './telemetry';
 declare const __BEND_WORKER__: string;
+// Supplied only by a reviewed package build with authenticated local bot assets.
+declare const __BEND_LEARNED_BOT__: object | null;
 const canvas = document.querySelector<HTMLCanvasElement>('main > canvas')!;
 const context = canvas.getContext('2d', { alpha: false })!;
 let viewportBackdrop: HTMLCanvasElement | null = null;
@@ -29,6 +31,10 @@ function presentViewportBackdrop(backdrop: unknown): void {
 const status = document.querySelector<HTMLElement>('[role="status"]')!;
 const controls = document.querySelector<HTMLElement>('#accessibility')!;
 const worker = new Worker(new URL(__BEND_WORKER__, import.meta.url), { type: 'module' });
+const learnedBot = typeof __BEND_LEARNED_BOT__ === 'undefined' ? null : __BEND_LEARNED_BOT__;
+let shuttingDown = false;
+let workerRetirement = 0;
+let botNotice: string | null = null;
 let ports: Ports;
 let presentation: unknown;
 const receivedAtlasMasks = new Map<number, number>();
@@ -112,6 +118,7 @@ function cancelHoverPump(): void {
   if (hoverPump) { cancelAnimationFrame(hoverPump); hoverPump = 0; }
 }
 function send(input: any, picker?: PreparedPickFile, deferHover = false): void {
+  if (shuttingDown) { if (picker) ports?.discardPickFile(picker); return; }
   if (!presentation) { if (picker) ports?.discardPickFile(picker); return; }
   if (picker) { queuedPickers.set(input, picker); activePickers.add(picker); }
   const mask = atlasMaskId(presentation);
@@ -225,6 +232,11 @@ function presentRefinement(message: any): void {
 }
 worker.addEventListener('message', event => {
   const message = event.data;
+  if (shuttingDown) {
+    message?.bitmap?.close();
+    if (message.kind === 'disposed') { clearTimeout(workerRetirement); worker.terminate(); }
+    return;
+  }
   if (message.atlasPick === true) {
     if (!Number.isSafeInteger(message.atlasMaskId) || message.atlasMaskId < 1 ||
         !Number.isSafeInteger(message.atlasMaskOffer) || message.atlasMaskOffer < 1)
@@ -237,7 +249,7 @@ worker.addEventListener('message', event => {
     ports = new Ports(message.keys, send, message.maxFileBytes);
     const id = ++sequence;
     requestStarted.set(id, performance.now());
-    worker.postMessage({ kind: 'boot', id, saved: ports.read(0), prefs: ports.read(1), width: innerWidth, height: innerHeight });
+    worker.postMessage({ kind: 'boot', id, saved: ports.read(0), prefs: ports.read(1), width: innerWidth, height: innerHeight, learnedBot });
     return;
   }
   // A late Bend-authored sprite image refines the already-presented position.
@@ -305,7 +317,9 @@ worker.addEventListener('message', event => {
     presentedTheme = message.renderTheme;
     canvas.setAttribute('aria-label', message.summary);
     accessibility(message.controls);
-    status.textContent = message.summary;
+    if (message.botExecution?.route === 'learned-fallback') botNotice = message.botExecution.notice;
+    status.textContent = botNotice ? `${message.summary} ${botNotice}` : message.summary;
+    if (botNotice) status.classList.remove('sr-only');
     if (message.kind === 'frame') presentViewportBackdrop(message.backdrop);
   }
   canvas.dataset.ready = 'true'; canvas.dataset.renderMs = String(message.renderMs);
@@ -338,10 +352,22 @@ worker.addEventListener('error', event => {
   status.textContent = `Bend runtime error: ${event.message}`; status.classList.remove('sr-only');
 });
 window.addEventListener('pagehide', () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  clearTimeout(timer);
+  clearTimeout(slow);
   cancelHoverPump();
   for (const picker of activePickers) ports?.discardPickFile(picker);
   ports?.cancelPickFiles();
   activePickers.clear();
+  discardRefinement(pendingRefinement);
+  pendingRefinement = null;
+  workerRetirement = window.setTimeout(() => worker.terminate(), 250);
+  try { worker.postMessage({ kind: 'dispose', id: ++sequence }); }
+  catch { clearTimeout(workerRetirement); worker.terminate(); }
+});
+window.addEventListener('pageshow', event => {
+  if (event.persisted && shuttingDown) { worker.terminate(); location.reload(); }
 });
 function point(event: MouseEvent): { x: number; y: number } {
   const rect = canvas.getBoundingClientRect();

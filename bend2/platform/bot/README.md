@@ -30,11 +30,23 @@ The worker's current protocol uses bare constructor tags and has only been
 exercised with the separately emitted pinned-compiler Canvas facade; current35
 needs an explicit compatible adapter and fresh reviewed build inputs.
 
+The browser worker has an opt-in lifecycle route for this client. A reviewed
+build may define `__BEND_LEARNED_BOT__` as an object with `workerUrl`,
+`bundleSha256`, `gameCommit`, `modelDigest`, optional `botId`, and `search`
+containing `search_preset`, `seed`, `time_budget_ms` and `node_budget`. The host
+passes that build-selected configuration at boot; no URL parameter enables it.
+The worker invalidates pending choices on match-capable input, rechecks the full
+context before guarded Bend application, and reports model/protocol failures.
+Resource or backend unavailability uses a visibly labelled heuristic fallback.
+The ordinary heuristic route remains the default when no configuration is built
+in. Component checks use CPU inference and an older checked Canvas facade; the
+current35 package still needs compatible controller exports, constructor tags,
+source and asset admission, review, and a real application lifecycle journey.
+
 `NativeDeferred.bend` exposes the existing deferred controller behavior under a
 host-neutral facade for the future native effect bridge. It does not change
 NativeV2's current dispatch or the operational heuristic bot. A native host must
 provide the worker lifetime, identity, cancellation and final guarded apply.
 
-This module is a building block only. It is not wired into the existing bot,
-worker, native event loop or application build; no new bot or trained model is
-shipped by its presence. The current heuristic remains active.
+No trained model is shipped by this source change. The native event loop and
+production browser package remain to be integrated and qualified.

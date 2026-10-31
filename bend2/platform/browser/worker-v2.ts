@@ -11,6 +11,10 @@ import { BitmapSurface } from './bitmap-surface';
 import { CanvasPreview } from '../../lib/graphics/v2/host/CanvasPreview.mjs';
 import { loadAssetRequests, loadFontPack } from './asset-port';
 import { decodePose, decodeGround } from './pose-port';
+// @ts-ignore The reviewed browser build must include the bot transport modules.
+import { LearnedBotClient } from '../bot/learned-client.mjs';
+// @ts-ignore Host-neutral normalization preserves exact natural counters.
+import { makeBotRequest } from '../bot/context.mjs';
 declare const __BEND_SPRITE_HELPER__: string;
 declare const __BEND_SPRITE_SOURCE__: string;
 const api = Controller as Record<string, (...args: any[]) => any>;
@@ -19,6 +23,7 @@ const menu = MenuAA as Record<string, (...args: any[]) => any>;
 let session: unknown;
 let cameraOrbiting = false;
 type BotWork = { kind: 'pending' } | { kind: 'ready'; id: number }
+  | { kind: 'learned-ready'; request: any; reply: any }
   | { kind: 'unavailable'; message: string } | { kind: 'failed'; message: string };
 const botWork = new Map<number, BotWork>();
 let botSession: any = null;
@@ -27,6 +32,9 @@ let botUnavailable: string | null = null;
 let botFatal: string | null = null;
 let botGeneration = 0;
 let botRevision: number | null = null;
+let botContextKey: string | null = null;
+let learnedBot: any = null;
+let learnedSearch: any = null;
 let messageQueue: Promise<void> = Promise.resolve();
 const list = (values: unknown[]) => values.reduceRight((tail, head) => ({ $: 'Con', head, tail }), { $: 'Nil' } as any);
 function values(value: any): any[] {
@@ -157,7 +165,9 @@ function invalidateBotWork(resetCapability: boolean): void {
   const pending = [...botWork.values()].some((work) => work.kind === 'pending');
   botGeneration++;
   botRevision = null;
+  botContextKey = null;
   botWork.clear();
+  learnedBot?.invalidate();
   if (pending || resetCapability) {
     const current = botSession;
     botSession = null;
@@ -170,20 +180,69 @@ function invalidateBotWork(resetCapability: boolean): void {
   }
 }
 
-function observeBotJob(job: any): void {
+function botContextIdentity(request: any): string {
+  return JSON.stringify([request.revision, request.position, request.history,
+    request.draw_policy, request.legal_action_ids]);
+}
+
+function currentLearnedRequest(job: any, currentSession: any, identity?: any): any {
+  return makeBotRequest(api.bot_context(currentSession), job, identity ?? {
+    protocol: 'rift-bot/1', rules_id: 'rift-chess/1.0', game_commit: learnedBot.gameCommit,
+    game_epoch: learnedBot.epoch, request_id: 'observe', bot_id: learnedBot.botId,
+    model_digest: learnedBot.modelDigest,
+  }, learnedSearch);
+}
+
+function observeBotJob(job: any, currentSession: any): void {
   if (!job?.eligible) {
     if (botRevision !== null) invalidateBotWork(false);
     return;
   }
-  if (botRevision === job.revision) return;
+  let contextKey: string | null = null;
+  if (learnedBot) {
+    try { contextKey = botContextIdentity(currentLearnedRequest(job, currentSession)); }
+    catch (error) {
+      if ((error as any)?.code !== 'resource_limit') throw error;
+      if (botRevision !== job.revision || botContextKey !== 'resource_limit') invalidateBotWork(false);
+      botRevision = job.revision;
+      botContextKey = 'resource_limit';
+      botWork.set(job.revision, { kind: 'unavailable', message: 'Learned bot history limit reached; using the heuristic bot.' });
+      return;
+    }
+  }
+  if (botRevision === job.revision && botContextKey === contextKey) return;
   if (botRevision !== null) invalidateBotWork(false);
   botRevision = job.revision;
+  botContextKey = contextKey;
 }
 
-function scheduleBot(job: any): void {
+function scheduleBot(job: any, currentSession: any): void {
   if (!job?.eligible || botUnavailable || botFatal || botWork.has(job.revision)) return;
   const generation = botGeneration;
   botWork.set(job.revision, { kind: 'pending' });
+  if (learnedBot) {
+    const client = learnedBot;
+    void Promise.resolve().then(() => client.decide(api.bot_context(currentSession), job, learnedSearch))
+      .then(({ request, reply }: any) => {
+        if (generation !== botGeneration || client !== learnedBot || !client.isCurrent(request)) return;
+        if (reply.status === 'completed' || reply.status === 'deadline_fallback') {
+          botWork.set(job.revision, { kind: 'learned-ready', request, reply });
+        } else if (reply.status === 'backend_unavailable' || reply.status === 'resource_limit') {
+          botWork.set(job.revision, { kind: 'unavailable', message: 'Learned bot unavailable; using the heuristic bot.' });
+        } else throw new Error(`Learned bot failed: ${reply.status}`);
+      }).catch((error: unknown) => {
+        if (generation !== botGeneration || client !== learnedBot) return;
+        if ((error as any)?.code === 'resource_limit') {
+          botWork.set(job.revision, { kind: 'unavailable', message: 'Learned bot resource limit reached; using the heuristic bot.' });
+          return;
+        }
+        const message = String(error);
+        botFatal = message;
+        botWork.set(job.revision, { kind: 'failed', message });
+        client.invalidate();
+      });
+    return;
+  }
   void ensureBotSession().then((workerSession) =>
     workerSession.call('choose', [job.position, job.ids])).then((id: number) => {
       if (generation !== botGeneration) return;
@@ -212,14 +271,29 @@ function scheduleBot(job: any): void {
 
 // A diagnostic accompanies only the frame that applies a completed bot choice.
 // It records the actual route; it never authorizes or changes a Bend transition.
-type BotExecution = { route: 'worker' | 'serial-fallback'; generation: number;
-  fromRevision: number; toRevision: number; choiceId: number | null };
+type BotExecution = { route: 'worker' | 'serial-fallback' | 'learned-cpu' | 'learned-fallback'; generation: number;
+  fromRevision: number; toRevision: number; choiceId: number | null;
+  modelDigest?: string; backend?: string; status?: string; notice?: string };
 
 function applyReadyBot(packet: any): { packet: any; execution?: BotExecution } {
   const job = api.bot_job(packet.session);
   if (!job.eligible || !job.canApply) return { packet };
   const work = botWork.get(job.revision);
   if (work?.kind === 'failed') throw new Error(`Bend bot worker failed: ${work.message}`);
+  if (work?.kind === 'learned-ready') {
+    if (!learnedBot?.isCurrent(work.request) ||
+        botContextIdentity(currentLearnedRequest(job, packet.session, work.request)) !== botContextIdentity(work.request)) {
+      invalidateBotWork(false);
+      return { packet };
+    }
+    botWork.delete(job.revision);
+    const next = api.bot_apply_at(job.revision, work.reply.action_id, packet.session);
+    if (next.presentation.revision === job.revision)
+      throw new Error('Bend rejected the learned bot choice for a ready revision');
+    return { packet: next, execution: { route: 'learned-cpu', generation: botGeneration,
+      fromRevision: job.revision, toRevision: next.presentation.revision, choiceId: work.reply.action_id,
+      modelDigest: work.reply.model_digest, backend: work.reply.backend, status: work.reply.status } };
+  }
   if (work?.kind === 'ready') {
     botWork.delete(job.revision);
     const next = api.bot_apply_at(job.revision, work.id, packet.session);
@@ -233,14 +307,18 @@ function applyReadyBot(packet: any): { packet: any; execution?: BotExecution } {
     const next = api.bot_fallback_at(job.revision, packet.session);
     if (next.presentation.revision === job.revision)
       throw new Error('Bend serial bot fallback rejected a ready revision');
-    return { packet: next, execution: { route: 'serial-fallback', generation: botGeneration,
-      fromRevision: job.revision, toRevision: next.presentation.revision, choiceId: null } };
+    return { packet: next, execution: { route: learnedBot ? 'learned-fallback' : 'serial-fallback', generation: botGeneration,
+      fromRevision: job.revision, toRevision: next.presentation.revision, choiceId: null,
+      ...(learnedBot ? { backend: 'cpu', notice: work?.kind === 'unavailable' ? work.message : botUnavailable! } : {}) } };
   }
   return { packet };
 }
 
 function disposeBot(): void {
   invalidateBotWork(true);
+  learnedBot?.close();
+  learnedBot = null;
+  learnedSearch = null;
 }
 
 function spriteFault(message: string): void {
@@ -914,12 +992,19 @@ async function handleMessage(request: any, arrivedAt: number): Promise<void> {
     if (request.kind === 'boot') {
       disposeBot();
       disposeSprite();
+      if (request.learnedBot != null) {
+        learnedBot = new LearnedBotClient(request.learnedBot);
+        learnedSearch = Object.freeze({ ...request.learnedBot.search });
+      }
       ground = prepared = null;
       menuBackground = null;
       groundInvalidated = preparedInvalidated = true;
       bitmapSurface = new BitmapSurface(request.imageBitmap === true);
       packet = api.boot_reads(request.saved.text, request.prefs.text, request.saved.ok, request.prefs.ok, request.width, request.height);
     } else {
+      if (request.kind === 'events' && request.events.some((input: any) =>
+        ['PointerDown', 'PointerUp', 'PresentedUp', 'SquareInput', 'Activate', 'FileText', 'KeyInput']
+          .includes(String(input?.$).split(/[/.]/).pop()!))) invalidateBotWork(false);
       if (request.presentation?.atlasPick === true) {
         const id = request.presentation.atlasMaskId;
         const mask = Number.isSafeInteger(id) ? atlasMasks.get(id) : undefined;
@@ -939,6 +1024,7 @@ async function handleMessage(request: any, arrivedAt: number): Promise<void> {
         cameraReleased = dispatched.cameraReleased === true;
       }
     }
+    observeBotJob(api.bot_job(packet.session), packet.session);
     const appliedBot = applyReadyBot(packet);
     packet = appliedBot.packet;
     const orbiting = api.orbiting(packet.session) === true;
@@ -950,12 +1036,12 @@ async function handleMessage(request: any, arrivedAt: number): Promise<void> {
       clearSpriteQueue();
     }
     cameraOrbiting = orbiting;
-    observeBotJob(api.bot_job(packet.session));
+    observeBotJob(api.bot_job(packet.session), packet.session);
     await emit(packet, performance.now() - start, request.id, 'frame', appliedBot.execution, requestTiming);
     latestPacket = packet;
     lastHostId = request.id;
     scheduleSprite(packet, cameraReleased);
-    scheduleBot(api.bot_job(packet.session));
+    scheduleBot(api.bot_job(packet.session), packet.session);
   } catch (error) {
     self.postMessage({ kind: 'fault', id: request.id, message: String(error) });
   }
